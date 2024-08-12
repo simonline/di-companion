@@ -1,43 +1,43 @@
-import AddTaskIcon from '@mui/icons-material/AddTask';
-import BugReportIcon from '@mui/icons-material/BugReport';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import HomeIcon from '@mui/icons-material/Home';
-import TerrainIcon from '@mui/icons-material/Terrain';
+import StyleIcon from '@mui/icons-material/Style';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import SpeedIcon from '@mui/icons-material/Speed';
+import ForumIcon from '@mui/icons-material/Forum';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 import asyncComponentLoader from '@/utils/loader';
 
 import { Pages, Routes } from './types';
 
 const routes: Routes = {
-  [Pages.Welcome]: {
-    component: asyncComponentLoader(() => import('@/pages/Welcome')),
-    path: '/',
-    title: 'Welcome',
-    icon: HomeIcon,
+  [Pages.Explore]: {
+    component: asyncComponentLoader(() => import('@/pages/Explore')),
+    path: '/explore',
+    title: 'Explore',
+    icon: StyleIcon,
   },
-  [Pages.Page1]: {
-    component: asyncComponentLoader(() => import('@/pages/Page1')),
-    path: '/page-1',
-    title: 'Page 1',
-    icon: GitHubIcon,
+  [Pages.Progress]: {
+    component: asyncComponentLoader(() => import('@/pages/Progress')),
+    path: '/progress',
+    title: 'Progress',
+    icon: BookmarkIcon,
   },
-  [Pages.Page2]: {
-    component: asyncComponentLoader(() => import('@/pages/Page2')),
-    path: '/page-2',
-    title: 'Page 2',
-    icon: AddTaskIcon,
+  [Pages.Dashboard]: {
+    component: asyncComponentLoader(() => import('@/pages/Dashboard')),
+    path: '/dashboard',
+    title: 'Dashboard',
+    icon: SpeedIcon,
   },
-  [Pages.Page3]: {
-    component: asyncComponentLoader(() => import('@/pages/Page3')),
-    path: '/page-3',
-    title: 'Page 3',
-    icon: TerrainIcon,
+  [Pages.Coach]: {
+    component: asyncComponentLoader(() => import('@/pages/Coach')),
+    path: '/coach',
+    title: 'Coach',
+    icon: ForumIcon,
   },
-  [Pages.Page4]: {
-    component: asyncComponentLoader(() => import('@/pages/Page4')),
-    path: '/page-4',
-    title: 'Page 4',
-    icon: BugReportIcon,
+  [Pages.Profile]: {
+    component: asyncComponentLoader(() => import('@/pages/Profile')),
+    path: '/profile',
+    title: 'Profile',
+    icon: AccountCircleIcon,
   },
   [Pages.NotFound]: {
     component: asyncComponentLoader(() => import('@/pages/NotFound')),

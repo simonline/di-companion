@@ -3,15 +3,15 @@ import Typography from '@mui/material/Typography';
 import Meta from '@/components/Meta';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 
-function Page3() {
+function Explore() {
   return (
     <>
-      <Meta title="page 3" />
+      <Meta title="page 1" />
       <FullSizeCenteredFlexBox>
-        <Typography variant="h3">Page 3</Typography>
+        <Typography variant="h3">Explore</Typography>
       </FullSizeCenteredFlexBox>
     </>
   );
 }
 
-export default Page3;
+export default Explore;
