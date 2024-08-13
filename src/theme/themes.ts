@@ -31,6 +31,13 @@ const sharedTheme = {
         },
       },
     },
+    MuiBottomNavigation: {
+      styleOverrides: {
+        root: {
+          minHeight: '80px',
+        },
+      },
+    },
   },
 } as ThemeOptions; // the reason for this casting is deepmerge return type
 // TODO (Suren): replace mui-utils-deepmerge with lodash or ramda deepmerge

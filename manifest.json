@@ -1,7 +1,7 @@
 {
-  "name": "React PWA",
-  "short_name": "reactpwa",
-  "description": "Starter kit for modern web applications",
+  "name": "DI Companion",
+  "short_name": "dicompanion",
+  "description": "",
   "theme_color": "#ffffff",
   "icons": [
     {
