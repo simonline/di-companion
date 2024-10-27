@@ -1,27 +1,23 @@
-import { useCallback, useMemo } from 'react';
-import { atom, useRecoilState } from 'recoil';
-
+import { useMemo } from 'react';
+import { create } from 'zustand';
 import type { SnackbarKey } from 'notistack';
 
 import { notifications as notificationsDefaults } from '@/config';
-
 import { Actions, Notification } from './types';
 
-const notificationsState = atom<Notification[]>({
-  key: 'notificationsState',
-  default: [],
-});
+const useNotificationStore = create<{
+  notifications: Notification[];
+  push: (notification: Partial<Notification>) => string;
+  close: (key: SnackbarKey, dismissAll: boolean) => void;
+  remove: (key: SnackbarKey) => void;
+}>((set) => ({
+  notifications: [],
 
-function useNotifications(): [Notification[], Actions] {
-  const [notifications, setNotifications] = useRecoilState(notificationsState);
-
-  const push = useCallback(
-    (notification: Partial<Notification>) => {
-      // TODO (Suren): use uuid
-      const id = Math.random().toString();
-      setNotifications((notifications): Notification[] => [
-        // TODO (Suren): use immer
-        ...notifications,
+  push: (notification) => {
+    const id = Math.random().toString();
+    set((state) => ({
+      notifications: [
+        ...state.notifications,
         {
           ...notification,
           message: notification.message,
@@ -32,34 +28,33 @@ function useNotifications(): [Notification[], Actions] {
             key: id,
           },
         },
-      ]);
+      ],
+    }));
+    return id;
+  },
 
-      return id;
-    },
-    [setNotifications],
-  );
+  close: (key, dismissAll = !key) => {
+    set((state) => ({
+      notifications: state.notifications.map((notification) =>
+        dismissAll || notification.options.key === key
+          ? { ...notification, dismissed: true }
+          : notification,
+      ),
+    }));
+  },
 
-  const close = useCallback(
-    (key: SnackbarKey, dismissAll = !key) => {
-      setNotifications((notifications) =>
-        notifications.map((notification) =>
-          dismissAll || notification.options.key === key
-            ? { ...notification, dismissed: true }
-            : { ...notification },
-        ),
-      );
-    },
-    [setNotifications],
-  );
+  remove: (key) => {
+    set((state) => ({
+      notifications: state.notifications.filter((notification) => notification.options.key !== key),
+    }));
+  },
+}));
 
-  const remove = useCallback(
-    (key: SnackbarKey) => {
-      setNotifications((notifications) =>
-        notifications.filter((notification) => notification.options.key !== key),
-      );
-    },
-    [setNotifications],
-  );
+function useNotifications(): [Notification[], Actions] {
+  const notifications = useNotificationStore((state) => state.notifications);
+  const push = useNotificationStore((state) => state.push);
+  const close = useNotificationStore((state) => state.close);
+  const remove = useNotificationStore((state) => state.remove);
 
   const actions = useMemo(() => ({ push, close, remove }), [push, close, remove]);
 

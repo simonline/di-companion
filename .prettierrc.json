@@ -6,7 +6,7 @@
   "printWidth": 100,
   "trailingComma": "all",
   "importOrder": [
-    "^(^react$|@react|react|^recoil$)",
+    "^(^react$|@react|react|^zustand$)",
     "^@mui/(.*)$",
     "<THIRD_PARTY_MODULES>",
     "^@/(.*)$",

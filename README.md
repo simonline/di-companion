@@ -32,14 +32,11 @@ Almost all projects need to have a router, a UI framework, store integration, th
 
 - ✅ [Router](#router)
   - `React Router v6`
-- ✅ [Store](#store)
-  - `Recoil`
 - ✅ [Notifications](#notifications)
 - ✅ [Theme](#theme)
 - ✅ [Base file/folder structure](#base-filefolder-structure)
 - ✅ [PWA](#pwa)
 - ✅ [Performance](#performance)
-- ✅ [Hotkeys](#hotkeys)
 - ✅ [Error Handling](#error-handling)
 - ✅ [Pages](#pages)
 
@@ -77,10 +74,6 @@ For those who are not familiar with `TypeScript` - don't worry, you will love it
 #### UI-framework
 
 [MUI](https://mui.com/) v5 is used here. `MUI` is a fully-loaded component library, super customizable, and easy to use.
-
-#### Store
-
-As a store management tool [Recoil](https://recoiljs.org/) is used. Check the [src/store](./src/store) folder for more information.
 
 #### Notifications
 
@@ -156,7 +149,7 @@ Here how the base file/folder structure looks like:
 Special attention deserves `pages/`, `sections/` and `components/`. These are the main building blocks of the application and here is the difference between them:
 
 - `components` - usually (but not necessarily), in `components/` we keep dummy, stateless components, that are being used in different parts of the application, and they don't belong to the particular page/section, like `Button`, `List`, `Table`, `Loading`, `Divider`, `Flex`, `Dialog`, etc.
-- `sections` - sections are complete parts of the application, that have their own logic, like `Navigation`, `Sidebar`, `Notifications`, etc.
+- `sections` - sections are complete parts of the application, that have their own logic, like `Navigation`, `Notifications`, etc.
 - `pages` - pages represent the root routes, like `/profile` renders the `Profile` page, `/login` renders `Login` page. Pages are made of sections (no need to have [Page]/sections/ folder). If a section is used on multiple pages it should be moved to `/root/sections`.
   - in some project you may see `/features` instead of `/sections`
 
@@ -197,16 +190,6 @@ After all these integrations the biggest bundle size is `~79KB`. It means even t
 
 NOTE: The performance is not 100 because it's running on demo server.
 
-#### Hotkeys
-
-A basic implementation of hotkeys is demonstrated here. Check the [src/sections/HotKeys](./src/sections/HotKeys/HotKeys.tsx) for more information.
-
-Currently, you can use the following hotkeys:
-
-`Alt+s` - to toggle the theme mode
-`Alt+t` - to toggle the sidebar
-`Alt+/` - to open the hotkeys dialog
-
 #### Error Handling
 
 Nobody likes white screens and crashes without any notes. In [src/error-handling](./src/error-handling) you can find the error handling implementation. Here you can find `withErrorHandler` high order component. You can wrap any component by this HOC and it will catch all errors and show a default or your custom fallback. Currently, the main APP component is wrapped by `withErrorHandler` HOC.
@@ -216,7 +199,6 @@ Nobody likes white screens and crashes without any notes. In [src/error-handling
 From a layout point of view the application consists of 3 main parts:
 
 - Header
-- Sidebar
 - Pages
 
 The last one is a router-based switcher. All routes are defined in [src/routes](./src/routes/index.ts). By default, pages are being loaded asynchronously via [asyncComponentLoader](src/utils/loader/loader.tsx). You can use it to asynchronously load any `React` component you want. It uses `React.Suspense` and `React.lazy` with some magic 🧙‍♂️

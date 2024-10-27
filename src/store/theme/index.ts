@@ -1,31 +1,34 @@
-import { useCallback, useMemo } from 'react';
-import { atom, useRecoilState } from 'recoil';
-
+import { useMemo } from 'react';
+import { create } from 'zustand';
 import { Themes } from '@/theme/types';
-
-import type { AtomEffectParams } from '../types';
 import type { Actions } from './types';
 
-const themeModeState = atom({
-  key: 'theme-mode-state',
-  default: 'light' as Themes,
-  effects: [synchronizeWithLocalStorage],
-});
+const useThemeStore = create<{
+  themeMode: Themes;
+  setThemeMode: (theme: Themes) => void;
+  toggleTheme: () => void;
+}>((set) => ({
+  themeMode: (localStorage.getItem('theme-mode') as Themes) || Themes.LIGHT,
 
-function synchronizeWithLocalStorage({ setSelf, onSet }: AtomEffectParams) {
-  const storedTheme = localStorage.getItem('theme-mode');
-  storedTheme && setSelf(storedTheme);
-  onSet((value: Themes) => localStorage.setItem('theme-mode', value));
-}
+  setThemeMode: (theme) => {
+    localStorage.setItem('theme-mode', theme);
+    set({ themeMode: theme });
+  },
+
+  toggleTheme: () => {
+    set((state) => {
+      const newTheme = state.themeMode === Themes.DARK ? Themes.LIGHT : Themes.DARK;
+      localStorage.setItem('theme-mode', newTheme);
+      return { themeMode: newTheme };
+    });
+  },
+}));
 
 function useTheme(): [Themes, Actions] {
-  const [themeMode, setThemeMode] = useRecoilState(themeModeState);
+  const themeMode = useThemeStore((state) => state.themeMode);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
 
-  const toggle = useCallback(() => {
-    setThemeMode((mode: Themes) => (mode === Themes.DARK ? Themes.LIGHT : Themes.DARK));
-  }, [setThemeMode]);
-
-  const memoizedActions = useMemo(() => ({ toggle }), [toggle]);
+  const memoizedActions = useMemo(() => ({ toggle: toggleTheme }), [toggleTheme]);
 
   return [themeMode, memoizedActions];
 }
