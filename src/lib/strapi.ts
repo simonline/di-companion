@@ -1,76 +1,147 @@
-import Strapi from 'strapi-sdk-js';
 import type {
   StrapiAuthResponse,
   StrapiLoginCredentials,
-  StrapiRegisterCredentials,
-  StrapiProfile,
+  StrapiPatternResponse,
+  UserRegistration,
   StrapiError,
-  StrapiStartup,
+  Pattern,
+  Startup,
+  User,
 } from '../types/strapi';
 
 const STRAPI_URL = 'https://api.di.sce.de';
-const STRAPI_API_PREFIX = '';
+const STRAPI_API_PREFIX = '/api'; // Strapi v5 uses /api prefix by default
 
-let strapiClient: Strapi | null = null;
+// Helper function to get the stored JWT token
+const getStoredToken = (): string | null => {
+  return localStorage.getItem('strapi_jwt');
+};
 
-export function getStrapi(): Strapi {
-  if (!strapiClient) {
-    strapiClient = new Strapi({
-      url: STRAPI_URL,
-      prefix: STRAPI_API_PREFIX,
-      store: {
-        key: 'strapi_jwt',
-        useLocalStorage: true,
-        cookieOptions: { path: '/' },
+// Helper function to store JWT token
+const storeToken = (token: string): void => {
+  localStorage.setItem('strapi_jwt', token);
+};
+
+// Helper function for API requests
+async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const url = `${STRAPI_URL}${STRAPI_API_PREFIX}${endpoint}`;
+  const response = await fetch(url, options);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw {
+      error: {
+        message: error.error?.message || 'API request failed',
+        ...error,
       },
-      axiosOptions: {
-        timeout: 30000,
-      },
-    });
+    } as StrapiError;
   }
-  return strapiClient;
+
+  return response.json();
+}
+
+export async function strapiMe(): Promise<User> {
+  try {
+    const token = getStoredToken();
+    console.log(token);
+    if (!token) {
+      throw new Error('Unauthorized');
+    }
+
+    const response = await fetchApi<User>(
+      '/users/me?populate[startups][filters][publishedAt][$notNull]=true',
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return response;
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading user');
+  }
 }
 
 export async function strapiLogin(
   identifier: string,
   password: string,
 ): Promise<StrapiAuthResponse> {
-  const strapi = getStrapi();
   try {
-    const response = await strapi.login({
-      identifier,
-      password,
-    } as StrapiLoginCredentials);
-    return response as StrapiAuthResponse;
+    const response = await fetchApi<StrapiAuthResponse>('/auth/local', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        identifier,
+        password,
+      } as StrapiLoginCredentials),
+    });
+
+    if (response.jwt) {
+      storeToken(response.jwt);
+    }
+
+    return response;
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Login failed');
   }
 }
 
-export async function strapiRegister(
-  username: string,
-  email: string,
-  password: string,
-): Promise<StrapiAuthResponse> {
-  const strapi = getStrapi();
+export async function strapiRegister(user: UserRegistration): Promise<StrapiAuthResponse> {
   try {
-    const response = await strapi.register({
-      username,
-      email,
-      password,
-    } as StrapiRegisterCredentials);
-    return response as StrapiAuthResponse;
+    const response = await fetchApi<StrapiAuthResponse>('/auth/local/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(user),
+    });
+
+    if (response.jwt) {
+      storeToken(response.jwt);
+    }
+
+    return response;
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Registration failed');
   }
 }
 
-export async function strapiLogout(): Promise<void> {
-  const strapi = getStrapi();
+export async function strapiCreateStartup(startup: Startup): Promise<Startup> {
   try {
-    await strapi.logout();
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error('Unauthorized');
+    }
+
+    const response = await fetchApi<Startup>('/startups', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        data: startup,
+      }),
+    });
+
+    return response;
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Startup creation failed');
+  }
+}
+
+export async function strapiLogout(): Promise<void> {
+  try {
+    localStorage.removeItem('strapi_jwt');
     localStorage.removeItem('user');
   } catch (error) {
     console.error('Logout error:', error);
@@ -78,69 +149,25 @@ export async function strapiLogout(): Promise<void> {
   }
 }
 
-interface CreateProfileData {
-  given_name: string;
-  family_name: string;
-  user: number;
-}
-
-interface CreateStartupData {
-  startup_name: string;
-  start_date: string;
-  co_founders_count: number;
-  co_founders_background: string;
-  idea_description: string;
-  product_type: string;
-  industry: string;
-  industry_other?: string | null;
-  target_market: string;
-  phase: string;
-  problem_validated: boolean;
-  qualified_conversations: number;
-  core_target_group_defined: boolean;
-  prototype_validated: boolean;
-  mvp_tested: boolean;
-  users: number[];
-}
-
-export async function register(
-  userData: StrapiRegisterCredentials,
-  profileData: Omit<CreateProfileData, 'user'>,
-  startupData: Omit<CreateStartupData, 'users'>,
-): Promise<{
-  auth: StrapiAuthResponse;
-  profile: StrapiProfile;
-  startup: StrapiStartup; // Define proper startup type if needed
-}> {
-  const strapi = getStrapi();
-
+export async function strapiGetPatterns(): Promise<Pattern[]> {
   try {
-    // Step 1: Register user
-    const authResponse = await strapiRegister(userData.username, userData.email, userData.password);
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error('Unauthorized');
+    }
 
-    // Step 2: Create profile
-    const profile = await strapi.create('profiles', {
-      data: {
-        ...profileData,
-        user: authResponse.user.id,
+    const response = await fetchApi<StrapiPatternResponse[]>(
+      '/patterns?populate[0]=image&populate[1]=relatedPatterns',
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
-
-    // Step 3: Create startup
-    const startup = await strapi.create('startups', {
-      data: {
-        ...startupData,
-        users: [authResponse.user.id],
-      },
-    });
-
-    return {
-      auth: authResponse,
-      profile: profile.data,
-      startup: startup.data,
-    };
+    );
+    return response.data;
   } catch (error) {
     const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Registration process failed');
+    throw new Error(strapiError.error?.message || 'Error loading patterns');
   }
 }

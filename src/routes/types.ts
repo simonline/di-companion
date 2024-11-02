@@ -6,13 +6,19 @@ import type { SvgIconProps } from '@mui/material/SvgIcon';
 enum Pages {
   Welcome,
   Register,
+  CreateStartup,
   Login,
   Logout,
   Explore,
   Progress,
   Dashboard,
   Coach,
+  CoachChat,
   Profile,
+  UserProfile,
+  UserProfileField,
+  StartupProfile,
+  StartupProfileStep,
   NotFound,
 }
 

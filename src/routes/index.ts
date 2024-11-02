@@ -40,7 +40,7 @@ export const useAppRoutes = () => {
     [Pages.Profile]: {
       component: asyncComponentLoader(() => import('@/pages/Profile')),
       path: '/profile',
-      title: user ? user.profile.given_name : 'Profile',
+      title: user ? user.givenName : 'Profile',
       icon: AccountCircleIcon,
     },
     [Pages.NotFound]: {
@@ -62,6 +62,11 @@ const useRoutes = (): Routes => {
       path: '/signup',
       title: 'Sign Up',
     },
+    [Pages.CreateStartup]: {
+      component: asyncComponentLoader(() => import('@/pages/Register/CreateStartup')),
+      path: '/create-startup',
+      title: 'Create Startup',
+    },
     [Pages.Login]: {
       component: asyncComponentLoader(() => import('@/pages/Login')),
       path: '/login',
@@ -71,6 +76,31 @@ const useRoutes = (): Routes => {
       component: asyncComponentLoader(() => import('@/pages/Logout')),
       path: '/logout',
       title: 'Logout',
+    },
+    [Pages.UserProfile]: {
+      component: asyncComponentLoader(() => import('@/pages/Profile/UserProfile')),
+      path: '/profile/user',
+      title: 'User Profile',
+    },
+    [Pages.UserProfileField]: {
+      component: asyncComponentLoader(() => import('@/pages/Profile/UserProfileField')),
+      path: '/profile/user/:key',
+      title: 'User Profile Field',
+    },
+    [Pages.StartupProfile]: {
+      component: asyncComponentLoader(() => import('@/pages/Profile/StartupProfile')),
+      path: '/profile/startup/:id',
+      title: 'Startup Profile',
+    },
+    [Pages.StartupProfileStep]: {
+      component: asyncComponentLoader(() => import('@/pages/Profile/StartupProfileStep')),
+      path: '/profile/startup/:startupId/:stepId',
+      title: 'Startup Profile Step',
+    },
+    [Pages.CoachChat]: {
+      component: asyncComponentLoader(() => import('@/pages/Coach/CoachChat')),
+      path: '/coach/:id',
+      title: 'Coach Chat',
     },
   };
 };

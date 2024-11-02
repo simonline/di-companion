@@ -1,45 +1,24 @@
-// src/hooks/useAuth.ts
-import { useState, useCallback, useEffect } from 'react';
-import { strapiLogin, strapiLogout, strapiRegister } from '@/lib/strapi';
-import type { UserData, StrapiRegisterCredentials } from '@/types/strapi';
-
-interface RegistrationData {
-  userData: StrapiRegisterCredentials;
-  profileData: {
-    given_name: string;
-    family_name: string;
-  };
-  startupData: {
-    startup_name: string;
-    start_date: string;
-    co_founders_count: number;
-    co_founders_background: string;
-    idea_description: string;
-    product_type: string;
-    industry: string;
-    industry_other?: string | null;
-    target_market: string;
-    phase: string;
-    problem_validated: boolean;
-    qualified_conversations: number;
-    core_target_group_defined: boolean;
-    prototype_validated: boolean;
-    mvp_tested: boolean;
-  };
-}
+import { useState, useCallback, useEffect, createContext, useContext, ReactNode } from 'react';
+import {
+  strapiMe,
+  strapiLogin,
+  strapiLogout,
+  strapiRegister,
+  strapiCreateStartup,
+} from '@/lib/strapi';
+import type { Startup, User, UserRegistration } from '@/types/strapi';
 
 interface AuthState {
-  user: UserData | null;
+  user: User | null;
+  startup: Startup | null;
   loading: boolean;
   error: string | null;
 }
 
 interface UseAuthReturn extends AuthState {
-  user: UserData | null;
-  loading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<UserData>;
-  register: (data: RegistrationData) => Promise<UserData>;
+  login: (identifier: string, password: string) => Promise<User>;
+  register: (data: UserRegistration) => Promise<User>;
+  createStartup: (data: Startup) => Promise<Startup>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   clearError: () => void;
@@ -48,17 +27,20 @@ interface UseAuthReturn extends AuthState {
 export function useAuth(): UseAuthReturn {
   const [state, setState] = useState<AuthState>({
     user: null,
+    startup: null,
     loading: true,
     error: null,
   });
 
-  // Initialize user from localStorage
+  // Initialize user/startup from localStorage
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('user');
+      const storedStartup = localStorage.getItem('startup');
       setState((prev) => ({
         ...prev,
         user: storedUser ? JSON.parse(storedUser) : null,
+        startup: storedStartup ? JSON.parse(storedStartup) : null,
         loading: false,
       }));
     } catch (error) {
@@ -70,7 +52,7 @@ export function useAuth(): UseAuthReturn {
     }
   }, []);
 
-  const setUser = useCallback((userData: UserData | null) => {
+  const setUser = useCallback((userData: User | null) => {
     setState((prev) => ({ ...prev, user: userData, error: null }));
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData));
@@ -79,20 +61,50 @@ export function useAuth(): UseAuthReturn {
     }
   }, []);
 
+  const setStartup = useCallback((startupData: Startup | null) => {
+    setState((prev) => ({ ...prev, startup: startupData, error: null }));
+    if (startupData) {
+      localStorage.setItem('startup', JSON.stringify(startupData));
+    } else {
+      localStorage.removeItem('startup');
+    }
+  }, []);
+
   const clearError = useCallback(() => {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
   const login = useCallback(
-    async (email: string, password: string): Promise<UserData> => {
+    async (identifier: string, password: string): Promise<User> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const response = await strapiLogin(email, password);
+        await strapiLogin(identifier, password);
+        const userData = await strapiMe();
 
-        const userData: UserData = {
-          ...response.user,
-        };
+        setUser(userData);
+        userData.startups?.length > 0 && setStartup(userData.startups[0]);
+        return userData;
+      } catch (error) {
+        const err = error as Error;
+        setState((prev) => ({
+          ...prev,
+          error: err.message,
+          loading: false,
+        }));
+        throw error;
+      } finally {
+        setState((prev) => ({ ...prev, loading: false }));
+      }
+    },
+    [setUser, setStartup],
+  );
 
+  const register = useCallback(
+    async (data: UserRegistration): Promise<User> => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+      try {
+        const result = await strapiRegister(data);
+        const userData: User = result.user;
         setUser(userData);
         return userData;
       } catch (error) {
@@ -110,19 +122,14 @@ export function useAuth(): UseAuthReturn {
     [setUser],
   );
 
-  const register = useCallback(
-    async (data: RegistrationData): Promise<UserData> => {
+  const createStartup = useCallback(
+    async (data: Startup): Promise<Startup> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const result = await strapiRegister(data.userData, data.profileData, data.startupData);
-
-        const userData: UserData = {
-          ...result.auth.user,
-          profile: result.profile,
-        };
-
-        setUser(userData);
-        return userData;
+        const result = await strapiCreateStartup(data);
+        const startupData: Startup = result.startup;
+        setStartup(startupData);
+        return startupData;
       } catch (error) {
         const err = error as Error;
         setState((prev) => ({
@@ -135,7 +142,7 @@ export function useAuth(): UseAuthReturn {
         setState((prev) => ({ ...prev, loading: false }));
       }
     },
-    [setUser],
+    [setStartup],
   );
 
   const logout = useCallback(async (): Promise<void> => {
@@ -158,17 +165,17 @@ export function useAuth(): UseAuthReturn {
 
   return {
     user: state.user,
+    startup: state.startup,
     loading: state.loading,
     error: state.error,
     login,
     register,
+    createStartup,
     logout,
     isAuthenticated: Boolean(state.user),
     clearError,
   };
 }
-
-import { createContext, useContext, ReactNode } from 'react';
 
 const AuthContext = createContext<UseAuthReturn | null>(null);
 
