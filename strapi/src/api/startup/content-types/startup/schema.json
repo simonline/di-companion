@@ -1,0 +1,84 @@
+{
+  "kind": "collectionType",
+  "collectionName": "startups",
+  "info": {
+    "singularName": "startup",
+    "pluralName": "startups",
+    "displayName": "Startup",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "startDate": {
+      "type": "date"
+    },
+    "foundersCount": {
+      "type": "integer"
+    },
+    "background": {
+      "type": "text"
+    },
+    "idea": {
+      "type": "text"
+    },
+    "industry": {
+      "type": "enumeration",
+      "enum": [
+        "tech",
+        "health",
+        "finance",
+        "education",
+        "other"
+      ]
+    },
+    "industryOther": {
+      "type": "string"
+    },
+    "targetMarket": {
+      "type": "enumeration",
+      "enum": [
+        "b2b",
+        "b2c"
+      ]
+    },
+    "isProblemValidated": {
+      "type": "boolean"
+    },
+    "qualifiedConversationsCount": {
+      "type": "integer"
+    },
+    "isTargetGroupDefined": {
+      "type": "boolean"
+    },
+    "isPrototypeValidated": {
+      "type": "boolean"
+    },
+    "isMvpTested": {
+      "type": "boolean"
+    },
+    "phase": {
+      "type": "enumeration",
+      "enum": [
+        "start",
+        "discover_explore",
+        "transform",
+        "create",
+        "implement"
+      ]
+    },
+    "productType": {
+      "type": "enumeration",
+      "enum": [
+        "product",
+        "service",
+        "platform"
+      ]
+    }
+  }
+}
