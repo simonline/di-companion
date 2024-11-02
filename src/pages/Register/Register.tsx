@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Formik, Field, FormikHelpers } from 'formik';
+import { Form, Formik, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import {
   Typography,
@@ -100,7 +100,7 @@ function Register() {
             onSubmit={handleSubmit}
           >
             {({ errors, touched, values, setFieldValue }) => (
-              <form>
+              <Form>
                 <Field
                   as={TextField}
                   fullWidth
@@ -179,7 +179,7 @@ function Register() {
                     Sign Up
                   </Button>
                 </Box>
-              </form>
+              </Form>
             )}
           </Formik>
         </Box>

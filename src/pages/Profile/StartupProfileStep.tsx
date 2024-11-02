@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Form, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { Formik } from 'formik';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
@@ -30,7 +30,7 @@ const StartupProfileStep: React.FC = () => {
           }}
         >
           {(formikProps) => (
-            <form>
+            <Form>
               {renderStepContent(
                 parseInt(stepId || '0'),
                 formikProps.errors,
@@ -43,7 +43,7 @@ const StartupProfileStep: React.FC = () => {
                   Save
                 </Button>
               </Box>
-            </form>
+            </Form>
           )}
         </Formik>
       </Box>

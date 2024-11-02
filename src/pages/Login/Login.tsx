@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Formik, Field, FormikHelpers } from 'formik';
+import { Formik, Form, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import {
   Typography,
@@ -82,7 +82,7 @@ const Login: React.FC = () => {
             onSubmit={handleSubmit}
           >
             {({ errors, touched, isSubmitting }) => (
-              <form>
+              <Form>
                 <Field
                   as={TextField}
                   fullWidth
@@ -142,7 +142,7 @@ const Login: React.FC = () => {
                     Don&apos;t have an account? Sign Up
                   </Link>
                 </Box>
-              </form>
+              </Form>
             )}
           </Formik>
         </Paper>

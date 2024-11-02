@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Formik, FormikHelpers } from 'formik';
+import { Form, Formik, FormikHelpers } from 'formik';
 import { Typography, Button, Box, Stepper, Step, StepLabel } from '@mui/material';
 // import { useNavigate } from 'react-router-dom';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
@@ -83,7 +83,7 @@ function CreateStartup() {
             onSubmit={handleSubmit}
           >
             {({ errors, touched, isValid, setFieldValue, values, validateForm, submitForm }) => (
-              <form>
+              <Form>
                 {renderStepContent(activeStep, errors, touched, setFieldValue, values)}
                 <Box mt={2} display="flex" justifyContent="space-between">
                   <Button
@@ -114,7 +114,7 @@ function CreateStartup() {
                     {activeStep === steps.length - 1 ? 'SUBMIT' : 'NEXT'}
                   </Button>
                 </Box>
-              </form>
+              </Form>
             )}
           </Formik>
         </Box>
