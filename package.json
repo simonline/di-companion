@@ -31,6 +31,7 @@
     "@mui/system": "^5.15.0",
     "@mui/utils": "^5.15.0",
     "@mui/x-date-pickers": "^7.16.0",
+    "formik": "^2.4.6",
     "framer-motion": "^11.11.11",
     "is-mobile": "^4.0.0",
     "notistack": "^3.0.1",
@@ -39,6 +40,7 @@
     "react-error-boundary": "^4.0.11",
     "react-helmet-async": "^2.0.3",
     "react-router-dom": "^6.21.0",
+    "yup": "^1.4.0",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
