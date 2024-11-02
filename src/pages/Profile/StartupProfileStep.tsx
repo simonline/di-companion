@@ -1,7 +1,7 @@
 import React from 'react';
-import { Box, Button, Form, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import { Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import { steps, renderStepContent } from '@/pages/Startups/types';
 import { useAuth } from '@/hooks/useAuth';
