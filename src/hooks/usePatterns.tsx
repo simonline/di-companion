@@ -28,7 +28,8 @@ export default function usePatterns(): UsePatternsReturn {
     try {
       const patterns = await strapiGetPatterns();
       setState({ patterns, loading: false, error: null });
-    } catch (error) {
+    } catch (err: unknown) {
+      const error = err as Error;
       setState({ patterns: null, loading: false, error: error.message });
     }
   }, []);

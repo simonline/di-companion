@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Formik, Form, FormikHelpers } from 'formik';
+import { Formik, FormikHelpers } from 'formik';
 import { Typography, Button, Box, Stepper, Step, StepLabel } from '@mui/material';
 // import { useNavigate } from 'react-router-dom';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
@@ -28,7 +28,7 @@ function CreateStartup() {
       // if (startup) {
       //     navigate('/dashboard');
       // }
-    } catch (err) {
+    } catch (err: unknown) {
       const error = err as Error;
       console.error('Startup creation error:', error);
       setErrors({ submit: error.message });
@@ -83,7 +83,7 @@ function CreateStartup() {
             onSubmit={handleSubmit}
           >
             {({ errors, touched, isValid, setFieldValue, values, validateForm, submitForm }) => (
-              <Form>
+              <form>
                 {renderStepContent(activeStep, errors, touched, setFieldValue, values)}
                 <Box mt={2} display="flex" justifyContent="space-between">
                   <Button
@@ -99,7 +99,7 @@ function CreateStartup() {
                     disabled={!isValid}
                     onClick={async () => {
                       console.log(activeStep === steps.length - 1);
-                      const stepErrors = await validateForm();
+                      const stepErrors = (await validateForm()) as Record<string, string>;
                       const stepFields = Object.keys(stepValidationSchemas[activeStep].fields);
                       const hasStepErrors = stepFields.some((field) => stepErrors[field]);
                       if (!hasStepErrors) {
@@ -114,7 +114,7 @@ function CreateStartup() {
                     {activeStep === steps.length - 1 ? 'SUBMIT' : 'NEXT'}
                   </Button>
                 </Box>
-              </Form>
+              </form>
             )}
           </Formik>
         </Box>

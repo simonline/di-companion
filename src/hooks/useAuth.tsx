@@ -126,8 +126,7 @@ export function useAuth(): UseAuthReturn {
     async (data: Startup): Promise<Startup> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const result = await strapiCreateStartup(data);
-        const startupData: Startup = result.startup;
+        const startupData = await strapiCreateStartup(data);
         setStartup(startupData);
         return startupData;
       } catch (error) {

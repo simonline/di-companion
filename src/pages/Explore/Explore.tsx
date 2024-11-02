@@ -20,7 +20,7 @@ import usePatterns from '@/hooks/usePatterns';
 import type { Pattern } from '@/types/strapi';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 
-const categoryDisplayNames = {
+const categoryDisplayNames: { [key: string]: string } = {
   the_entrepreneur: 'The Entrepreneur',
   team_collaboration: 'Team & Collaboration',
   sustainability_responsibility: 'Sustainability & Responsibility',
@@ -28,7 +28,7 @@ const categoryDisplayNames = {
   the_solution: 'Truly, the best solution',
 };
 
-const categoryColors = {
+const categoryColors: { [key: string]: string } = {
   the_entrepreneur: '#385da9',
   team_collaboration: '#944191',
   customers_stakeholders_ecosystem: '#ea5418',
@@ -36,7 +36,7 @@ const categoryColors = {
   sustainability_responsibility: '#8ec13d',
 };
 
-const categoryIcons = {
+const categoryIcons: { [key: string]: string } = {
   the_entrepreneur: '👤',
   team_collaboration: '🤝',
   customers_stakeholders_ecosystem: '🌐',
@@ -44,7 +44,7 @@ const categoryIcons = {
   sustainability_responsibility: '🌱',
 };
 
-const phaseNumbers = {
+const phaseNumbers: { [key: string]: number } = {
   start: 1,
   discover_explore: 2,
   transform: 3,
@@ -52,7 +52,7 @@ const phaseNumbers = {
   implement: 5,
 };
 
-const phaseDisplayNames = {
+const phaseDisplayNames: { [key: string]: string } = {
   start: '(Re)Start',
   discover_explore: 'Discover & Explore',
   transform: 'Transform',
@@ -302,7 +302,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onNext }) => {
     >
       <AnimatePresence>
         <motion.div
-          key={pattern.id}
+          key={pattern.documentId}
           animate={{ rotateY: isFlipped ? 180 : 0 }}
           transition={{ duration: 0.6 }}
           style={{

@@ -1,4 +1,4 @@
-import { Field } from 'formik';
+import { Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import {
   Typography,
@@ -38,6 +38,7 @@ export interface StartupFormValues {
   isTargetGroupDefined: boolean;
   isPrototypeValidated: boolean;
   isMvpTested: boolean;
+  submit?: { message: string };
 }
 
 export const stepValidationSchemas = [
@@ -98,7 +99,13 @@ export const stepValidationSchemas = [
   }),
 ];
 
-export const renderStepContent = (step, errors, touched, setFieldValue, values) => {
+export const renderStepContent = (
+  step: number,
+  errors: Record<string, string>,
+  touched: Record<string, boolean>,
+  setFieldValue: FormikHelpers<Partial<StartupFormValues>>['setFieldValue'],
+  values: Partial<StartupFormValues>,
+) => {
   switch (step) {
     case 0: // Startup Info
       return (

@@ -1,17 +1,18 @@
 import React from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import { Formik, Form } from 'formik';
+import { Formik } from 'formik';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import { steps, renderStepContent } from '@/pages/Startups/types';
 import { useAuth } from '@/hooks/useAuth';
+import { Startup } from '@/types/strapi';
 
 const StartupProfileStep: React.FC = () => {
   const { startupId, stepId } = useParams<{ startupId: string; stepId: string }>();
   const { user } = useAuth();
 
   const startup = user?.startups?.find((startup) => startup.documentId === startupId);
-  const step = steps[parseInt(stepId)];
+  const step = steps[parseInt(stepId || '0')];
 
   if (!user) return null;
 
@@ -23,15 +24,15 @@ const StartupProfileStep: React.FC = () => {
         </Typography>
 
         <Formik
-          initialValues={startup || {}}
+          initialValues={startup || ({} as Partial<Startup>)}
           onSubmit={(values) => {
             console.log(values);
           }}
         >
           {(formikProps) => (
-            <Form>
+            <form>
               {renderStepContent(
-                parseInt(stepId),
+                parseInt(stepId || '0'),
                 formikProps.errors,
                 formikProps.touched,
                 formikProps.setFieldValue,
@@ -42,7 +43,7 @@ const StartupProfileStep: React.FC = () => {
                   Save
                 </Button>
               </Box>
-            </Form>
+            </form>
           )}
         </Formik>
       </Box>

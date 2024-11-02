@@ -27,7 +27,7 @@ const UserProfile: React.FC = () => {
                 <MenuItem
                   key={key}
                   label={label}
-                  value={key === 'password' ? '********' : String(user[key])}
+                  value={key === 'password' ? '********' : String(user[key as keyof User])}
                   onClick={() => navigate(`/profile/user/${key}`)}
                 />
               );

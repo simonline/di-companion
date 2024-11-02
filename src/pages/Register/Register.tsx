@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Formik, Form, Field, FormikHelpers } from 'formik';
+import { Formik, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import {
   Typography,
@@ -22,6 +22,7 @@ interface RegisterFormValues {
   familyName: string;
   startupId?: string;
   createNewStartup: boolean;
+  submit?: string;
 }
 
 const validationSchema = Yup.object().shape({
@@ -99,7 +100,7 @@ function Register() {
             onSubmit={handleSubmit}
           >
             {({ errors, touched, values, setFieldValue }) => (
-              <Form>
+              <form>
                 <Field
                   as={TextField}
                   fullWidth
@@ -143,7 +144,7 @@ function Register() {
                     <Field
                       as={Checkbox}
                       name="createNewStartup"
-                      onChange={(e) => {
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         setFieldValue('createNewStartup', e.target.checked);
                         if (e.target.checked) {
                           setFieldValue('startupId', '');
@@ -154,7 +155,7 @@ function Register() {
                   label="Create new startup"
                 />
 
-                {!values.createNewStartup && (
+                {!values.createNewStartup ? (
                   <Field
                     as={TextField}
                     select
@@ -171,14 +172,14 @@ function Register() {
                       </MenuItem>
                     ))}
                   </Field>
-                )}
+                ) : null}
 
                 <Box mt={2}>
                   <Button fullWidth variant="contained" color="primary" type="submit">
                     Sign Up
                   </Button>
                 </Box>
-              </Form>
+              </form>
             )}
           </Formik>
         </Box>

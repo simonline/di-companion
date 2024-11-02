@@ -7,9 +7,9 @@ import { useAuth } from '@/hooks/useAuth';
 
 import asyncComponentLoader from '@/utils/loader';
 
-import { Pages, Routes } from './types';
+import { Pages, Routes, AppRoutes } from './types';
 
-export const useAppRoutes = () => {
+export const useAppRoutes = (): Partial<AppRoutes> => {
   const { user } = useAuth();
 
   return {
@@ -49,7 +49,8 @@ export const useAppRoutes = () => {
     },
   };
 };
-const useRoutes = (): Routes => {
+
+const useRoutes = (): Partial<Routes> => {
   return {
     ...useAppRoutes(),
     [Pages.Welcome]: {

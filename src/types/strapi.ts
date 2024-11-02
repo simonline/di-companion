@@ -20,21 +20,22 @@ export interface User {
 }
 
 export interface Startup {
-  documentId: string;
+  documentId?: string;
   name: string;
   startDate: string;
   foundersCount: number;
   background: string;
+  productType: string;
   idea: string;
   industry: string;
-  industry_other: string | null;
+  industryOther?: string;
   targetMarket: string;
   phase: string;
-  isisProblemValidated: boolean;
+  isProblemValidated: boolean;
   qualifiedConversationsCount: number;
   isTargetGroupDefined: boolean;
-  isisPrototypeValidated: boolean;
-  isisMvpTested: boolean;
+  isPrototypeValidated: boolean;
+  isMvpTested: boolean;
 }
 
 export interface StrapiAuthResponse {
@@ -75,9 +76,12 @@ export enum PhaseEnum {
 }
 
 export interface Pattern {
+  documentId: string;
   name: string;
   description: string;
-  image: string;
+  image: {
+    url: string;
+  };
   categories: CategoryEnum[];
   phases: PhaseEnum[];
   relatedPatterns: Pattern[];

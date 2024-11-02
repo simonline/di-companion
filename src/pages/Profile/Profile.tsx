@@ -56,7 +56,7 @@ function Profile() {
           {user.startups &&
             user.startups.map((startup) => (
               <MenuItem
-                key={startup.id}
+                key={startup.documentId}
                 label={startup.name}
                 icon={<Rocket />}
                 onClick={() => navigate(`/profile/startup/${startup.documentId}`)}

@@ -8,7 +8,7 @@ import { Actions, Notification } from './types';
 const useNotificationStore = create<{
   notifications: Notification[];
   push: (notification: Partial<Notification>) => string;
-  close: (key: SnackbarKey, dismissAll: boolean) => void;
+  close: (key: SnackbarKey, dismissAll?: boolean) => void;
   remove: (key: SnackbarKey) => void;
 }>((set) => ({
   notifications: [],

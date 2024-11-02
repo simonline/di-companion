@@ -3,7 +3,7 @@ import { PathRouteProps } from 'react-router-dom';
 
 import type { SvgIconProps } from '@mui/material/SvgIcon';
 
-enum Pages {
+export enum Pages {
   Welcome,
   Register,
   CreateStartup,
@@ -28,7 +28,7 @@ type PathRouteCustomProps = {
   icon?: FC<SvgIconProps>;
 };
 
-type Routes = Record<Pages, PathRouteProps & PathRouteCustomProps>;
+export type AppRoute = PathRouteProps & PathRouteCustomProps;
 
-export type { Routes };
-export { Pages };
+export type AppRoutes = Record<Pages, AppRoute>;
+export type Routes = Record<Pages, AppRoute | PathRouteProps>;

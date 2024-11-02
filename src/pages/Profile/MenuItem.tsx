@@ -16,8 +16,8 @@ export const MenuItem: React.FC<MenuItemProps> = ({ label, value, onClick, icon 
       <ListItemText
         primary={label}
         secondary={value}
-        primaryTypography={{ variant: 'subtitle1' }}
-        secondaryTypography={{ variant: 'body2' }}
+        primaryTypographyProps={{ variant: 'subtitle1' }}
+        secondaryTypographyProps={{ variant: 'body2' }}
       />
       <ChevronRight color="action" />
     </ListItemButton>

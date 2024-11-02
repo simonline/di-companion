@@ -156,7 +156,7 @@ export async function strapiGetPatterns(): Promise<Pattern[]> {
       throw new Error('Unauthorized');
     }
 
-    const response = await fetchApi<StrapiPatternResponse[]>(
+    const response = await fetchApi<StrapiPatternResponse>(
       '/patterns?populate[0]=image&populate[1]=relatedPatterns',
       {
         headers: {

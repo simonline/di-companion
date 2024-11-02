@@ -3,7 +3,7 @@ import type { OptionsObject, SnackbarKey, SnackbarMessage } from 'notistack';
 interface Notification {
   message: SnackbarMessage;
   options: OptionsObject;
-  dismissed: boolean;
+  dismissed: boolean | null;
 }
 
 declare module 'notistack' {
