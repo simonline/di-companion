@@ -31,6 +31,7 @@
     "@mui/system": "^5.15.0",
     "@mui/utils": "^5.15.0",
     "@mui/x-date-pickers": "^7.16.0",
+    "date-fns": "^4.1.0",
     "formik": "^2.4.6",
     "framer-motion": "^11.11.11",
     "is-mobile": "^4.0.0",
