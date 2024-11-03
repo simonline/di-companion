@@ -11,6 +11,7 @@ export enum Pages {
   Logout,
   Explore,
   Progress,
+  ProgressPattern,
   Dashboard,
   Coach,
   CoachChat,

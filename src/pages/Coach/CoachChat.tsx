@@ -1,15 +1,85 @@
-import React, { useState } from 'react';
-import { Typography, IconButton, TextField, Box, Avatar, InputAdornment } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import {
+  Button,
+  CircularProgress,
+  Typography,
+  IconButton,
+  TextField,
+  Box,
+  Avatar,
+  InputAdornment,
+} from '@mui/material';
 import { Send, AttachFile, CameraAlt } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
-import { sampleRecommendations } from './types';
+import { format } from 'date-fns';
+import useRecommendations from '@/hooks/useRecommendations';
 
 export const CoachChat: React.FC = () => {
   const [message, setMessage] = useState('');
-
   const { id } = useParams();
+
+  const { fetchRecommendations, recommendations, loading, error } = useRecommendations();
+
+  useEffect(() => {
+    fetchRecommendations();
+  }, [fetchRecommendations]);
+
   if (!id) return null;
-  const recommendation = sampleRecommendations.find((r) => r.id === id);
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          p: 4,
+        }}
+      >
+        <Typography variant="h6" color="error" sx={{ mb: 2 }}>
+          Error loading patterns
+        </Typography>
+        <Button variant="contained" onClick={() => window.location.reload()}>
+          Try Again
+        </Button>
+      </Box>
+    );
+  }
+
+  if (!recommendations?.length) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          p: 4,
+        }}
+      >
+        <Typography variant="h6">No patterns available</Typography>
+      </Box>
+    );
+  }
+
+  const recommendation = recommendations.find((r) => r.documentId === id);
   if (!recommendation) return null;
 
   return (
@@ -42,14 +112,14 @@ export const CoachChat: React.FC = () => {
                 },
               }}
             >
-              <Typography variant="body1">{recommendation.text}</Typography>
+              <Typography variant="body1">{recommendation.recommendation}</Typography>
             </Box>
             <Typography
               variant="caption"
               color="text.secondary"
               sx={{ ml: 1, mt: 0.5, display: 'block' }}
             >
-              {recommendation.date} 13:30
+              {format(new Date(recommendation.publishedAt), 'MMM dd, yyyy hh:mm')}
             </Typography>
           </Box>
         </Box>

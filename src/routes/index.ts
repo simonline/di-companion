@@ -98,6 +98,11 @@ const useRoutes = (): Partial<Routes> => {
       path: '/profile/startup/:startupId/:stepId',
       title: 'Startup Profile Step',
     },
+    [Pages.ProgressPattern]: {
+      component: asyncComponentLoader(() => import('@/pages/Progress/ProgressPattern')),
+      path: '/progress/:id',
+      title: 'Progress Pattern',
+    },
     [Pages.CoachChat]: {
       component: asyncComponentLoader(() => import('@/pages/Coach/CoachChat')),
       path: '/coach/:id',

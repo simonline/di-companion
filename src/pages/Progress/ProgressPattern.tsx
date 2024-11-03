@@ -1,16 +1,18 @@
 import React, { useEffect } from 'react';
-import { CircularProgress, Typography, Button, Box } from '@mui/material';
-import usePatterns from '@/hooks/usePatterns';
+import { Button, CircularProgress, Typography, Box } from '@mui/material';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
+import useStartupPatterns from '@/hooks/useStartupPatterns';
 import PatternCard from '@/components/PatternCard';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const Explore: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = React.useState(0);
-  const { fetchPatterns, patterns, loading, error } = usePatterns();
+const Progress: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { fetchStartupPatterns, startupPatterns, loading, error } = useStartupPatterns();
 
   useEffect(() => {
-    fetchPatterns();
-  }, [fetchPatterns]);
+    fetchStartupPatterns();
+  }, [fetchStartupPatterns]);
 
   if (loading) {
     return (
@@ -49,7 +51,7 @@ const Explore: React.FC = () => {
     );
   }
 
-  if (!patterns?.length) {
+  if (!startupPatterns?.length) {
     return (
       <Box
         sx={{
@@ -65,15 +67,30 @@ const Explore: React.FC = () => {
     );
   }
 
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % patterns.length);
-  };
+  const startupPattern = startupPatterns?.find(
+    (startupPattern) => startupPattern.documentId === id,
+  );
+  if (!startupPattern) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          p: 4,
+        }}
+      >
+        <Typography variant="h6">Pattern not found</Typography>
+      </Box>
+    );
+  }
 
   return (
     <FullSizeCenteredFlexBox>
-      <PatternCard pattern={patterns[currentIndex]} onNext={handleNext} />
+      <PatternCard pattern={startupPattern.pattern} onNext={() => navigate('/progress')} />
     </FullSizeCenteredFlexBox>
   );
 };
 
-export default Explore;
+export default Progress;

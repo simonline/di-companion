@@ -1,12 +1,27 @@
 import type {
-  StrapiAuthResponse,
-  StrapiLoginCredentials,
-  StrapiPatternResponse,
-  UserRegistration,
-  StrapiError,
+  Exercise,
   Pattern,
+  Question,
+  Recommendation,
   Startup,
+  StartupExercise,
+  StartupPattern,
+  StartupQuestion,
+  StrapiAuthResponse,
+  StrapiError,
+  StrapiExercisesResponse,
+  StrapiLoginCredentials,
+  StrapiPatternsResponse,
+  StrapiQuestionsResponse,
+  StrapiRecommendationsResponse,
+  StrapiStartupExercisesResponse,
+  StrapiStartupPatternsResponse,
+  StrapiStartupQuestionsResponse,
+  StrapiStartupsResponse,
+  StrapiSurveysResponse,
+  Survey,
   User,
+  UserRegistration,
 } from '../types/strapi';
 
 const STRAPI_URL = 'https://api.di.sce.de';
@@ -156,7 +171,7 @@ export async function strapiGetPatterns(): Promise<Pattern[]> {
       throw new Error('Unauthorized');
     }
 
-    const response = await fetchApi<StrapiPatternResponse>(
+    const response = await fetchApi<StrapiPatternsResponse>(
       '/patterns?populate[0]=image&populate[1]=relatedPatterns',
       {
         headers: {
@@ -169,5 +184,176 @@ export async function strapiGetPatterns(): Promise<Pattern[]> {
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading patterns');
+  }
+}
+
+export async function strapiGetExercises(): Promise<Exercise[]> {
+  try {
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error('Unauthorized');
+    }
+
+    const response = await fetchApi<StrapiExercisesResponse>('/exercises', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading exercises');
+  }
+}
+
+export async function strapiGetSurveys(): Promise<Survey[]> {
+  try {
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error('Unauthorized');
+    }
+
+    const response = await fetchApi<StrapiSurveysResponse>('/surveys', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading surveys');
+  }
+}
+
+export async function strapiGetQuestions(): Promise<Question[]> {
+  try {
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error('Unauthorized');
+    }
+
+    const response = await fetchApi<StrapiQuestionsResponse>('/questions', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading questions');
+  }
+}
+
+export async function strapiGetStartups(): Promise<Startup[]> {
+  try {
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error('Unauthorized');
+    }
+
+    const response = await fetchApi<StrapiStartupsResponse>('/startups', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading startups');
+  }
+}
+
+export async function strapiGetStartupPatterns(): Promise<StartupPattern[]> {
+  try {
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error('Unauthorized');
+    }
+
+    const response = await fetchApi<StrapiStartupPatternsResponse>(
+      '/startup-patterns?populate[0]=pattern&populate[1]=pattern.image',
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return response.data;
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading startup patterns');
+  }
+}
+
+export async function strapiGetStartupExercises(): Promise<StartupExercise[]> {
+  try {
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error('Unauthorized');
+    }
+
+    const response = await fetchApi<StrapiStartupExercisesResponse>('/startup-exercises', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading startup exercises');
+  }
+}
+
+export async function strapiGetStartupQuestions(): Promise<StartupQuestion[]> {
+  try {
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error('Unauthorized');
+    }
+
+    const response = await fetchApi<StrapiStartupQuestionsResponse>('/startup-questions', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading startup questions');
+  }
+}
+
+export async function strapiGetRecommendations(): Promise<Recommendation[]> {
+  try {
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error('Unauthorized');
+    }
+
+    const response = await fetchApi<StrapiRecommendationsResponse>('/recommendations', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading recommendations');
   }
 }
