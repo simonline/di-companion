@@ -1,9 +1,9 @@
 export const categoryDisplayNames: { [key: string]: string } = {
-  the_entrepreneur: 'The Entrepreneur',
-  team_collaboration: 'Team & Collaboration',
-  customers_stakeholders_ecosystem: 'Customers, Stakeholders & Eco-System',
-  the_solution: 'Truly, the best solution',
-  sustainability_responsibility: 'Sustainability & Responsibility',
+  the_entrepreneur: 'Entrepreneur',
+  team_collaboration: 'Team',
+  customers_stakeholders_ecosystem: 'Stakeholders',
+  the_solution: 'Product',
+  sustainability_responsibility: 'Sustainability',
 };
 
 export const categoryColors: { [key: string]: string } = {

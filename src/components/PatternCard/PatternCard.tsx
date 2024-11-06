@@ -256,6 +256,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onNext }) => {
       sx={{
         perspective: '1000px',
         height: '100%',
+        maxWidth: '100%',
         aspectRatio: '2/3',
         mx: 'auto',
         position: 'relative',

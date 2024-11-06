@@ -3,25 +3,19 @@ import {
   Box,
   Card,
   CardContent,
+  CardMedia,
+  Grid,
   Typography,
   LinearProgress,
   Stack,
   Button,
   Chip,
   IconButton,
-  useTheme,
 } from '@mui/material';
-import { ArrowForward, Warning } from '@mui/icons-material';
+import { ArrowForward } from '@mui/icons-material';
 import { CenteredFlexBox } from '@/components/styled';
 import { categoryDisplayNames, categoryColors, categoryIcons } from '@/utils/constants';
 import Header from '@/sections/Header';
-
-interface Pattern {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-}
 
 const maturityData: { [key: string]: number } = {
   the_entrepreneur: 0.7,
@@ -31,87 +25,201 @@ const maturityData: { [key: string]: number } = {
   sustainability_responsibility: 0.3,
 };
 
-const recommendedPattern: Pattern = {
-  id: 'p1',
-  title: 'Team Alignment Workshop',
-  category: 'Team',
-  description: 'Conduct a workshop to align team goals and improve collaboration.',
-};
-
 const patternsInProgress = 2;
 
 // Components
 const MaturityScoreSection: React.FC = () => {
+  const lowestCategory = Object.entries(maturityData).reduce((acc, [key, value]) =>
+    value < acc[1] ? [key, value] : acc,
+  );
+
   return (
-    <Card sx={{ mb: 2, width: '100%' }}>
+    <Card>
       <CardContent>
         <Typography variant="h6" gutterBottom>
           Your Maturity Score
         </Typography>
-        <Stack spacing={2}>
-          {Object.keys(maturityData).map((category) => (
-            <Box key={category}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <IconButton size="small" sx={{ color: categoryColors[category], mr: 1 }}>
-                  {categoryIcons[category]}
-                </IconButton>
-                <Typography variant="body2">{categoryDisplayNames[category]}</Typography>
-                <Typography variant="body2" sx={{ ml: 'auto' }}>
-                  {Math.round(maturityData[category] * 100)}%
-                </Typography>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={maturityData[category] * 100}
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={8}>
+            {/* Progress Bars */}
+            <Stack spacing={1}>
+              {Object.keys(maturityData).map((category) => (
+                <Box key={category} sx={{ position: 'relative', height: 60 }}>
+                  {/* Progress Bar */}
+                  <LinearProgress
+                    variant="determinate"
+                    value={maturityData[category] * 100}
+                    sx={{
+                      height: 40,
+                      borderRadius: 8,
+                      bgcolor: `${categoryColors[category]}66`,
+                      '& .MuiLinearProgress-bar': {
+                        bgcolor: categoryColors[category],
+                        borderRadius: 8,
+                      },
+                    }}
+                  />
+                  {/* Ticks */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '40px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {[0, 20, 40, 60, 80, 100].map((tick) => (
+                      <Box
+                        key={tick}
+                        sx={{
+                          width: '1px',
+                          height: '40px',
+                          bgcolor: 'rgba(255, 255, 255, 0.1)',
+                          visibility: [0, 100].includes(tick) ? 'hidden' : 'visible',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                  {/* Category Info within the Progress Bar */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      width: '100%',
+                      height: '40px',
+                      padding: '0 16px',
+                    }}
+                  >
+                    {/* Icon */}
+                    <IconButton size="small" sx={{ color: categoryColors[category], mr: 1 }}>
+                      {categoryIcons[category]}
+                    </IconButton>
+                    {/* Category Name */}
+                    <Typography variant="body1" sx={{ color: 'white', flexGrow: 1 }}>
+                      {categoryDisplayNames[category]}
+                    </Typography>
+                    {/* Percentage */}
+                    <Typography variant="body1" sx={{ color: 'white', ml: 'auto' }}>
+                      {Math.round(maturityData[category] * 100)}%
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Stack>
+          </Grid>
+          <Grid item sm={4}>
+            {/* Self-assessment */}
+            <Box
+              sx={{
+                mt: { xs: 2, md: 0 },
+                p: 2,
+                borderRadius: 2,
+                border: '1px solid',
+                borderColor: 'grey.300',
+                position: 'relative',
+              }}
+            >
+              <Chip
+                label="Coming Soon"
+                color="primary"
+                size="small"
                 sx={{
-                  height: 8,
-                  borderRadius: 4,
-                  bgcolor: `${categoryColors[category]}22`,
-                  '& .MuiLinearProgress-bar': {
-                    bgcolor: categoryColors[category],
-                    borderRadius: 4,
-                  },
+                  position: 'absolute',
+                  top: -10,
+                  right: 16,
+                  fontWeight: 'medium',
                 }}
               />
+
+              <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+                Opportunity for Growth
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                Your <strong>{categoryDisplayNames[lowestCategory[0]]}</strong> perspective has the
+                most room for improvement. Soon you&apos;ll be able to take a detailed assessment to
+                better understand this area.
+              </Typography>
+              <Button
+                variant="outlined"
+                size="large"
+                fullWidth
+                disabled
+                sx={{
+                  '&.Mui-disabled': {
+                    borderColor: 'grey.300',
+                    color: 'grey.500',
+                  },
+                }}
+              >
+                Self-Assessment
+              </Button>
             </Box>
-          ))}
-        </Stack>
+          </Grid>
+        </Grid>
       </CardContent>
     </Card>
   );
 };
 
-const RecommendationSection: React.FC = () => {
-  const theme = useTheme();
-  const lowestCategory = Object.entries(maturityData).reduce((acc, [key, value]) => {
-    return value < acc[1] ? [key, value] : acc;
-  });
+const recommendedPatterns = [
+  {
+    id: 'pattern1',
+    title: 'Pattern One',
+    image: 'https://api.di.sce.de/uploads/Persistent_and_flexible_1bca83937b.JPG',
+  },
+  {
+    id: 'pattern2',
+    title: 'Pattern Two',
+    image: 'https://api.di.sce.de/uploads/Persistent_and_flexible_1bca83937b.JPG',
+  },
+];
 
+const RecommendationSection: React.FC = () => {
   return (
-    <Card sx={{ mb: 2, width: '100%' }}>
+    <Card>
       <CardContent>
         <Typography variant="h6" gutterBottom>
-          Recommendation
+          Recommended Patterns
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Warning sx={{ color: theme.palette.warning.main, mr: 1 }} />
-          <Typography variant="body2">
-            Focus on improving: <strong>{categoryDisplayNames[lowestCategory[0]]}</strong>
-          </Typography>
-        </Box>
-        <Card variant="outlined">
-          <CardContent>
-            <Typography variant="subtitle1" gutterBottom>
-              {recommendedPattern.title}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              {recommendedPattern.description}
-            </Typography>
-            <Button variant="contained" endIcon={<ArrowForward />} size="small" fullWidth>
-              Start Pattern
-            </Button>
-          </CardContent>
-        </Card>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+          Based on your current maturity score, we recommend the following pattern to help you
+          improve.
+        </Typography>
+        <Grid container spacing={2}>
+          {recommendedPatterns.map((pattern) => (
+            <Grid item xs={6} key={pattern.id}>
+              <Card
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  aspectRatio: '2/3',
+                  borderRadius: 4,
+                }}
+              >
+                <CardMedia component="img" image={pattern.image} alt={pattern.title} />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
+                    {pattern.title}
+                  </Typography>
+                </CardContent>
+                <Box sx={{ p: 2 }}>
+                  <Button variant="contained" endIcon={<ArrowForward />} size="small" fullWidth>
+                    Start Pattern
+                  </Button>
+                </Box>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       </CardContent>
     </Card>
   );
@@ -119,14 +227,19 @@ const RecommendationSection: React.FC = () => {
 
 const PatternBacklogSection: React.FC = () => {
   return (
-    <Card sx={{ mb: 2, width: '100%' }}>
+    <Card sx={{ mb: 2 }}>
       <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h6">Pattern Backlog</Typography>
-          <Chip label={`${patternsInProgress} In Progress`} color="primary" size="small" />
-        </Box>
-        <Button variant="outlined" endIcon={<ArrowForward />} fullWidth sx={{ mt: 2 }}>
-          Go to Pattern Backlog
+        <Typography variant="h6" gutterBottom>
+          Pattern Backlog
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          You&apos;ve got some patterns in progress. Keep up the good work!
+        </Typography>
+        <Button variant="outlined" endIcon={<ArrowForward />} sx={{ mt: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip label={patternsInProgress} color="primary" size="small" />
+            Continue Patterns
+          </Box>
         </Button>
       </CardContent>
     </Card>
@@ -138,9 +251,17 @@ const Dashboard: React.FC = () => {
     <>
       <Header title="Dashboard" />
       <CenteredFlexBox>
-        <MaturityScoreSection />
-        <RecommendationSection />
-        <PatternBacklogSection />
+        <Grid container spacing={2}>
+          <Grid item sm={12}>
+            <MaturityScoreSection />
+          </Grid>
+          <Grid item sm={8}>
+            <RecommendationSection />
+          </Grid>
+          <Grid item sm={4}>
+            <PatternBacklogSection />
+          </Grid>
+        </Grid>
       </CenteredFlexBox>
     </>
   );
