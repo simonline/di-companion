@@ -4,6 +4,7 @@ import { FullSizeCenteredFlexBox } from '@/components/styled';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import PatternCard from '@/components/PatternCard';
 import { useNavigate, useParams } from 'react-router-dom';
+import Header from '@/sections/Header';
 
 const Progress: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -87,9 +88,12 @@ const Progress: React.FC = () => {
   }
 
   return (
-    <FullSizeCenteredFlexBox>
-      <PatternCard pattern={startupPattern.pattern} onNext={() => navigate('/progress')} />
-    </FullSizeCenteredFlexBox>
+    <>
+      <Header title="Progress" />
+      <FullSizeCenteredFlexBox>
+        <PatternCard pattern={startupPattern.pattern} onNext={() => navigate('/progress')} />
+      </FullSizeCenteredFlexBox>
+    </>
   );
 };
 

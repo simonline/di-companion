@@ -8,12 +8,13 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
-  Paper,
 } from '@mui/material';
 import { getRecommendationIcon } from './types';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import useRecommendations from '@/hooks/useRecommendations';
+import Header from '@/sections/Header';
+import { CenteredFlexBox } from '@/components/styled';
 
 export const Coach: React.FC = () => {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export const Coach: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          height: '100vh',
+          height: '100%',
         }}
       >
         <CircularProgress />
@@ -46,7 +47,7 @@ export const Coach: React.FC = () => {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          height: '100vh',
+          height: '100%',
           p: 4,
         }}
       >
@@ -67,7 +68,7 @@ export const Coach: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          height: '100vh',
+          height: '100%',
           p: 4,
         }}
       >
@@ -77,39 +78,42 @@ export const Coach: React.FC = () => {
   }
 
   return (
-    <Paper elevation={0}>
-      <List>
-        {recommendations.map((recommendation) => (
-          <ListItem
-            key={recommendation.documentId}
-            onClick={() => navigate(`/coach/${recommendation.documentId}`)}
-            sx={{
-              cursor: 'pointer',
-              '&:hover': {
-                backgroundColor: '#f5f5f5 !important',
-              },
-              bgcolor: recommendation.isRead ? 'transparent' : 'action.hover',
-            }}
-          >
-            <ListItemIcon>{getRecommendationIcon(recommendation.type)}</ListItemIcon>
-            <ListItemText
-              primary={
-                <Typography
-                  component="span"
-                  variant="body1"
-                  sx={{ fontWeight: recommendation.isRead ? 'normal' : 'bold' }}
-                >
-                  {recommendation.recommendation}
-                </Typography>
-              }
-            />
-            <Typography variant="body2" color="text.secondary">
-              {format(new Date(recommendation.publishedAt), 'MMM dd, yyyy')}
-            </Typography>
-          </ListItem>
-        ))}
-      </List>
-    </Paper>
+    <>
+      <Header title="Coach" />
+      <CenteredFlexBox>
+        <List sx={{ width: '100%' }}>
+          {recommendations.map((recommendation) => (
+            <ListItem
+              key={recommendation.documentId}
+              onClick={() => navigate(`/coach/${recommendation.documentId}`)}
+              sx={{
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: '#f5f5f5 !important',
+                },
+                bgcolor: recommendation.isRead ? 'transparent' : 'action.hover',
+              }}
+            >
+              <ListItemIcon>{getRecommendationIcon(recommendation.type)}</ListItemIcon>
+              <ListItemText
+                primary={
+                  <Typography
+                    component="span"
+                    variant="body1"
+                    sx={{ fontWeight: recommendation.isRead ? 'normal' : 'bold' }}
+                  >
+                    {recommendation.recommendation}
+                  </Typography>
+                }
+              />
+              <Typography variant="body2" color="text.secondary">
+                {format(new Date(recommendation.publishedAt), 'MMM dd, yyyy')}
+              </Typography>
+            </ListItem>
+          ))}
+        </List>
+      </CenteredFlexBox>
+    </>
   );
 };
 

@@ -3,6 +3,7 @@ import { CircularProgress, Typography, Button, Box } from '@mui/material';
 import usePatterns from '@/hooks/usePatterns';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import PatternCard from '@/components/PatternCard';
+import Header from '@/sections/Header';
 
 const Explore: React.FC = () => {
   const [currentIndex, setCurrentIndex] = React.useState(0);
@@ -70,9 +71,12 @@ const Explore: React.FC = () => {
   };
 
   return (
-    <FullSizeCenteredFlexBox>
-      <PatternCard pattern={patterns[currentIndex]} onNext={handleNext} />
-    </FullSizeCenteredFlexBox>
+    <>
+      <Header title="Explore" />
+      <FullSizeCenteredFlexBox>
+        <PatternCard pattern={patterns[currentIndex]} onNext={handleNext} />
+      </FullSizeCenteredFlexBox>
+    </>
   );
 };
 

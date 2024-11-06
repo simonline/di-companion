@@ -1,8 +1,10 @@
 import React from 'react';
 import {
+  Box,
   Card,
   CardContent,
   CardMedia,
+  Chip,
   Typography,
   Button,
   Dialog,
@@ -10,8 +12,7 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
-  Box,
-  Tooltip,
+  Stack,
 } from '@mui/material';
 import { Close, Refresh, Check } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,7 +21,6 @@ import {
   categoryDisplayNames,
   categoryColors,
   categoryIcons,
-  phaseNumbers,
   phaseDisplayNames,
 } from '@/utils/constants';
 
@@ -111,6 +111,8 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onNext }) => {
         position: 'absolute',
         borderRadius: '16px',
         backfaceVisibility: 'hidden',
+        margin: 0,
+        padding: 0,
       }}
     >
       <Box
@@ -154,7 +156,8 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onNext }) => {
         {pattern.relatedPatterns && (
           <Box
             sx={{
-              mt: 3,
+              position: 'absolute',
+              bottom: '80px',
               display: 'flex',
               flexDirection: 'row',
               columnGap: 1,
@@ -225,30 +228,24 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onNext }) => {
           {pattern.name}
         </Typography>
         <Typography variant="body1">{pattern.description}</Typography>
-        <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
-          {pattern.phases?.map((phase) => (
-            <Tooltip key={phase} title={phaseDisplayNames[phase]}>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  bgcolor: 'grey.200',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    bgcolor: 'grey.300',
-                  },
-                }}
-              >
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {phaseNumbers[phase]}
-                </Typography>
-              </Box>
-            </Tooltip>
-          ))}
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: '80px',
+          }}
+        >
+          <Stack direction="row" spacing={1} alignItems="center" mt={2}>
+            <Stack direction="row" spacing={0.5}>
+              {pattern.phases.map((phase) => (
+                <Chip
+                  key={phase}
+                  label={phaseDisplayNames[phase]}
+                  size="small"
+                  variant="outlined"
+                />
+              ))}
+            </Stack>
+          </Stack>
         </Box>
       </CardContent>
     </Card>
@@ -258,7 +255,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onNext }) => {
     <Box
       sx={{
         perspective: '1000px',
-        height: '80%',
+        height: '100%',
         aspectRatio: '2/3',
         mx: 'auto',
         position: 'relative',

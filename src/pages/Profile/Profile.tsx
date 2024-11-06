@@ -1,10 +1,11 @@
 import React from 'react';
-import { Box, Button, Grid, List, Avatar, Typography, Divider, Stack } from '@mui/material';
+import { Button, Grid, List, Avatar, Typography, Divider, Stack } from '@mui/material';
 import { Person, Rocket } from '@mui/icons-material';
-import { FullSizeCenteredFlexBox } from '@/components/styled';
+import { CenteredFlexBox } from '@/components/styled';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { MenuItem } from './MenuItem';
+import Header from '@/sections/Header';
 
 function Profile() {
   const { user } = useAuth();
@@ -19,7 +20,7 @@ function Profile() {
     return (
       <>
         {/* Signup and Login Buttons */}
-        <Grid container spacing={2} justifyContent="center" style={{ marginTop: '40px' }}>
+        <Grid container spacing={2} justifyContent="center">
           <Grid item>
             <Button variant="contained" color="primary" size="large" href="/signup">
               Sign Up
@@ -36,8 +37,9 @@ function Profile() {
   }
 
   return (
-    <FullSizeCenteredFlexBox>
-      <Box sx={{ width: '100%' }} p={2}>
+    <>
+      <Header title="Profile" />
+      <CenteredFlexBox>
         <Stack direction="column" alignItems="center" spacing={2} sx={{ mb: 4 }}>
           <Avatar sx={{ width: 80, height: 80 }} alt={user.username}>
             {user.username.charAt(0).toUpperCase()}
@@ -48,7 +50,7 @@ function Profile() {
           </Typography>
         </Stack>
 
-        <List>
+        <List sx={{ width: '100%' }}>
           <MenuItem label="Profile" icon={<Person />} onClick={() => navigate('/profile/user')} />
 
           <Divider />
@@ -63,8 +65,8 @@ function Profile() {
               />
             ))}
         </List>
-      </Box>
-    </FullSizeCenteredFlexBox>
+      </CenteredFlexBox>
+    </>
   );
 }
 

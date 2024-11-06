@@ -279,7 +279,7 @@ export async function strapiGetStartupPatterns(): Promise<StartupPattern[]> {
     }
 
     const response = await fetchApi<StrapiStartupPatternsResponse>(
-      '/startup-patterns?populate[0]=pattern&populate[1]=pattern.image',
+      '/startup-patterns?populate[0]=pattern&populate[1]=pattern.image&populate[2]=pattern.relatedPatterns',
       {
         headers: {
           'Content-Type': 'application/json',

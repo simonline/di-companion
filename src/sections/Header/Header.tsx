@@ -1,10 +1,13 @@
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
+import { AppBar, Box, Toolbar, Typography } from '@mui/material';
 
 import useTheme from '@/store/theme';
 
-function Header() {
+interface HeaderProps {
+  title?: string;
+  children?: React.ReactNode;
+}
+
+function Header({ title, children }: HeaderProps) {
   const [theme] = useTheme();
   // const [, notificationsActions] = useNotifications();
 
@@ -34,7 +37,14 @@ function Header() {
           zIndex: 1000,
         }}
       >
-        <Toolbar sx={{ justifyContent: 'space-between' }}></Toolbar>
+        <Toolbar>
+          {title ? (
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} textAlign="center">
+              {title || 'Dynamic Innovation Companion'}
+            </Typography>
+          ) : null}
+          {children}
+        </Toolbar>
       </AppBar>
     </Box>
   );

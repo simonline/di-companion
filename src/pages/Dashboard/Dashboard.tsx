@@ -12,8 +12,9 @@ import {
   useTheme,
 } from '@mui/material';
 import { ArrowForward, Warning } from '@mui/icons-material';
-import { FullSizeCenteredFlexBox } from '@/components/styled';
+import { CenteredFlexBox } from '@/components/styled';
 import { categoryDisplayNames, categoryColors, categoryIcons } from '@/utils/constants';
+import Header from '@/sections/Header';
 
 interface Pattern {
   id: string;
@@ -42,10 +43,10 @@ const patternsInProgress = 2;
 // Components
 const MaturityScoreSection: React.FC = () => {
   return (
-    <Card sx={{ mb: 2 }}>
+    <Card sx={{ mb: 2, width: '100%' }}>
       <CardContent>
         <Typography variant="h6" gutterBottom>
-          Maturity Score
+          Your Maturity Score
         </Typography>
         <Stack spacing={2}>
           {Object.keys(maturityData).map((category) => (
@@ -87,7 +88,7 @@ const RecommendationSection: React.FC = () => {
   });
 
   return (
-    <Card sx={{ mb: 2 }}>
+    <Card sx={{ mb: 2, width: '100%' }}>
       <CardContent>
         <Typography variant="h6" gutterBottom>
           Recommendation
@@ -118,7 +119,7 @@ const RecommendationSection: React.FC = () => {
 
 const PatternBacklogSection: React.FC = () => {
   return (
-    <Card>
+    <Card sx={{ mb: 2, width: '100%' }}>
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography variant="h6">Pattern Backlog</Typography>
@@ -134,16 +135,14 @@ const PatternBacklogSection: React.FC = () => {
 
 const Dashboard: React.FC = () => {
   return (
-    <FullSizeCenteredFlexBox>
-      <Box sx={{ p: 2, maxWidth: 600, mx: 'auto' }}>
-        <Typography variant="h5" sx={{ mb: 3 }}>
-          Progress Dashboard
-        </Typography>
+    <>
+      <Header title="Dashboard" />
+      <CenteredFlexBox>
         <MaturityScoreSection />
         <RecommendationSection />
         <PatternBacklogSection />
-      </Box>
-    </FullSizeCenteredFlexBox>
+      </CenteredFlexBox>
+    </>
   );
 };
 

@@ -1,19 +1,12 @@
 import { useState } from 'react';
 import { Form, Formik, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
-import {
-  Typography,
-  TextField,
-  Button,
-  Box,
-  MenuItem,
-  FormControlLabel,
-  Checkbox,
-} from '@mui/material';
+import { TextField, Button, Box, MenuItem, FormControlLabel, Checkbox } from '@mui/material';
 import Meta from '@/components/Meta';
 import { useNavigate } from 'react-router-dom';
-import { FullSizeCenteredFlexBox } from '@/components/styled';
+import { CenteredFlexBox } from '@/components/styled';
 import { useAuth } from '@/hooks/useAuth';
+import Header from '@/sections/Header';
 
 interface RegisterFormValues {
   email: string;
@@ -81,12 +74,9 @@ function Register() {
   return (
     <>
       <Meta title="Register" />
-      <FullSizeCenteredFlexBox>
+      <Header title="Register" />
+      <CenteredFlexBox>
         <Box sx={{ width: '100%', maxWidth: 400, p: 2 }}>
-          <Typography variant="h4" align="center" gutterBottom>
-            Sign Up
-          </Typography>
-
           <Formik
             initialValues={{
               email: '',
@@ -183,7 +173,7 @@ function Register() {
             )}
           </Formik>
         </Box>
-      </FullSizeCenteredFlexBox>
+      </CenteredFlexBox>
     </>
   );
 }

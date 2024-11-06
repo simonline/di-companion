@@ -14,11 +14,12 @@ import {
 } from '@mui/material';
 import { Pattern as PatternIcon } from '@mui/icons-material';
 import { format } from 'date-fns';
-import { FullSizeCenteredFlexBox } from '@/components/styled';
+import { CenteredFlexBox } from '@/components/styled';
 import { StartupPattern } from '@/types/strapi';
 import { categoryColors, categoryDisplayNames, phaseDisplayNames } from '@/utils/constants';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { useNavigate } from 'react-router-dom';
+import Header from '@/sections/Header';
 
 const PatternListItem: React.FC<{ startupPattern: StartupPattern }> = ({ startupPattern }) => {
   const { pattern } = startupPattern;
@@ -67,6 +68,9 @@ const PatternListItem: React.FC<{ startupPattern: StartupPattern }> = ({ startup
                 />
               ))}
             </Stack>
+          </Stack>
+
+          <Stack direction="row" spacing={1} alignItems="center">
             <Stack direction="row" spacing={0.5}>
               {pattern.phases.map((phase) => (
                 <Chip
@@ -146,19 +150,22 @@ const Progress: React.FC = () => {
   }
 
   return (
-    <FullSizeCenteredFlexBox>
-      <List sx={{ p: 2, maxWidth: 600, margin: '0 auto' }}>
-        {startupPatterns.map((startupPattern) => (
-          <ListItem
-            key={startupPattern.documentId}
-            onClick={() => navigate(`/progress/${startupPattern.documentId}`)}
-            sx={{ cursor: 'pointer' }}
-          >
-            <PatternListItem startupPattern={startupPattern} />
-          </ListItem>
-        ))}
-      </List>
-    </FullSizeCenteredFlexBox>
+    <>
+      <Header title="Progress" />
+      <CenteredFlexBox>
+        <List sx={{ width: '100%' }}>
+          {startupPatterns.map((startupPattern) => (
+            <ListItem
+              key={startupPattern.documentId}
+              onClick={() => navigate(`/progress/${startupPattern.documentId}`)}
+              sx={{ cursor: 'pointer', padding: 0 }}
+            >
+              <PatternListItem startupPattern={startupPattern} />
+            </ListItem>
+          ))}
+        </List>
+      </CenteredFlexBox>
+    </>
   );
 };
 

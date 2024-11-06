@@ -1,22 +1,13 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
-import {
-  Typography,
-  TextField,
-  Button,
-  Box,
-  Link,
-  Alert,
-  IconButton,
-  InputAdornment,
-  Paper,
-} from '@mui/material';
+import { TextField, Button, Box, Link, Alert, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import Meta from '@/components/Meta';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import { useAuth } from '@/hooks/useAuth';
+import Header from '@/sections/Header';
 
 interface LoginFormValues {
   email: string;
@@ -64,88 +55,83 @@ const Login: React.FC = () => {
   return (
     <>
       <Meta title="Login" />
+      <Header title="Login" />
       <FullSizeCenteredFlexBox>
-        <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 400 }}>
-          <Typography variant="h4" align="center" gutterBottom>
-            Login
-          </Typography>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+            {error}
+          </Alert>
+        )}
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-              {error}
-            </Alert>
-          )}
+        <Formik
+          initialValues={initialValues}
+          validationSchema={LoginSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ errors, touched, isSubmitting }) => (
+            <Form>
+              <Field
+                as={TextField}
+                fullWidth
+                margin="normal"
+                name="email"
+                label="Email"
+                type="email"
+                error={touched.email && Boolean(errors.email)}
+                helperText={touched.email && errors.email}
+              />
 
-          <Formik
-            initialValues={initialValues}
-            validationSchema={LoginSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ errors, touched, isSubmitting }) => (
-              <Form>
-                <Field
-                  as={TextField}
-                  fullWidth
-                  margin="normal"
-                  name="email"
-                  label="Email"
-                  type="email"
-                  error={touched.email && Boolean(errors.email)}
-                  helperText={touched.email && errors.email}
-                />
+              <Field
+                as={TextField}
+                fullWidth
+                margin="normal"
+                name="password"
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                error={touched.password && Boolean(errors.password)}
+                helperText={touched.password && errors.password}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleTogglePasswordVisibility}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-                <Field
-                  as={TextField}
-                  fullWidth
-                  margin="normal"
-                  name="password"
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  error={touched.password && Boolean(errors.password)}
-                  helperText={touched.password && errors.password}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={handleTogglePasswordVisibility}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                type="submit"
+                disabled={isSubmitting}
+                sx={{ mt: 3, mb: 2 }}
+              >
+                {isSubmitting ? 'Signing in...' : 'Sign In'}
+              </Button>
 
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  type="submit"
-                  disabled={isSubmitting}
-                  sx={{ mt: 3, mb: 2 }}
+              <Box sx={{ mt: 2, textAlign: 'center' }}>
+                <Link
+                  component="button"
+                  variant="body2"
+                  onClick={() => navigate('/forgot-password')}
+                  sx={{ mb: 1, display: 'block' }}
                 >
-                  {isSubmitting ? 'Signing in...' : 'Sign In'}
-                </Button>
-
-                <Box sx={{ mt: 2, textAlign: 'center' }}>
-                  <Link
-                    component="button"
-                    variant="body2"
-                    onClick={() => navigate('/forgot-password')}
-                    sx={{ mb: 1, display: 'block' }}
-                  >
-                    Forgot password?
-                  </Link>
-                  <Link component="button" variant="body2" onClick={() => navigate('/register')}>
-                    Don&apos;t have an account? Sign Up
-                  </Link>
-                </Box>
-              </Form>
-            )}
-          </Formik>
-        </Paper>
+                  Forgot password?
+                </Link>
+                <Link component="button" variant="body2" onClick={() => navigate('/register')}>
+                  Don&apos;t have an account? Sign Up
+                </Link>
+              </Box>
+            </Form>
+          )}
+        </Formik>
       </FullSizeCenteredFlexBox>
     </>
   );
