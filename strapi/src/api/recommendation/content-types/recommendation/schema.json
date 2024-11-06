@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "recommendations",
+  "info": {
+    "singularName": "recommendation",
+    "pluralName": "recommendations",
+    "displayName": "Recommendation",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "startup": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::startup.startup"
+    },
+    "recommendation": {
+      "type": "richtext"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "pattern",
+        "url",
+        "file",
+        "contact"
+      ]
+    },
+    "isRead": {
+      "type": "boolean"
+    }
+  }
+}

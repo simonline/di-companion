@@ -1,0 +1,34 @@
+{
+  "kind": "collectionType",
+  "collectionName": "startup_questions",
+  "info": {
+    "singularName": "startup-question",
+    "pluralName": "startup-questions",
+    "displayName": "StartupQuestion",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "startup": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::startup.startup"
+    },
+    "pattern": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::pattern.pattern"
+    },
+    "question": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::question.question"
+    },
+    "answer": {
+      "type": "json"
+    }
+  }
+}

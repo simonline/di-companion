@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "startup_patterns",
+  "info": {
+    "singularName": "startup-pattern",
+    "pluralName": "startup-patterns",
+    "displayName": "StartupPattern",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "startup": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::startup.startup"
+    },
+    "pattern": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::pattern.pattern"
+    },
+    "completedAt": {
+      "type": "datetime"
+    }
+  }
+}

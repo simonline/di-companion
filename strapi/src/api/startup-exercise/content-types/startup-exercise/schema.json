@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "startup_exercises",
+  "info": {
+    "singularName": "startup-exercise",
+    "pluralName": "startup-exercises",
+    "displayName": "StartupExercise",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "startup": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::startup.startup"
+    },
+    "pattern": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::pattern.pattern"
+    },
+    "exercise": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::exercise.exercise"
+    },
+    "resultFiles": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "resultText": {
+      "type": "text"
+    }
+  }
+}
