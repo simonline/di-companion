@@ -47,15 +47,14 @@ export default function usePatterns(): UsePatternsReturn {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const getNextCategory = useCallback((): CategoryEnum => {
-    const { startup } = state;
+  const getNextCategory = useCallback((startup: Startup): CategoryEnum => {
     if (!startup?.scores) return CategoryEnum.entrepreneur;
     const scores = startup.scores;
     const lowestScore = Math.min(...Object.values(scores));
     return Object.keys(startup.scores).filter(
       (category) => scores[category as CategoryEnum] === lowestScore,
     )[0] as CategoryEnum;
-  }, [state]);
+  }, []);
 
   const getRandomItem = <T,>(array: T[]): T | null => {
     if (array.length === 0) return null;
@@ -73,7 +72,7 @@ export default function usePatterns(): UsePatternsReturn {
 
     try {
       // Get category with lowest score
-      const category = getNextCategory();
+      const category = getNextCategory(state.startup as Startup);
 
       // Fetch available patterns for that category
       const availablePatterns = await strapiGetPatterns(category);
