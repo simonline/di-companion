@@ -98,6 +98,11 @@ const useRoutes = (): Partial<Routes> => {
       path: '/profile/startup/:startupId/:stepId',
       title: 'Startup Profile Step',
     },
+    [Pages.ExplorePattern]: {
+      component: asyncComponentLoader(() => import('@/pages/Explore/ExplorePattern')),
+      path: '/explore/:id',
+      title: 'Explore Pattern',
+    },
     [Pages.ProgressPattern]: {
       component: asyncComponentLoader(() => import('@/pages/Progress/ProgressPattern')),
       path: '/progress/:id',

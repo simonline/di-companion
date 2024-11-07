@@ -14,15 +14,20 @@ import {
 } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
 import { CenteredFlexBox } from '@/components/styled';
-import { categoryDisplayNames, categoryColors, categoryIcons } from '@/utils/constants';
+import {
+  categoryDisplayNames,
+  categoryColors,
+  categoryIcons,
+  CategoryEnum,
+} from '@/utils/constants';
 import Header from '@/sections/Header';
 
-const maturityData: { [key: string]: number } = {
-  the_entrepreneur: 0.7,
-  team_collaboration: 0.4,
-  customers_stakeholders_ecosystem: 0.8,
-  the_solution: 0.6,
-  sustainability_responsibility: 0.3,
+const maturityData: Record<CategoryEnum, number> = {
+  entrepreneur: 0.7,
+  team: 0.4,
+  stakeholders: 0.8,
+  product: 0.6,
+  sustainability: 0.3,
 };
 
 const patternsInProgress = 2;
@@ -43,18 +48,18 @@ const MaturityScoreSection: React.FC = () => {
           <Grid item xs={12} sm={8}>
             {/* Progress Bars */}
             <Stack spacing={1}>
-              {Object.keys(maturityData).map((category) => (
+              {Object.entries(maturityData).map(([category, score]) => (
                 <Box key={category} sx={{ position: 'relative', height: 60 }}>
                   {/* Progress Bar */}
                   <LinearProgress
                     variant="determinate"
-                    value={maturityData[category] * 100}
+                    value={score * 100}
                     sx={{
                       height: 40,
                       borderRadius: 8,
-                      bgcolor: `${categoryColors[category]}66`,
+                      bgcolor: `${categoryColors[category as CategoryEnum]}66`,
                       '& .MuiLinearProgress-bar': {
-                        bgcolor: categoryColors[category],
+                        bgcolor: categoryColors[category as CategoryEnum],
                         borderRadius: 8,
                       },
                     }}
@@ -99,16 +104,19 @@ const MaturityScoreSection: React.FC = () => {
                     }}
                   >
                     {/* Icon */}
-                    <IconButton size="small" sx={{ color: categoryColors[category], mr: 1 }}>
-                      {categoryIcons[category]}
+                    <IconButton
+                      size="small"
+                      sx={{ color: categoryColors[category as CategoryEnum], mr: 1 }}
+                    >
+                      {categoryIcons[category as CategoryEnum]}
                     </IconButton>
                     {/* Category Name */}
                     <Typography variant="body1" sx={{ color: 'white', flexGrow: 1 }}>
-                      {categoryDisplayNames[category]}
+                      {categoryDisplayNames[category as CategoryEnum]}
                     </Typography>
                     {/* Percentage */}
                     <Typography variant="body1" sx={{ color: 'white', ml: 'auto' }}>
-                      {Math.round(maturityData[category] * 100)}%
+                      {Math.round(score * 100)}%
                     </Typography>
                   </Box>
                 </Box>
@@ -143,9 +151,9 @@ const MaturityScoreSection: React.FC = () => {
                 Opportunity for Growth
               </Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                Your <strong>{categoryDisplayNames[lowestCategory[0]]}</strong> perspective has the
-                most room for improvement. Soon you&apos;ll be able to take a detailed assessment to
-                better understand this area.
+                Your <strong>{categoryDisplayNames[lowestCategory[0] as CategoryEnum]}</strong>{' '}
+                perspective has the most room for improvement. Soon you&apos;ll be able to take a
+                detailed assessment to better understand this area.
               </Typography>
               <Button
                 variant="outlined"
@@ -255,10 +263,10 @@ const Dashboard: React.FC = () => {
           <Grid item sm={12}>
             <MaturityScoreSection />
           </Grid>
-          <Grid item sm={8}>
+          <Grid item xs={12} sm={8}>
             <RecommendationSection />
           </Grid>
-          <Grid item sm={4}>
+          <Grid item xs={12} sm={4}>
             <PatternBacklogSection />
           </Grid>
         </Grid>

@@ -1,3 +1,5 @@
+import { CategoryEnum, PhaseEnum } from '@/utils/constants';
+
 export interface UserRegistration {
   username: string;
   email: string;
@@ -39,23 +41,6 @@ export interface StrapiError {
   };
 }
 
-export enum CategoryEnum {
-  the_entrepreneur,
-  time_space,
-  sustainability_responsibility,
-  team_collaboration,
-  customers_stakeholders_ecosystem,
-  the_solution,
-}
-
-export enum PhaseEnum {
-  start,
-  discover_explore,
-  transform,
-  create,
-  implement,
-}
-
 export interface Pattern {
   documentId: string;
   name: string;
@@ -63,13 +48,17 @@ export interface Pattern {
   image: {
     url: string;
   };
-  categories: CategoryEnum[];
+  category: CategoryEnum;
   phases: PhaseEnum[];
   relatedPatterns: Pattern[];
 }
 
 export interface StrapiPatternsResponse {
   data: Pattern[];
+}
+
+export interface StrapiPatternResponse {
+  data: Pattern;
 }
 
 export interface Exercise {
@@ -131,6 +120,7 @@ export interface Startup {
   isTargetGroupDefined: boolean;
   isPrototypeValidated: boolean;
   isMvpTested: boolean;
+  scores?: Record<CategoryEnum, number>;
 }
 
 export interface StrapiStartupsResponse {

@@ -1,18 +1,21 @@
 import React, { useEffect } from 'react';
 import { Button, CircularProgress, Typography, Box } from '@mui/material';
-import useNextPattern from '@/hooks/useNextPattern';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
+import usePattern from '@/hooks/usePattern';
 import PatternCard from '@/components/PatternCard';
+import { useNavigate, useParams } from 'react-router-dom';
 import Header from '@/sections/Header';
 
-const Explore: React.FC = () => {
-  const { getNextPattern, pattern, loading, error } = useNextPattern();
+const ExplorePattern: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { fetchPattern, pattern, loading, error } = usePattern();
 
   useEffect(() => {
-    getNextPattern();
-  }, [getNextPattern]);
+    fetchPattern(id as string);
+  }, [fetchPattern, id]);
 
-  if (loading || !pattern) {
+  if (loading) {
     return (
       <Box
         sx={{
@@ -49,16 +52,30 @@ const Explore: React.FC = () => {
     );
   }
 
-  const handleNext = () => {};
+  if (!pattern) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          p: 4,
+        }}
+      >
+        <Typography variant="h6">Pattern not found</Typography>
+      </Box>
+    );
+  }
 
   return (
     <>
       <Header title="Explore" />
       <FullSizeCenteredFlexBox>
-        <PatternCard pattern={pattern} onNext={handleNext} />
+        <PatternCard pattern={pattern} onNext={() => navigate('/explore')} />
       </FullSizeCenteredFlexBox>
     </>
   );
 };
 
-export default Explore;
+export default ExplorePattern;

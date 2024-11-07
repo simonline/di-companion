@@ -1,28 +1,44 @@
-export const categoryDisplayNames: { [key: string]: string } = {
-  the_entrepreneur: 'Entrepreneur',
-  team_collaboration: 'Team',
-  customers_stakeholders_ecosystem: 'Stakeholders',
-  the_solution: 'Product',
-  sustainability_responsibility: 'Sustainability',
+export enum CategoryEnum {
+  entrepreneur = 'entrepreneur',
+  team = 'team',
+  stakeholders = 'stakeholders',
+  product = 'product',
+  sustainability = 'sustainability',
+}
+
+export enum PhaseEnum {
+  start = 'start',
+  discover_explore = 'discover_explore',
+  transform = 'transform',
+  create = 'create',
+  implement = 'implement',
+}
+
+export const categoryDisplayNames: Record<CategoryEnum, string> = {
+  entrepreneur: 'Entrepreneur',
+  team: 'Team',
+  stakeholders: 'Stakeholders',
+  product: 'Product',
+  sustainability: 'Sustainability',
 };
 
-export const categoryColors: { [key: string]: string } = {
-  the_entrepreneur: '#385da9',
-  team_collaboration: '#944191',
-  customers_stakeholders_ecosystem: '#ea5418',
-  the_solution: '#fbcd00',
-  sustainability_responsibility: '#8ec13d',
+export const categoryColors: Record<CategoryEnum, string> = {
+  entrepreneur: '#385da9',
+  team: '#944191',
+  stakeholders: '#ea5418',
+  product: '#fbcd00',
+  sustainability: '#8ec13d',
 };
 
-export const categoryIcons: { [key: string]: string } = {
-  the_entrepreneur: '👤',
-  team_collaboration: '🤝',
-  customers_stakeholders_ecosystem: '🌐',
-  the_solution: '💡',
-  sustainability_responsibility: '🌱',
+export const categoryIcons: Record<CategoryEnum, string> = {
+  entrepreneur: '👤',
+  team: '🤝',
+  stakeholders: '🌐',
+  product: '💡',
+  sustainability: '🌱',
 };
 
-export const phaseNumbers: { [key: string]: number } = {
+export const phaseNumbers: Record<PhaseEnum, number> = {
   start: 1,
   discover_explore: 2,
   transform: 3,

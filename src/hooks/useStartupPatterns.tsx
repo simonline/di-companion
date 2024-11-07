@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { strapiGetStartupPatterns } from '@/lib/strapi';
 import type { StartupPattern } from '@/types/strapi';
+import { useAuth } from '@/hooks/useAuth';
 
 interface UseStartupPatterns {
   startupPatterns: StartupPattern[] | null;
@@ -14,6 +15,8 @@ interface UseStartupPatternsReturn extends UseStartupPatterns {
 }
 
 export default function useStartupPatterns(): UseStartupPatternsReturn {
+  const { startup } = useAuth();
+
   const [state, setState] = useState<UseStartupPatterns>({
     startupPatterns: null,
     loading: true,
@@ -26,13 +29,13 @@ export default function useStartupPatterns(): UseStartupPatternsReturn {
 
   const fetchStartupPatterns = useCallback(async () => {
     try {
-      const startupPatterns = await strapiGetStartupPatterns();
+      const startupPatterns = await strapiGetStartupPatterns(startup?.documentId as string);
       setState({ startupPatterns, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;
       setState({ startupPatterns: null, loading: false, error: error.message });
     }
-  }, []);
+  }, [startup?.documentId]);
 
   return {
     fetchStartupPatterns,

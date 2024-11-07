@@ -9,6 +9,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { Add, Remove } from '@mui/icons-material';
+import { CategoryEnum } from '@/utils/constants';
 
 export const steps = [
   'Startup Info',
@@ -38,6 +39,7 @@ export interface StartupFormValues {
   isTargetGroupDefined: boolean;
   isPrototypeValidated: boolean;
   isMvpTested: boolean;
+  scores?: Record<CategoryEnum, number>;
   submit?: { message: string };
 }
 

@@ -22,6 +22,8 @@ function Welcome() {
         sx={{
           backgroundImage: 'linear-gradient(to bottom right, #1e3c72, #2a5298)',
           color: 'white',
+          maxWidth: '100%',
+          height: '100%',
         }}
       >
         <Container maxWidth="lg" sx={{ mt: 8, mb: 4 }}>

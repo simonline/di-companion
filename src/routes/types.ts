@@ -10,6 +10,7 @@ export enum Pages {
   Login,
   Logout,
   Explore,
+  ExplorePattern,
   Progress,
   ProgressPattern,
   Dashboard,

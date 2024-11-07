@@ -56,17 +56,15 @@ const PatternListItem: React.FC<{ startupPattern: StartupPattern }> = ({ startup
 
           <Stack direction="row" spacing={1} alignItems="center">
             <Stack direction="row" spacing={0.5}>
-              {pattern.categories.map((category) => (
-                <Chip
-                  key={category}
-                  label={categoryDisplayNames[category]}
-                  size="small"
-                  sx={{
-                    bgcolor: categoryColors[category],
-                    color: 'white',
-                  }}
-                />
-              ))}
+              <Chip
+                key={pattern.category}
+                label={categoryDisplayNames[pattern.category]}
+                size="small"
+                sx={{
+                  bgcolor: categoryColors[pattern.category],
+                  color: 'white',
+                }}
+              />
             </Stack>
           </Stack>
 
