@@ -12,13 +12,13 @@ import SpeedIcon from '@mui/icons-material/Speed';
 import ForumIcon from '@mui/icons-material/Forum';
 import Meta from '@/components/Meta';
 import Box from '@mui/material/Box';
-import { CenteredFlexBox } from '@/components/styled';
+import { FlexBox } from '@/components/styled';
 
 function Welcome() {
   return (
     <>
       <Meta title="Dynamic Innovation Companion - Welcome" />
-      <CenteredFlexBox
+      <FlexBox
         sx={{
           backgroundImage: 'linear-gradient(to bottom right, #1e3c72, #2a5298)',
           color: 'white',
@@ -152,7 +152,7 @@ function Welcome() {
             </Button>
           </Box>
         </Container>
-      </CenteredFlexBox>
+      </FlexBox>
     </>
   );
 }

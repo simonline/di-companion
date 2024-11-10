@@ -515,7 +515,7 @@ export async function strapiFindStartupExercise(
   startupDocumentId: string,
   patternDocumentId: string,
   exerciseDocumentId: string,
-): Promise<StartupExercise> {
+): Promise<StartupExercise | null> {
   try {
     const token = getStoredToken();
     if (!token) {
@@ -528,7 +528,7 @@ export async function strapiFindStartupExercise(
       exerciseDocumentId,
     );
     if (startupExercises.length === 0) {
-      throw new Error('Startup exercise not found');
+      return null;
     }
     return startupExercises[0];
   } catch (error) {

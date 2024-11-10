@@ -14,6 +14,7 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   Badge,
+  Paper,
 } from '@mui/material';
 import {
   Pattern as PatternIcon,
@@ -46,70 +47,104 @@ export const getPatternStatus = (pattern: StartupPattern): FilterStatus | null =
 
 const PatternListItem: React.FC<{ startupPattern: StartupPattern }> = ({ startupPattern }) => {
   const { pattern } = startupPattern;
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <Card
       sx={{
         mb: 2,
         width: '100%',
-        borderRadius: 4,
+        borderRadius: 2,
+        transition: 'all 0.3s ease',
+        transform: isHovered ? 'translateY(-4px)' : 'none',
+        boxShadow: isHovered ? 8 : 1,
+        position: 'relative',
+        overflow: 'visible',
+        '&:after': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '4px',
+          height: '100%',
+          backgroundColor: categoryColors[pattern.category],
+          borderTopLeftRadius: 8,
+          borderBottomLeftRadius: 8,
+        },
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Stack spacing={1}>
+      <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+        <Stack spacing={2}>
           <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-            <Stack direction="row" spacing={2} alignItems="center">
-              {pattern.image ? (
-                <Avatar src={`https://api.di.sce.de/${pattern.image.url}`} />
-              ) : (
-                <Avatar>
-                  <PatternIcon />
-                </Avatar>
-              )}
-              <Typography variant="h6" component="div">
-                {pattern.name}
-              </Typography>
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ flex: 1 }}>
+              <Avatar
+                sx={{
+                  width: 56,
+                  height: 56,
+                  bgcolor: `${categoryColors[pattern.category]}22`,
+                  color: categoryColors[pattern.category],
+                }}
+              >
+                {pattern.image ? (
+                  <img
+                    src={`https://api.di.sce.de/${pattern.image.url}`}
+                    alt={pattern.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <PatternIcon sx={{ fontSize: 28 }} />
+                )}
+              </Avatar>
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="h6"
+                  component="div"
+                  sx={{
+                    fontWeight: 600,
+                    mb: 0.5,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {pattern.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Updated {format(new Date(startupPattern.updatedAt), 'MMM dd, yyyy')}
+                </Typography>
+              </Box>
             </Stack>
-            {getPatternStatus(startupPattern) === 'completed' && (
+          </Stack>
+
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <Chip
+              label={categoryDisplayNames[pattern.category]}
+              size="small"
+              sx={{
+                bgcolor: `${categoryColors[pattern.category]}22`,
+                color: categoryColors[pattern.category],
+                fontWeight: 500,
+                '&:hover': { bgcolor: `${categoryColors[pattern.category]}33` },
+                height: 24,
+              }}
+            />
+            {pattern.phases.map((phase) => (
               <Chip
-                icon={<CheckIcon />}
-                label="Completed"
-                color="success"
+                key={phase}
+                label={phaseDisplayNames[phase]}
                 size="small"
                 variant="outlined"
-              />
-            )}
-          </Stack>
-
-          <Typography variant="body2" color="text.secondary">
-            Last updated: {format(new Date(startupPattern.updatedAt), 'MMM dd, yyyy')}
-          </Typography>
-
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Stack direction="row" spacing={0.5}>
-              <Chip
-                key={pattern.category}
-                label={categoryDisplayNames[pattern.category]}
-                size="small"
                 sx={{
-                  bgcolor: categoryColors[pattern.category],
-                  color: 'white',
+                  borderColor: 'rgba(0, 0, 0, 0.12)',
+                  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' },
+                  height: 24,
                 }}
               />
-            </Stack>
-          </Stack>
-
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Stack direction="row" spacing={0.5}>
-              {pattern.phases.map((phase) => (
-                <Chip
-                  key={phase}
-                  label={phaseDisplayNames[phase]}
-                  size="small"
-                  variant="outlined"
-                />
-              ))}
-            </Stack>
-          </Stack>
+            ))}
+          </Box>
         </Stack>
       </CardContent>
     </Card>
@@ -140,14 +175,7 @@ const Progress: React.FC = () => {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-        }}
-      >
+      <Box display="flex" alignItems="center" justifyContent="center" height="100vh">
         <CircularProgress />
       </Box>
     );
@@ -156,14 +184,12 @@ const Progress: React.FC = () => {
   if (error) {
     return (
       <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          p: 4,
-        }}
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        height="100vh"
+        p={4}
       >
         <Typography variant="h6" color="error" sx={{ mb: 2 }}>
           Error loading patterns
@@ -177,15 +203,7 @@ const Progress: React.FC = () => {
 
   if (!startupPatterns?.length) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          p: 4,
-        }}
-      >
+      <Box display="flex" alignItems="center" justifyContent="center" height="100vh" p={4}>
         <Typography variant="h6">No patterns available</Typography>
       </Box>
     );
@@ -195,31 +213,76 @@ const Progress: React.FC = () => {
     <>
       <Header title="Progress" />
       <CenteredFlexBox>
-        <ToggleButtonGroup
-          value={filterStatus}
-          exclusive
-          onChange={(_, newValue) => {
-            if (newValue !== null) {
-              setFilterStatus(newValue);
-            }
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2,
+            mb: 3,
+            width: '100%',
+            bgcolor: 'background.default',
+            borderRadius: 2,
           }}
-          aria-label="pattern status filter"
-          sx={{ width: '100%', mb: 3 }}
         >
-          <ToggleButton value="in_progress" aria-label="in progress patterns" sx={{ flex: 1 }}>
-            <Badge badgeContent={inProgressCount} color="primary" sx={{ mr: 1 }}>
-              <PendingIcon sx={{ mr: 1 }} />
-            </Badge>
-            In Progress
-          </ToggleButton>
-          <ToggleButton value="completed" aria-label="completed patterns" sx={{ flex: 1 }}>
-            <Badge badgeContent={completedCount} color="success" sx={{ mr: 1 }}>
-              <CheckIcon sx={{ mr: 1 }} />
-            </Badge>
-            Completed
-          </ToggleButton>
-        </ToggleButtonGroup>
-        <List sx={{ width: '100%' }}>
+          <ToggleButtonGroup
+            value={filterStatus}
+            exclusive
+            onChange={(_, newValue) => {
+              if (newValue !== null) {
+                setFilterStatus(newValue);
+              }
+            }}
+            aria-label="pattern status filter"
+            sx={{
+              width: '100%',
+              '& .MuiToggleButton-root': {
+                border: 'none',
+                borderRadius: 2,
+                px: 3,
+                py: 1.5,
+                '&.Mui-selected': {
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: 'primary.dark',
+                  },
+                },
+              },
+            }}
+          >
+            <ToggleButton value="in_progress" aria-label="in progress patterns" sx={{ flex: 1 }}>
+              <Badge
+                badgeContent={inProgressCount}
+                color="primary"
+                sx={{
+                  '& .MuiBadge-badge': {
+                    bgcolor: 'white',
+                    color: 'primary.main',
+                  },
+                }}
+              >
+                <PendingIcon sx={{ mr: 1 }} />
+                In Progress
+              </Badge>
+            </ToggleButton>
+            <ToggleButton value="completed" aria-label="completed patterns" sx={{ flex: 1 }}>
+              <Badge
+                badgeContent={completedCount}
+                color="success"
+                sx={{
+                  '& .MuiBadge-badge': {
+                    bgcolor: 'white',
+                    color: 'success.main',
+                  },
+                }}
+              >
+                <CheckIcon sx={{ mr: 1 }} />
+                Completed
+              </Badge>
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Paper>
+
+        <List sx={{ width: '100%', px: 2 }}>
           {filteredPatterns?.map((startupPattern) => (
             <ListItem
               key={startupPattern.documentId}

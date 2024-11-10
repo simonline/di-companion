@@ -83,9 +83,8 @@ const Survey: React.FC = () => {
 
   useEffect(() => {
     if (isCompleted && startupPatterns && startupPatterns.length && survey && startupQuestions) {
-      console.log(survey.questions, startupQuestions);
       const points = calculatePoints(survey.questions, startupQuestions);
-      console.log(points);
+
       // Update the startup pattern with the points
       updateStartupPattern({
         documentId: startupPatterns[0].documentId,
@@ -414,7 +413,7 @@ const Survey: React.FC = () => {
     <>
       <Header title={pattern.name} />
       <CenteredFlexBox>
-        <Box sx={{ width: '100%', maxWidth: 600, mt: 4, px: 2, mb: 4 }}>
+        <Box sx={{ mt: 4 }}>
           <Typography variant="body1" sx={{ mb: 4 }}>
             {survey.description}
           </Typography>
@@ -426,7 +425,7 @@ const Survey: React.FC = () => {
           >
             {() => (
               <Form>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 0 }}>
                   {survey.questions
                     .sort((a, b) => a.order - b.order)
                     .map((question) => (

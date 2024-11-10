@@ -89,7 +89,8 @@ const Exercise: React.FC = () => {
         },
         message: 'Exercise completed successfully',
       });
-      navigate('/progress');
+      // Continue with survey to complete the pattern
+      navigate(`/progress/${patternId}/survey`);
     } catch (error) {
       console.error('Error submitting form:', error);
       notificationsActions.push({

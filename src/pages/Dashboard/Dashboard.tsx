@@ -225,37 +225,37 @@ const RecommendationSection: React.FC<DashboardWidgetProps> = () => {
         <Typography variant="h6" gutterBottom>
           Recommended Patterns
         </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Based on your current maturity score, we recommend the following pattern to help you
           improve.
         </Typography>
-        <Grid container spacing={2}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
           {recommendedPatterns.map((pattern) => (
-            <Grid item xs={6} key={pattern.documentId}>
+            <Box key={pattern.documentId} sx={{ flex: '1 1 calc(50% - 8px)' }}>
               <Card
                 sx={{
+                  height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
-                  height: '100%',
-                  aspectRatio: '2/3',
-                  borderRadius: 4,
+                  borderRadius: 2,
                 }}
               >
                 <Box
                   sx={{
                     bgcolor: categoryColors[pattern.category] || '#grey',
+                    height: 20,
                     p: 1,
-                    borderTopLeftRadius: 4,
-                    borderTopRightRadius: 4,
+                    borderTopLeftRadius: 8,
+                    borderTopRightRadius: 8,
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                   }}
-                ></Box>
+                />
                 <CardMedia
                   sx={{
                     height: '30%',
-                    overflow: 'hidden',
+                    minHeight: '80px',
                     bgcolor: 'grey.100',
                     position: 'relative',
                     '& img': {
@@ -266,7 +266,7 @@ const RecommendationSection: React.FC<DashboardWidgetProps> = () => {
                   }}
                 >
                   {pattern.image ? (
-                    <img src={`https://api.di.sce.de${pattern.image.url}`} alt={''} />
+                    <img src={`https://api.di.sce.de${pattern.image.url}`} alt={pattern.name} />
                   ) : (
                     <Box
                       sx={{
@@ -280,49 +280,49 @@ const RecommendationSection: React.FC<DashboardWidgetProps> = () => {
                         justifyContent: 'center',
                       }}
                     >
-                      <ImageIcon
-                        sx={{
-                          fontSize: 48,
-                          color: 'grey.300',
-                        }}
-                      />
+                      <ImageIcon sx={{ fontSize: 48, color: 'grey.300' }} />
                     </Box>
                   )}
                 </CardMedia>
-                <CardContent sx={{ flexGrow: 1 }}>
+                <CardContent sx={{ flexGrow: 1, p: 2 }}>
                   <Typography
                     variant="subtitle1"
-                    gutterBottom
                     sx={{
-                      color: categoryColors[pattern.category as CategoryEnum],
+                      color: categoryColors[pattern.category],
                       fontWeight: 'bold',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      minHeight: 48,
+                      mb: 1,
                     }}
                   >
                     {pattern.name}
                   </Typography>
                 </CardContent>
-                <Box sx={{ p: 2 }}>
+                <Box sx={{ p: 2, mt: 'auto' }}>
                   <Button
                     onClick={() => navigate(`/explore/${pattern.documentId}`)}
                     variant="contained"
                     endIcon={<ArrowForward />}
-                    size="small"
+                    fullWidth
                     sx={{
-                      bgcolor: categoryColors[pattern.category as CategoryEnum],
+                      bgcolor: categoryColors[pattern.category],
                       color: 'white',
                       '&:hover': {
-                        bgcolor: categoryColors[pattern.category as CategoryEnum],
+                        bgcolor: categoryColors[pattern.category],
                       },
                     }}
-                    fullWidth
                   >
                     Start Pattern
                   </Button>
                 </Box>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       </CardContent>
     </Card>
   );
