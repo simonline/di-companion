@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Card,
@@ -21,21 +21,44 @@ import {
   CategoryEnum,
 } from '@/utils/constants';
 import Header from '@/sections/Header';
+import ImageIcon from '@mui/icons-material/Image';
+import usePatterns from '@/hooks/usePatterns';
+import useStartupPatterns from '@/hooks/useStartupPatterns';
+import { useAuth } from '@/hooks/useAuth';
+import type { Pattern, StartupPattern } from '@/types/strapi';
+import { getPatternStatus } from '@/pages/Progress/Progress';
+import { useNavigate } from 'react-router-dom';
+import useRecommendedPatterns from '@/hooks/useRecommendedPatterns';
 
-const maturityData: Record<CategoryEnum, number> = {
-  entrepreneur: 0.7,
-  team: 0.4,
-  stakeholders: 0.8,
-  product: 0.6,
-  sustainability: 0.3,
-};
+interface DashboardWidgetProps {
+  startupPatterns: StartupPattern[];
+  patterns: Pattern[];
+}
 
-const patternsInProgress = 2;
+const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
+  const { startup, updateScores } = useAuth();
 
-// Components
-const MaturityScoreSection: React.FC = () => {
-  const lowestCategory = Object.entries(maturityData).reduce((acc, [key, value]) =>
+  useEffect(() => {
+    if (startup && !startup.scores) {
+      updateScores();
+    }
+  }, [startup, updateScores]);
+
+  if (!startup?.scores) return null;
+  const lowestCategory = Object.entries(startup.scores).reduce((acc, [key, value]) =>
     value < acc[1] ? [key, value] : acc,
+  );
+
+  const categories = Object.values(CategoryEnum);
+  const sortedScores = Object.fromEntries(
+    // Get entries from the dictionary
+    Object.entries(startup.scores)
+      // Sort based on the index of each key in the enum values array
+      .sort(([keyA], [keyB]) => {
+        const indexA = categories.indexOf(keyA as CategoryEnum);
+        const indexB = categories.indexOf(keyB as CategoryEnum);
+        return indexA - indexB;
+      }),
   );
 
   return (
@@ -48,7 +71,7 @@ const MaturityScoreSection: React.FC = () => {
           <Grid item xs={12} sm={8}>
             {/* Progress Bars */}
             <Stack spacing={1}>
-              {Object.entries(maturityData).map(([category, score]) => (
+              {Object.entries(sortedScores).map(([category, score]) => (
                 <Box key={category} sx={{ position: 'relative', height: 60 }}>
                   {/* Progress Bar */}
                   <LinearProgress
@@ -106,7 +129,10 @@ const MaturityScoreSection: React.FC = () => {
                     {/* Icon */}
                     <IconButton
                       size="small"
-                      sx={{ color: categoryColors[category as CategoryEnum], mr: 1 }}
+                      sx={{
+                        color: categoryColors[category as CategoryEnum],
+                        mr: 1,
+                      }}
                     >
                       {categoryIcons[category as CategoryEnum]}
                     </IconButton>
@@ -177,20 +203,22 @@ const MaturityScoreSection: React.FC = () => {
   );
 };
 
-const recommendedPatterns = [
-  {
-    id: 'pattern1',
-    title: 'Pattern One',
-    image: 'https://api.di.sce.de/uploads/Persistent_and_flexible_1bca83937b.JPG',
-  },
-  {
-    id: 'pattern2',
-    title: 'Pattern Two',
-    image: 'https://api.di.sce.de/uploads/Persistent_and_flexible_1bca83937b.JPG',
-  },
-];
+const RecommendationSection: React.FC<DashboardWidgetProps> = () => {
+  const navigate = useNavigate();
+  const { getRecommendedPatterns, recommendedPatterns, loading, error } = useRecommendedPatterns();
 
-const RecommendationSection: React.FC = () => {
+  useEffect(() => {
+    getRecommendedPatterns(2);
+  }, [getRecommendedPatterns]);
+
+  if (loading || !recommendedPatterns) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  if (error) {
+    return <Typography>Error loading data</Typography>;
+  }
+
   return (
     <Card>
       <CardContent>
@@ -203,7 +231,7 @@ const RecommendationSection: React.FC = () => {
         </Typography>
         <Grid container spacing={2}>
           {recommendedPatterns.map((pattern) => (
-            <Grid item xs={6} key={pattern.id}>
+            <Grid item xs={6} key={pattern.documentId}>
               <Card
                 sx={{
                   display: 'flex',
@@ -213,14 +241,81 @@ const RecommendationSection: React.FC = () => {
                   borderRadius: 4,
                 }}
               >
-                <CardMedia component="img" image={pattern.image} alt={pattern.title} />
+                <Box
+                  sx={{
+                    bgcolor: categoryColors[pattern.category] || '#grey',
+                    p: 1,
+                    borderTopLeftRadius: 4,
+                    borderTopRightRadius: 4,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                ></Box>
+                <CardMedia
+                  sx={{
+                    height: '30%',
+                    overflow: 'hidden',
+                    bgcolor: 'grey.100',
+                    position: 'relative',
+                    '& img': {
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    },
+                  }}
+                >
+                  {pattern.image ? (
+                    <img src={`https://api.di.sce.de${pattern.image.url}`} alt={''} />
+                  ) : (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <ImageIcon
+                        sx={{
+                          fontSize: 48,
+                          color: 'grey.300',
+                        }}
+                      />
+                    </Box>
+                  )}
+                </CardMedia>
                 <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    {pattern.title}
+                  <Typography
+                    variant="subtitle1"
+                    gutterBottom
+                    sx={{
+                      color: categoryColors[pattern.category as CategoryEnum],
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {pattern.name}
                   </Typography>
                 </CardContent>
                 <Box sx={{ p: 2 }}>
-                  <Button variant="contained" endIcon={<ArrowForward />} size="small" fullWidth>
+                  <Button
+                    onClick={() => navigate(`/explore/${pattern.documentId}`)}
+                    variant="contained"
+                    endIcon={<ArrowForward />}
+                    size="small"
+                    sx={{
+                      bgcolor: categoryColors[pattern.category as CategoryEnum],
+                      color: 'white',
+                      '&:hover': {
+                        bgcolor: categoryColors[pattern.category as CategoryEnum],
+                      },
+                    }}
+                    fullWidth
+                  >
                     Start Pattern
                   </Button>
                 </Box>
@@ -233,7 +328,10 @@ const RecommendationSection: React.FC = () => {
   );
 };
 
-const PatternBacklogSection: React.FC = () => {
+const PatternBacklogSection: React.FC<DashboardWidgetProps> = ({ startupPatterns }) => {
+  const navigate = useNavigate();
+  const inProgressCount =
+    startupPatterns?.filter((pattern) => getPatternStatus(pattern) === 'in_progress').length || 0;
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
@@ -243,9 +341,14 @@ const PatternBacklogSection: React.FC = () => {
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           You&apos;ve got some patterns in progress. Keep up the good work!
         </Typography>
-        <Button variant="outlined" endIcon={<ArrowForward />} sx={{ mt: 2 }}>
+        <Button
+          onClick={() => navigate('/progress')}
+          variant="outlined"
+          endIcon={<ArrowForward />}
+          sx={{ mt: 2 }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Chip label={patternsInProgress} color="primary" size="small" />
+            <Chip label={inProgressCount} color="primary" size="small" />
             Continue Patterns
           </Box>
         </Button>
@@ -255,19 +358,51 @@ const PatternBacklogSection: React.FC = () => {
 };
 
 const Dashboard: React.FC = () => {
+  const { startup } = useAuth();
+  const { fetchPatterns, patterns, loading: patternsLoading, error: patternsError } = usePatterns();
+  const {
+    fetchStartupPatterns,
+    startupPatterns,
+    loading: startupPatternsLoading,
+    error: startupPatternsError,
+  } = useStartupPatterns();
+
+  useEffect(() => {
+    fetchPatterns();
+  }, [fetchPatterns]);
+
+  useEffect(() => {
+    if (startup) {
+      fetchStartupPatterns(startup.documentId);
+    }
+  }, [fetchStartupPatterns, startup]);
+
+  if (patternsLoading || startupPatternsLoading) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  if (patternsError || startupPatternsError) {
+    console.log(patternsError, startupPatternsError);
+    return <Typography>Error loading data</Typography>;
+  }
+
+  if (!patterns || !startupPatterns) {
+    return <Typography>No data found</Typography>;
+  }
+
   return (
     <>
       <Header title="Dashboard" />
       <CenteredFlexBox>
         <Grid container spacing={2}>
           <Grid item sm={12}>
-            <MaturityScoreSection />
+            <MaturityScoreSection startupPatterns={startupPatterns} patterns={patterns} />
           </Grid>
           <Grid item xs={12} sm={8}>
-            <RecommendationSection />
+            <RecommendationSection startupPatterns={startupPatterns} patterns={patterns} />
           </Grid>
           <Grid item xs={12} sm={4}>
-            <PatternBacklogSection />
+            <PatternBacklogSection startupPatterns={startupPatterns} patterns={patterns} />
           </Grid>
         </Grid>
       </CenteredFlexBox>

@@ -9,6 +9,7 @@ export enum Pages {
   CreateStartup,
   Login,
   Logout,
+  Exercise,
   Explore,
   ExplorePattern,
   Progress,
@@ -21,6 +22,7 @@ export enum Pages {
   UserProfileField,
   StartupProfile,
   StartupProfileStep,
+  Survey,
   NotFound,
 }
 

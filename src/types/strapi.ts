@@ -41,6 +41,14 @@ export interface StrapiError {
   };
 }
 
+export interface StrapiRelated {
+  documentId: string;
+}
+
+export interface StrapiSetRelated {
+  set: StrapiRelated;
+}
+
 export interface Pattern {
   documentId: string;
   name: string;
@@ -51,60 +59,52 @@ export interface Pattern {
   category: CategoryEnum;
   phases: PhaseEnum[];
   relatedPatterns: Pattern[];
-}
-
-export interface StrapiPatternsResponse {
-  data: Pattern[];
-}
-
-export interface StrapiPatternResponse {
-  data: Pattern;
+  exercise: StrapiRelated | null;
+  survey: StrapiRelated | null;
 }
 
 export interface Exercise {
+  documentId: string;
   name: string;
   description: string;
 }
 
-export interface StrapiExercisesResponse {
-  data: Exercise[];
+export enum QuestionType {
+  radio = 'radio',
+  select = 'select',
+  select_multiple = 'select_multiple',
+  checkbox = 'checkbox',
+  text_short = 'text_short',
+  text_long = 'text_long',
+  email = 'email',
+  number = 'number',
 }
 
-export enum QuestionType {
-  radio,
-  select,
-  select_multiple,
-  checkbox,
-  text_short,
-  text_long,
-  email,
-  number,
+export interface QuestionOption {
+  value: string;
+  label: string;
+  points?: number;
 }
 
 export interface Question {
+  documentId: string;
   question: string;
   type: QuestionType;
-  options: Record<string, string> | null;
+  options: QuestionOption[] | null;
   isRequired: boolean;
   order: number;
-}
-
-export interface StrapiQuestionsResponse {
-  data: Question[];
+  weight: number;
 }
 
 export interface Survey {
+  documentId: string;
   name: string;
   description: string;
   questions: Question[];
 }
 
-export interface StrapiSurveysResponse {
-  data: Survey[];
-}
-
 export interface Startup {
-  documentId?: string;
+  documentId: string;
   name: string;
   startDate: string;
   foundersCount: number;
@@ -123,24 +123,95 @@ export interface Startup {
   scores?: Record<CategoryEnum, number>;
 }
 
-export interface StrapiStartupsResponse {
-  data: Startup[];
+export interface CreateStartup {
+  name: string;
+  startDate: string;
+  foundersCount: number;
+  background: string;
+  productType: string;
+  idea: string;
+  industry: string;
+  industryOther?: string;
+  targetMarket: string;
+  phase: string;
+  isProblemValidated: boolean;
+  qualifiedConversationsCount: number;
+  isTargetGroupDefined: boolean;
+  isPrototypeValidated: boolean;
+  isMvpTested: boolean;
+  scores?: Record<CategoryEnum, number>;
+}
+
+export interface UpdateStartup {
+  documentId: string;
+  name?: string;
+  startDate?: string;
+  foundersCount?: number;
+  background?: string;
+  productType?: string;
+  idea?: string;
+  industry?: string;
+  industryOther?: string;
+  targetMarket?: string;
+  phase?: string;
+  isProblemValidated?: boolean;
+  qualifiedConversationsCount?: number;
+  isTargetGroupDefined?: boolean;
+  isPrototypeValidated?: boolean;
+  isMvpTested?: boolean;
+  scores?: Record<CategoryEnum, number>;
 }
 
 /* Startup content */
+export enum ResponseTypeEnum {
+  accept = 'accept',
+  reject = 'reject',
+}
+
+export enum ResponseEnum {
+  share_reflection = 'share_reflection',
+  perform_exercise = 'perform_exercise',
+  think_later = 'think_later',
+  already_addressed = 'already_addressed',
+  maybe_later = 'maybe_later',
+  no_value = 'no_value',
+  dont_understand = 'dont_understand',
+}
+
 export interface StartupPattern {
   documentId: string;
   startup: Startup;
   pattern: Pattern;
-  finishedAt: string;
+  createdAt: string;
   updatedAt: string;
+  completedAt: string;
+  responseType: ResponseTypeEnum;
+  response: ResponseEnum;
+  points: number;
 }
 
-export interface StrapiStartupPatternsResponse {
-  data: StartupPattern[];
+export interface CreateStartupPattern {
+  startup: StrapiSetRelated;
+  pattern: StrapiSetRelated;
+  responseType: ResponseTypeEnum;
+  response: ResponseEnum;
+  completedAt?: string;
+  points?: number;
+}
+
+export interface UpdateStartupPattern {
+  documentId: string;
+  startup?: StrapiSetRelated;
+  pattern?: StrapiSetRelated;
+  responseType?: ResponseTypeEnum;
+  response?: ResponseEnum;
+  completedAt?: string;
+  points?: number;
 }
 
 export interface StartupExercise {
+  documentId: string;
+  id: string;
   startup: Startup;
   pattern: Pattern;
   exercise: Exercise;
@@ -148,19 +219,44 @@ export interface StartupExercise {
   resultText: string;
 }
 
-export interface StrapiStartupExercisesResponse {
-  data: StartupExercise[];
+export interface CreateStartupExercise {
+  startup: StrapiSetRelated;
+  pattern: StrapiSetRelated;
+  exercise: StrapiSetRelated;
+  resultFiles: File[];
+  resultText: string;
+}
+
+export interface UpdateStartupExercise {
+  documentId: string;
+  startup?: StrapiSetRelated;
+  pattern?: StrapiSetRelated;
+  exercise?: StrapiSetRelated;
+  resultFiles?: File[];
+  resultText?: string;
 }
 
 export interface StartupQuestion {
+  documentId: string;
   startup: Startup;
   pattern: Pattern;
   question: Question;
   answer: string;
 }
 
-export interface StrapiStartupQuestionsResponse {
-  data: StartupQuestion[];
+export interface CreateStartupQuestion {
+  startup: StrapiSetRelated;
+  pattern: StrapiSetRelated;
+  question: StrapiSetRelated;
+  answer: string;
+}
+
+export interface UpdateStartupQuestion {
+  documentId: string;
+  startup?: StrapiSetRelated;
+  pattern?: StrapiSetRelated;
+  question?: StrapiSetRelated;
+  answer?: string;
 }
 
 export interface Recommendation {
@@ -172,6 +268,17 @@ export interface Recommendation {
   publishedAt: string;
 }
 
-export interface StrapiRecommendationsResponse {
-  data: Recommendation[];
+export interface StrapiSingleResponse<T> {
+  data: T;
+}
+export interface StrapiCollectionResponse<T> {
+  data: T[];
+  meta?: {
+    pagination?: {
+      page: number;
+      pageSize: number;
+      pageCount: number;
+      total: number;
+    };
+  };
 }

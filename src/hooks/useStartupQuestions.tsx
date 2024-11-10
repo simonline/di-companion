@@ -9,8 +9,13 @@ interface UseStartupQuestions {
 }
 
 interface UseStartupQuestionsReturn extends UseStartupQuestions {
-  fetchStartupQuestions: () => void;
+  fetchStartupQuestions: (
+    startupDocumentId?: string,
+    patternDocumentId?: string,
+    surveyDocumentId?: string,
+  ) => void;
   clearError: () => void;
+  clearStartupQuestions: () => void;
 }
 
 export default function useStartupQuestions(): UseStartupQuestionsReturn {
@@ -24,15 +29,26 @@ export default function useStartupQuestions(): UseStartupQuestionsReturn {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const fetchStartupQuestions = useCallback(async () => {
-    try {
-      const startupQuestions = await strapiGetStartupQuestions();
-      setState({ startupQuestions, loading: false, error: null });
-    } catch (err: unknown) {
-      const error = err as Error;
-      setState({ startupQuestions: null, loading: false, error: error.message });
-    }
+  const clearStartupQuestions = useCallback(() => {
+    setState((prev) => ({ ...prev, startupQuestions: null }));
   }, []);
+
+  const fetchStartupQuestions = useCallback(
+    async (startupDocumentId?: string, patternDocumentId?: string, surveyDocumentId?: string) => {
+      try {
+        const startupQuestions = await strapiGetStartupQuestions(
+          startupDocumentId,
+          patternDocumentId,
+          surveyDocumentId,
+        );
+        setState({ startupQuestions, loading: false, error: null });
+      } catch (err: unknown) {
+        const error = err as Error;
+        setState({ startupQuestions: null, loading: false, error: error.message });
+      }
+    },
+    [],
+  );
 
   return {
     fetchStartupQuestions,
@@ -40,5 +56,6 @@ export default function useStartupQuestions(): UseStartupQuestionsReturn {
     loading: state.loading,
     error: state.error,
     clearError,
+    clearStartupQuestions,
   };
 }

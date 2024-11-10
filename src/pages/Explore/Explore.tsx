@@ -1,18 +1,18 @@
 import React, { useEffect } from 'react';
 import { Button, CircularProgress, Typography, Box } from '@mui/material';
-import useNextPattern from '@/hooks/useNextPattern';
+import useRecommendedPatterns from '@/hooks/useRecommendedPatterns';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import PatternCard from '@/components/PatternCard';
 import Header from '@/sections/Header';
 
 const Explore: React.FC = () => {
-  const { getNextPattern, pattern, loading, error } = useNextPattern();
+  const { getRecommendedPatterns, recommendedPatterns, loading, error } = useRecommendedPatterns();
 
   useEffect(() => {
-    getNextPattern();
-  }, [getNextPattern]);
+    getRecommendedPatterns();
+  }, [getRecommendedPatterns]);
 
-  if (loading || !pattern) {
+  if (loading || !recommendedPatterns) {
     return (
       <Box
         sx={{
@@ -49,13 +49,11 @@ const Explore: React.FC = () => {
     );
   }
 
-  const handleNext = () => {};
-
   return (
     <>
       <Header title="Explore" />
       <FullSizeCenteredFlexBox>
-        <PatternCard pattern={pattern} onNext={handleNext} />
+        <PatternCard pattern={recommendedPatterns[0]} nextUrl="/explore" />
       </FullSizeCenteredFlexBox>
     </>
   );

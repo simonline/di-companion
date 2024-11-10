@@ -1,19 +1,18 @@
 import React, { useEffect } from 'react';
 import { Button, CircularProgress, Typography, Box } from '@mui/material';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
-import useStartupPatterns from '@/hooks/useStartupPatterns';
+import useStartupPattern from '@/hooks/useStartupPattern';
 import PatternCard from '@/components/PatternCard';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Header from '@/sections/Header';
 
 const Progress: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { fetchStartupPatterns, startupPatterns, loading, error } = useStartupPatterns();
+  const { fetchStartupPattern, startupPattern, loading, error } = useStartupPattern();
 
   useEffect(() => {
-    fetchStartupPatterns();
-  }, [fetchStartupPatterns]);
+    fetchStartupPattern(id as string);
+  }, [fetchStartupPattern, id]);
 
   if (loading) {
     return (
@@ -52,25 +51,6 @@ const Progress: React.FC = () => {
     );
   }
 
-  if (!startupPatterns?.length) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          p: 4,
-        }}
-      >
-        <Typography variant="h6">No patterns available</Typography>
-      </Box>
-    );
-  }
-
-  const startupPattern = startupPatterns?.find(
-    (startupPattern) => startupPattern.documentId === id,
-  );
   if (!startupPattern) {
     return (
       <Box
@@ -91,7 +71,7 @@ const Progress: React.FC = () => {
     <>
       <Header title="Progress" />
       <FullSizeCenteredFlexBox>
-        <PatternCard pattern={startupPattern.pattern} onNext={() => navigate('/progress')} />
+        <PatternCard pattern={startupPattern.pattern} nextUrl="/progress" />
       </FullSizeCenteredFlexBox>
     </>
   );

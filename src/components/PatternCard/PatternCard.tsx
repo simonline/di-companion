@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Card,
@@ -17,7 +17,7 @@ import {
 import ImageIcon from '@mui/icons-material/Image';
 import { Close, Refresh, Check } from '@mui/icons-material';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import type { Pattern } from '@/types/strapi';
+import { type Pattern, ResponseTypeEnum, ResponseEnum } from '@/types/strapi';
 import {
   categoryDisplayNames,
   categoryColors,
@@ -25,57 +25,120 @@ import {
   phaseDisplayNames,
 } from '@/utils/constants';
 import { useNavigate } from 'react-router-dom';
+import useStartupPattern from '@/hooks/useStartupPattern';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ActionDialogProps {
   open: boolean;
   onClose: () => void;
+  nextUrl: string;
+  pattern: Pattern;
+  responseType: ResponseTypeEnum;
   title: string;
-  actions: Array<{
-    label: string;
-    onClick: () => void;
-  }>;
+  actions: [string, ResponseEnum][];
 }
 
-const ActionDialog: React.FC<ActionDialogProps> = ({ open, onClose, title, actions }) => (
-  <Dialog open={open} onClose={onClose}>
-    <DialogTitle>{title}</DialogTitle>
-    <DialogContent>
-      <div className="flex flex-col gap-2 py-4">
-        {actions.map((action, index) => (
-          <Button
-            key={index}
-            fullWidth
-            variant="contained"
-            onClick={() => {
-              action.onClick();
-              onClose();
-            }}
-            sx={{ mt: 1 }}
-          >
-            {action.label}
-          </Button>
-        ))}
-      </div>
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={onClose}>Back</Button>
-    </DialogActions>
-  </Dialog>
-);
+const ActionDialog: React.FC<ActionDialogProps> = ({
+  open,
+  onClose,
+  nextUrl,
+  pattern,
+  responseType,
+  title,
+  actions,
+}) => {
+  const { startup } = useAuth();
+  const navigate = useNavigate();
+  const { createStartupPattern, startupPattern } = useStartupPattern();
+  const [response, setResponse] = React.useState<ResponseEnum | null>(null);
+
+  useEffect(() => {
+    if (response) {
+      createStartupPattern({
+        startup: { set: { documentId: startup?.documentId as string } },
+        pattern: { set: { documentId: pattern.documentId } },
+        responseType,
+        response,
+      });
+    }
+  }, [response, createStartupPattern, pattern, responseType, startup]);
+
+  useEffect(() => {
+    if (response && startupPattern) {
+      if (responseType === ResponseTypeEnum.accept) {
+        switch (response) {
+          case ResponseEnum.share_reflection:
+            navigate(`/progress/${pattern.documentId}/survey`, { state: { nextUrl } });
+            return;
+          case ResponseEnum.perform_exercise:
+            navigate(`/progress/${pattern.documentId}/exercise`, { state: { nextUrl } });
+            return;
+          case ResponseEnum.think_later:
+            break;
+          default:
+            break;
+        }
+      } else if (responseType === ResponseTypeEnum.reject) {
+        switch (response) {
+          case ResponseEnum.already_addressed:
+            break;
+          case ResponseEnum.maybe_later:
+            break;
+          case ResponseEnum.no_value:
+            break;
+          case ResponseEnum.dont_understand:
+            break;
+          default:
+            break;
+        }
+      }
+      navigate(nextUrl);
+    }
+  }, [response, startupPattern, navigate, pattern, nextUrl, responseType]);
+
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>{title}</DialogTitle>
+      <DialogContent>
+        <div className="flex flex-col gap-2 py-4">
+          {actions.map((action, index) => (
+            <Button
+              key={index}
+              fullWidth
+              variant="contained"
+              color={responseType === ResponseTypeEnum.accept ? 'success' : 'error'}
+              onClick={() => {
+                setResponse(action[1]);
+                onClose();
+              }}
+              sx={{ mt: 1 }}
+            >
+              {action[0]}
+            </Button>
+          ))}
+        </div>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Back</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 interface PatternCardProps {
   pattern: Pattern;
-  onNext: () => void;
+  nextUrl: string;
 }
 
-const PatternCard: React.FC<PatternCardProps> = ({ pattern, onNext }) => {
+const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
   const navigate = useNavigate();
   const [isFlipped, setIsFlipped] = React.useState(false);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [dialogConfig, setDialogConfig] = React.useState<{
+    responseType: ResponseTypeEnum;
     title: string;
-    actions: Array<{ label: string; onClick: () => void }>;
-  }>({ title: '', actions: [] });
+    actions: [string, ResponseEnum][];
+  }>({ responseType: ResponseTypeEnum.accept, title: '', actions: [] });
   const [isVisible, setIsVisible] = React.useState(true);
   const [exitDirection, setExitDirection] = React.useState<'left' | 'right' | null>(null);
 
@@ -85,28 +148,30 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onNext }) => {
 
     // Delay dialog opening until after exit animation
     setTimeout(() => {
-      if (direction === 'left') {
+      if (direction === 'right') {
         setDialogConfig({
-          title: 'Why are you passing?',
+          responseType: ResponseTypeEnum.accept,
+          title: 'Great! What would you like to do?',
           actions: [
-            { label: 'Already addressed', onClick: () => handleResponse('already_addressed') },
-            { label: 'Maybe later', onClick: () => handleResponse('maybe_later') },
-            { label: "Can't see value", onClick: () => handleResponse('no_value') },
-            { label: "Don't get it", onClick: () => handleResponse('dont_understand') },
+            ['Share reflection', ResponseEnum.share_reflection],
+            ['Perform exercise', ResponseEnum.perform_exercise],
+            ['Think about it later', ResponseEnum.think_later],
           ],
         });
       } else {
         setDialogConfig({
-          title: 'Great! What would you like to do?',
+          responseType: ResponseTypeEnum.reject,
+          title: 'Why are you passing?',
           actions: [
-            { label: 'Share reflection', onClick: () => handleResponse('share_reflection') },
-            { label: 'Perform exercise', onClick: () => handleResponse('perform_exercise') },
-            { label: 'Think about it later', onClick: () => handleResponse('think_later') },
+            ['Already addressed', ResponseEnum.already_addressed],
+            ['Maybe later', ResponseEnum.maybe_later],
+            ["Can't see value", ResponseEnum.no_value],
+            ["Don't get it", ResponseEnum.dont_understand],
           ],
         });
       }
       setDialogOpen(true);
-    }, 300); // Match this with animation duration
+    }, 100); // Match this with animation duration
   };
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -124,11 +189,6 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onNext }) => {
     setExitDirection(null);
     setIsVisible(true);
     setIsFlipped(false);
-  };
-
-  const handleResponse = (response: string) => {
-    console.log('Pattern response:', response);
-    onNext();
   };
 
   const cardFront = (
@@ -231,6 +291,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onNext }) => {
                   onClick={() => navigate(`/explore/${relPattern.documentId}`)}
                   mx="0"
                   color="black"
+                  fontStyle="italic"
                   sx={{
                     cursor: 'pointer',
                     textDecoration: 'none',
@@ -242,7 +303,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onNext }) => {
                   {relPattern.name}
                 </Typography>
                 {index !== pattern.relatedPatterns.length - 1 && (
-                  <Typography variant="body2">-</Typography>
+                  <Typography variant="body2">–</Typography>
                 )}
               </>
             ))}
@@ -410,6 +471,9 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onNext }) => {
       <ActionDialog
         open={dialogOpen}
         onClose={handleDialogClose}
+        nextUrl={nextUrl}
+        pattern={pattern}
+        responseType={dialogConfig.responseType}
         title={dialogConfig.title}
         actions={dialogConfig.actions}
       />

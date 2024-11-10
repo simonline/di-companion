@@ -1,12 +1,24 @@
 import { useState, useCallback, useEffect, createContext, useContext, ReactNode } from 'react';
 import {
+  strapiGetStartupPatterns,
+  strapiGetPatterns,
   strapiMe,
   strapiLogin,
   strapiLogout,
   strapiRegister,
   strapiCreateStartup,
+  strapiUpdateStartup,
 } from '@/lib/strapi';
-import type { Startup, User, UserRegistration } from '@/types/strapi';
+import type {
+  CreateStartup,
+  Startup,
+  User,
+  UserRegistration,
+  StartupPattern,
+  Pattern,
+  UpdateStartup,
+} from '@/types/strapi';
+import type { CategoryEnum } from '@/utils/constants';
 
 interface AuthState {
   user: User | null;
@@ -18,7 +30,9 @@ interface AuthState {
 interface UseAuthReturn extends AuthState {
   login: (identifier: string, password: string) => Promise<User>;
   register: (data: UserRegistration) => Promise<User>;
-  createStartup: (data: Startup) => Promise<Startup>;
+  createStartup: (data: CreateStartup) => Promise<Startup>;
+  updateStartup: (data: UpdateStartup) => Promise<Startup>;
+  updateScores: () => Promise<Record<CategoryEnum, number> | null>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   clearError: () => void;
@@ -123,12 +137,34 @@ export function useAuth(): UseAuthReturn {
   );
 
   const createStartup = useCallback(
-    async (data: Startup): Promise<Startup> => {
+    async (data: CreateStartup): Promise<Startup> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const startupData = await strapiCreateStartup(data);
-        setStartup(startupData);
-        return startupData;
+        const startup = await strapiCreateStartup(data);
+        setStartup(startup);
+        return startup;
+      } catch (error) {
+        const err = error as Error;
+        setState((prev) => ({
+          ...prev,
+          error: err.message,
+          loading: false,
+        }));
+        throw error;
+      } finally {
+        setState((prev) => ({ ...prev, loading: false }));
+      }
+    },
+    [setStartup],
+  );
+
+  const updateStartup = useCallback(
+    async (data: UpdateStartup): Promise<Startup> => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+      try {
+        const startup = await strapiUpdateStartup(data);
+        setStartup(startup);
+        return startup;
       } catch (error) {
         const err = error as Error;
         setState((prev) => ({
@@ -162,6 +198,64 @@ export function useAuth(): UseAuthReturn {
     }
   }, [setUser]);
 
+  const updateScores = useCallback(async (): Promise<Record<CategoryEnum, number> | null> => {
+    if (!state.startup) return null;
+
+    let startupPatterns: StartupPattern[] = [];
+    let patterns: Pattern[] = [];
+    try {
+      startupPatterns = await strapiGetStartupPatterns(state.startup.documentId);
+      patterns = await strapiGetPatterns();
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: 'Failed to fetch next pattern',
+      }));
+    }
+
+    const categoryPoints: Record<CategoryEnum, number[]> = {
+      entrepreneur: [0, 0],
+      team: [0, 0],
+      stakeholders: [0, 0],
+      product: [0, 0],
+      sustainability: [0, 0],
+    };
+
+    // Get total points achieved for each category
+    startupPatterns.forEach((startupPattern) => {
+      if (!startupPattern.pattern.category) return;
+      console.log(startupPattern.pattern.category);
+      categoryPoints[startupPattern.pattern.category][0] += startupPattern.points;
+    });
+    console.log(categoryPoints);
+
+    // Get total points available for each category
+    patterns.forEach((pattern) => {
+      if (!pattern.category) return;
+      categoryPoints[pattern.category][1] += 5;
+    });
+
+    // Calculate the maturity score for each category
+    const categoryScores = Object.entries(categoryPoints).map(
+      ([category, [pointsAchieved, totalPoints]]) => [
+        category as CategoryEnum,
+        // Round score to 2 decimal places
+        Math.round((pointsAchieved / totalPoints) * 100) / 100,
+      ],
+    );
+    const maturityScores = Object.fromEntries(categoryScores);
+    console.log(maturityScores);
+
+    // Update the startup with the new scores
+    updateStartup({
+      documentId: state.startup.documentId,
+      scores: maturityScores,
+    });
+
+    return maturityScores;
+  }, [state.startup, updateStartup]);
+
   return {
     user: state.user,
     startup: state.startup,
@@ -170,6 +264,8 @@ export function useAuth(): UseAuthReturn {
     login,
     register,
     createStartup,
+    updateStartup,
+    updateScores,
     logout,
     isAuthenticated: Boolean(state.user),
     clearError,
