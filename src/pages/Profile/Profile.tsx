@@ -65,6 +65,12 @@ function Profile() {
               />
             ))}
         </List>
+
+        <Stack sx={{ mt: 4 }}>
+          <Button variant="contained" color="primary" onClick={() => navigate('/logout')}>
+            Logout
+          </Button>
+        </Stack>
       </CenteredFlexBox>
     </>
   );
