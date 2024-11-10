@@ -186,7 +186,19 @@ const Survey: React.FC = () => {
             <RadioGroup {...field} row>
               {question.options &&
                 question.options.map(({ value, label }) => (
-                  <FormControlLabel key={value} value={value} control={<Radio />} label={label} />
+                  <FormControlLabel
+                    key={value}
+                    value={value}
+                    control={<Radio sx={{ p: 0.5 }} />}
+                    label={label}
+                    sx={{
+                      margin: 0, // Remove margin around each FormControlLabel
+                      mr: 1, // Add small right margin between items to space them out slightly
+                      '& .MuiTypography-root': {
+                        fontSize: '0.875rem', // Adjust font size of label
+                      },
+                    }}
+                  />
                 ))}
             </RadioGroup>
             {error && <FormHelperText>{error}</FormHelperText>}
