@@ -95,12 +95,11 @@ async function fetchPaginatedApi<T>(endpoint: string, options: RequestInit = {})
 export async function strapiMe(): Promise<User> {
   try {
     const token = getStoredToken();
-    console.log(token);
     if (!token) {
       throw new Error('Unauthorized');
     }
 
-    return await fetchSingleApi<User>(
+    return await fetchApi<User>(
       '/users/me?populate[startups][filters][publishedAt][$notNull]=true',
       {
         headers: {

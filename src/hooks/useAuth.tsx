@@ -94,7 +94,6 @@ export function useAuth(): UseAuthReturn {
       try {
         await strapiLogin(identifier, password);
         const userData = await strapiMe();
-
         setUser(userData);
         userData.startups?.length > 0 && setStartup(userData.startups[0]);
         return userData;
