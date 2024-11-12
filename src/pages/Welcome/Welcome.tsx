@@ -18,6 +18,10 @@ function Welcome() {
           backgroundColor: '#006a9d',
           color: 'white',
           height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
         }}
       >
         {/* Wedge in background */}
@@ -33,12 +37,13 @@ function Welcome() {
             zIndex: 1, // Ensure it sits behind the logo and text
           }}
         />
-        <Container sx={{ mt: 8, mb: 4, ml: 0 }}>
+        <Container sx={{ mb: 4 }}>
           {/* Header */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               padding: '0',
               position: 'relative',
               flexDirection: isMobile ? 'column' : 'row',
