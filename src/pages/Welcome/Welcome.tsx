@@ -1,40 +1,93 @@
 import React from 'react';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Avatar from '@mui/material/Avatar';
+import { Box, Typography, Button, Container, Grid, Card, CardContent, Avatar } from '@mui/material';
 import StyleIcon from '@mui/icons-material/Style';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import SpeedIcon from '@mui/icons-material/Speed';
 import ForumIcon from '@mui/icons-material/Forum';
 import Meta from '@/components/Meta';
-import Box from '@mui/material/Box';
 import { FlexBox } from '@/components/styled';
+import logoImage from '/logo.png';
 
 function Welcome() {
+  const isMobile = window.innerWidth < 600;
   return (
     <>
       <Meta title="Dynamic Innovation Companion - Welcome" />
       <FlexBox
         sx={{
-          backgroundImage: 'linear-gradient(to bottom right, #1e3c72, #2a5298)',
+          backgroundColor: '#006a9d',
           color: 'white',
+          height: '100%',
         }}
       >
-        <Container maxWidth="lg" sx={{ mt: 8, mb: 4 }}>
-          {/* App Title */}
-          <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
-            Welcome to the
-          </Typography>
-          <Typography variant="h2" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
-            Dynamic Innovation Companion
-          </Typography>
-          <Typography variant="h5" align="center" paragraph>
-            Powered by Strascheg Center for Entrepreneurship (SCE)
-          </Typography>
+        {/* Wedge in background */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '3%',
+            left: 0,
+            width: '100%', // Control the width of the wedge
+            height: '40%',
+            backgroundColor: '#009fe3', // Turquoise color
+            clipPath: 'polygon(0 40%, 100% 0, 100% 100%, 0 60%)', // Creates the wedge/trapezoidal shape
+            zIndex: 1, // Ensure it sits behind the logo and text
+          }}
+        />
+        <Container sx={{ mt: 8, mb: 4, ml: 0 }}>
+          {/* Header */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0',
+              position: 'relative',
+              flexDirection: isMobile ? 'column' : 'row',
+            }}
+          >
+            {/* Logo and App Title */}
+            <div
+              style={{
+                position: 'relative',
+                width: '24vh',
+                height: '24vh',
+                border: '2px dotted white',
+                borderRadius: '50%',
+                padding: '20px',
+                zIndex: 2,
+              }}
+            >
+              <img
+                src={logoImage}
+                alt="Real Time Innovation Logo"
+                style={{
+                  width: '76%',
+                  height: '76%',
+                  borderRadius: '50%',
+                  position: 'absolute',
+                  top: '12%',
+                  left: '12%',
+                  zIndex: 2,
+                }}
+              />
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                marginLeft: '5%',
+                paddingTop: '5%',
+                position: 'relative',
+                zIndex: 2,
+              }}
+            >
+              <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
+                Dynamic Innovation Companion
+              </Typography>
+              <Typography variant="h6" paragraph sx={{ fontWeight: 'normal' }}>
+                Powered by Strascheg Center for Entrepreneurship (SCE)
+              </Typography>
+            </div>
+          </div>
 
           {/* Feature Cards */}
           <Grid container spacing={4} justifyContent="center" sx={{ mt: 4 }}>

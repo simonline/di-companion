@@ -1,3 +1,9 @@
+import entrepreneurIcon from '/icon-entrepreneur.png';
+import teamIcon from '/icon-team.png';
+import stakeholdersIcon from '/icon-stakeholders.png';
+import productIcon from '/icon-product.png';
+import sustainabilityIcon from '/icon-sustainability.png';
+
 export enum CategoryEnum {
   entrepreneur = 'entrepreneur',
   team = 'team',
@@ -31,11 +37,11 @@ export const categoryColors: Record<CategoryEnum, string> = {
 };
 
 export const categoryIcons: Record<CategoryEnum, string> = {
-  entrepreneur: '👤',
-  team: '🤝',
-  stakeholders: '🌐',
-  product: '💡',
-  sustainability: '🌱',
+  entrepreneur: entrepreneurIcon,
+  team: teamIcon,
+  stakeholders: stakeholdersIcon,
+  product: productIcon,
+  sustainability: sustainabilityIcon,
 };
 
 export const phaseNumbers: Record<PhaseEnum, number> = {

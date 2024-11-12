@@ -276,7 +276,7 @@ const Progress: React.FC = () => {
                 }}
               >
                 <CheckIcon sx={{ mr: 1 }} />
-                Completed
+                Applied
               </Badge>
             </ToggleButton>
           </ToggleButtonGroup>

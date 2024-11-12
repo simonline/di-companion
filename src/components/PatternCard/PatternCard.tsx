@@ -217,9 +217,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
         <Typography variant="h6" color="white">
           {categoryDisplayNames[pattern.category]}
         </Typography>
-        <Typography variant="h5" color="white">
-          {categoryIcons[pattern.category]}
-        </Typography>
+        <img src={categoryIcons[pattern.category]} alt={''} height={24} />
       </Box>
       <CardMedia
         sx={{
@@ -337,9 +335,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
         <Typography variant="h6" color="white">
           {categoryDisplayNames[pattern.category]}
         </Typography>
-        <Typography variant="h5" color="white">
-          {categoryIcons[pattern.category]}
-        </Typography>
+        <img src={categoryIcons[pattern.category]} alt={''} height={24} />
       </Box>
       <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <Typography variant="h6" gutterBottom>

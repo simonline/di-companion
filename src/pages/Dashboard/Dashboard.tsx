@@ -10,7 +10,6 @@ import {
   Stack,
   Button,
   Chip,
-  IconButton,
 } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
 import { CenteredFlexBox } from '@/components/styled';
@@ -127,15 +126,7 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
                     }}
                   >
                     {/* Icon */}
-                    <IconButton
-                      size="small"
-                      sx={{
-                        color: categoryColors[category as CategoryEnum],
-                        mr: 1,
-                      }}
-                    >
-                      {categoryIcons[category as CategoryEnum]}
-                    </IconButton>
+                    <img src={categoryIcons[category as CategoryEnum]} alt={''} height={24} />
                     {/* Category Name */}
                     <Typography variant="body1" sx={{ color: 'white', flexGrow: 1 }}>
                       {categoryDisplayNames[category as CategoryEnum]}
