@@ -219,6 +219,7 @@ export function useAuth(): UseAuthReturn {
       stakeholders: [0, 0],
       product: [0, 0],
       sustainability: [0, 0],
+      time_space: [0, 0],
     };
 
     // Get total points achieved for each category
