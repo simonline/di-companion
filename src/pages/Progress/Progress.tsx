@@ -24,7 +24,7 @@ import {
 import { format } from 'date-fns';
 import { CenteredFlexBox } from '@/components/styled';
 import { StartupPattern, ResponseTypeEnum, ResponseEnum } from '@/types/strapi';
-import { categoryColors, categoryDisplayNames, phaseDisplayNames } from '@/utils/constants';
+import { categoryColors, categoryDisplayNames, phaseNumbers, PhaseEnum } from '@/utils/constants';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/sections/Header';
@@ -102,7 +102,7 @@ const PatternListItem: React.FC<{ startupPattern: StartupPattern }> = ({ startup
                   variant="h6"
                   component="div"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 900,
                     mb: 0.5,
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
@@ -124,23 +124,31 @@ const PatternListItem: React.FC<{ startupPattern: StartupPattern }> = ({ startup
               label={categoryDisplayNames[pattern.category]}
               size="small"
               sx={{
-                bgcolor: `${categoryColors[pattern.category]}22`,
-                color: categoryColors[pattern.category],
-                fontWeight: 500,
-                '&:hover': { bgcolor: `${categoryColors[pattern.category]}33` },
+                bgcolor: `${categoryColors[pattern.category]}`,
+                color: 'white',
+                fontWeight: 700,
+                '&:hover': { bgcolor: `${categoryColors[pattern.category]}22` },
                 height: 24,
               }}
             />
-            {pattern.phases.map((phase) => (
+            {Object.entries(phaseNumbers).map(([phase, number]) => (
               <Chip
-                key={phase}
-                label={phaseDisplayNames[phase]}
-                size="small"
-                variant="outlined"
+                key={number}
+                label={number}
                 sx={{
-                  borderColor: 'rgba(0, 0, 0, 0.12)',
-                  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' },
-                  height: 24,
+                  backgroundColor: pattern.phases.includes(phase as PhaseEnum)
+                    ? '#918d73'
+                    : '#cccdcc',
+                  color: 'white',
+                  fontWeight: '900',
+                  fontSize: '.9em',
+                  borderRadius: '50%',
+                  height: '1.5em',
+                  width: '1.5em',
+                  padding: 0,
+                  span: {
+                    padding: 0,
+                  },
                 }}
               />
             ))}
