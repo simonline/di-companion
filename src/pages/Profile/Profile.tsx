@@ -44,7 +44,9 @@ function Profile() {
           <Avatar sx={{ width: 80, height: 80 }} alt={user.username}>
             {user.username.charAt(0).toUpperCase()}
           </Avatar>
-          <Typography variant="h6">{user.username}</Typography>
+          <Typography fontWeight="700" variant="h6">
+            {user.username}
+          </Typography>
           <Typography variant="body2" color="text.secondary">
             DI user since {joinDate}
           </Typography>

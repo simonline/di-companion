@@ -63,7 +63,7 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
   return (
     <Card>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" fontWeight="700" gutterBottom>
           Your Maturity Score
         </Typography>
         <Grid container spacing={2}>
@@ -164,7 +164,11 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
                 }}
               />
 
-              <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+              <Typography
+                variant="subtitle2"
+                fontWeight="700"
+                sx={{ mb: 1, color: 'text.secondary' }}
+              >
                 Opportunity for Growth
               </Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
@@ -213,7 +217,7 @@ const RecommendationSection: React.FC<DashboardWidgetProps> = () => {
   return (
     <Card>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" fontWeight="700" gutterBottom>
           Recommended Patterns
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -326,7 +330,7 @@ const PatternBacklogSection: React.FC<DashboardWidgetProps> = ({ startupPatterns
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" fontWeight="700" gutterBottom>
           Pattern Backlog
         </Typography>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
