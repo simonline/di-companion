@@ -63,7 +63,7 @@ function Welcome() {
                 fontSize={isMobile ? '2.8em' : '5.7em'}
                 lineHeight="1"
                 marginTop={isMobile ? '-.3em' : '-2em'}
-                marginBottom={isMobile ? '0' : '-.5em'}
+                marginBottom={isMobile ? '0' : '1em'}
                 textAlign="center"
               >
                 Innovation
