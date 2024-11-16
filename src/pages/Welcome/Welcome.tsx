@@ -48,7 +48,7 @@ function Welcome() {
                 gutterBottom
                 fontWeight="bold"
                 textTransform="uppercase"
-                fontSize="8rem"
+                fontSize={isMobile ? '4em' : '8em'}
                 lineHeight="1"
                 marginBottom="0"
                 textAlign="center"
@@ -60,10 +60,10 @@ function Welcome() {
                 gutterBottom
                 fontWeight="bold"
                 textTransform="uppercase"
-                fontSize="5.7rem"
+                fontSize={isMobile ? '2.8em' : '5.7em'}
                 lineHeight="1"
-                marginTop="-2rem"
-                marginBottom="0.5rem"
+                marginTop={isMobile ? '-.3em' : '-2em'}
+                marginBottom={isMobile ? '0' : '-.5em'}
                 textAlign="center"
               >
                 Innovation
@@ -73,7 +73,7 @@ function Welcome() {
                 paragraph
                 fontWeight="bold"
                 textTransform="uppercase"
-                fontSize="2.5rem"
+                fontSize={isMobile ? '1.3em' : '2.5em'}
                 lineHeight="1"
                 color="#abe0f3"
                 textAlign="right"

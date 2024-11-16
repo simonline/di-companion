@@ -13,6 +13,7 @@ import {
   DialogActions,
   IconButton,
   Stack,
+  Tooltip,
 } from '@mui/material';
 import ImageIcon from '@mui/icons-material/Image';
 import { Close, Refresh, Check } from '@mui/icons-material';
@@ -22,7 +23,9 @@ import {
   categoryDisplayNames,
   categoryColors,
   categoryIcons,
+  phaseNumbers,
   phaseDisplayNames,
+  PhaseEnum,
 } from '@/utils/constants';
 import { useNavigate } from 'react-router-dom';
 import useStartupPattern from '@/hooks/useStartupPattern';
@@ -191,6 +194,61 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
     setIsFlipped(false);
   };
 
+  const cardHeader = (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <Box
+        sx={{
+          bgcolor: categoryColors[pattern.category] || '#grey',
+          padding: '16px 32px',
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <Typography
+            variant="h6"
+            color="white"
+            fontSize="1em"
+            lineHeight="1.1em"
+            fontWeight="bold"
+          >
+            {categoryDisplayNames[pattern.category]}
+          </Typography>
+          <Typography variant="h6" color="white" fontSize="1em" lineHeight="1.1em">
+            {pattern.subcategory}
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            bgcolor: categoryColors[pattern.category] || '#grey',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingLeft: 4,
+            borderTopRightRadius: 16,
+            borderBottomLeftRadius: 16,
+          }}
+        >
+          <img src={categoryIcons[pattern.category]} alt={''} height={70} />
+        </Box>
+      </Box>
+    </Box>
+  );
+
   const cardFront = (
     <Card
       sx={{
@@ -204,74 +262,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
         overflow: 'visible',
       }}
     >
-      <Box
-        sx={{
-          position: 'relative',
-        }}
-      >
-        <Box
-          sx={{
-            bgcolor: categoryColors[pattern.category] || '#grey',
-            paddingX: 8,
-            paddingTop: 4,
-            paddingBottom: 3,
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography
-              variant="h6"
-              color="white"
-              fontSize="1.1em"
-              lineHeight="1.1em"
-              fontWeight="bold"
-            >
-              {categoryDisplayNames[pattern.category]}
-            </Typography>
-            <Typography variant="h6" color="white" fontSize="1.1em" lineHeight="1.1em">
-              {pattern.subcategory}
-            </Typography>
-          </Box>
-        </Box>
-        <Box
-          sx={{
-            bgcolor: categoryColors[pattern.category] || '#grey',
-            position: 'absolute',
-            right: 0,
-            top: 0,
-            width: '40%',
-            height: '150%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            paddingRight: 5,
-            zIndex: 2,
-            borderTopRightRadius: 16,
-            borderBottomLeftRadius: 16,
-            '&::before': {
-              content: '" "',
-              background: '#4e70e2',
-              height: '2em',
-              width: '2em',
-              position: 'absolute',
-              bottom: '1em',
-              left: '-2em',
-              borderRadius: '16px' /* Match the parent border-radius */,
-              boxShadow: '0 0 0 10px red' /* The 'cut out' edge color */,
-              '-webkit-mask':
-                'linear-gradient(#000, #000) content-box, linear-gradient(#000, #000)',
-              ' -webkit-mask-composite': 'destination-out',
-              'mask-composite': 'exclude',
-            },
-          }}
-        >
-          <img src={categoryIcons[pattern.category]} alt={''} height={70} />
-        </Box>
-      </Box>
+      {cardHeader}
       <CardMedia
         sx={{
           height: '30%',
@@ -312,7 +303,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
       <CardContent
         sx={{
           display: 'flex',
-          paddingX: 8,
+          paddingX: 4,
           paddingY: 4,
           flexDirection: 'column',
           alignItems: 'flex-start',
@@ -321,10 +312,12 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
         <Typography
           variant="h4"
           gutterBottom
+          fontSize="1.8em"
           fontWeight="900"
           lineHeight="1.1em"
           color={categoryColors[pattern.category]}
           sx={{ flex: 1 }}
+          marginBottom="2em"
         >
           {pattern.name}
         </Typography>
@@ -402,24 +395,18 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
         transform: 'rotateY(180deg)',
       }}
     >
-      <Box
-        sx={{
-          bgcolor: categoryColors[pattern.category] || '#grey',
-          p: 2,
-          borderTopLeftRadius: 16,
-          borderTopRightRadius: 16,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
+      {cardHeader}
+      <CardContent
+        sx={{ height: '100%', display: 'flex', flexDirection: 'column', paddingTop: '2em' }}
       >
-        <Typography variant="h6" color="white">
-          {categoryDisplayNames[pattern.category]}
-        </Typography>
-        <img src={categoryIcons[pattern.category]} alt={''} height={24} />
-      </Box>
-      <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="h6" gutterBottom>
+        <Typography
+          variant="h3"
+          fontSize="1.8em"
+          fontWeight="900"
+          lineHeight="1.1em"
+          color={categoryColors[pattern.category]}
+          marginBottom=".8em"
+        >
           {pattern.name}
         </Typography>
         <Typography variant="body1">{pattern.description}</Typography>
@@ -431,13 +418,37 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
         >
           <Stack direction="row" spacing={1} alignItems="center" mt={2}>
             <Stack direction="row" spacing={0.5}>
-              {pattern.phases.map((phase) => (
-                <Chip
-                  key={phase}
-                  label={phaseDisplayNames[phase]}
-                  size="small"
-                  variant="outlined"
-                />
+              <Typography
+                variant="body2"
+                fontWeight="900"
+                textTransform="uppercase"
+                fontSize="1em"
+                paddingTop="0.3em"
+                paddingRight=".3em"
+              >
+                Phases
+              </Typography>
+              {Object.entries(phaseNumbers).map(([phase, number]) => (
+                <Tooltip key={number} title={phaseDisplayNames[phase]}>
+                  <Chip
+                    label={number}
+                    sx={{
+                      backgroundColor: pattern.phases.includes(phase as PhaseEnum)
+                        ? '#918d73'
+                        : '#cccdcc',
+                      color: 'white',
+                      fontWeight: '900',
+                      fontSize: '1.2em',
+                      borderRadius: '50%',
+                      height: '1.5em',
+                      width: '1.5em',
+                      padding: 0,
+                      span: {
+                        padding: 0,
+                      },
+                    }}
+                  />
+                </Tooltip>
               ))}
             </Stack>
           </Stack>
