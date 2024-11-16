@@ -257,8 +257,9 @@ export async function strapiGetPattern(documentId: string): Promise<Pattern> {
       throw new Error('Unauthorized');
     }
 
-    let url = `/patterns/${documentId}?`;
-    url += 'populate[0]=image&populate[1]=relatedPatterns';
+    let url = `/patterns/${documentId}`;
+    url += '?populate[relatedPatterns]=*';
+    url += '&populate[image][fields][0]=url';
     url += '&populate[exercise][fields][0]=documentId';
     url += '&populate[survey][fields][0]=documentId';
 
