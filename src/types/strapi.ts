@@ -51,12 +51,14 @@ export interface StrapiSetRelated {
 
 export interface Pattern {
   documentId: string;
+  patternId: string;
   name: string;
   description: string;
   image: {
     url: string;
   };
   category: CategoryEnum;
+  subcategory: string;
   phases: PhaseEnum[];
   relatedPatterns: Pattern[];
   exercise: StrapiRelated | null;

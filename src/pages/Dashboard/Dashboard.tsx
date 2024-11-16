@@ -128,7 +128,7 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
                     {/* Icon */}
                     <img src={categoryIcons[category as CategoryEnum]} alt={''} height={24} />
                     {/* Category Name */}
-                    <Typography variant="body1" sx={{ color: 'white', flexGrow: 1 }}>
+                    <Typography variant="body1" sx={{ color: 'white', flexGrow: 1, marginLeft: 1 }}>
                       {categoryDisplayNames[category as CategoryEnum]}
                     </Typography>
                     {/* Percentage */}

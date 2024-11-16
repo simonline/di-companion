@@ -1,8 +1,9 @@
-import entrepreneurIcon from '/icon-entrepreneur.png';
-import teamIcon from '/icon-team.png';
-import stakeholdersIcon from '/icon-stakeholders.png';
-import productIcon from '/icon-product.png';
-import sustainabilityIcon from '/icon-sustainability.png';
+import timeSpaceIcon from '/icon-time-space.svg';
+import entrepreneurIcon from '/icon-entrepreneur.svg';
+import teamIcon from '/icon-team.svg';
+import stakeholdersIcon from '/icon-stakeholders.svg';
+import productIcon from '/icon-product.svg';
+import sustainabilityIcon from '/icon-sustainability.svg';
 
 export enum CategoryEnum {
   entrepreneur = 'entrepreneur',
@@ -10,6 +11,7 @@ export enum CategoryEnum {
   stakeholders = 'stakeholders',
   product = 'product',
   sustainability = 'sustainability',
+  time_space = 'time_space',
 }
 
 export enum PhaseEnum {
@@ -21,19 +23,21 @@ export enum PhaseEnum {
 }
 
 export const categoryDisplayNames: Record<CategoryEnum, string> = {
-  entrepreneur: 'Entrepreneur',
-  team: 'Team',
-  stakeholders: 'Stakeholders',
-  product: 'Product',
-  sustainability: 'Sustainability',
+  entrepreneur: 'The Entrepreneur',
+  team: 'Team & Collaboration',
+  stakeholders: 'Customers, Stakeholders, and Systems',
+  product: 'Truly, the best solution',
+  sustainability: 'Sustainability and responsibility',
+  time_space: 'Time and space',
 };
 
 export const categoryColors: Record<CategoryEnum, string> = {
-  entrepreneur: '#385da9',
-  team: '#944191',
-  stakeholders: '#ea5418',
-  product: '#fbcd00',
-  sustainability: '#8ec13d',
+  time_space: '#8d207a',
+  entrepreneur: '#ec661c',
+  team: '#d2132a',
+  stakeholders: '#0075bc',
+  product: '#53c0d8',
+  sustainability: '#50ae3d',
 };
 
 export const categoryIcons: Record<CategoryEnum, string> = {
@@ -42,6 +46,7 @@ export const categoryIcons: Record<CategoryEnum, string> = {
   stakeholders: stakeholdersIcon,
   product: productIcon,
   sustainability: sustainabilityIcon,
+  time_space: timeSpaceIcon,
 };
 
 export const phaseNumbers: Record<PhaseEnum, number> = {

@@ -10,6 +10,9 @@ const sharedTheme = {
       paper: '#fff',
     },
   },
+  typography: {
+    fontFamily: `'Source Sans Pro', 'Roboto', 'Helvetica', 'Arial', sans-serif`,
+  },
   components: {
     MuiButtonBase: {
       defaultProps: {
@@ -51,7 +54,7 @@ const themes: Record<Themes, ThemeOptions> = {
         paper: '#fff',
       },
       primary: {
-        main: '#006a9d',
+        main: '#07bce5',
       },
     },
   }),
@@ -64,7 +67,7 @@ const themes: Record<Themes, ThemeOptions> = {
         paper: '#171717',
       },
       primary: {
-        main: '#006a9d',
+        main: '#07bce5',
       },
     },
   }),

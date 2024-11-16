@@ -12,31 +12,14 @@ function Welcome() {
   const isMobile = window.innerWidth < 600;
   return (
     <>
-      <Meta title="Dynamic Innovation Companion - Welcome" />
+      <Meta title="Dynamic Innovation Digital Companion - Welcome" />
       <FlexBox
         sx={{
-          backgroundColor: '#006a9d',
+          backgroundColor: '#07bce5',
           color: 'white',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
+          minHeight: '100%',
         }}
       >
-        {/* Wedge in background */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '3%',
-            left: 0,
-            width: '100%', // Control the width of the wedge
-            height: '40%',
-            backgroundColor: '#009fe3', // Turquoise color
-            clipPath: 'polygon(0 40%, 100% 0, 100% 100%, 0 60%)', // Creates the wedge/trapezoidal shape
-            zIndex: 1, // Ensure it sits behind the logo and text
-          }}
-        />
         <Container sx={{ mb: 4 }}>
           {/* Header */}
           <div
@@ -49,32 +32,7 @@ function Welcome() {
               flexDirection: isMobile ? 'column' : 'row',
             }}
           >
-            {/* Logo and App Title */}
-            <div
-              style={{
-                position: 'relative',
-                width: '24vh',
-                height: '24vh',
-                border: '2px dotted white',
-                borderRadius: '50%',
-                padding: '20px',
-                zIndex: 2,
-              }}
-            >
-              <img
-                src={logoImage}
-                alt="Real Time Innovation Logo"
-                style={{
-                  width: '76%',
-                  height: '76%',
-                  borderRadius: '50%',
-                  position: 'absolute',
-                  top: '12%',
-                  left: '12%',
-                  zIndex: 2,
-                }}
-              />
-            </div>
+            {/* Title */}
             <div
               style={{
                 display: 'flex',
@@ -85,11 +43,44 @@ function Welcome() {
                 zIndex: 2,
               }}
             >
-              <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
-                Dynamic Innovation Companion
+              <Typography
+                variant="h1"
+                gutterBottom
+                fontWeight="bold"
+                textTransform="uppercase"
+                fontSize="8rem"
+                lineHeight="1"
+                marginBottom="0"
+                textAlign="center"
+              >
+                Dynamic
               </Typography>
-              <Typography variant="h6" paragraph sx={{ fontWeight: 'normal' }}>
-                Powered by Strascheg Center for Entrepreneurship (SCE)
+              <Typography
+                variant="h2"
+                gutterBottom
+                fontWeight="bold"
+                textTransform="uppercase"
+                fontSize="5.7rem"
+                lineHeight="1"
+                marginTop="-2rem"
+                marginBottom="0.5rem"
+                textAlign="center"
+              >
+                Innovation
+              </Typography>
+              <Typography
+                variant="h4"
+                paragraph
+                fontWeight="bold"
+                textTransform="uppercase"
+                fontSize="2.5rem"
+                lineHeight="1"
+                color="#abe0f3"
+                textAlign="right"
+              >
+                Change the Patterns
+                <br />
+                Change your Thinking
               </Typography>
             </div>
           </div>
@@ -109,7 +100,7 @@ function Welcome() {
                   <Avatar sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)', mx: 'auto', mb: 2 }}>
                     <StyleIcon />
                   </Avatar>
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant="h6" gutterBottom fontWeight="bold">
                     Explore the Pattern Play Cards
                   </Typography>
                   <Typography variant="body2">
@@ -132,7 +123,7 @@ function Welcome() {
                   <Avatar sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)', mx: 'auto', mb: 2 }}>
                     <BookmarkIcon />
                   </Avatar>
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant="h6" gutterBottom fontWeight="bold">
                     Progress and Focus on What Matters
                   </Typography>
                   <Typography variant="body2">
@@ -155,7 +146,7 @@ function Welcome() {
                   <Avatar sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)', mx: 'auto', mb: 2 }}>
                     <SpeedIcon />
                   </Avatar>
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant="h6" gutterBottom fontWeight="bold">
                     Entprepreneurship Journey
                   </Typography>
                   <Typography variant="body2">
@@ -178,7 +169,7 @@ function Welcome() {
                   <Avatar sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)', mx: 'auto', mb: 2 }}>
                     <ForumIcon />
                   </Avatar>
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant="h6" gutterBottom fontWeight="bold">
                     Recommendations & Coach Support
                   </Typography>
                   <Typography variant="body2">
@@ -207,6 +198,15 @@ function Welcome() {
               Login
             </Button>
           </Box>
+
+          {/* Logo */}
+          <Grid container justifyContent="flex-end" alignItems="flex-end">
+            <Grid item xs={12} sm={3}>
+              <Box position="relative" bottom="-40px" right="0">
+                <img src={logoImage} alt="SCE logo" width="100%" />
+              </Box>
+            </Grid>
+          </Grid>
         </Container>
       </FlexBox>
     </>
