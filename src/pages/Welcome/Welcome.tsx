@@ -62,8 +62,7 @@ function Welcome() {
                 textTransform="uppercase"
                 fontSize={isMobile ? '2.8em' : '5.7em'}
                 lineHeight="1"
-                marginTop={isMobile ? '-.3em' : '-2em'}
-                marginBottom={isMobile ? '0' : '1em'}
+                marginTop={isMobile ? '-.3em' : '-.3em'}
                 textAlign="center"
               >
                 Innovation
