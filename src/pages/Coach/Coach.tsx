@@ -10,14 +10,14 @@ import {
   Typography,
 } from '@mui/material';
 import { getRecommendationIcon } from './types';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import useRecommendations from '@/hooks/useRecommendations';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 
 export const Coach: React.FC = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { fetchRecommendations, recommendations, loading, error } = useRecommendations();
 
   useEffect(() => {
@@ -85,7 +85,7 @@ export const Coach: React.FC = () => {
           {recommendations.map((recommendation) => (
             <ListItem
               key={recommendation.documentId}
-              onClick={() => navigate(`/coach/${recommendation.documentId}`)}
+              // onClick={() => navigate(`/coach/${recommendation.documentId}`)}
               sx={{
                 cursor: 'pointer',
                 '&:hover': {

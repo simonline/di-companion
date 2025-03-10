@@ -125,7 +125,7 @@ const Login: React.FC = () => {
                 >
                   Forgot password?
                 </Link>
-                <Link component="button" variant="body2" onClick={() => navigate('/register')}>
+                <Link component="button" variant="body2" onClick={() => navigate('/signup')}>
                   Don&apos;t have an account? Sign Up
                 </Link>
               </Box>

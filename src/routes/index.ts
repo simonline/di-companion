@@ -118,6 +118,11 @@ const useRoutes = (): Partial<Routes> => {
       path: '/progress/:patternId/survey',
       title: 'Survey',
     },
+    [Pages.SelfAssessment]: {
+      component: asyncComponentLoader(() => import('@/pages/SelfAssessment')),
+      path: '/self-assessment',
+      title: 'Self Assessment',
+    },
     [Pages.CoachChat]: {
       component: asyncComponentLoader(() => import('@/pages/Coach/CoachChat')),
       path: '/coach/:id',

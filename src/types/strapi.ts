@@ -6,6 +6,10 @@ export interface UserRegistration {
   password: string;
   givenName: string;
   familyName: string;
+  gender?: string;
+  position?: string;
+  bio?: string;
+  linkedinProfile?: string;
 }
 
 export interface User {
@@ -18,7 +22,10 @@ export interface User {
   blocked: boolean;
   givenName: string;
   familyName: string;
-  startups: Startup[];
+  gender?: string;
+  position?: string;
+  bio?: string;
+  linkedinProfile?: string;
 }
 
 export interface StrapiAuthResponse {

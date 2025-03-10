@@ -10,6 +10,8 @@ import {
   Stack,
   Button,
   Chip,
+  Paper,
+  Tooltip,
 } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
 import { CenteredFlexBox } from '@/components/styled';
@@ -28,6 +30,7 @@ import type { Pattern, StartupPattern } from '@/types/strapi';
 import { getPatternStatus } from '@/pages/Progress/Progress';
 import { useNavigate } from 'react-router-dom';
 import useRecommendedPatterns from '@/hooks/useRecommendedPatterns';
+import InfoIcon from '@mui/icons-material/Info';
 
 interface DashboardWidgetProps {
   startupPatterns: StartupPattern[];
@@ -36,6 +39,7 @@ interface DashboardWidgetProps {
 
 const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
   const { startup, updateScores } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (startup && !startup.scores) {
@@ -60,12 +64,82 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
       }),
   );
 
+  // Calculate overall maturity score (average of all categories)
+  const overallScore =
+    Object.values(startup.scores).reduce((sum, score) => sum + score, 0) /
+    Object.values(startup.scores).length;
+  const overallScorePercentage = Math.round(overallScore * 100);
+
   return (
     <Card>
       <CardContent>
-        <Typography variant="h6" fontWeight="700" gutterBottom>
-          Your Maturity Score
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h6" fontWeight="700" gutterBottom>
+            Your Maturity Score
+          </Typography>
+          <Tooltip title="Your maturity score is calculated based on the patterns you've completed and your self-assessment results. It represents your startup's progress across different perspectives.">
+            <InfoIcon color="action" fontSize="small" />
+          </Tooltip>
+        </Box>
+
+        {/* Overall Score Display */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            mb: 3,
+            bgcolor: 'background.default',
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={6}>
+              <Typography variant="h5" fontWeight="bold" gutterBottom>
+                Overall Maturity Score
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Your startup&apos;s overall maturity across all perspectives
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6} sx={{ textAlign: 'center' }}>
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: 120,
+                  height: 120,
+                  borderRadius: '50%',
+                  background: `conic-gradient(#4CAF50 ${overallScorePercentage}%, #e0e0e0 0)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    width: 100,
+                    height: 100,
+                    borderRadius: '50%',
+                    background: 'white',
+                  },
+                }}
+              >
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
+                  sx={{
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
+                >
+                  {overallScorePercentage}%
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </Paper>
+
         <Grid container spacing={2}>
           <Grid item xs={12} sm={8}>
             {/* Progress Bars */}
@@ -153,7 +227,7 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
               }}
             >
               <Chip
-                label="Coming Soon"
+                label="New"
                 color="primary"
                 size="small"
                 sx={{
@@ -173,19 +247,17 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
               </Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
                 Your <strong>{categoryDisplayNames[lowestCategory[0] as CategoryEnum]}</strong>{' '}
-                perspective has the most room for improvement. Soon you&apos;ll be able to take a
-                detailed assessment to better understand this area.
+                perspective has the most room for improvement. Take our detailed assessment to
+                better understand your startup&apos;s maturity.
               </Typography>
               <Button
                 variant="outlined"
                 size="large"
                 fullWidth
-                disabled
+                onClick={() => navigate('/self-assessment')}
                 sx={{
-                  '&.Mui-disabled': {
-                    borderColor: 'grey.300',
-                    color: 'grey.500',
-                  },
+                  borderColor: 'primary.main',
+                  color: 'primary.main',
                 }}
               >
                 Self-Assessment

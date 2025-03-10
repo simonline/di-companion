@@ -23,6 +23,7 @@ export enum Pages {
   StartupProfile,
   StartupProfileStep,
   Survey,
+  SelfAssessment,
   NotFound,
 }
 
