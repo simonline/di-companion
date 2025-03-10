@@ -26,6 +26,7 @@ export interface User {
   position?: string;
   bio?: string;
   linkedinProfile?: string;
+  startups: Startup[];
 }
 
 export interface StrapiAuthResponse {
