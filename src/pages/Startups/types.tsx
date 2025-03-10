@@ -60,7 +60,7 @@ export const stepValidationSchemas = [
       .required('Target market is required'),
     phase: Yup.string()
       .oneOf(
-        ['start', 'discovery', 'transform', 'create', 'implement'],
+        ['start', 'discover_explore', 'transform', 'create', 'implement'],
         'Please select a valid phase',
       )
       .required('Current phase is required'),
@@ -273,7 +273,7 @@ export const renderStepContent = (
             tooltip="The current development stage of your startup"
           >
             <MenuItem value="start">Just Starting (Idea Phase)</MenuItem>
-            <MenuItem value="discovery">Discovery & Research</MenuItem>
+            <MenuItem value="discover_explore">Discovery & Research</MenuItem>
             <MenuItem value="transform">Transforming Idea to Product</MenuItem>
             <MenuItem value="create">Creating MVP</MenuItem>
             <MenuItem value="implement">Implementing & Scaling</MenuItem>
