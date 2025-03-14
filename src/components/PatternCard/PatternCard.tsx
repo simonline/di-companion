@@ -277,7 +277,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
         }}
       >
         {pattern.image ? (
-          <img src={`https://api.di.sce.de${pattern.image.url}`} alt={''} />
+          <img src={`${import.meta.env.VITE_API_URL}${pattern.image.url}`} alt={''} />
         ) : (
           <Box
             sx={{

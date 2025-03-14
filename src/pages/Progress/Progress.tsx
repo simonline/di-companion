@@ -89,7 +89,7 @@ const PatternListItem: React.FC<{ startupPattern: StartupPattern }> = ({ startup
               >
                 {pattern.image ? (
                   <img
-                    src={`https://api.di.sce.de/${pattern.image.url}`}
+                    src={`${import.meta.env.VITE_API_URL}${pattern.image.url}`}
                     alt={pattern.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />

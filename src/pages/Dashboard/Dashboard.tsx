@@ -333,7 +333,10 @@ const RecommendationSection: React.FC<DashboardWidgetProps> = () => {
                   }}
                 >
                   {pattern.image ? (
-                    <img src={`https://api.di.sce.de${pattern.image.url}`} alt={pattern.name} />
+                    <img
+                      src={`${import.meta.env.VITE_API_URL}${pattern.image.url}`}
+                      alt={pattern.name}
+                    />
                   ) : (
                     <Box
                       sx={{

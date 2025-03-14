@@ -49,7 +49,6 @@ export default function useSearchPatterns(): UseSearchPatternsReturn {
       }
 
       // Create a search URL with the query parameter
-      const STRAPI_URL = 'https://api.di.sce.de';
       const STRAPI_API_PREFIX = '/api';
       let endpoint = '/patterns?';
       endpoint += '&populate[relatedPatterns]=*';
@@ -59,7 +58,7 @@ export default function useSearchPatterns(): UseSearchPatternsReturn {
       endpoint += `&filters[$or][0][name][$containsi]=${encodeURIComponent(query)}`;
       endpoint += `&filters[$or][1][description][$containsi]=${encodeURIComponent(query)}`;
 
-      const url = `${STRAPI_URL}${STRAPI_API_PREFIX}${endpoint}`;
+      const url = `${import.meta.env.VITE_API_URL}${STRAPI_API_PREFIX}${endpoint}`;
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
