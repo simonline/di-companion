@@ -26,7 +26,7 @@ import type {
 } from '../types/strapi';
 import { CategoryEnum } from '../utils/constants';
 
-const STRAPI_URL = 'https://api.di.sce.de';
+const STRAPI_URL = import.meta.env.VITE_API_URL || 'https://api.di.sce.de';
 const STRAPI_API_PREFIX = '/api'; // Strapi v5 uses /api prefix by default
 
 // Helper function to get the stored JWT token
