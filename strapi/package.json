@@ -4,7 +4,7 @@
   "private": true,
   "description": "A Strapi application",
   "scripts": {
-    "build": "strapi build && cp src/extensions/email/templates dist/src/extensions/email/templates",
+    "build": "strapi build && cp -a src/extensions/email/templates dist/src/extensions/email/templates",
     "deploy": "strapi deploy",
     "develop": "strapi develop",
     "start": "strapi start",
