@@ -18,8 +18,8 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
       data: {
         ...data,
         token,
-        invitation_status: 'pending',
-        expires_at: expiresAt,
+        invitationStatus: 'pending',
+        expiresAt,
       },
     });
 
@@ -66,7 +66,7 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
     }
 
     // Check if invitation is still pending
-    if (invitation.invitation_status !== 'pending') {
+    if (invitation.invitationStatus !== 'pending') {
       return ctx.badRequest('Invitation is no longer pending');
     }
 
@@ -77,16 +77,16 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
       const currentYear = new Date().getFullYear().toString();
 
       const emailHtml = await emailTemplates.getEmailTemplate('invitation-reminder', {
-        inviterName: invitation.invitedBy.username,
-        startupName: invitation.startup.name,
+        inviterName: invitation.invitedBy?.username,
+        startupName: invitation.startup?.name,
         invitationLink,
-        expirationDate: new Date(invitation.expires_at).toLocaleDateString(),
+        expirationDate: new Date(invitation.expiresAt).toLocaleDateString(),
         currentYear,
       });
 
       await strapi.plugins.email.services.email.send({
         to: invitation.email,
-        subject: `Reminder: Invitation to join ${invitation.startup.name}`,
+        subject: `Reminder: Invitation to join ${invitation.startup?.name}`,
         html: emailHtml,
       });
     } catch (error) {
@@ -115,12 +115,12 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
     }
 
     // Check if invitation is expired
-    if (new Date(invitation.expires_at) < new Date()) {
+    if (new Date(invitation.expiresAt) < new Date()) {
       return ctx.badRequest('Invitation has expired');
     }
 
     // Check if invitation is still pending
-    if (invitation.invitation_status !== 'pending') {
+    if (invitation.invitationStatus !== 'pending') {
       return ctx.badRequest('Invitation is no longer pending');
     }
 
@@ -134,7 +134,7 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
     // Update the invitation status
     const updatedInvitation = await strapi.entityService.update('api::invitation.invitation', invitation.id, {
       data: {
-        invitation_status: 'accepted',
+        invitationStatus: 'accepted',
       } as any,
     });
 
