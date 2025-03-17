@@ -34,7 +34,7 @@ const customRoutes = {
 // Merge routes
 export default {
   routes: [
-    ...defaultRouter.routes,
+    ...(typeof defaultRouter.routes === 'function' ? defaultRouter.routes() : defaultRouter.routes),
     ...customRoutes.routes,
   ],
 };
