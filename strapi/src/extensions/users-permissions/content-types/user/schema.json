@@ -75,6 +75,31 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::startup.startup"
+    },
+    "gender": {
+      "type": "enumeration",
+      "enum": [
+        "male",
+        "female",
+        "non-binary",
+        "prefer-not-to-say",
+        "other"
+      ]
+    },
+    "position": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "text"
+    },
+    "linkedinProfile": {
+      "type": "string"
+    },
+    "invitations": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::invitation.invitation",
+      "mappedBy": "invitedBy"
     }
   }
 }

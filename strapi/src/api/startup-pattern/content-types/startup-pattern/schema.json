@@ -24,6 +24,28 @@
     },
     "completedAt": {
       "type": "datetime"
+    },
+    "responseType": {
+      "type": "enumeration",
+      "enum": [
+        "accept",
+        "reject"
+      ]
+    },
+    "response": {
+      "type": "enumeration",
+      "enum": [
+        "share_reflection",
+        "perform_exercise",
+        "think_later",
+        "already_addressed",
+        "maybe_later",
+        "no_value",
+        "dont_understand"
+      ]
+    },
+    "points": {
+      "type": "decimal"
     }
   }
 }

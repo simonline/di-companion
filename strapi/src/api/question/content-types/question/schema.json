@@ -42,6 +42,40 @@
     },
     "order": {
       "type": "integer"
+    },
+    "weight": {
+      "type": "decimal"
+    },
+    "patterns": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::pattern.pattern",
+      "inversedBy": "questions"
+    },
+    "phases": {
+      "type": "customField",
+      "default": "[]",
+      "options": [
+        "start",
+        "discover_explore",
+        "transform",
+        "create",
+        "implement"
+      ],
+      "customField": "plugin::multi-select.multi-select"
+    },
+    "categories": {
+      "type": "customField",
+      "default": "[]",
+      "options": [
+        "entrepreneur",
+        "team",
+        "stakeholders",
+        "product",
+        "sustainability",
+        "time_space"
+      ],
+      "customField": "plugin::multi-select.multi-select"
     }
   }
 }

@@ -1,0 +1,52 @@
+{
+  "kind": "collectionType",
+  "collectionName": "methods",
+  "info": {
+    "singularName": "method",
+    "pluralName": "methods",
+    "displayName": "Method"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "phases": {
+      "type": "customField",
+      "default": "[]",
+      "options": [
+        "start",
+        "discover_explore",
+        "transform",
+        "create",
+        "implement"
+      ],
+      "customField": "plugin::multi-select.multi-select"
+    },
+    "categories": {
+      "type": "customField",
+      "default": "[]",
+      "options": [
+        "entrepreneur",
+        "team",
+        "stakeholders",
+        "product",
+        "sustainability",
+        "time_space"
+      ],
+      "customField": "plugin::multi-select.multi-select"
+    },
+    "patterns": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::pattern.pattern",
+      "inversedBy": "methods"
+    },
+    "content": {
+      "type": "richtext"
+    }
+  }
+}

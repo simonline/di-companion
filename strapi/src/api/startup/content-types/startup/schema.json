@@ -79,6 +79,15 @@
         "service",
         "platform"
       ]
+    },
+    "scores": {
+      "type": "json"
+    },
+    "invitations": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::invitation.invitation",
+      "mappedBy": "startup"
     }
   }
 }

@@ -31,19 +31,6 @@
         "images"
       ]
     },
-    "categories": {
-      "type": "customField",
-      "default": "[]",
-      "options": [
-        "the_entrepreneur",
-        "time_space",
-        "sustainability_responsibility",
-        "team_collaboration",
-        "customers_stakeholders_ecosystem",
-        "the_solution"
-      ],
-      "customField": "plugin::multi-select.multi-select"
-    },
     "phases": {
       "type": "customField",
       "default": "[]",
@@ -56,10 +43,44 @@
       ],
       "customField": "plugin::multi-select.multi-select"
     },
-    "surveys": {
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "entrepreneur",
+        "team",
+        "stakeholders",
+        "product",
+        "sustainability",
+        "time_space"
+      ]
+    },
+    "exercise": {
       "type": "relation",
-      "relation": "oneToMany",
+      "relation": "oneToOne",
+      "target": "api::exercise.exercise"
+    },
+    "survey": {
+      "type": "relation",
+      "relation": "oneToOne",
       "target": "api::survey.survey"
+    },
+    "subcategory": {
+      "type": "string"
+    },
+    "patternId": {
+      "type": "string"
+    },
+    "methods": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::method.method",
+      "mappedBy": "patterns"
+    },
+    "questions": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::question.question",
+      "mappedBy": "patterns"
     }
   }
 }
