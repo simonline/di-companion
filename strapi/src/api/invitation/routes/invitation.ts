@@ -1,15 +1,43 @@
-import { factories } from '@strapi/strapi';
-
 /**
  * invitation router
  */
 
-// Create the default CRUD routes
-const defaultRouter = factories.createCoreRouter('api::invitation.invitation');
-
-// Create custom routes
-const customRoutes = {
+// Create a custom router by extending the core router
+export default {
+  type: 'content-api',
   routes: [
+    // Include all default routes
+    {
+      method: 'GET',
+      path: '/invitations',
+      handler: 'api::invitation.invitation.find',
+      config: { policies: [] },
+    },
+    {
+      method: 'GET',
+      path: '/invitations/:id',
+      handler: 'api::invitation.invitation.findOne',
+      config: { policies: [] },
+    },
+    {
+      method: 'POST',
+      path: '/invitations',
+      handler: 'api::invitation.invitation.create',
+      config: { policies: [] },
+    },
+    {
+      method: 'PUT',
+      path: '/invitations/:id',
+      handler: 'api::invitation.invitation.update',
+      config: { policies: [] },
+    },
+    {
+      method: 'DELETE',
+      path: '/invitations/:id',
+      handler: 'api::invitation.invitation.delete',
+      config: { policies: [] },
+    },
+    // Add custom routes
     {
       method: 'POST',
       path: '/invitations/:id/resend',
@@ -28,13 +56,5 @@ const customRoutes = {
         middlewares: [],
       },
     },
-  ],
-};
-
-// Merge routes
-export default {
-  routes: [
-    ...(typeof defaultRouter.routes === 'function' ? defaultRouter.routes() : defaultRouter.routes),
-    ...customRoutes.routes,
   ],
 };
