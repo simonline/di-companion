@@ -23,19 +23,18 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
       },
     });
 
-    // Get startup and user details for the email
-    const startup = await strapi.entityService.findOne('api::startup.startup', data.startup.set.documentId);
-    const invitedBy = await strapi.entityService.findOne('plugin::users-permissions.user', data.invitedBy.set.documentId);
-
-    // Send invitation email
+    // Send invitation email without querying for related entities
     try {
-      // Get the email template
       const invitationLink = `${process.env.FRONTEND_URL}/accept-invitation?token=${token}`;
       const currentYear = new Date().getFullYear().toString();
 
+      // Use the data from the request directly
+      const startupName = data.startupName || 'a startup';
+      const inviterName = data.inviterName || 'Someone';
+
       const emailHtml = await emailTemplates.getEmailTemplate('invitation', {
-        inviterName: invitedBy.username,
-        startupName: startup.name,
+        inviterName,
+        startupName,
         invitationLink,
         expirationDate: expiresAt.toLocaleDateString(),
         currentYear,
@@ -43,7 +42,7 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
 
       await strapi.plugins.email.services.email.send({
         to: data.email,
-        subject: `Invitation to join ${startup.name}`,
+        subject: `Invitation to join ${startupName}`,
         html: emailHtml,
       });
     } catch (error) {

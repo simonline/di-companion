@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Typography,
@@ -52,13 +52,7 @@ const StartupInvitations: React.FC = () => {
 
   const baseUrl = window.location.origin;
 
-  useEffect(() => {
-    if (startupId) {
-      loadInvitations();
-    }
-  });
-
-  const loadInvitations = async () => {
+  const loadInvitations = useCallback(async () => {
     if (!startupId) return;
 
     setLoading(true);
@@ -75,7 +69,13 @@ const StartupInvitations: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startupId]);
+
+  useEffect(() => {
+    if (startupId) {
+      loadInvitations();
+    }
+  }, [startupId, loadInvitations]);
 
   const handleCreateInvitation = async (e: React.FormEvent) => {
     e.preventDefault();

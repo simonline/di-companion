@@ -16,15 +16,15 @@ const emailTemplates = {
    */
   async getEmailTemplate(templateName: string, data: Record<string, string> = {}): Promise<string> {
     try {
-      const templatePath = path.join(__dirname, 'templates', `${templateName}.html`);
+      const templatePath = path.join(__dirname, `${templateName}.html`);
       let template = await readFile(templatePath, 'utf8');
-      
+
       // Replace variables in the template
       Object.keys(data).forEach(key => {
         const regex = new RegExp(`{{${key}}}`, 'g');
         template = template.replace(regex, data[key]);
       });
-      
+
       return template;
     } catch (error) {
       console.error(`Error loading email template ${templateName}:`, error);

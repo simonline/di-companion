@@ -4,11 +4,13 @@
   "private": true,
   "description": "A Strapi application",
   "scripts": {
-    "build": "strapi build",
+    "build": "strapi build && npm run copy-templates",
     "deploy": "strapi deploy",
-    "develop": "strapi develop",
+    "develop": "strapi develop & npm run copy-templates:watch",
     "start": "strapi start",
-    "strapi": "strapi"
+    "strapi": "strapi",
+    "copy-templates": "mkdir -p dist/src/extensions/email/templates && cp -r src/extensions/email/templates/* dist/src/extensions/email/templates/",
+    "copy-templates:watch": "nodemon --watch src/extensions/email/templates -e html --exec 'npm run copy-templates'"
   },
   "dependencies": {
     "@strapi/plugin-cloud": "5.1.1",
@@ -26,7 +28,8 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "typescript": "^5"
+    "typescript": "^5",
+    "nodemon": "^3.0.1"
   },
   "engines": {
     "node": ">=18.0.0 <=22.x.x",
