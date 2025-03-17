@@ -16,7 +16,7 @@ const emailTemplates = {
    */
   async getEmailTemplate(templateName: string, data: Record<string, string> = {}): Promise<string> {
     try {
-      const templatePath = path.join(__dirname, `${templateName}.html`);
+      const templatePath = path.join(__dirname, 'templates', `${templateName}.html`);
       let template = await readFile(templatePath, 'utf8');
 
       // Replace variables in the template

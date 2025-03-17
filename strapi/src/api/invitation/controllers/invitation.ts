@@ -56,7 +56,8 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
     const { id } = ctx.params;
 
     // Find the invitation
-    const invitation = await strapi.entityService.findOne('api::invitation.invitation', id, {
+    const invitation = await strapi.db.query('api::invitation.invitation').findOne({
+      where: { documentId: id },
       populate: {
         startup: true,
         invitedBy: true,
