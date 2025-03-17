@@ -58,7 +58,10 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
 
     // Find the invitation
     const invitation = await strapi.entityService.findOne('api::invitation.invitation', id, {
-      populate: ['startup', 'invitedBy'],
+      populate: {
+        startup: true,
+        invitedBy: true,
+      },
     });
 
     if (!invitation) {
@@ -70,23 +73,26 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
       return ctx.badRequest('Invitation is no longer pending');
     }
 
+    // Create temporary objects with type assertions to satisfy TypeScript
+    const invitationData = invitation as any;
+
     // Send invitation email again
     try {
       // Get the email template
-      const invitationLink = `${process.env.FRONTEND_URL}/accept-invitation?token=${invitation.token}`;
+      const invitationLink = `${process.env.FRONTEND_URL}/accept-invitation?token=${invitationData.token}`;
       const currentYear = new Date().getFullYear().toString();
 
       const emailHtml = await emailTemplates.getEmailTemplate('invitation-reminder', {
-        inviterName: invitation.invitedBy?.username,
-        startupName: invitation.startup?.name,
+        inviterName: invitationData.invitedBy?.username,
+        startupName: invitationData.startup?.name,
         invitationLink,
-        expirationDate: new Date(invitation.expiresAt).toLocaleDateString(),
+        expirationDate: new Date(invitationData.expiresAt).toLocaleDateString(),
         currentYear,
       });
 
       await strapi.plugins.email.services.email.send({
-        to: invitation.email,
-        subject: `Reminder: Invitation to join ${invitation.startup?.name}`,
+        to: invitationData.email,
+        subject: `Reminder: Invitation to join ${invitationData.startup?.name}`,
         html: emailHtml,
       });
     } catch (error) {
