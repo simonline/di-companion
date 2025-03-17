@@ -3,7 +3,7 @@ import { Formik, Form, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import { TextField, Button, Box, Link, Alert, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Meta from '@/components/Meta';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,9 +23,13 @@ const LoginSchema = Yup.object().shape({
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string>('');
+
+  // Get the redirect path from location state or default to dashboard
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleSubmit = async (
     values: LoginFormValues,
@@ -33,7 +37,8 @@ const Login: React.FC = () => {
   ): Promise<void> => {
     try {
       await login(values.email, values.password);
-      navigate('/dashboard');
+      // Redirect to the page the user was trying to access
+      navigate(from, { replace: true });
     } catch (err) {
       const error = err as Error;
       console.error('Login error:', error);

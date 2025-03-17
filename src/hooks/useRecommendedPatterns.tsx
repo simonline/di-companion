@@ -71,7 +71,6 @@ export default function usePatterns(): UsePatternsReturn {
       }
 
       setState((prev) => ({ ...prev, loading: true }));
-
       try {
         // Get category with lowest score
         const category = getRecommendedCategory(state.startup as Startup);

@@ -23,16 +23,14 @@ import type {
   UpdateStartupExercise,
   UpdateStartupPattern,
   UpdateStartupQuestion,
+  Invitation,
+  CreateInvitation,
+  UpdateInvitation,
 } from '../types/strapi';
 import { CategoryEnum } from '../utils/constants';
+import axiosInstance from './axios';
 
-const STRAPI_URL = import.meta.env.VITE_API_URL || 'https://api.di.sce.de';
 const STRAPI_API_PREFIX = '/api'; // Strapi v5 uses /api prefix by default
-
-// Helper function to get the stored JWT token
-const getStoredToken = (): string | null => {
-  return localStorage.getItem('strapi_jwt');
-};
 
 // Helper function to store JWT token
 const storeToken = (token: string): void => {
@@ -40,33 +38,52 @@ const storeToken = (token: string): void => {
 };
 
 // Helper function for API requests
-async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${STRAPI_URL}${STRAPI_API_PREFIX}${endpoint}`;
-  const response = await fetch(url, options);
+async function fetchApi<T>(endpoint: string, options: any = {}): Promise<T> {
+  try {
+    const url = `${STRAPI_API_PREFIX}${endpoint}`;
+    const config: any = {
+      url,
+      method: options.method || 'GET',
+      headers: options.headers || {},
+    };
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw {
-      error: {
-        message: error.error?.message || 'API request failed',
-        ...error,
-      },
-    } as StrapiError;
+    // Handle request body
+    if (options.body) {
+      config.data = typeof options.body === 'string' ? JSON.parse(options.body) : options.body;
+    }
+
+    // For FormData, don't set Content-Type header (browser will set it with boundary)
+    if (options.body instanceof FormData) {
+      config.data = options.body;
+      delete config.headers['Content-Type'];
+    }
+
+    const response = await axiosInstance(config);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw {
+        error: {
+          message: error.response.data.error?.message || 'API request failed',
+          ...error.response.data.error,
+        },
+      } as StrapiError;
+    }
+    throw error;
   }
-  return response.json();
 }
 
-async function fetchSingleApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+async function fetchSingleApi<T>(endpoint: string, options: any = {}): Promise<T> {
   const response = await fetchApi<StrapiSingleResponse<T>>(endpoint, options);
   return response.data;
 }
 
-async function fetchCollectionApi<T>(endpoint: string, options: RequestInit = {}): Promise<T[]> {
+async function fetchCollectionApi<T>(endpoint: string, options: any = {}): Promise<T[]> {
   const response = await fetchApi<StrapiCollectionResponse<T>>(endpoint, options);
   return response.data;
 }
 
-async function fetchPaginatedApi<T>(endpoint: string, options: RequestInit = {}): Promise<T[]> {
+async function fetchPaginatedApi<T>(endpoint: string, options: any = {}): Promise<T[]> {
   let page = 1;
   const pageSize = 100; // Maximum page size in Strapi v5
   let hasMore = true;
@@ -94,19 +111,9 @@ async function fetchPaginatedApi<T>(endpoint: string, options: RequestInit = {})
 
 export async function strapiMe(): Promise<User> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     return await fetchApi<User>(
       '/users/me?populate[startups][filters][publishedAt][$notNull]=true',
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      },
     );
   } catch (error) {
     const strapiError = error as StrapiError;
@@ -165,16 +172,11 @@ export async function strapiRegister(user: UserRegistration): Promise<StrapiAuth
 
 export async function strapiCreateStartup(startup: CreateStartup): Promise<Startup> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     return await fetchSingleApi<Startup>('/startups', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         data: startup,
@@ -188,19 +190,14 @@ export async function strapiCreateStartup(startup: CreateStartup): Promise<Start
 
 export async function strapiUpdateStartup(updateStartup: UpdateStartup): Promise<Startup> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
     const { documentId, ...payload } = updateStartup;
     const url = `/startups/${documentId}`;
 
+    // No need to manually add token - the axios interceptor will handle it
     return await fetchSingleApi<Startup>(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         data: payload,
@@ -224,11 +221,7 @@ export async function strapiLogout(): Promise<void> {
 
 export async function strapiGetPatterns(category?: CategoryEnum): Promise<Pattern[]> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     let url = '/patterns?';
     url += '&populate[relatedPatterns]=*';
     url += '&populate[image][fields][0]=url';
@@ -238,12 +231,7 @@ export async function strapiGetPatterns(category?: CategoryEnum): Promise<Patter
       url += `&filters[category][$eq]=${category}`;
     }
 
-    return await fetchPaginatedApi<Pattern>(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return await fetchPaginatedApi<Pattern>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading patterns');
@@ -252,23 +240,14 @@ export async function strapiGetPatterns(category?: CategoryEnum): Promise<Patter
 
 export async function strapiGetPattern(documentId: string): Promise<Pattern> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     let url = `/patterns/${documentId}`;
     url += '?populate[relatedPatterns]=*';
     url += '&populate[image][fields][0]=url';
     url += '&populate[exercise][fields][0]=documentId';
     url += '&populate[survey][fields][0]=documentId';
 
-    return await fetchSingleApi<Pattern>(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return await fetchSingleApi<Pattern>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading pattern');
@@ -277,17 +256,8 @@ export async function strapiGetPattern(documentId: string): Promise<Pattern> {
 
 export async function strapiGetExercises(): Promise<Exercise[]> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
-    return await fetchPaginatedApi<Exercise>('/exercises', {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchPaginatedApi<Exercise>('/exercises');
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading exercises');
@@ -296,17 +266,8 @@ export async function strapiGetExercises(): Promise<Exercise[]> {
 
 export async function strapiGetSurveys(): Promise<Survey[]> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
-    return await fetchPaginatedApi<Survey>('/surveys', {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchPaginatedApi<Survey>('/surveys');
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading surveys');
@@ -315,17 +276,8 @@ export async function strapiGetSurveys(): Promise<Survey[]> {
 
 export async function strapiGetQuestions(): Promise<Question[]> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
-    return await fetchCollectionApi<Question>('/questions', {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchCollectionApi<Question>('/questions');
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading questions');
@@ -334,17 +286,8 @@ export async function strapiGetQuestions(): Promise<Question[]> {
 
 export async function strapiGetStartups(): Promise<Startup[]> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
-    return await fetchPaginatedApi<Startup>('/startups', {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchPaginatedApi<Startup>('/startups');
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading startups');
@@ -356,11 +299,7 @@ export async function strapiGetStartupPatterns(
   patternDocumentId?: string,
 ): Promise<StartupPattern[]> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     let url =
       '/startup-patterns?populate[0]=pattern&populate[1]=pattern.image&populate[2]=pattern.relatedPatterns';
     url += '&populate[3]=startup';
@@ -370,12 +309,7 @@ export async function strapiGetStartupPatterns(
     }
     url += '&sort=createdAt';
 
-    return await fetchPaginatedApi<StartupPattern>(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return await fetchPaginatedApi<StartupPattern>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading startup patterns');
@@ -384,19 +318,10 @@ export async function strapiGetStartupPatterns(
 
 export async function strapiGetStartupPattern(documentId?: string): Promise<StartupPattern> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     const url = `/startup-patterns/${documentId}?populate[0]=pattern&populate[1]=pattern.image&populate[2]=pattern.relatedPatterns`;
 
-    return await fetchSingleApi<StartupPattern>(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return await fetchSingleApi<StartupPattern>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading startup patterns');
@@ -407,16 +332,11 @@ export async function strapiCreateStartupPattern(
   startupPattern: CreateStartupPattern,
 ): Promise<StartupPattern> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     return await fetchSingleApi<StartupPattern>('/startup-patterns', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         data: startupPattern,
@@ -432,19 +352,14 @@ export async function strapiUpdateStartupPattern(
   updateStartupPattern: UpdateStartupPattern,
 ): Promise<StartupPattern> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
     const { documentId, ...payload } = updateStartupPattern;
     const url = `/startup-patterns/${documentId}`;
 
+    // No need to manually add token - the axios interceptor will handle it
     return await fetchSingleApi<StartupPattern>(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         data: payload,
@@ -462,11 +377,7 @@ export async function strapiGetStartupExercises(
   exerciseDocumentId?: string,
 ): Promise<StartupExercise[]> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     let url = '/startup-exercises?populate[resultFiles][filters][publishedAt][$notNull]=true';
     if (startupDocumentId) {
       url += `&filters[startup][documentId][$eq]=${startupDocumentId}`;
@@ -478,12 +389,7 @@ export async function strapiGetStartupExercises(
       url += `&filters[exercise][documentId][$eq]=${exerciseDocumentId}`;
     }
 
-    return await fetchPaginatedApi<StartupExercise>(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return await fetchPaginatedApi<StartupExercise>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading startup exercises');
@@ -492,19 +398,10 @@ export async function strapiGetStartupExercises(
 
 export async function strapiGetStartupExercise(documentId: string): Promise<StartupExercise> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     const url = `/startup-exercises/${documentId}`;
 
-    return await fetchSingleApi<StartupExercise>(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return await fetchSingleApi<StartupExercise>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading startup exercise');
@@ -517,11 +414,7 @@ export async function strapiFindStartupExercise(
   exerciseDocumentId: string,
 ): Promise<StartupExercise | null> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     const startupExercises = await strapiGetStartupExercises(
       startupDocumentId,
       patternDocumentId,
@@ -541,18 +434,13 @@ export async function strapiCreateStartupExercise(
   createStartupExercise: CreateStartupExercise,
 ): Promise<StartupExercise> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     const { resultFiles, ...payload } = createStartupExercise;
     // First create the startup exercise
     const startupExercise = await fetchSingleApi<StartupExercise>('/startup-exercises', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         data: payload,
@@ -571,9 +459,6 @@ export async function strapiCreateStartupExercise(
         formData.append('field', 'resultFiles');
         const response = await fetchApi<{ documentId: string }[]>(`/upload`, {
           method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
           body: formData,
         });
         return response[0].documentId;
@@ -591,19 +476,14 @@ export async function strapiUpdateStartupExercise(
   updateStartupExercise: UpdateStartupExercise,
 ): Promise<StartupExercise> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
     const { documentId, ...payload } = updateStartupExercise;
     const url = `/startup-exercises/${documentId}`;
 
+    // No need to manually add token - the axios interceptor will handle it
     return await fetchSingleApi<StartupExercise>(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         data: payload,
@@ -621,11 +501,7 @@ export async function strapiGetStartupQuestions(
   surveyDocumentId?: string,
 ): Promise<StartupQuestion[]> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     let url = '/startup-questions?populate[question][fields][0]=documentId';
     if (startupDocumentId) {
       url += `&filters[startup][documentId][$eq]=${startupDocumentId}`;
@@ -637,12 +513,7 @@ export async function strapiGetStartupQuestions(
       url += `&filters[question][survey][documentId][$eq]=${surveyDocumentId}`;
     }
 
-    return await fetchCollectionApi<StartupQuestion>(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return await fetchCollectionApi<StartupQuestion>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading startup questions');
@@ -651,19 +522,10 @@ export async function strapiGetStartupQuestions(
 
 export async function strapiGetStartupQuestion(documentId: string): Promise<StartupQuestion> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     const url = `/startup-questions/${documentId}`;
 
-    return await fetchSingleApi<StartupQuestion>(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return await fetchSingleApi<StartupQuestion>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading startup question');
@@ -676,11 +538,7 @@ export async function strapiFindStartupQuestion(
   questionDocumentId: string,
 ): Promise<StartupQuestion> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     const startupQuestions = await strapiGetStartupQuestions();
     const startupQuestion = startupQuestions.find(
       (sq) =>
@@ -702,16 +560,11 @@ export async function strapiCreateStartupQuestion(
   createStartupQuestion: CreateStartupQuestion,
 ): Promise<StartupQuestion> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     return await fetchSingleApi<StartupQuestion>('/startup-questions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         data: createStartupQuestion,
@@ -727,19 +580,14 @@ export async function strapiUpdateStartupQuestion(
   updateStartupQuestion: UpdateStartupQuestion,
 ): Promise<StartupQuestion> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
     const { documentId, ...payload } = updateStartupQuestion;
     const url = `/startup-questions/${documentId}`;
 
+    // No need to manually add token - the axios interceptor will handle it
     return await fetchSingleApi<StartupQuestion>(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         data: payload,
@@ -753,17 +601,8 @@ export async function strapiUpdateStartupQuestion(
 
 export async function strapiGetRecommendations(): Promise<Recommendation[]> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
-    return await fetchCollectionApi<Recommendation>('/recommendations', {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchCollectionApi<Recommendation>('/recommendations');
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading recommendations');
@@ -772,19 +611,10 @@ export async function strapiGetRecommendations(): Promise<Recommendation[]> {
 
 export async function strapiGetExercise(documentId: string): Promise<Exercise> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     const url = `/exercises/${documentId}`;
 
-    return await fetchSingleApi<Exercise>(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return await fetchSingleApi<Exercise>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading exercise');
@@ -793,21 +623,93 @@ export async function strapiGetExercise(documentId: string): Promise<Exercise> {
 
 export async function strapiGetSurvey(documentId: string): Promise<Survey> {
   try {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
+    // No need to manually add token - the axios interceptor will handle it
     const url = `/surveys/${documentId}?populate[0]=questions`;
 
-    return await fetchSingleApi<Survey>(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return await fetchSingleApi<Survey>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading survey');
+  }
+}
+
+export async function strapiGetInvitations(startupDocumentId: string): Promise<Invitation[]> {
+  try {
+    // No need to manually add token - the axios interceptor will handle it
+    const url = `/invitations?populate[startup][fields][0]=documentId&populate[invitedBy][fields][0]=username&filters[startup][documentId][$eq]=${startupDocumentId}`;
+
+    return await fetchPaginatedApi<Invitation>(url);
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading invitations');
+  }
+}
+
+export async function strapiCreateInvitation(invitation: CreateInvitation): Promise<Invitation> {
+  try {
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchSingleApi<Invitation>('/invitations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: invitation,
+      }),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Invitation creation failed');
+  }
+}
+
+export async function strapiUpdateInvitation(
+  updateInvitation: UpdateInvitation,
+): Promise<Invitation> {
+  try {
+    const { documentId, ...payload } = updateInvitation;
+    const url = `/invitations/${documentId}`;
+
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchSingleApi<Invitation>(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: payload,
+      }),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Invitation update failed');
+  }
+}
+
+export async function strapiDeleteInvitation(documentId: string): Promise<void> {
+  try {
+    const url = `/invitations/${documentId}`;
+
+    // No need to manually add token - the axios interceptor will handle it
+    await fetchApi(url, {
+      method: 'DELETE',
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Invitation deletion failed');
+  }
+}
+
+export async function strapiResendInvitation(documentId: string): Promise<Invitation> {
+  try {
+    const url = `/invitations/${documentId}/resend`;
+
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchSingleApi<Invitation>(url, {
+      method: 'POST',
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Invitation resend failed');
   }
 }

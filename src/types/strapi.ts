@@ -13,6 +13,7 @@ export interface UserRegistration {
 }
 
 export interface User {
+  documentId: string;
   id: number;
   username: string;
   email: string;
@@ -278,9 +279,39 @@ export interface Recommendation {
   publishedAt: string;
 }
 
+export enum InvitationStatusEnum {
+  pending = 'pending',
+  accepted = 'accepted',
+  rejected = 'rejected',
+}
+
+export interface Invitation {
+  documentId: string;
+  startup: Startup;
+  invitedBy: User;
+  email: string;
+  token: string;
+  invitationStatus: InvitationStatusEnum;
+  createdAt: string;
+  updatedAt: string;
+  expiresAt: string;
+}
+
+export interface CreateInvitation {
+  startup: StrapiSetRelated;
+  invitedBy: StrapiSetRelated;
+  email: string;
+}
+
+export interface UpdateInvitation {
+  documentId: string;
+  invitationStatus?: InvitationStatusEnum;
+}
+
 export interface StrapiSingleResponse<T> {
   data: T;
 }
+
 export interface StrapiCollectionResponse<T> {
   data: T[];
   meta?: {

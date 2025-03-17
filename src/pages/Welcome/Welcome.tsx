@@ -7,9 +7,10 @@ import ForumIcon from '@mui/icons-material/Forum';
 import Meta from '@/components/Meta';
 import { FlexBox } from '@/components/styled';
 import logoImage from '/logo.png';
-
+import { useAuth } from '@/hooks/useAuth';
 function Welcome() {
   const isMobile = window.innerWidth < 600;
+  const { isAuthenticated } = useAuth();
   return (
     <>
       <Meta title="Dynamic Innovation Digital Companion - Welcome" />
@@ -180,23 +181,25 @@ function Welcome() {
           </Grid>
 
           {/* Signup and Login Buttons */}
-          <Box sx={{ textAlign: 'center', mt: 8 }}>
-            <Button
-              variant="contained"
-              size="large"
-              href="/signup"
-              sx={{
-                bgcolor: 'white',
-                color: 'primary.main',
-                mr: 2,
-              }}
-            >
-              Sign Up
-            </Button>
-            <Button variant="outlined" color="inherit" size="large" href="/login">
-              Login
-            </Button>
-          </Box>
+          {!isAuthenticated && (
+            <Box sx={{ textAlign: 'center', mt: 8 }}>
+              <Button
+                variant="contained"
+                size="large"
+                href="/signup"
+                sx={{
+                  bgcolor: 'white',
+                  color: 'primary.main',
+                  mr: 2,
+                }}
+              >
+                Sign Up
+              </Button>
+              <Button variant="outlined" color="inherit" size="large" href="/login">
+                Login
+              </Button>
+            </Box>
+          )}
 
           {/* Logo */}
           <Grid container justifyContent="flex-end" alignItems="flex-end">

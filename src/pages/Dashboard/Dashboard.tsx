@@ -31,6 +31,7 @@ import { getPatternStatus } from '@/pages/Progress/Progress';
 import { useNavigate } from 'react-router-dom';
 import useRecommendedPatterns from '@/hooks/useRecommendedPatterns';
 import InfoIcon from '@mui/icons-material/Info';
+import Loading from '@/components/Loading';
 
 interface DashboardWidgetProps {
   startupPatterns: StartupPattern[];
@@ -429,11 +430,11 @@ const PatternBacklogSection: React.FC<DashboardWidgetProps> = ({ startupPatterns
 
 const Dashboard: React.FC = () => {
   const { startup } = useAuth();
-  const { fetchPatterns, patterns, loading: patternsLoading, error: patternsError } = usePatterns();
+  const { fetchPatterns, patterns, error: patternsError } = usePatterns();
+  console.log('startup', startup);
   const {
     fetchStartupPatterns,
     startupPatterns,
-    loading: startupPatternsLoading,
     error: startupPatternsError,
   } = useStartupPatterns();
 
@@ -447,34 +448,30 @@ const Dashboard: React.FC = () => {
     }
   }, [fetchStartupPatterns, startup]);
 
-  if (patternsLoading || startupPatternsLoading) {
-    return <Typography>Loading...</Typography>;
-  }
-
   if (patternsError || startupPatternsError) {
     console.log(patternsError, startupPatternsError);
     return <Typography>Error loading data</Typography>;
-  }
-
-  if (!patterns || !startupPatterns) {
-    return <Typography>No data found</Typography>;
   }
 
   return (
     <>
       <Header title="Dashboard" />
       <CenteredFlexBox>
-        <Grid container spacing={2}>
-          <Grid item sm={12}>
-            <MaturityScoreSection startupPatterns={startupPatterns} patterns={patterns} />
+        {patterns && startupPatterns ? (
+          <Grid container spacing={2}>
+            <Grid item sm={12}>
+              <MaturityScoreSection startupPatterns={startupPatterns} patterns={patterns} />
+            </Grid>
+            <Grid item xs={12} sm={8}>
+              <RecommendationSection startupPatterns={startupPatterns} patterns={patterns} />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <PatternBacklogSection startupPatterns={startupPatterns} patterns={patterns} />
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={8}>
-            <RecommendationSection startupPatterns={startupPatterns} patterns={patterns} />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <PatternBacklogSection startupPatterns={startupPatterns} patterns={patterns} />
-          </Grid>
-        </Grid>
+        ) : (
+          <Loading />
+        )}
       </CenteredFlexBox>
     </>
   );

@@ -19,6 +19,7 @@ import type {
   UpdateStartup,
 } from '@/types/strapi';
 import type { CategoryEnum } from '@/utils/constants';
+import { authEvents, isTokenExpired } from '@/lib/axios';
 
 interface AuthState {
   user: User | null;
@@ -36,6 +37,7 @@ interface UseAuthReturn extends AuthState {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   clearError: () => void;
+  checkTokenExpiration: () => boolean;
 }
 
 export function useAuth(): UseAuthReturn {
@@ -46,11 +48,56 @@ export function useAuth(): UseAuthReturn {
     error: null,
   });
 
+  // Function to check if the JWT token is expired - using the exported function
+  const checkTokenExpiration = useCallback((): boolean => {
+    return isTokenExpired();
+  }, []);
+
+  // Setup event listener for logout events
+  useEffect(() => {
+    // Listen for logout events
+    const handleLogout = () => {
+      logout().catch(console.error);
+    };
+
+    authEvents.on('logout', handleLogout);
+
+    // Periodically check token expiration (every minute)
+    const tokenCheckInterval = setInterval(() => {
+      if (checkTokenExpiration() && state.user) {
+        console.log('Token expired, logging out...');
+        authEvents.dispatch('logout');
+      }
+    }, 60000);
+
+    return () => {
+      // Clean up
+      authEvents.remove('logout', handleLogout);
+      clearInterval(tokenCheckInterval);
+    };
+  });
+
   // Initialize user/startup from localStorage
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('user');
       const storedStartup = localStorage.getItem('startup');
+
+      // Check if token is expired on initial load
+      if (storedUser && checkTokenExpiration()) {
+        console.log('Token expired on initial load, clearing auth state');
+        localStorage.removeItem('user');
+        localStorage.removeItem('startup');
+        localStorage.removeItem('strapi_jwt');
+        setState((prev) => ({
+          ...prev,
+          user: null,
+          startup: null,
+          loading: false,
+        }));
+        return;
+      }
+
       setState((prev) => ({
         ...prev,
         user: storedUser ? JSON.parse(storedUser) : null,
@@ -64,7 +111,7 @@ export function useAuth(): UseAuthReturn {
         error: 'Failed to restore authentication state',
       }));
     }
-  }, []);
+  }, [checkTokenExpiration]);
 
   const setUser = useCallback((userData: User | null) => {
     setState((prev) => ({ ...prev, user: userData, error: null }));
@@ -72,6 +119,7 @@ export function useAuth(): UseAuthReturn {
       localStorage.setItem('user', JSON.stringify(userData));
     } else {
       localStorage.removeItem('user');
+      localStorage.removeItem('strapi_jwt'); // Also remove JWT when clearing user
     }
   }, []);
 
@@ -93,6 +141,7 @@ export function useAuth(): UseAuthReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         await strapiLogin(identifier, password);
+        // JWT token is stored by strapiLogin function
         const userData = await strapiMe();
         setUser(userData);
         userData.startups?.length > 0 && setStartup(userData.startups[0]);
@@ -117,6 +166,7 @@ export function useAuth(): UseAuthReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const result = await strapiRegister(data);
+        // JWT token is stored by strapiRegister function
         const userData: User = result.user;
         setUser(userData);
         return userData;
@@ -184,6 +234,7 @@ export function useAuth(): UseAuthReturn {
     try {
       await strapiLogout();
       setUser(null);
+      setStartup(null);
     } catch (error) {
       const err = error as Error;
       setState((prev) => ({
@@ -191,11 +242,14 @@ export function useAuth(): UseAuthReturn {
         error: err.message,
         loading: false,
       }));
+      // Even if the server-side logout fails, clear local state
+      setUser(null);
+      setStartup(null);
       throw error;
     } finally {
       setState((prev) => ({ ...prev, loading: false }));
     }
-  }, [setUser]);
+  }, [setUser, setStartup]);
 
   const updateScores = useCallback(async (): Promise<Record<CategoryEnum, number> | null> => {
     if (!state.startup) return null;
@@ -269,6 +323,7 @@ export function useAuth(): UseAuthReturn {
     logout,
     isAuthenticated: Boolean(state.user),
     clearError,
+    checkTokenExpiration,
   };
 }
 

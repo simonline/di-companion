@@ -25,12 +25,16 @@ export enum Pages {
   Survey,
   SelfAssessment,
   NotFound,
+  NoStartup,
+  StartupInvitations,
+  AcceptInvitation,
 }
 
 type PathRouteCustomProps = {
   title?: string;
   component: FC;
   icon?: FC<SvgIconProps>;
+  requiresAuth?: boolean;
 };
 
 export type AppRoute = PathRouteProps & PathRouteCustomProps;
