@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { MenuItem } from './MenuItem';
 import Header from '@/sections/Header';
+import { getAvatarUrl } from '@/lib/strapi';
 
 function Profile() {
   const { user } = useAuth();
@@ -36,19 +37,29 @@ function Profile() {
     );
   }
 
+  // Get avatar URL if available
+  const avatarUrl = getAvatarUrl(user.avatar?.formats?.thumbnail?.url);
+
+  // Get user's initials for avatar fallback
+  const userInitials = `${user.givenName?.charAt(0) || ''}${user.familyName?.charAt(0) || ''}`;
+
   return (
     <>
       <Header title="Profile" />
       <CenteredFlexBox>
         <Stack direction="column" alignItems="center" spacing={2} sx={{ mb: 4 }}>
-          <Avatar sx={{ width: 80, height: 80 }} alt={user.username}>
-            {user.username.charAt(0).toUpperCase()}
+          <Avatar
+            src={avatarUrl}
+            sx={{ width: 80, height: 80 }}
+            alt={`${user.givenName} ${user.familyName}`}
+          >
+            {userInitials || user.username.charAt(0).toUpperCase()}
           </Avatar>
           <Typography fontWeight="700" variant="h6">
-            {user.username}
+            {user.givenName} {user.familyName}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            DI user since {joinDate}
+            since {joinDate}
           </Typography>
         </Stack>
 

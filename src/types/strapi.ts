@@ -10,6 +10,7 @@ export interface UserRegistration {
   position?: string;
   bio?: string;
   linkedinProfile?: string;
+  avatar?: File;
 }
 
 export interface UpdateUser {
@@ -22,6 +23,7 @@ export interface UpdateUser {
   position?: string;
   bio?: string;
   linkedinProfile?: string;
+  avatar?: File;
 }
 
 export interface User {
@@ -29,6 +31,8 @@ export interface User {
   id: number;
   username: string;
   email: string;
+  phone?: string;
+  isPhoneVisible?: boolean;
   password: string;
   provider: string;
   confirmed: boolean;
@@ -39,7 +43,19 @@ export interface User {
   position?: string;
   bio?: string;
   linkedinProfile?: string;
+  avatar?: {
+    id: number;
+    url: string;
+    formats?: {
+      thumbnail?: { url: string };
+      small?: { url: string };
+      medium?: { url: string };
+      large?: { url: string };
+    };
+  };
   startups: Startup[];
+  isCoach?: boolean;
+  coachees?: Startup[];
 }
 
 export interface StrapiAuthResponse {
@@ -144,6 +160,7 @@ export interface Startup {
   isPrototypeValidated: boolean;
   isMvpTested: boolean;
   scores?: Record<CategoryEnum, number>;
+  coach?: User;
 }
 
 export interface CreateStartup {

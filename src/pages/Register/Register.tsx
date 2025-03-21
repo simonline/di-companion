@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Form, Formik, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -18,11 +18,14 @@ import {
   InputLabel,
   Select,
   FormHelperText,
+  Avatar,
 } from '@mui/material';
 import Meta from '@/components/Meta';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/sections/Header';
+import { useDropzone } from 'react-dropzone';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 interface RegisterFormValues {
   email: string;
@@ -35,6 +38,7 @@ interface RegisterFormValues {
   linkedinProfile: string;
   startupId: string;
   createNewStartup: boolean;
+  avatar?: File;
   submit?: string;
 }
 
@@ -80,6 +84,7 @@ function Register() {
         position: values.position,
         bio: values.bio,
         linkedinProfile: values.linkedinProfile,
+        avatar: values.avatar,
       });
 
       // Store user data
@@ -95,6 +100,88 @@ function Register() {
       setIsSubmitting(false);
       setSubmitting(false);
     }
+  };
+
+  // Avatar upload component
+  const AvatarUploadField = ({ form }: { form: any }) => {
+    const onDrop = useCallback(
+      (acceptedFiles: File[]) => {
+        // Only use the first file if multiple are uploaded
+        if (acceptedFiles.length > 0) {
+          form.setFieldValue('avatar', acceptedFiles[0]);
+        }
+      },
+      [form],
+    );
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+      onDrop,
+      accept: {
+        'image/*': ['.jpeg', '.jpg', '.png', '.gif'],
+      },
+      maxFiles: 1,
+      multiple: false,
+    });
+
+    // Create preview for selected avatar
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const avatarFile = form.values.avatar;
+
+    useEffect(() => {
+      if (!avatarFile) {
+        setPreviewUrl(null);
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(avatarFile);
+      setPreviewUrl(objectUrl);
+
+      // Clean up the URL when component unmounts or file changes
+      return () => URL.revokeObjectURL(objectUrl);
+    }, [avatarFile]);
+
+    const handleRemoveAvatar = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      form.setFieldValue('avatar', undefined);
+      setPreviewUrl(null);
+    };
+
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+        <Box
+          {...getRootProps()}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            mb: 2,
+            cursor: 'pointer',
+          }}
+        >
+          <input {...getInputProps()} />
+          <Avatar
+            src={previewUrl || undefined}
+            sx={{
+              width: 100,
+              height: 100,
+              mb: 2,
+              border: isDragActive ? '2px dashed primary.main' : '2px dashed transparent',
+              bgcolor: 'grey.200',
+            }}
+          >
+            {!previewUrl && <CloudUploadIcon sx={{ fontSize: 40 }} />}
+          </Avatar>
+          <Typography variant="body2" color="text.secondary" align="center">
+            {isDragActive ? 'Drop avatar here' : 'Click or drag to upload avatar'}
+          </Typography>
+        </Box>
+        {avatarFile && (
+          <Button size="small" color="error" onClick={handleRemoveAvatar}>
+            Remove
+          </Button>
+        )}
+      </Box>
+    );
   };
 
   return (
@@ -123,27 +210,33 @@ function Register() {
         <Card elevation={3} sx={{ borderRadius: 2, overflow: 'visible' }}>
           <CardContent>
             <Formik
-              initialValues={{
-                email: '',
-                password: '',
-                givenName: '',
-                familyName: '',
-                gender: '',
-                position: '',
-                bio: '',
-                linkedinProfile: '',
-                startupId: '',
-                createNewStartup: false,
-              }}
+              initialValues={
+                {
+                  email: '',
+                  password: '',
+                  givenName: '',
+                  familyName: '',
+                  gender: '',
+                  position: '',
+                  bio: '',
+                  linkedinProfile: '',
+                  startupId: '',
+                  createNewStartup: false,
+                  avatar: undefined,
+                } as RegisterFormValues
+              }
               validationSchema={validationSchema}
               onSubmit={handleSubmit}
             >
-              {({ errors, touched, isValid }) => (
+              {({ errors, touched, isValid, ...formProps }) => (
                 <Form>
                   <Box sx={{ px: 2, py: 3 }}>
                     <Typography variant="h6" sx={{ mb: 3, fontWeight: 'medium' }}>
                       Personal Information
                     </Typography>
+
+                    {/* Avatar upload field */}
+                    <AvatarUploadField form={formProps} />
 
                     <Grid container spacing={3}>
                       <Grid item xs={12} sm={6}>

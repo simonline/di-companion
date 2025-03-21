@@ -38,6 +38,13 @@ const storeToken = (token: string): void => {
   localStorage.setItem('strapi_jwt', token);
 };
 
+// Helper function to get the full avatar URL
+export const getAvatarUrl = (avatarUrl?: string): string | undefined => {
+  if (!avatarUrl) return undefined;
+
+  return avatarUrl.startsWith('http') ? avatarUrl : `${import.meta.env.VITE_API_URL}${avatarUrl}`;
+};
+
 // Helper function for API requests
 async function fetchApi<T>(endpoint: string, options: any = {}): Promise<T> {
   try {
@@ -50,19 +57,27 @@ async function fetchApi<T>(endpoint: string, options: any = {}): Promise<T> {
 
     // Handle request body
     if (options.body) {
-      config.data = typeof options.body === 'string' ? JSON.parse(options.body) : options.body;
-    }
+      if (options.body instanceof FormData) {
+        // For FormData, don't set Content-Type header (browser will set it with boundary)
+        config.data = options.body;
+        delete config.headers['Content-Type'];
+      } else {
+        // For JSON data
+        config.data = typeof options.body === 'string' ? JSON.parse(options.body) : options.body;
 
-    // For FormData, don't set Content-Type header (browser will set it with boundary)
-    if (options.body instanceof FormData) {
-      config.data = options.body;
-      delete config.headers['Content-Type'];
+        // Ensure Content-Type is set for JSON
+        if (!config.headers['Content-Type']) {
+          config.headers['Content-Type'] = 'application/json';
+        }
+      }
     }
 
     const response = await axiosInstance(config);
     return response.data;
   } catch (error: any) {
+    console.error('API request error:', error);
     if (error.response && error.response.data) {
+      console.error('Error response data:', error.response.data);
       throw {
         error: {
           message: error.response.data.error?.message || 'API request failed',
@@ -120,7 +135,7 @@ export async function strapiMe(): Promise<User> {
   try {
     // No need to manually add token - the axios interceptor will handle it
     return await fetchApi<User>(
-      '/users/me?populate[startups][filters][publishedAt][$notNull]=true',
+      '/users/me?populate[startups][filters][publishedAt][$notNull]=true&populate[startups][populate][coach]=*&populate[avatar]=*',
     );
   } catch (error) {
     const strapiError = error as StrapiError;
@@ -158,20 +173,45 @@ export async function strapiLogin(
 
 export async function strapiRegister(user: UserRegistration): Promise<StrapiAuthResponse> {
   try {
+    const { avatar, ...userData } = user;
+
+    console.log('Registering user:', userData);
+
+    // First, register the user without the avatar
     const response = await fetchApi<StrapiAuthResponse>('/auth/local/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(user),
+      body: JSON.stringify(userData),
     });
 
     if (response.jwt) {
       storeToken(response.jwt);
     }
 
+    // If there's an avatar, upload it after user creation
+    if (avatar && response.user?.id) {
+      console.log('Uploading avatar for newly registered user:', response.user.id);
+
+      const formData = new FormData();
+      formData.append('files', avatar, avatar.name);
+      formData.append('refId', response.user.id.toString());
+      formData.append('ref', 'plugin::users-permissions.user');
+      formData.append('field', 'avatar');
+      await fetchApi<any>(`/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      // Refresh user data to include the avatar
+      const updatedUser = await strapiMe();
+      response.user = updatedUser;
+    }
+
     return response;
   } catch (error) {
+    console.error('Error in strapiRegister:', error);
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Registration failed');
   }
@@ -460,7 +500,7 @@ export async function strapiCreateStartupExercise(
     await Promise.all(
       resultFiles.map(async (file) => {
         const formData = new FormData();
-        formData.append('files', file);
+        formData.append('files', file, file.name);
         formData.append('refId', startupExercise.id);
         formData.append('ref', 'api::startup-exercise.startup-exercise');
         formData.append('field', 'resultFiles');
@@ -769,7 +809,7 @@ export async function strapiGetStartupMembers(startupDocumentId: string): Promis
  */
 export async function strapiUpdateUser(updateUser: UpdateUser): Promise<User> {
   try {
-    const { id, ...payload } = updateUser;
+    const { id, avatar, ...payload } = updateUser;
 
     if (!id) {
       throw new Error('User ID is required for update');
@@ -782,15 +822,40 @@ export async function strapiUpdateUser(updateUser: UpdateUser): Promise<User> {
 
     const url = `/users/${id}`;
 
-    // No need to manually add token - the axios interceptor will handle it
-    return await fetchApi<User>(url, {
+    // If there's an avatar, upload it first
+    if (avatar) {
+      try {
+        const formData = new FormData();
+        formData.append('files', avatar);
+        formData.append('refId', id.toString());
+        formData.append('ref', 'plugin::users-permissions.user');
+        formData.append('field', 'avatar');
+        await fetchApi<any>(`/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+      } catch (uploadError) {
+        console.error('Avatar upload failed:', uploadError);
+        throw new Error('Avatar upload failed: ' + (uploadError as Error).message);
+      }
+    }
+
+    // Then update the user data
+    console.log('Updating user data:', payload);
+    const updateResponse = await fetchApi<User>(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
     });
+
+    console.log('User update response:', updateResponse);
+
+    // Refresh user data to get the updated user with avatar
+    return await strapiMe();
   } catch (error) {
+    console.error('Error in strapiUpdateUser:', error);
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'User update failed');
   }

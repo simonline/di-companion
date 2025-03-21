@@ -216,6 +216,34 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
             </Stack>
           </Grid>
           <Grid item sm={4}>
+            {/* New section below Opportunity for Growth */}
+            <Box
+              sx={{
+                mb: 2,
+                p: 2,
+                borderRadius: 2,
+                border: '1px solid',
+                borderColor: 'primary.light',
+                bgcolor: 'primary.lighter',
+                position: 'relative',
+                textAlign: 'center',
+              }}
+            >
+              <Button
+                variant="contained"
+                color="primary"
+                size="medium"
+                onClick={() => window.open('https://startforfuture.eu/page/dashboard', '_blank')}
+                sx={{
+                  borderRadius: 4,
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  boxShadow: 2,
+                }}
+              >
+                Visit SFF Community
+              </Button>
+            </Box>
             {/* Self-assessment */}
             <Box
               sx={{

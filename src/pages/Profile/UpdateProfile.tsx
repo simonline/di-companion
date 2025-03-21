@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Form, Formik, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -19,10 +19,14 @@ import {
   Select,
   Snackbar,
   Alert,
+  Avatar,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/sections/Header';
+import { useDropzone } from 'react-dropzone';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { getAvatarUrl } from '@/lib/strapi';
 
 interface UpdateProfileFormValues {
   email: string;
@@ -32,6 +36,7 @@ interface UpdateProfileFormValues {
   position: string;
   bio: string;
   linkedinProfile: string;
+  avatar?: File;
   submit?: string;
 }
 
@@ -81,6 +86,7 @@ function UpdateProfile() {
     position: user.position || '',
     bio: user.bio || '',
     linkedinProfile: user.linkedinProfile || '',
+    avatar: undefined,
   };
 
   const handleSubmit = async (
@@ -109,6 +115,7 @@ function UpdateProfile() {
               position: values.position,
               bio: values.bio,
               linkedinProfile: values.linkedinProfile,
+              avatar: values.avatar,
             };
 
       // Call the API to update the user
@@ -194,6 +201,90 @@ function UpdateProfile() {
     );
   };
 
+  // Avatar upload component
+  const AvatarUploadField = ({ form }: { form: any }) => {
+    const onDrop = useCallback(
+      (acceptedFiles: File[]) => {
+        // Only use the first file if multiple are uploaded
+        if (acceptedFiles.length > 0) {
+          form.setFieldValue('avatar', acceptedFiles[0]);
+        }
+      },
+      [form],
+    );
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+      onDrop,
+      accept: {
+        'image/*': ['.jpeg', '.jpg', '.png', '.gif'],
+      },
+      maxFiles: 1,
+      multiple: false,
+    });
+
+    // Current avatar preview URL
+    const [previewUrl, setPreviewUrl] = useState<string | null>(() => {
+      return getAvatarUrl(user.avatar?.formats?.thumbnail?.url) || null;
+    });
+
+    // Create a preview when a new file is selected
+    const avatarFile = form.values.avatar;
+    useEffect(() => {
+      if (!avatarFile) return;
+
+      const objectUrl = URL.createObjectURL(avatarFile);
+      setPreviewUrl(objectUrl);
+
+      // Cleanup
+      return () => URL.revokeObjectURL(objectUrl);
+    }, [avatarFile]);
+
+    const handleRemoveAvatar = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      form.setFieldValue('avatar', undefined);
+
+      // Reset to existing avatar if available
+      setPreviewUrl(getAvatarUrl(user.avatar?.url) || null);
+    };
+
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+        <Box
+          {...getRootProps()}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            mb: 2,
+            cursor: 'pointer',
+          }}
+        >
+          <input {...getInputProps()} />
+          <Avatar
+            src={previewUrl || undefined}
+            sx={{
+              width: 100,
+              height: 100,
+              mb: 2,
+              border: isDragActive ? '2px dashed primary.main' : '2px dashed transparent',
+              bgcolor: 'grey.200',
+            }}
+          >
+            {!previewUrl && <CloudUploadIcon sx={{ fontSize: 40 }} />}
+          </Avatar>
+          <Typography variant="body2" color="text.secondary" align="center">
+            {isDragActive ? 'Drop avatar here' : 'Click or drag to upload avatar'}
+          </Typography>
+        </Box>
+        {avatarFile && (
+          <Button size="small" color="error" onClick={handleRemoveAvatar}>
+            Remove
+          </Button>
+        )}
+      </Box>
+    );
+  };
+
   return (
     <>
       <Header title={isFieldSpecific ? `Edit ${field}` : 'Update Profile'} />
@@ -205,12 +296,17 @@ function UpdateProfile() {
               validationSchema={getFieldSchema()}
               onSubmit={handleSubmit}
             >
-              {({ isValid }) => (
+              {({ isValid, ...formProps }) => (
                 <Form>
                   <Box sx={{ px: 2, py: 3 }}>
                     <Typography variant="h6" sx={{ mb: 3, fontWeight: 'medium' }}>
                       {isFieldSpecific ? `Update ${field}` : 'Personal Information'}
                     </Typography>
+
+                    {/* Avatar upload field - only show if editing all fields or specifically avatar */}
+                    {(!isFieldSpecific || field === 'avatar') && (
+                      <AvatarUploadField form={formProps} />
+                    )}
 
                     <Grid container spacing={3}>
                       {renderFormField('givenName', 'First Name')}

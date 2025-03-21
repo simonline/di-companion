@@ -32,6 +32,7 @@ export const isTokenExpired = (): boolean => {
 };
 
 // Add a request interceptor to add the token to every request
+// and handle FormData properly
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('strapi_jwt');
@@ -39,6 +40,13 @@ axiosInstance.interceptors.request.use(
     // Check if token exists and is not expired
     if (token && !isTokenExpired()) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Special handling for FormData uploads
+    if (config.data instanceof FormData) {
+      // Let the browser set the Content-Type with boundary
+      delete config.headers['Content-Type'];
+      console.log('FormData detected in axios request:', config.url);
     }
 
     return config;
@@ -70,6 +78,19 @@ axiosInstance.interceptors.response.use(
 
       // Redirect to login page if needed
       // window.location.href = '/login';
+    }
+
+    // Enhanced error logging for better debugging
+    if (error.response) {
+      console.error('Axios error response:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+      });
+    } else if (error.request) {
+      console.error('Axios error request:', error.request);
+    } else {
+      console.error('Axios error message:', error.message);
     }
 
     return Promise.reject(error);

@@ -2,7 +2,7 @@ export default ({ env }: { env: (key: string, defaultValue?: any) => any }) => (
   "users-permissions": {
     config: {
       register: {
-        allowedFields: ["givenName", "familyName", "gender", "position", "bio", "linkedinProfile"],
+        allowedFields: ["givenName", "familyName", "gender", "position", "bio", "linkedinProfile", "avatar"],
       },
     },
   },
