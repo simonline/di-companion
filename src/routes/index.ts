@@ -107,6 +107,12 @@ const useRoutes = (): Partial<Routes> => {
       title: 'User Profile Field',
       requiresAuth: true,
     },
+    [Pages.UpdateProfile]: {
+      component: asyncComponentLoader(() => import('@/pages/Profile/UpdateProfile')),
+      path: '/profile/edit/:field?',
+      title: 'Update Profile',
+      requiresAuth: true,
+    },
     [Pages.StartupProfile]: {
       component: asyncComponentLoader(() => import('@/pages/Profile/StartupProfile')),
       path: '/profile/startup/:id',
@@ -119,17 +125,23 @@ const useRoutes = (): Partial<Routes> => {
       title: 'Startup Profile Step',
       requiresAuth: true,
     },
+    [Pages.StartupEdit]: {
+      component: asyncComponentLoader(() => import('@/pages/Profile/StartupEdit')),
+      path: '/profile/startup/:id/edit',
+      title: 'Edit Startup',
+      requiresAuth: true,
+    },
     [Pages.StartupInvitations]: {
-      component: asyncComponentLoader(() => import('@/pages/Profile/StartupInvitations')),
-      path: '/profile/startup/:startupId/invitations',
-      title: 'Manage Team Invitations',
+      component: asyncComponentLoader(() => import('@/pages/Profile/StartupTeam')),
+      path: '/profile/startup/:startupId/team',
+      title: 'Manage Team',
       requiresAuth: true,
     },
     [Pages.AcceptInvitation]: {
       component: asyncComponentLoader(() => import('@/pages/AcceptInvitation')),
       path: '/accept-invitation',
       title: 'Accept Invitation',
-      requiresAuth: false,
+      requiresAuth: true,
     },
     [Pages.ExplorePattern]: {
       component: asyncComponentLoader(() => import('@/pages/Explore/ExplorePattern')),

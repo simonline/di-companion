@@ -22,12 +22,14 @@ export enum Pages {
   UserProfileField,
   StartupProfile,
   StartupProfileStep,
+  StartupEdit,
   Survey,
   SelfAssessment,
   NotFound,
   NoStartup,
   StartupInvitations,
   AcceptInvitation,
+  UpdateProfile,
 }
 
 type PathRouteCustomProps = {

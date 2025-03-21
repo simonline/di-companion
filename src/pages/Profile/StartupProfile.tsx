@@ -1,38 +1,40 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
-import { List, Divider } from '@mui/material';
+import { useParams, useNavigate } from 'react-router-dom';
+import { List, Divider, Typography } from '@mui/material';
 import { MenuItem } from './MenuItem';
 import { CenteredFlexBox } from '@/components/styled';
-import { steps } from '@/pages/Startups/types';
-import { useNavigate } from 'react-router-dom';
 import Header from '@/sections/Header';
+import EditIcon from '@mui/icons-material/Edit';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import { useAuth } from '@/hooks/useAuth';
 
-interface StartupProfileProps {
-  id: string;
-}
-
-const StartupProfile: React.FC<StartupProfileProps> = () => {
+const StartupProfile: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Find the current startup to show its name
+  const startup = user?.startups?.find((s) => s.documentId === id);
+
   return (
     <>
       <Header title="Startup Profile" />
       <CenteredFlexBox>
+        <Typography variant="h5" sx={{ my: 2 }}>
+          {startup?.name || 'Your Startup'}
+        </Typography>
+
         <List sx={{ width: '100%' }}>
-          {steps.map((label, index) => (
-            <MenuItem
-              key={index}
-              label={label}
-              value="-"
-              onClick={() => navigate(`/profile/startup/${id}/${index}`)}
-            />
-          ))}
+          <MenuItem
+            label="Edit Startup Information"
+            icon={<EditIcon />}
+            onClick={() => navigate(`/profile/startup/${id}/edit`)}
+          />
           <Divider sx={{ my: 2 }} />
           <MenuItem
-            label="Manage Team Invitations"
+            label="Manage Team"
             icon={<GroupAddIcon />}
-            onClick={() => navigate(`/profile/startup/${id}/invitations`)}
+            onClick={() => navigate(`/profile/startup/${id}/team`)}
           />
         </List>
       </CenteredFlexBox>

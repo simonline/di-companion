@@ -107,7 +107,6 @@ const StartupTeam: React.FC = () => {
       setMembers(membersData);
       setInvitations(invitationsData);
     } catch (error) {
-      console.error('Error loading team data:', error);
       setSnackbar({
         open: true,
         message: 'Failed to load team data',
@@ -123,6 +122,13 @@ const StartupTeam: React.FC = () => {
       loadData();
     }
   }, [startupId, loadData]);
+
+  // Set tab to invitations if we have invitations but no members
+  useEffect(() => {
+    if (!loading && invitations?.length > 0 && (!members || members.length === 0)) {
+      setTabValue(1); // Switch to invitations tab
+    }
+  }, [loading, invitations, members]);
 
   const handleCreateInvitation = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,7 +151,6 @@ const StartupTeam: React.FC = () => {
         severity: 'success',
       });
     } catch (error) {
-      console.error('Error creating invitation:', error);
       setSnackbar({
         open: true,
         message: 'Failed to send invitation',
@@ -167,7 +172,6 @@ const StartupTeam: React.FC = () => {
         severity: 'success',
       });
     } catch (error) {
-      console.error('Error deleting invitation:', error);
       setSnackbar({
         open: true,
         message: 'Failed to delete invitation',
@@ -186,7 +190,6 @@ const StartupTeam: React.FC = () => {
         severity: 'success',
       });
     } catch (error) {
-      console.error('Error resending invitation:', error);
       setSnackbar({
         open: true,
         message: 'Failed to resend invitation',
@@ -228,7 +231,7 @@ const StartupTeam: React.FC = () => {
       );
     }
 
-    if (members.length === 0) {
+    if (!members || members.length === 0) {
       return (
         <Typography variant="body2" color="text.secondary" sx={{ p: 2, textAlign: 'center' }}>
           No members found
@@ -245,7 +248,15 @@ const StartupTeam: React.FC = () => {
                 <Avatar>{member.username.charAt(0).toUpperCase()}</Avatar>
               </ListItemAvatar>
               <ListItemText
-                primary={`${member.givenName} ${member.familyName}`}
+                primary={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {`${member.givenName || ''} ${member.familyName || ''}`.trim() ||
+                      member.username}
+                    {member.documentId === user?.documentId && (
+                      <Chip size="small" label="You" color="primary" />
+                    )}
+                  </Box>
+                }
                 secondary={
                   <>
                     <Typography component="span" variant="body2" color="text.primary">
@@ -272,7 +283,7 @@ const StartupTeam: React.FC = () => {
       );
     }
 
-    if (invitations.length === 0) {
+    if (!invitations || invitations.length === 0) {
       return (
         <Typography variant="body2" color="text.secondary" sx={{ p: 2, textAlign: 'center' }}>
           No pending invitations
@@ -327,9 +338,13 @@ const StartupTeam: React.FC = () => {
                     {getStatusChip(invitation.invitationStatus)}
                   </Box>
                 }
-                secondary={`Invited by ${invitation.invitedBy.username} on ${new Date(
-                  invitation.createdAt,
-                ).toLocaleDateString()}`}
+                secondary={
+                  invitation.invitedBy && invitation.createdAt
+                    ? `Invited by ${invitation.invitedBy.username} on ${new Date(
+                        invitation.createdAt,
+                      ).toLocaleDateString()}`
+                    : 'Invitation details unavailable'
+                }
               />
             </ListItem>
             <Divider component="li" />

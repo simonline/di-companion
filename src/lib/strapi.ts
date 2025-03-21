@@ -26,6 +26,7 @@ import type {
   Invitation,
   CreateInvitation,
   UpdateInvitation,
+  UpdateUser,
 } from '../types/strapi';
 import { CategoryEnum } from '../utils/constants';
 import axiosInstance from './axios';
@@ -93,7 +94,13 @@ async function fetchPaginatedApi<T>(endpoint: string, options: any = {}): Promis
     const paginatedEndpoint = `${endpoint}${
       endpoint.includes('?') ? '&' : '?'
     }pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
+
     const response = await fetchApi<StrapiCollectionResponse<T>>(paginatedEndpoint, options);
+
+    if (!response || !response.data) {
+      console.error('Invalid response structure:', response);
+      return [];
+    }
 
     allData = [...allData, ...response.data];
 
@@ -635,10 +642,13 @@ export async function strapiGetSurvey(documentId: string): Promise<Survey> {
 
 export async function strapiGetInvitations(startupDocumentId: string): Promise<Invitation[]> {
   try {
-    // No need to manually add token - the axios interceptor will handle it
-    const url = `/invitations?populate[startup][fields][0]=documentId&populate[invitedBy][fields][0]=username&filters[startup][documentId][$eq]=${startupDocumentId}`;
+    // Get all fields for invitedBy and explicitly filter by startup documentId
+    const url = `/invitations?populate[startup]=*&populate[invitedBy]=*&filters[startup][documentId][$eq]=${startupDocumentId}`;
 
-    return await fetchPaginatedApi<Invitation>(url);
+    const invitations = await fetchPaginatedApi<Invitation>(url);
+    console.log(`Fetched ${invitations.length} invitations for startup ${startupDocumentId}`);
+
+    return invitations;
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading invitations');
@@ -711,5 +721,77 @@ export async function strapiResendInvitation(documentId: string): Promise<Invita
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Invitation resend failed');
+  }
+}
+
+export async function strapiAcceptInvitation(token: string): Promise<Invitation> {
+  try {
+    const url = '/invitations/accept';
+
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchSingleApi<Invitation>(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token,
+      }),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Invitation acceptance failed');
+  }
+}
+
+export async function strapiGetStartupMembers(startupDocumentId: string): Promise<User[]> {
+  try {
+    // With our custom backend controller, we're enforcing authorization there
+    // So we only need to make the query with the startup filter
+    const url = `/users?populate[startups][filters][documentId][$eq]=${startupDocumentId}`;
+
+    // The custom controller will handle authorization and filtering
+    const members = await fetchApi<User[]>(url);
+
+    console.log(`Found ${members.length} users that are members of startup ${startupDocumentId}`);
+
+    return members;
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading startup members');
+  }
+}
+
+/**
+ * Update a user profile
+ * @param updateUser User data to update
+ * @returns Updated user data
+ */
+export async function strapiUpdateUser(updateUser: UpdateUser): Promise<User> {
+  try {
+    const { id, ...payload } = updateUser;
+
+    if (!id) {
+      throw new Error('User ID is required for update');
+    }
+
+    // Remove documentId from payload if it exists
+    if ('documentId' in payload) {
+      delete (payload as any).documentId;
+    }
+
+    const url = `/users/${id}`;
+
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchApi<User>(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'User update failed');
   }
 }

@@ -8,6 +8,7 @@ import {
   strapiRegister,
   strapiCreateStartup,
   strapiUpdateStartup,
+  strapiUpdateUser,
 } from '@/lib/strapi';
 import type {
   CreateStartup,
@@ -17,6 +18,7 @@ import type {
   StartupPattern,
   Pattern,
   UpdateStartup,
+  UpdateUser,
 } from '@/types/strapi';
 import type { CategoryEnum } from '@/utils/constants';
 import { authEvents, isTokenExpired } from '@/lib/axios';
@@ -33,6 +35,7 @@ interface UseAuthReturn extends AuthState {
   register: (data: UserRegistration) => Promise<User>;
   createStartup: (data: CreateStartup) => Promise<Startup>;
   updateStartup: (data: UpdateStartup) => Promise<Startup>;
+  updateUser: (data: UpdateUser) => Promise<User>;
   updateScores: () => Promise<Record<CategoryEnum, number> | null>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -229,6 +232,43 @@ export function useAuth(): UseAuthReturn {
     [setStartup],
   );
 
+  const updateUser = useCallback(
+    async (data: UpdateUser): Promise<User> => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+      try {
+        const updatedUser = await strapiUpdateUser(data);
+        console.log('Updated user:', updatedUser);
+
+        // Merge the updated user data with existing user data to preserve all properties
+        setState((prev) => {
+          if (prev.user) {
+            const mergedUser = { ...prev.user, ...updatedUser };
+            localStorage.setItem('user', JSON.stringify(mergedUser));
+            return { ...prev, user: mergedUser, loading: false };
+          } else {
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            return { ...prev, user: updatedUser, loading: false };
+          }
+        });
+
+        // Return the updated user data (API response)
+        // This doesn't include the merge as the setState hasn't necessarily completed yet
+        return updatedUser;
+      } catch (error) {
+        const err = error as Error;
+        setState((prev) => ({
+          ...prev,
+          error: err.message,
+          loading: false,
+        }));
+        throw error;
+      } finally {
+        setState((prev) => ({ ...prev, loading: false }));
+      }
+    },
+    [], // Remove setUser from dependencies since we're using setState directly
+  );
+
   const logout = useCallback(async (): Promise<void> => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
@@ -252,12 +292,15 @@ export function useAuth(): UseAuthReturn {
   }, [setUser, setStartup]);
 
   const updateScores = useCallback(async (): Promise<Record<CategoryEnum, number> | null> => {
+    // Get current state values to ensure we're working with the latest data
     if (!state.startup) return null;
+
+    const currentStartup = state.startup;
 
     let startupPatterns: StartupPattern[] = [];
     let patterns: Pattern[] = [];
     try {
-      startupPatterns = await strapiGetStartupPatterns(state.startup.documentId);
+      startupPatterns = await strapiGetStartupPatterns(currentStartup.documentId);
       patterns = await strapiGetPatterns();
     } catch (error) {
       setState((prev) => ({
@@ -303,7 +346,7 @@ export function useAuth(): UseAuthReturn {
 
     // Update the startup with the new scores
     updateStartup({
-      documentId: state.startup.documentId,
+      documentId: currentStartup.documentId,
       scores: maturityScores,
     });
 
@@ -319,6 +362,7 @@ export function useAuth(): UseAuthReturn {
     register,
     createStartup,
     updateStartup,
+    updateUser,
     updateScores,
     logout,
     isAuthenticated: Boolean(state.user),

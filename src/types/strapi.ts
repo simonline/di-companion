@@ -12,6 +12,18 @@ export interface UserRegistration {
   linkedinProfile?: string;
 }
 
+export interface UpdateUser {
+  documentId: string;
+  id?: number;
+  email?: string;
+  givenName?: string;
+  familyName?: string;
+  gender?: string;
+  position?: string;
+  bio?: string;
+  linkedinProfile?: string;
+}
+
 export interface User {
   documentId: string;
   id: number;

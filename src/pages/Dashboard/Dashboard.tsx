@@ -431,7 +431,6 @@ const PatternBacklogSection: React.FC<DashboardWidgetProps> = ({ startupPatterns
 const Dashboard: React.FC = () => {
   const { startup } = useAuth();
   const { fetchPatterns, patterns, error: patternsError } = usePatterns();
-  console.log('startup', startup);
   const {
     fetchStartupPatterns,
     startupPatterns,

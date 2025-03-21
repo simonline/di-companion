@@ -27,8 +27,6 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, requiresAuth = true
     return children;
   }
 
-  console.log('isAuthenticated', isAuthenticated);
-
   // If the route requires authentication and the user is not authenticated, redirect to login
   if (requiresAuth && !isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -38,7 +36,7 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, requiresAuth = true
   if (
     requiresAuth &&
     isAuthenticated &&
-    !['/logout', '/profile'].includes(location.pathname) &&
+    !['/logout', '/profile', '/accept-invitation'].includes(location.pathname) &&
     !startup
   ) {
     return <Navigate to="/no-startup" state={{ from: location }} replace />;
