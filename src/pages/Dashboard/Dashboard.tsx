@@ -78,7 +78,7 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
           <Typography variant="h6" fontWeight="700" gutterBottom>
             Your Maturity Score
           </Typography>
-          <Tooltip title="Your maturity score is calculated based on the patterns you've completed and your self-assessment results. It represents your startup's progress across different perspectives.">
+          <Tooltip title="Your maturity score is calculated based on the patterns you've applied and your self-assessment results. It represents your startup's progress across different perspectives.">
             <InfoIcon color="action" fontSize="small" />
           </Tooltip>
         </Box>

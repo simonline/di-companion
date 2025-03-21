@@ -78,13 +78,13 @@ export default function usePatterns(): UsePatternsReturn {
         // Fetch available patterns for that category
         const availablePatterns = await strapiGetPatterns(category);
 
-        // Fetch patterns already started/completed by startup
+        // Fetch patterns already started/applied by startup
         let usedPatterns: StartupPattern[] = [];
         if (state.startup) {
           usedPatterns = await strapiGetStartupPatterns(state.startup.documentId);
         }
 
-        // Remove patterns already started/completed by startup
+        // Remove patterns already started/applied by startup
         const filteredPatterns = availablePatterns.filter(
           (pattern) =>
             !usedPatterns.some(

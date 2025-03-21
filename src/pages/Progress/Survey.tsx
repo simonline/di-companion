@@ -56,7 +56,7 @@ const Survey: React.FC = () => {
   const startupDocumentId = startup?.documentId;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [isApplied, setIsApplied] = useState(false);
 
   useEffect(() => {
     fetchPattern(patternId as string);
@@ -82,13 +82,13 @@ const Survey: React.FC = () => {
   }, [fetchStartupPatterns, startupDocumentId, patternId]);
 
   useEffect(() => {
-    if (isCompleted && startupPatterns && startupPatterns.length && survey && startupQuestions) {
+    if (isApplied && startupPatterns && startupPatterns.length && survey && startupQuestions) {
       const points = calculatePoints(survey.questions, startupQuestions);
 
       // Update the startup pattern with the points
       updateStartupPattern({
         documentId: startupPatterns[0].documentId,
-        completedAt: new Date().toISOString(),
+        appliedAt: new Date().toISOString(),
         points,
       });
       // Recalculate the total points
@@ -96,12 +96,12 @@ const Survey: React.FC = () => {
 
       notificationsActions.push({
         options: { variant: 'success' },
-        message: 'Pattern completed successfully',
+        message: 'Pattern applied successfully',
       });
       navigate(state?.nextUrl || '/progress');
     }
   }, [
-    isCompleted,
+    isApplied,
     startupPatterns,
     survey,
     startupQuestions,
@@ -341,7 +341,7 @@ const Survey: React.FC = () => {
       // Refetch to get the created/updated startup questions (for points calculation)
       clearStartupQuestions();
       fetchStartupQuestions(startup.documentId, patternId, survey.documentId);
-      setIsCompleted(true);
+      setIsApplied(true);
     } catch (error) {
       notificationsActions.push({
         options: { variant: 'error' },

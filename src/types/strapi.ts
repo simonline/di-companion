@@ -224,7 +224,7 @@ export interface StartupPattern {
   pattern: Pattern;
   createdAt: string;
   updatedAt: string;
-  completedAt: string;
+  appliedAt: string;
   responseType: ResponseTypeEnum;
   response: ResponseEnum;
   points: number;
@@ -235,7 +235,7 @@ export interface CreateStartupPattern {
   pattern: StrapiSetRelated;
   responseType: ResponseTypeEnum;
   response: ResponseEnum;
-  completedAt?: string;
+  appliedAt?: string;
   points?: number;
 }
 
@@ -245,7 +245,7 @@ export interface UpdateStartupPattern {
   pattern?: StrapiSetRelated;
   responseType?: ResponseTypeEnum;
   response?: ResponseEnum;
-  completedAt?: string;
+  appliedAt?: string;
   points?: number;
 }
 

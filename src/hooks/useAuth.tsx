@@ -252,7 +252,7 @@ export function useAuth(): UseAuthReturn {
         });
 
         // Return the updated user data (API response)
-        // This doesn't include the merge as the setState hasn't necessarily completed yet
+        // This doesn't include the merge as the setState hasn't necessarily applied yet
         return updatedUser;
       } catch (error) {
         const err = error as Error;

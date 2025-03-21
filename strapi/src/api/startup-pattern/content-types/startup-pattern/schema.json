@@ -22,7 +22,7 @@
       "relation": "oneToOne",
       "target": "api::pattern.pattern"
     },
-    "completedAt": {
+    "appliedAt": {
       "type": "datetime"
     },
     "responseType": {

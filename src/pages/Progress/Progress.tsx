@@ -20,28 +20,26 @@ import {
   Pattern as PatternIcon,
   Check as CheckIcon,
   Pending as PendingIcon,
+  QuestionMark as QuestionMarkIcon,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { CenteredFlexBox } from '@/components/styled';
-import { StartupPattern, ResponseTypeEnum, ResponseEnum } from '@/types/strapi';
+import { StartupPattern, ResponseTypeEnum } from '@/types/strapi';
 import { categoryColors, categoryDisplayNames, phaseNumbers, PhaseEnum } from '@/utils/constants';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/sections/Header';
 import { useAuth } from '@/hooks/useAuth';
 
-type FilterStatus = 'in_progress' | 'completed';
+type FilterStatus = 'in_progress' | 'applied' | 'not_applied';
 
 export const getPatternStatus = (pattern: StartupPattern): FilterStatus | null => {
-  if (pattern.completedAt) {
-    return 'completed';
-  } else if (
-    pattern.responseType === ResponseTypeEnum.accept ||
-    pattern.response === ResponseEnum.maybe_later
-  ) {
+  if (pattern.appliedAt) {
+    return 'applied';
+  } else if (pattern.responseType === ResponseTypeEnum.accept) {
     return 'in_progress';
   } else {
-    return null;
+    return 'not_applied';
   }
 };
 
@@ -178,8 +176,10 @@ const Progress: React.FC = () => {
 
   const inProgressCount =
     startupPatterns?.filter((pattern) => getPatternStatus(pattern) === 'in_progress').length || 0;
-  const completedCount =
-    startupPatterns?.filter((pattern) => getPatternStatus(pattern) === 'completed').length || 0;
+  const appliedCount =
+    startupPatterns?.filter((pattern) => getPatternStatus(pattern) === 'applied').length || 0;
+  const notAppliedCount =
+    startupPatterns?.filter((pattern) => getPatternStatus(pattern) === 'not_applied').length || 0;
 
   if (loading) {
     return (
@@ -272,9 +272,9 @@ const Progress: React.FC = () => {
                 In Progress
               </Badge>
             </ToggleButton>
-            <ToggleButton value="completed" aria-label="completed patterns" sx={{ flex: 1 }}>
+            <ToggleButton value="applied" aria-label="applied patterns" sx={{ flex: 1 }}>
               <Badge
-                badgeContent={completedCount}
+                badgeContent={appliedCount}
                 color="success"
                 sx={{
                   '& .MuiBadge-badge': {
@@ -285,6 +285,21 @@ const Progress: React.FC = () => {
               >
                 <CheckIcon sx={{ mr: 1 }} />
                 Applied
+              </Badge>
+            </ToggleButton>
+            <ToggleButton value="not_applied" aria-label="not applied patterns" sx={{ flex: 1 }}>
+              <Badge
+                badgeContent={notAppliedCount}
+                color="error"
+                sx={{
+                  '& .MuiBadge-badge': {
+                    bgcolor: 'white',
+                    color: 'success.main',
+                  },
+                }}
+              >
+                <QuestionMarkIcon sx={{ mr: 1 }} />
+                Not Applied
               </Badge>
             </ToggleButton>
           </ToggleButtonGroup>
