@@ -88,6 +88,33 @@
       "relation": "oneToMany",
       "target": "api::invitation.invitation",
       "mappedBy": "startup"
+    },
+    "coach": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "coachees"
+    },
+    "recommendations": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::recommendation.recommendation",
+      "mappedBy": "startup"
+    },
+    "requests": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::request.request",
+      "mappedBy": "startup"
+    },
+    "score": {
+      "type": "integer"
+    },
+    "users": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "startups"
     }
   }
 }

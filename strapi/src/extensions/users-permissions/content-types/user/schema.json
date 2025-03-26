@@ -73,8 +73,9 @@
     },
     "startups": {
       "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::startup.startup"
+      "relation": "manyToMany",
+      "target": "api::startup.startup",
+      "mappedBy": "users"
     },
     "gender": {
       "type": "enumeration",
@@ -100,6 +101,32 @@
       "relation": "oneToMany",
       "target": "api::invitation.invitation",
       "mappedBy": "invitedBy"
+    },
+    "isCoach": {
+      "type": "boolean",
+      "default": false
+    },
+    "phone": {
+      "type": "string"
+    },
+    "isPhoneVisible": {
+      "type": "boolean",
+      "default": false
+    },
+    "avatar": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "files",
+        "images"
+      ]
+    },
+    "coachees": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::startup.startup",
+      "mappedBy": "coach"
     }
   }
 }

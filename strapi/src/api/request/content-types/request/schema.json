@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
     "kind": "collectionType",
     "collectionName": "requests",
     "info": {
@@ -26,3 +27,32 @@
         }
     }
 }
+=======
+  "kind": "collectionType",
+  "collectionName": "requests",
+  "info": {
+    "singularName": "request",
+    "pluralName": "requests",
+    "displayName": "Request",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "startup": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::startup.startup",
+      "inversedBy": "requests"
+    },
+    "comment": {
+      "type": "richtext"
+    },
+    "readAt": {
+      "type": "datetime"
+    }
+  }
+}
+>>>>>>> Stashed changes

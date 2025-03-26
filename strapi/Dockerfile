@@ -1,4 +1,4 @@
-FROM node:18-alpine3.16
+FROM node:18-alpine
 # Installing libvips-dev for sharp Compatibility
 RUN apk update && apk add --no-cache build-base gcc autoconf automake zlib-dev libpng-dev nasm bash vips-dev git libc6-compat
 ARG NODE_ENV=development
@@ -16,4 +16,4 @@ RUN chown -R node:node /opt/app
 USER node
 RUN ["npm", "run", "build"]
 EXPOSE 1337
-CMD ["npm", "run", "develop"]
+CMD ["npm", "run", "start"]
