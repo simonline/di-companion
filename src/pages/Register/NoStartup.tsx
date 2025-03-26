@@ -1,32 +1,12 @@
 import { Box, Button, Card, CardContent, Container, Divider, Typography } from '@mui/material';
-import Meta from '@/components/Meta';
 import Header from '@/sections/Header';
 import { Link } from 'react-router-dom';
 
 function NoStartup() {
   return (
     <>
-      <Header>
-        <Meta title="Join or Create a Startup" />
-        <Container maxWidth="md">
-          <Box sx={{ py: 4 }}>
-            <Typography
-              variant="h4"
-              component="h1"
-              gutterBottom
-              align="center"
-              sx={{ fontWeight: 'bold', mb: 3 }}
-            >
-              Join or Create a Startup
-            </Typography>
-            <Typography variant="body1" color="textSecondary" align="center" sx={{ mb: 4 }}>
-              To continue, you need to be part of a startup. Choose one of the options below.
-            </Typography>
-          </Box>
-        </Container>
-      </Header>
-
-      <Container maxWidth="md" sx={{ mb: 8 }}>
+      <Header title="Join or Create a Startup" />
+      <Container maxWidth="md" sx={{ my: 8 }}>
         <Card elevation={3} sx={{ borderRadius: 2, overflow: 'visible' }}>
           <CardContent sx={{ p: 4 }}>
             <Box

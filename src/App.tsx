@@ -13,6 +13,7 @@ import Pages from '@/routes/Pages';
 import Notifications from '@/sections/Notifications';
 import SW from '@/sections/SW';
 import Menu from '@/sections/Menu';
+import { AuthProvider } from '@/hooks/useAuth';
 
 function App() {
   return (
@@ -20,10 +21,12 @@ function App() {
       <CssBaseline />
       <Notifications />
       <SW />
-      <BrowserRouter>
-        <Pages />
-        <Menu />
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Pages />
+          <Menu />
+        </BrowserRouter>
+      </AuthProvider>
     </Fragment>
   );
 }

@@ -20,7 +20,7 @@ import * as Yup from 'yup';
 import { Pattern, Recommendation } from '@/types/strapi';
 import { CreateRecommendation, UpdateRecommendation } from '@/lib/strapi';
 import useSearch from '@/hooks/useSearch';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 interface RecommendationFormProps {
   open: boolean;
   onClose: () => void;
@@ -50,7 +50,7 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
   isSubmitting = false,
   startupId,
 }) => {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const { SearchComponent, searchResults } = useSearch();
   const isEditMode = Boolean(initialValues?.documentId);
   const [selectedPatterns, setSelectedPatterns] = useState<Pattern[]>([]);

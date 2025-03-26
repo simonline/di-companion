@@ -11,11 +11,11 @@ import {
   Button,
   Alert,
 } from '@mui/material';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 
 const Logout: React.FC = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout } = useAuthContext();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(true);

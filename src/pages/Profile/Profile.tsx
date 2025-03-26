@@ -2,14 +2,14 @@ import React from 'react';
 import { Button, Grid, List, Avatar, Typography, Divider, Stack } from '@mui/material';
 import { Person, Rocket } from '@mui/icons-material';
 import { CenteredFlexBox } from '@/components/styled';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { MenuItem } from './MenuItem';
 import Header from '@/sections/Header';
 import { getAvatarUrl } from '@/lib/strapi';
 
 function Profile() {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const navigate = useNavigate();
 
   const joinDate = new Date().toLocaleDateString('en-US', {

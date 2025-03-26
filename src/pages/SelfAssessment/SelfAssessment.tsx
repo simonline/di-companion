@@ -18,7 +18,7 @@ import {
   useTheme,
 } from '@mui/material';
 import Header from '@/sections/Header';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { CategoryEnum, categoryColors, categoryDisplayNames } from '@/utils/constants';
 import InfoIcon from '@mui/icons-material/Info';
@@ -163,7 +163,7 @@ const assessmentQuestions = {
 const SelfAssessment: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { startup, updateStartup, updateScores } = useAuth();
+  const { startup, updateStartup, updateScores } = useAuthContext();
   const [activeStep, setActiveStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);

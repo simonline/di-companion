@@ -19,14 +19,14 @@ import { ChevronRight as ChevronRightIcon } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { Link } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { Startup } from '@/types/strapi';
 import { strapiGetRequests } from '@/lib/strapi';
 import React from 'react';
 
 export default function OverviewView() {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [requests, setRequests] = useState<any[]>([]);
 
   // Get count of coachees

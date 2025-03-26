@@ -21,14 +21,14 @@ import useRecommendations from '@/hooks/useRecommendations';
 import useRequests from '@/hooks/useRequests';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import RequestForm from './components/RequestForm';
 import { CreateRequest } from '@/lib/strapi';
 
 export const Coach: React.FC = () => {
   const navigate = useNavigate();
-  const { startup, user } = useAuth();
+  const { startup, user } = useAuthContext();
   const coach = startup?.coach;
   const { fetchRecommendations, updateRecommendation, recommendations, loading, error } =
     useRecommendations();

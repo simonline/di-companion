@@ -4,14 +4,14 @@ import SpeedIcon from '@mui/icons-material/Speed';
 import ForumIcon from '@mui/icons-material/Forum';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ListIcon from '@mui/icons-material/List';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 
 import asyncComponentLoader from '@/utils/loader';
 
 import { Pages, Routes, AppRoutes } from './types';
 
 export const useAppRoutes = (): Partial<AppRoutes> => {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
 
   return {
     [Pages.Explore]: {

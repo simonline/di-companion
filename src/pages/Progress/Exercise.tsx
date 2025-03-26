@@ -14,7 +14,7 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ImageIcon from '@mui/icons-material/Image';
 import ArticleIcon from '@mui/icons-material/Article';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import useNotifications from '@/store/notifications';
 
 const validationSchema = Yup.object({
@@ -31,7 +31,7 @@ const Exercise: React.FC = () => {
   const { patternId } = useParams<{ patternId: string }>();
   const navigate = useNavigate();
   const [, notificationsActions] = useNotifications();
-  const { startup } = useAuth();
+  const { startup } = useAuthContext();
   const { fetchPattern, pattern, loading: patternLoading, error: patternError } = usePattern();
   const { fetchExercise, exercise, loading: exerciseLoading, error: exerciseError } = useExercise();
   const {

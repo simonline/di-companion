@@ -180,6 +180,7 @@ export interface CreateStartup {
   isPrototypeValidated: boolean;
   isMvpTested: boolean;
   scores?: Record<CategoryEnum, number>;
+  users?: { set: number[] };
 }
 
 export interface UpdateStartup {

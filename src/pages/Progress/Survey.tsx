@@ -28,7 +28,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import Header from '@/sections/Header';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import useNotifications from '@/store/notifications';
 
 interface FormValues {
@@ -40,7 +40,7 @@ const Survey: React.FC = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [, notificationsActions] = useNotifications();
-  const { startup, updateScores } = useAuth();
+  const { startup, updateScores } = useAuthContext();
   const { fetchPattern, pattern, loading: patternLoading, error: patternError } = usePattern();
   const { fetchSurvey, survey, loading: surveyLoading, error: surveyError } = useSurvey();
   const { updateStartupPattern } = useStartupPattern();

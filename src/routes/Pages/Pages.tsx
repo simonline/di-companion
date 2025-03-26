@@ -4,10 +4,11 @@ import { AppRoutes } from '@/routes/types';
 import useRoutes from '..';
 import { getPageHeight } from './utils';
 import ProtectedRoute from '../ProtectedRoute';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
+
 function Pages() {
   const routes = useRoutes();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const isCoach = user?.isCoach || false;
   return (
     <Box sx={{ height: (theme) => getPageHeight(theme), overflowY: 'scroll' }}>

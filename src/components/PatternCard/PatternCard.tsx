@@ -29,7 +29,7 @@ import {
 } from '@/utils/constants';
 import { useNavigate } from 'react-router-dom';
 import useStartupPattern from '@/hooks/useStartupPattern';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 
 interface ActionDialogProps {
   open: boolean;
@@ -50,7 +50,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
   title,
   actions,
 }) => {
-  const { startup } = useAuth();
+  const { startup } = useAuthContext();
   const navigate = useNavigate();
   const { createStartupPattern, startupPattern } = useStartupPattern();
   const [response, setResponse] = React.useState<ResponseEnum | null>(null);

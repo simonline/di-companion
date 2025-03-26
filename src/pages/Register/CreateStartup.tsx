@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Form, Formik, FormikHelpers } from 'formik';
+import { Form, Formik } from 'formik';
 import {
   Button,
   Box,
@@ -12,9 +12,10 @@ import {
   Card,
   CardContent,
   Container,
+  Alert,
 } from '@mui/material';
-import Meta from '@/components/Meta';
-import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { useAuthContext } from '@/hooks/useAuth';
 import {
   steps,
   StartupFormValues,
@@ -23,31 +24,29 @@ import {
 } from '@/pages/Startups/types';
 import Header from '@/sections/Header';
 
+const initialValues: StartupFormValues = {
+  name: '',
+  startDate: '',
+  foundersCount: 1,
+  background: '',
+  idea: '',
+  productType: '',
+  industry: '',
+  targetMarket: '',
+  phase: '',
+  isProblemValidated: false,
+  qualifiedConversationsCount: 0,
+  isTargetGroupDefined: false,
+  isPrototypeValidated: false,
+  isMvpTested: false,
+};
+
 function CreateStartup() {
   const theme = useTheme();
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
-  const { createStartup } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (
-    values: StartupFormValues,
-    { setSubmitting, setErrors }: FormikHelpers<StartupFormValues>,
-  ): Promise<void> => {
-    setIsSubmitting(true);
-    try {
-      await createStartup(values);
-      // Success! You could redirect here
-      // navigate('/dashboard');
-    } catch (err: unknown) {
-      const error = err as Error;
-      console.error('Startup creation error:', error);
-      setErrors({ submit: error.message });
-    } finally {
-      setIsSubmitting(false);
-      setSubmitting(false);
-    }
-  };
+  const { createStartup, user } = useAuthContext();
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -62,27 +61,9 @@ function CreateStartup() {
 
   return (
     <>
-      <Header>
-        <Meta title="Register Your Startup" />
-        <Container maxWidth="md">
-          <Box sx={{ py: 4 }}>
-            <Typography
-              variant="h4"
-              component="h1"
-              gutterBottom
-              align="center"
-              sx={{ fontWeight: 'bold', mb: 3 }}
-            >
-              Register Your Startup
-            </Typography>
-            <Typography variant="body1" color="textSecondary" align="center" sx={{ mb: 4 }}>
-              Tell us about your startup to get personalized guidance and support.
-            </Typography>
-          </Box>
-        </Container>
-      </Header>
+      <Header title="Register Your Startup" />
 
-      <Container maxWidth="md" sx={{ mb: 8 }}>
+      <Container maxWidth="md" sx={{ my: 8 }}>
         <Card elevation={3} sx={{ borderRadius: 2, overflow: 'visible' }}>
           <CardContent sx={{ p: 0 }}>
             <Box sx={{ px: 3, pt: 3 }}>
@@ -109,27 +90,54 @@ function CreateStartup() {
               />
             </Box>
 
+            {apiError && (
+              <Alert severity="error" sx={{ mx: 4, mb: 3 }}>
+                {apiError}
+              </Alert>
+            )}
+
             <Formik
-              initialValues={{
-                name: '',
-                startDate: '',
-                foundersCount: 1,
-                background: '',
-                idea: '',
-                productType: '',
-                industry: '',
-                targetMarket: '',
-                phase: '',
-                isProblemValidated: false,
-                qualifiedConversationsCount: 0,
-                isTargetGroupDefined: false,
-                isPrototypeValidated: false,
-                isMvpTested: false,
-              }}
+              initialValues={initialValues}
               validationSchema={stepValidationSchemas[activeStep]}
-              onSubmit={handleSubmit}
+              onSubmit={async (values, formikHelpers) => {
+                const { setSubmitting } = formikHelpers;
+                setSubmitting(true);
+                setApiError(null);
+
+                try {
+                  console.log('Submitting startup data:', values);
+                  await createStartup({
+                    ...values,
+                    users: { set: [user?.id] },
+                  });
+                  navigate('/dashboard');
+                } catch (err: unknown) {
+                  console.error('API Error:', err);
+
+                  // Extract error message
+                  let errorMessage = 'Failed to create startup';
+                  if (err && typeof err === 'object') {
+                    const apiErr = err as any;
+                    errorMessage =
+                      apiErr?.error?.message || apiErr?.message || 'An unexpected error occurred';
+                  }
+
+                  setApiError(errorMessage);
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
             >
-              {({ errors, touched, isValid, setFieldValue, values, validateForm, submitForm }) => (
+              {({
+                errors,
+                touched,
+                isValid,
+                setFieldValue,
+                values,
+                validateForm,
+                submitForm,
+                isSubmitting,
+              }) => (
                 <Form>
                   <Box sx={{ px: 4, py: 3 }}>
                     {renderStepContent(activeStep, errors, touched, setFieldValue, values)}

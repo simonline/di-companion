@@ -7,10 +7,10 @@ import ForumIcon from '@mui/icons-material/Forum';
 import Meta from '@/components/Meta';
 import { FlexBox } from '@/components/styled';
 import logoImage from '/logo.png';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 function Welcome() {
   const isMobile = window.innerWidth < 600;
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthContext();
   return (
     <>
       <Meta title="Dynamic Innovation Digital Companion - Welcome" />

@@ -22,7 +22,7 @@ import {
   Avatar,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import Header from '@/sections/Header';
 import { useDropzone } from 'react-dropzone';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -65,7 +65,7 @@ const genderOptions = [
 function Register() {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register } = useAuthContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (

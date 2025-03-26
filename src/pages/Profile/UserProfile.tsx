@@ -1,9 +1,9 @@
 import React from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import UpdateProfile from './UpdateProfile';
 
 const UserProfile: React.FC = () => {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
 
   if (!user) return null;
 

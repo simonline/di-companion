@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import { CenteredFlexBox } from '@/components/styled';
 import Header from '@/sections/Header';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import {
   strapiGetInvitations,
   strapiCreateInvitation,
@@ -71,7 +71,7 @@ function a11yProps(index: number) {
 const StartupTeam: React.FC = () => {
   const { startupId } = useParams<{ startupId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [members, setMembers] = useState<User[]>([]);
   const [email, setEmail] = useState('');

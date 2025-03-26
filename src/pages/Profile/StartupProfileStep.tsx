@@ -4,12 +4,12 @@ import { useParams } from 'react-router-dom';
 import { Form, Formik } from 'formik';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import { steps, renderStepContent } from '@/pages/Startups/types';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import { Startup } from '@/types/strapi';
 
 const StartupProfileStep: React.FC = () => {
   const { startupId, stepId } = useParams<{ startupId: string; stepId: string }>();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
 
   const startup = user?.startups?.find((startup) => startup.documentId === startupId);
   const step = steps[parseInt(stepId || '0')];

@@ -29,7 +29,7 @@ import { categoryColors, categoryDisplayNames, phaseNumbers, PhaseEnum } from '@
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/sections/Header';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 
 type FilterStatus = 'in_progress' | 'applied' | 'not_applied';
 
@@ -160,7 +160,7 @@ const PatternListItem: React.FC<{ startupPattern: StartupPattern }> = ({ startup
 const Progress: React.FC = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { startup } = useAuth();
+  const { startup } = useAuthContext();
   const { fetchStartupPatterns, startupPatterns, loading, error } = useStartupPatterns();
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('in_progress');
 

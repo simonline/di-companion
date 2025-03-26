@@ -4,11 +4,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 
 import { useAppRoutes } from '@/routes';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 
 function Menu() {
   const { pathname } = useLocation();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const isCoach = user?.isCoach || false;
   const userType = isCoach ? 'coach' : 'startup';
 

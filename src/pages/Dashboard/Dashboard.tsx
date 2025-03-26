@@ -25,7 +25,7 @@ import Header from '@/sections/Header';
 import ImageIcon from '@mui/icons-material/Image';
 import usePatterns from '@/hooks/usePatterns';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import type { Pattern, StartupPattern } from '@/types/strapi';
 import { getPatternStatus } from '@/pages/Progress/Progress';
 import { useNavigate } from 'react-router-dom';
@@ -39,7 +39,7 @@ interface DashboardWidgetProps {
 }
 
 const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
-  const { startup, updateScores } = useAuth();
+  const { startup, updateScores } = useAuthContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -457,7 +457,7 @@ const PatternBacklogSection: React.FC<DashboardWidgetProps> = ({ startupPatterns
 };
 
 const Dashboard: React.FC = () => {
-  const { startup } = useAuth();
+  const { startup } = useAuthContext();
   const { fetchPatterns, patterns, error: patternsError } = usePatterns();
   const {
     fetchStartupPatterns,

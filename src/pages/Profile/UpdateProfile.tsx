@@ -22,7 +22,7 @@ import {
   Avatar,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import Header from '@/sections/Header';
 import { useDropzone } from 'react-dropzone';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -62,7 +62,7 @@ const genderOptions = [
 function UpdateProfile() {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser } = useAuthContext();
   const { field } = useParams<{ field?: string }>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -288,7 +288,7 @@ function UpdateProfile() {
   return (
     <>
       <Header title={isFieldSpecific ? `Edit ${field}` : 'Update Profile'} />
-      <Container maxWidth="md" sx={{ mb: 8 }}>
+      <Container maxWidth="md" sx={{ my: 8 }}>
         <Card elevation={3} sx={{ borderRadius: 2, overflow: 'visible' }}>
           <CardContent>
             <Formik

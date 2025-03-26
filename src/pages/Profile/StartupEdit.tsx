@@ -14,7 +14,7 @@ import {
   Container,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import {
   steps,
   StartupFormValues,
@@ -27,7 +27,7 @@ function StartupEdit() {
   const theme = useTheme();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { user, updateStartup } = useAuth();
+  const { user, updateStartup } = useAuthContext();
   const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 

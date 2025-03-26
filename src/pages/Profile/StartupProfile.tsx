@@ -6,12 +6,12 @@ import { CenteredFlexBox } from '@/components/styled';
 import Header from '@/sections/Header';
 import EditIcon from '@mui/icons-material/Edit';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 
 const StartupProfile: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
 
   // Find the current startup to show its name
   const startup = user?.startups?.find((s) => s.documentId === id);

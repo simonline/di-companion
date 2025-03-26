@@ -3,13 +3,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Typography, Button, Paper, Box, CircularProgress, Alert } from '@mui/material';
 import { CenteredFlexBox } from '@/components/styled';
 import Header from '@/sections/Header';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 import { strapiAcceptInvitation } from '@/lib/strapi';
 
 const AcceptInvitation: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, loading: userLoading } = useAuth();
+  const { user, loading: userLoading } = useAuthContext();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);

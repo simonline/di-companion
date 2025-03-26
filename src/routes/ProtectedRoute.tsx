@@ -1,6 +1,6 @@
 import { FC, ReactElement } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/hooks/useAuth';
 
 interface ProtectedRouteProps {
   children: ReactElement;
@@ -13,7 +13,7 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({
   requiresAuth = true,
   requiresStartup = true,
 }) => {
-  const { isAuthenticated, startup, loading } = useAuth();
+  const { isAuthenticated, startup, loading } = useAuthContext();
   const location = useLocation();
 
   // Show a loading state or return null while authentication state is loading
