@@ -69,7 +69,7 @@ export default function OverviewView() {
   }, []);
 
   // Count unread recommendations
-  const unreadRequestsCount = recommendations.filter((rec) => !rec.isRead).length;
+  const unreadRequestsCount = recommendations.filter((rec) => !rec.readAt).length;
 
   // Helper function to get startup score
   const getStartupScore = (startup: Startup): number => {
@@ -93,9 +93,9 @@ export default function OverviewView() {
               <CardHeader
                 title="Mentored Startups"
                 titleTypographyProps={{ variant: 'subtitle1' }}
-                sx={{ pb: 0 }}
+                sx={{ pb: 0, textAlign: 'center' }}
               />
-              <CardContent>
+              <CardContent sx={{ textAlign: 'center' }}>
                 <Typography variant="h3" component="div" sx={{ fontWeight: 'bold' }}>
                   {coacheesCount}
                 </Typography>
@@ -110,9 +110,9 @@ export default function OverviewView() {
               <CardHeader
                 title="Average Progress"
                 titleTypographyProps={{ variant: 'subtitle1' }}
-                sx={{ pb: 0 }}
+                sx={{ pb: 0, textAlign: 'center' }}
               />
-              <CardContent>
+              <CardContent sx={{ textAlign: 'center' }}>
                 <Typography variant="h3" component="div" sx={{ fontWeight: 'bold' }}>
                   {averageScore}%
                 </Typography>
@@ -129,9 +129,9 @@ export default function OverviewView() {
               <CardHeader
                 title="Open Requests"
                 titleTypographyProps={{ variant: 'subtitle1' }}
-                sx={{ pb: 0 }}
+                sx={{ pb: 0, textAlign: 'center' }}
               />
-              <CardContent>
+              <CardContent sx={{ textAlign: 'center' }}>
                 <Typography variant="h3" component="div" sx={{ fontWeight: 'bold' }}>
                   {unreadRequestsCount}
                 </Typography>
@@ -157,7 +157,7 @@ export default function OverviewView() {
                 user.coachees.map((startup, index, array) => {
                   // Count unread requests for this startup
                   const startupAlerts = recommendations.filter(
-                    (r) => r.startup?.documentId === startup.documentId && !r.isRead,
+                    (r) => r.startup?.documentId === startup.documentId && !r.readAt,
                   ).length;
 
                   // Determine activity level based on alerts and score

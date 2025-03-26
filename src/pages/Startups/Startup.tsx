@@ -13,16 +13,25 @@ import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import useRecommendations from '@/hooks/useRecommendations';
-import { Recommendation } from '@/types/strapi';
-import { CreateRecommendation, UpdateRecommendation } from '@/lib/strapi';
+import { Recommendation, Startup } from '@/types/strapi';
+import { CreateRecommendation, UpdateRecommendation, strapiGetStartup } from '@/lib/strapi';
 import RecommendationForm from './components/RecommendationForm';
 import RecommendationList from './components/RecommendationList';
-import { useAuth } from '@/hooks/useAuth';
 import { useParams } from 'react-router-dom';
+import Loading from '@/components/Loading';
 
 export default function StartupView() {
-  const { user } = useAuth();
-  const { startupId } = useParams<{ startupId: string }>();
+  const { id: startupId } = useParams<{ id: string }>();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingRecommendation, setEditingRecommendation] = useState<Recommendation | undefined>(
+    undefined,
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStartup, setCurrentStartup] = useState<Startup | null>(null);
+  const [notification, setNotification] = useState<{
+    message: string;
+    severity: 'success' | 'error' | 'info' | 'warning';
+  } | null>(null);
 
   const {
     recommendations,
@@ -35,29 +44,28 @@ export default function StartupView() {
     clearError,
   } = useRecommendations();
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingRecommendation, setEditingRecommendation] = useState<Recommendation | undefined>(
-    undefined,
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [notification, setNotification] = useState<{
-    message: string;
-    severity: 'success' | 'error' | 'info' | 'warning';
-  } | null>(null);
-
-  // Find current startup
-  const currentStartup =
-    user?.startups?.find((s) => s.documentId === startupId) ||
-    user?.coachees?.find((s) => s.documentId === startupId);
-
-  // Filter recommendations for the current startup
-  const filteredRecommendations =
-    recommendations?.filter((rec) => rec.startup?.id === startupId) || [];
-
-  // Fetch recommendations when the component mounts
+  // Fetch startup details and recommendations when the component mounts
   useEffect(() => {
-    fetchRecommendations();
-  }, [fetchRecommendations]);
+    const fetchStartupDetails = async () => {
+      if (!startupId) return;
+      try {
+        const startup = await strapiGetStartup(startupId);
+        setCurrentStartup(startup);
+      } catch (err) {
+        setNotification({
+          message: `Error loading startup: ${(err as Error).message}`,
+          severity: 'error',
+        });
+      }
+    };
+
+    fetchStartupDetails();
+    fetchRecommendations(startupId);
+  }, [startupId, fetchRecommendations]);
+
+  if (!startupId) {
+    return <Loading />;
+  }
 
   const handleOpenForm = () => {
     setEditingRecommendation(undefined);
@@ -77,20 +85,16 @@ export default function StartupView() {
   const handleFormSubmit = async (values: CreateRecommendation | UpdateRecommendation) => {
     setIsSubmitting(true);
     try {
-      // Ensure the recommendation is linked to current startup
-      const valuesWithStartup = {
-        ...values,
-        startup: { id: startupId },
-      };
-
-      if ('documentId' in valuesWithStartup && valuesWithStartup.documentId) {
-        await updateRecommendation(valuesWithStartup as UpdateRecommendation);
+      if ('documentId' in values && values.documentId) {
+        // Update
+        await updateRecommendation(values as UpdateRecommendation);
         setNotification({
           message: 'Recommendation updated successfully',
           severity: 'success',
         });
       } else {
-        await createRecommendation(valuesWithStartup as CreateRecommendation);
+        // Create
+        await createRecommendation(values as CreateRecommendation);
         setNotification({
           message: 'Recommendation created successfully',
           severity: 'success',
@@ -126,7 +130,7 @@ export default function StartupView() {
   };
 
   const handleRefresh = () => {
-    fetchRecommendations();
+    fetchRecommendations(startupId);
   };
 
   return (
@@ -168,7 +172,7 @@ export default function StartupView() {
                   </Box>
                 ) : (
                   <RecommendationList
-                    recommendations={filteredRecommendations}
+                    recommendations={recommendations || []}
                     onEdit={handleEditRecommendation}
                     onDelete={handleDeleteRecommendation}
                   />
@@ -185,6 +189,7 @@ export default function StartupView() {
         onSubmit={handleFormSubmit}
         initialValues={editingRecommendation}
         isSubmitting={isSubmitting}
+        startupId={startupId}
       />
 
       <Snackbar

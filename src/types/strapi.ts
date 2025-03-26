@@ -301,12 +301,13 @@ export interface UpdateStartupQuestion {
 
 export interface Recommendation {
   documentId: string;
-  recommendation: string;
+  comment: string;
   type: 'pattern' | 'url' | 'file' | 'contact';
-  text?: string;
-  isRead: boolean;
+  patterns?: Pattern[];
+  coach?: User;
+  startup?: Startup;
+  readAt?: string;
   publishedAt: string;
-  startup?: any;
 }
 
 export enum InvitationStatusEnum {

@@ -11,7 +11,11 @@ interface UseSearchReturn {
   searchError: string | null;
   isSearching: boolean;
   handleSearch: (query: string) => void;
-  SearchComponent: React.FC;
+  SearchComponent: React.FC<{
+    onSelect?: (pattern: Pattern) => void;
+    preventNavigation?: boolean;
+    forceExpanded?: boolean;
+  }>;
   currentQuery: string;
 }
 
@@ -25,6 +29,7 @@ export default function useSearch(): UseSearchReturn {
   } = useSearchPatterns();
   const [isSearching, setIsSearching] = useState(false);
   const [currentQuery, setCurrentQuery] = useState('');
+  const [selectedValue, setSelectedValue] = useState('');
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const lastSearchQueryRef = useRef<string>('');
 
@@ -57,26 +62,52 @@ export default function useSearch(): UseSearchReturn {
   );
 
   // Create a component that renders the search UI
-  const SearchComponent = useCallback(() => {
-    return (
-      <div ref={searchContainerRef} style={{ position: 'relative' }}>
-        <SearchBar
-          onSearch={handleSearch}
-          loading={searchLoading}
-          forceExpanded={isSearching || currentQuery.length > 0}
-          initialQuery={currentQuery}
-        />
-        {isSearching && (
-          <SearchResults
-            results={searchResults}
+  const SearchComponent = useCallback(
+    ({
+      onSelect,
+      preventNavigation,
+      forceExpanded,
+    }: {
+      onSelect?: (pattern: Pattern) => void;
+      preventNavigation?: boolean;
+      forceExpanded?: boolean;
+    }) => {
+      return (
+        <div ref={searchContainerRef} style={{ position: 'relative' }}>
+          <SearchBar
+            onSearch={handleSearch}
             loading={searchLoading}
-            error={searchError}
-            anchorEl={searchContainerRef.current}
+            forceExpanded={forceExpanded || isSearching || currentQuery.length > 0}
+            initialQuery={selectedValue || currentQuery}
           />
-        )}
-      </div>
-    );
-  }, [handleSearch, isSearching, searchError, searchLoading, searchResults, currentQuery]);
+          {isSearching && (
+            <SearchResults
+              results={searchResults}
+              loading={searchLoading}
+              error={searchError}
+              anchorEl={searchContainerRef.current}
+              onSelect={(pattern) => {
+                setSelectedValue(pattern.name);
+                onSelect?.(pattern);
+                clearResults();
+              }}
+              preventNavigation={preventNavigation}
+            />
+          )}
+        </div>
+      );
+    },
+    [
+      handleSearch,
+      isSearching,
+      searchError,
+      searchLoading,
+      searchResults,
+      currentQuery,
+      selectedValue,
+      clearResults,
+    ],
+  );
 
   return {
     searchContainerRef,

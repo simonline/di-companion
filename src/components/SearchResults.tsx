@@ -9,9 +9,18 @@ interface SearchResultsProps {
   loading: boolean;
   error: string | null;
   anchorEl?: HTMLElement | null;
+  onSelect?: (pattern: Pattern) => void;
+  preventNavigation?: boolean;
 }
 
-const SearchResults: React.FC<SearchResultsProps> = ({ results, loading, error, anchorEl }) => {
+const SearchResults: React.FC<SearchResultsProps> = ({
+  results,
+  loading,
+  error,
+  anchorEl,
+  onSelect,
+  preventNavigation = false,
+}) => {
   const navigate = useNavigate();
 
   if (loading) {
@@ -41,6 +50,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, loading, error, 
   }
 
   const handlePatternClick = (pattern: Pattern) => {
+    if (preventNavigation) {
+      onSelect?.(pattern);
+      return;
+    }
     navigate(`/explore/${pattern.documentId}`);
   };
 
@@ -51,9 +64,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, loading, error, 
         sx={{
           position: 'absolute',
           top: anchorEl ? 50 : 0,
-          right: 0,
+          left: 0,
           zIndex: 1300,
-          width: 320,
+          width: '100%',
           maxHeight: 400,
           overflowY: 'auto',
           borderRadius: 2,

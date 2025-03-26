@@ -16,7 +16,7 @@ interface UseRecommendations {
 }
 
 interface UseRecommendationsReturn extends UseRecommendations {
-  fetchRecommendations: () => void;
+  fetchRecommendations: (startupId?: string) => void;
   createRecommendation: (data: CreateRecommendation) => Promise<Recommendation>;
   updateRecommendation: (data: UpdateRecommendation) => Promise<Recommendation>;
   deleteRecommendation: (documentId: string) => Promise<void>;
@@ -34,10 +34,10 @@ export default function useRecommendations(): UseRecommendationsReturn {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const fetchRecommendations = useCallback(async () => {
+  const fetchRecommendations = useCallback(async (startupId?: string) => {
     try {
       setState((prev) => ({ ...prev, loading: true }));
-      const recommendations = await strapiGetRecommendations();
+      const recommendations = await strapiGetRecommendations(startupId);
       setState({ recommendations, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

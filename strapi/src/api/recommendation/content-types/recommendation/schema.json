@@ -17,7 +17,12 @@
       "relation": "oneToOne",
       "target": "api::startup.startup"
     },
-    "recommendation": {
+    "coach": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "comment": {
       "type": "richtext"
     },
     "type": {
@@ -28,6 +33,9 @@
         "file",
         "contact"
       ]
+    },
+    "patterns": {
+      "type": "json"
     },
     "isRead": {
       "type": "boolean"

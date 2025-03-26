@@ -77,11 +77,11 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
 
   if (recommendations.length === 0) {
     return (
-      <Paper sx={{ p: 3, textAlign: 'center' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', px: 3, pt: 3 }}>
         <Typography variant="body1" color="textSecondary">
           No recommendations available
         </Typography>
-      </Paper>
+      </Box>
     );
   }
 
@@ -104,7 +104,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                 key={recommendation.documentId}
                 sx={{
                   '&:last-child td, &:last-child th': { border: 0 },
-                  backgroundColor: recommendation.isRead ? undefined : 'rgba(25, 118, 210, 0.04)',
+                  backgroundColor: recommendation.readAt ? undefined : 'rgba(25, 118, 210, 0.04)',
                 }}
               >
                 <TableCell>
@@ -113,15 +113,10 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                   </Avatar>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body1">{recommendation.recommendation}</Typography>
-                  {recommendation.text && (
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                      {recommendation.text}
-                    </Typography>
-                  )}
+                  <Typography variant="body1">{recommendation.comment}</Typography>
                 </TableCell>
                 <TableCell>
-                  {recommendation.isRead ? (
+                  {recommendation.readAt ? (
                     <Chip label="Read" size="small" sx={{ bgcolor: '#e8f5e9', color: '#2e7d32' }} />
                   ) : (
                     <Chip

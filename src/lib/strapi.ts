@@ -301,6 +301,34 @@ export async function strapiGetPattern(documentId: string): Promise<Pattern> {
   }
 }
 
+export async function fetchPatternsById(patternIds: string[]): Promise<Pattern[]> {
+  try {
+    console.log('Fetching patterns by IDs:', patternIds);
+
+    if (!patternIds || !Array.isArray(patternIds) || patternIds.length === 0) {
+      console.warn('No valid pattern IDs provided');
+      return [];
+    }
+
+    // Filter out any non-string values to prevent API errors
+    const validIds = patternIds.filter((id) => typeof id === 'string');
+    if (validIds.length !== patternIds.length) {
+      console.warn('Some pattern IDs were invalid:', patternIds);
+    }
+
+    const patterns = await Promise.all(
+      validIds.map((patternId) => {
+        console.log('Fetching pattern with ID:', patternId);
+        return strapiGetPattern(patternId);
+      }),
+    );
+    return patterns;
+  } catch (error) {
+    console.error('Error fetching patterns by IDs:', error);
+    throw error;
+  }
+}
+
 export async function strapiGetExercises(): Promise<Exercise[]> {
   try {
     // No need to manually add token - the axios interceptor will handle it
@@ -646,10 +674,14 @@ export async function strapiUpdateStartupQuestion(
   }
 }
 
-export async function strapiGetRecommendations(): Promise<Recommendation[]> {
+export async function strapiGetRecommendations(startupId?: string): Promise<Recommendation[]> {
   try {
     // No need to manually add token - the axios interceptor will handle it
-    return await fetchCollectionApi<Recommendation>('/recommendations');
+    let url = '/recommendations?populate[0]=patterns&populate[1]=coach&populate[2]=startup';
+    if (startupId) {
+      url += `&filters[startup][documentId][$eq]=${startupId}`;
+    }
+    return await fetchPaginatedApi<Recommendation>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading recommendations');
@@ -657,25 +689,36 @@ export async function strapiGetRecommendations(): Promise<Recommendation[]> {
 }
 
 export interface CreateRecommendation {
-  recommendation: string;
+  comment: string;
   type: 'pattern' | 'url' | 'file' | 'contact';
-  text?: string;
+  patterns?: string[];
+  coach?: { id: number | string };
   startup?: { id: number | string };
-  isRead?: boolean;
+  readAt?: string;
 }
 
 export async function strapiCreateRecommendation(
   recommendation: CreateRecommendation,
 ): Promise<Recommendation> {
   try {
+    // Format the data for Strapi v5
+    const formattedData = {
+      ...recommendation,
+      patterns: recommendation.patterns,
+      coach: recommendation.coach ? recommendation.coach.id : undefined,
+      startup: recommendation.startup ? recommendation.startup.id : undefined,
+    };
+
+    const url = '/recommendations?populate[0]=patterns&populate[1]=coach&populate[2]=startup';
+
     // No need to manually add token - the axios interceptor will handle it
-    return await fetchSingleApi<Recommendation>('/recommendations', {
+    return await fetchSingleApi<Recommendation>(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        data: recommendation,
+        data: formattedData,
       }),
     });
   } catch (error) {
@@ -686,11 +729,12 @@ export async function strapiCreateRecommendation(
 
 export interface UpdateRecommendation {
   documentId: string;
-  recommendation?: string;
+  comment?: string;
   type?: 'pattern' | 'url' | 'file' | 'contact';
-  text?: string;
+  patterns?: string[];
+  coach?: { id: number | string };
   startup?: { id: number | string };
-  isRead?: boolean;
+  readAt?: string;
 }
 
 export async function strapiUpdateRecommendation(
@@ -698,7 +742,7 @@ export async function strapiUpdateRecommendation(
 ): Promise<Recommendation> {
   try {
     const { documentId, ...payload } = updateRecommendation;
-    const url = `/recommendations/${documentId}`;
+    const url = `/recommendations/${documentId}?populate[0]=patterns&populate[1]=coach&populate[2]=startup`;
 
     // No need to manually add token - the axios interceptor will handle it
     return await fetchSingleApi<Recommendation>(url, {
@@ -932,5 +976,15 @@ export async function strapiUpdateUser(updateUser: UpdateUser): Promise<User> {
     console.error('Error in strapiUpdateUser:', error);
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'User update failed');
+  }
+}
+
+export async function strapiGetStartup(documentId: string): Promise<Startup> {
+  try {
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchSingleApi<Startup>(`/startups/${documentId}`);
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading startup');
   }
 }

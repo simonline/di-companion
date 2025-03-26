@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import {
   Box,
   Button,
+  Chip,
   CircularProgress,
   List,
   ListItem,
@@ -12,7 +13,8 @@ import {
   Divider,
 } from '@mui/material';
 import { getRecommendationIcon } from './types';
-// import { useNavigate } from 'react-router-dom';
+import { Recommendation } from '@/types/strapi';
+import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import useRecommendations from '@/hooks/useRecommendations';
 import Header from '@/sections/Header';
@@ -21,19 +23,36 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 
 export const Coach: React.FC = () => {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const { startup, user } = useAuth();
   const coach = startup?.coach;
-  const { fetchRecommendations, recommendations, loading, error } = useRecommendations();
+  const { fetchRecommendations, updateRecommendation, recommendations, loading, error } =
+    useRecommendations();
 
   useEffect(() => {
-    fetchRecommendations();
-  }, [fetchRecommendations]);
+    if (startup) {
+      fetchRecommendations(startup.documentId);
+    }
+  }, [fetchRecommendations, startup]);
 
   // Redirect to Startups view if user is a coach
   if (user?.isCoach) {
     return <Navigate to="/startups" replace />;
   }
+
+  const handleRecommendationClick = (recommendation: Recommendation) => {
+    // Mark recommendation as read
+    if (!recommendation.readAt) {
+      updateRecommendation({
+        documentId: recommendation.documentId,
+        readAt: new Date().toISOString(),
+      });
+    }
+
+    if (recommendation.patterns && recommendation.patterns.length > 0) {
+      navigate(`/explore/${recommendation.patterns[0].documentId}`);
+    }
+  };
 
   if (loading) {
     return (
@@ -218,13 +237,13 @@ export const Coach: React.FC = () => {
           {recommendations.map((recommendation) => (
             <ListItem
               key={recommendation.documentId}
-              // onClick={() => navigate(`/coach/${recommendation.documentId}`)}
+              onClick={() => handleRecommendationClick(recommendation)}
               sx={{
                 cursor: 'pointer',
                 '&:hover': {
                   backgroundColor: '#f5f5f5 !important',
                 },
-                bgcolor: recommendation.isRead ? 'transparent' : 'action.hover',
+                bgcolor: recommendation.readAt ? 'transparent' : 'action.hover',
               }}
             >
               <ListItemIcon>{getRecommendationIcon(recommendation.type)}</ListItemIcon>
@@ -233,9 +252,14 @@ export const Coach: React.FC = () => {
                   <Typography
                     component="span"
                     variant="body1"
-                    sx={{ fontWeight: recommendation.isRead ? 'normal' : 'bold' }}
+                    sx={{ fontWeight: recommendation.readAt ? 'normal' : 'bold' }}
                   >
-                    {recommendation.recommendation}
+                    {recommendation.comment}
+                    {recommendation.patterns
+                      ? recommendation.patterns.map((pattern) => (
+                          <Chip key={pattern.documentId} label={pattern.name} />
+                        ))
+                      : recommendation.comment}
                   </Typography>
                 }
               />
