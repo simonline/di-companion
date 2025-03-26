@@ -1,5 +1,12 @@
 import { useState, useCallback } from 'react';
-import { strapiGetRecommendations } from '@/lib/strapi';
+import {
+  strapiGetRecommendations,
+  strapiCreateRecommendation,
+  strapiUpdateRecommendation,
+  strapiDeleteRecommendation,
+  CreateRecommendation,
+  UpdateRecommendation,
+} from '@/lib/strapi';
 import type { Recommendation } from '@/types/strapi';
 
 interface UseRecommendations {
@@ -10,6 +17,9 @@ interface UseRecommendations {
 
 interface UseRecommendationsReturn extends UseRecommendations {
   fetchRecommendations: () => void;
+  createRecommendation: (data: CreateRecommendation) => Promise<Recommendation>;
+  updateRecommendation: (data: UpdateRecommendation) => Promise<Recommendation>;
+  deleteRecommendation: (documentId: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -26,6 +36,7 @@ export default function useRecommendations(): UseRecommendationsReturn {
 
   const fetchRecommendations = useCallback(async () => {
     try {
+      setState((prev) => ({ ...prev, loading: true }));
       const recommendations = await strapiGetRecommendations();
       setState({ recommendations, loading: false, error: null });
     } catch (err: unknown) {
@@ -34,8 +45,61 @@ export default function useRecommendations(): UseRecommendationsReturn {
     }
   }, []);
 
+  const createRecommendation = useCallback(async (data: CreateRecommendation) => {
+    try {
+      const newRecommendation = await strapiCreateRecommendation(data);
+      setState((prev) => ({
+        ...prev,
+        recommendations: prev.recommendations
+          ? [...prev.recommendations, newRecommendation]
+          : [newRecommendation],
+      }));
+      return newRecommendation;
+    } catch (err: unknown) {
+      const error = err as Error;
+      setState((prev) => ({ ...prev, error: error.message }));
+      throw error;
+    }
+  }, []);
+
+  const updateRecommendation = useCallback(async (data: UpdateRecommendation) => {
+    try {
+      const updatedRecommendation = await strapiUpdateRecommendation(data);
+      setState((prev) => ({
+        ...prev,
+        recommendations:
+          prev.recommendations?.map((item) =>
+            item.documentId === data.documentId ? updatedRecommendation : item,
+          ) || null,
+      }));
+      return updatedRecommendation;
+    } catch (err: unknown) {
+      const error = err as Error;
+      setState((prev) => ({ ...prev, error: error.message }));
+      throw error;
+    }
+  }, []);
+
+  const deleteRecommendation = useCallback(async (documentId: string) => {
+    try {
+      await strapiDeleteRecommendation(documentId);
+      setState((prev) => ({
+        ...prev,
+        recommendations:
+          prev.recommendations?.filter((item) => item.documentId !== documentId) || null,
+      }));
+    } catch (err: unknown) {
+      const error = err as Error;
+      setState((prev) => ({ ...prev, error: error.message }));
+      throw error;
+    }
+  }, []);
+
   return {
     fetchRecommendations,
+    createRecommendation,
+    updateRecommendation,
+    deleteRecommendation,
     recommendations: state.recommendations,
     loading: state.loading,
     error: state.error,

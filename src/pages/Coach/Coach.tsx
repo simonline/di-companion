@@ -18,16 +18,22 @@ import useRecommendations from '@/hooks/useRecommendations';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useAuth } from '@/hooks/useAuth';
+import { Navigate } from 'react-router-dom';
 
 export const Coach: React.FC = () => {
   // const navigate = useNavigate();
-  const { startup } = useAuth();
+  const { startup, user } = useAuth();
   const coach = startup?.coach;
   const { fetchRecommendations, recommendations, loading, error } = useRecommendations();
 
   useEffect(() => {
     fetchRecommendations();
   }, [fetchRecommendations]);
+
+  // Redirect to Startups view if user is a coach
+  if (user?.isCoach) {
+    return <Navigate to="/startups" replace />;
+  }
 
   if (loading) {
     return (

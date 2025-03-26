@@ -5,9 +5,14 @@ import { useAuth } from '@/hooks/useAuth';
 interface ProtectedRouteProps {
   children: ReactElement;
   requiresAuth?: boolean;
+  requiresStartup?: boolean;
 }
 
-const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, requiresAuth = true }) => {
+const ProtectedRoute: FC<ProtectedRouteProps> = ({
+  children,
+  requiresAuth = true,
+  requiresStartup = true,
+}) => {
   const { isAuthenticated, startup, loading } = useAuth();
   const location = useLocation();
 
@@ -33,12 +38,7 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, requiresAuth = true
   }
 
   // If the user is not associated with a startup, redirect to create-startup
-  if (
-    requiresAuth &&
-    isAuthenticated &&
-    !['/logout', '/profile', '/accept-invitation'].includes(location.pathname) &&
-    !startup
-  ) {
+  if (requiresStartup && !startup) {
     return <Navigate to="/no-startup" state={{ from: location }} replace />;
   }
 

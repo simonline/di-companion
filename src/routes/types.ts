@@ -17,6 +17,8 @@ export enum Pages {
   Dashboard,
   Coach,
   CoachChat,
+  Startups,
+  Startup,
   Profile,
   UserProfile,
   UserProfileField,
@@ -37,6 +39,8 @@ type PathRouteCustomProps = {
   component: FC;
   icon?: FC<SvgIconProps>;
   requiresAuth?: boolean;
+  visibleTo: ('coach' | 'startup')[];
+  requiresStartup?: boolean;
 };
 
 export type AppRoute = PathRouteProps & PathRouteCustomProps;

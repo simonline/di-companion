@@ -10,19 +10,21 @@ function Pages() {
   return (
     <Box sx={{ height: (theme) => getPageHeight(theme), overflowY: 'scroll' }}>
       <Routes>
-        {Object.values(routes as AppRoutes).map(({ path, component: Component, requiresAuth }) => {
-          return (
-            <Route
-              key={path}
-              path={path}
-              element={
-                <ProtectedRoute requiresAuth={requiresAuth}>
-                  <Component />
-                </ProtectedRoute>
-              }
-            />
-          );
-        })}
+        {Object.values(routes as AppRoutes).map(
+          ({ path, component: Component, requiresAuth, requiresStartup }) => {
+            return (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <ProtectedRoute requiresAuth={requiresAuth} requiresStartup={requiresStartup}>
+                    <Component />
+                  </ProtectedRoute>
+                }
+              />
+            );
+          },
+        )}
       </Routes>
     </Box>
   );

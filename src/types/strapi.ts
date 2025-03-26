@@ -303,9 +303,10 @@ export interface Recommendation {
   documentId: string;
   recommendation: string;
   type: 'pattern' | 'url' | 'file' | 'contact';
-  text: string;
+  text?: string;
   isRead: boolean;
   publishedAt: string;
+  startup?: any;
 }
 
 export enum InvitationStatusEnum {

@@ -4,14 +4,21 @@ import { Link, useLocation } from 'react-router-dom';
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 
 import { useAppRoutes } from '@/routes';
+import { useAuth } from '@/hooks/useAuth';
 
 function Menu() {
   const { pathname } = useLocation();
+  const { user } = useAuth();
+  const isCoach = user?.isCoach || false;
+  const userType = isCoach ? 'coach' : 'startup';
+
   return (
     <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
       <BottomNavigation showLabels value={pathname}>
         {Object.values(useAppRoutes())
-          .filter((route) => route.title)
+          .filter(
+            (route) => route.title && (!route.visibleTo || route.visibleTo.includes(userType)),
+          )
           .map(({ path, title, icon }) => (
             <BottomNavigationAction
               key={path}

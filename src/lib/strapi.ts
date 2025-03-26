@@ -135,7 +135,7 @@ export async function strapiMe(): Promise<User> {
   try {
     // No need to manually add token - the axios interceptor will handle it
     return await fetchApi<User>(
-      '/users/me?populate[startups][filters][publishedAt][$notNull]=true&populate[startups][populate][coach]=*&populate[avatar]=*',
+      '/users/me?populate[startups][filters][publishedAt][$notNull]=true&populate[startups][populate][coach]=*&populate[avatar]=*&populate[coachees]=*',
     );
   } catch (error) {
     const strapiError = error as StrapiError;
@@ -653,6 +653,80 @@ export async function strapiGetRecommendations(): Promise<Recommendation[]> {
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading recommendations');
+  }
+}
+
+export interface CreateRecommendation {
+  recommendation: string;
+  type: 'pattern' | 'url' | 'file' | 'contact';
+  text?: string;
+  startup?: { id: number | string };
+  isRead?: boolean;
+}
+
+export async function strapiCreateRecommendation(
+  recommendation: CreateRecommendation,
+): Promise<Recommendation> {
+  try {
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchSingleApi<Recommendation>('/recommendations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: recommendation,
+      }),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Recommendation creation failed');
+  }
+}
+
+export interface UpdateRecommendation {
+  documentId: string;
+  recommendation?: string;
+  type?: 'pattern' | 'url' | 'file' | 'contact';
+  text?: string;
+  startup?: { id: number | string };
+  isRead?: boolean;
+}
+
+export async function strapiUpdateRecommendation(
+  updateRecommendation: UpdateRecommendation,
+): Promise<Recommendation> {
+  try {
+    const { documentId, ...payload } = updateRecommendation;
+    const url = `/recommendations/${documentId}`;
+
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchSingleApi<Recommendation>(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: payload,
+      }),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Recommendation update failed');
+  }
+}
+
+export async function strapiDeleteRecommendation(documentId: string): Promise<void> {
+  try {
+    const url = `/recommendations/${documentId}`;
+
+    // No need to manually add token - the axios interceptor will handle it
+    await fetchApi(url, {
+      method: 'DELETE',
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Recommendation deletion failed');
   }
 }
 
