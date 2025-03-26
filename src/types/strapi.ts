@@ -310,6 +310,14 @@ export interface Recommendation {
   publishedAt: string;
 }
 
+export interface Request {
+  documentId: string;
+  comment: string;
+  startup?: Startup;
+  readAt?: string;
+  publishedAt: string;
+}
+
 export enum InvitationStatusEnum {
   pending = 'pending',
   accepted = 'accepted',

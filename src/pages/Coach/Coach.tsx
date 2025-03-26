@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -10,16 +10,21 @@ import {
   Typography,
   Avatar,
   Divider,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import { getRecommendationIcon } from './types';
 import { Recommendation } from '@/types/strapi';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import useRecommendations from '@/hooks/useRecommendations';
+import useRequests from '@/hooks/useRequests';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
+import RequestForm from './components/RequestForm';
+import { CreateRequest } from '@/lib/strapi';
 
 export const Coach: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +32,14 @@ export const Coach: React.FC = () => {
   const coach = startup?.coach;
   const { fetchRecommendations, updateRecommendation, recommendations, loading, error } =
     useRecommendations();
+  const { createRequest } = useRequests();
+
+  const [isRequestFormOpen, setIsRequestFormOpen] = useState(false);
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
+  const [notification, setNotification] = useState<{
+    message: string;
+    severity: 'success' | 'error' | 'info' | 'warning';
+  } | null>(null);
 
   useEffect(() => {
     if (startup) {
@@ -38,6 +51,38 @@ export const Coach: React.FC = () => {
   if (user?.isCoach) {
     return <Navigate to="/startups" replace />;
   }
+
+  const handleOpenRequestForm = () => {
+    setIsRequestFormOpen(true);
+  };
+
+  const handleCloseRequestForm = () => {
+    setIsRequestFormOpen(false);
+  };
+
+  const handleSubmitRequest = async (values: CreateRequest) => {
+    setIsSubmittingRequest(true);
+
+    try {
+      await createRequest(values);
+      setIsRequestFormOpen(false);
+      setNotification({
+        message: 'Request sent successfully',
+        severity: 'success',
+      });
+    } catch (error) {
+      setNotification({
+        message: `Error: ${(error as Error).message}`,
+        severity: 'error',
+      });
+    } finally {
+      setIsSubmittingRequest(false);
+    }
+  };
+
+  const handleCloseNotification = () => {
+    setNotification(null);
+  };
 
   const handleRecommendationClick = (recommendation: Recommendation) => {
     // Mark recommendation as read
@@ -225,6 +270,30 @@ export const Coach: React.FC = () => {
                       Call
                     </Button>
                   )}
+
+                  <Button
+                    variant="contained"
+                    size="small"
+                    color="primary"
+                    onClick={handleOpenRequestForm}
+                    startIcon={
+                      <Box
+                        component="svg"
+                        sx={{ width: 16, height: 16 }}
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
+                      </Box>
+                    }
+                    sx={{
+                      textTransform: 'none',
+                      px: 2,
+                      py: 0.75,
+                    }}
+                  >
+                    Send Request
+                  </Button>
                 </Box>
               </Box>
             </Box>
@@ -275,6 +344,30 @@ export const Coach: React.FC = () => {
               </ListItem>
             ))}
         </List>
+
+        {/* Request Form Dialog */}
+        <RequestForm
+          open={isRequestFormOpen}
+          onClose={handleCloseRequestForm}
+          onSubmit={handleSubmitRequest}
+          isSubmitting={isSubmittingRequest}
+          startupId={startup?.documentId}
+        />
+
+        <Snackbar
+          open={!!notification}
+          autoHideDuration={6000}
+          onClose={handleCloseNotification}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={handleCloseNotification}
+            severity={notification?.severity || 'info'}
+            sx={{ width: '100%' }}
+          >
+            {notification?.message || ''}
+          </Alert>
+        </Snackbar>
       </CenteredFlexBox>
     </>
   );

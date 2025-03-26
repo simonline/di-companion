@@ -27,6 +27,7 @@ import type {
   CreateInvitation,
   UpdateInvitation,
   UpdateUser,
+  Request,
 } from '../types/strapi';
 import { CategoryEnum } from '../utils/constants';
 import axiosInstance from './axios';
@@ -986,5 +987,94 @@ export async function strapiGetStartup(documentId: string): Promise<Startup> {
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading startup');
+  }
+}
+
+// Request CRUD Operations
+export async function strapiGetRequests(startupId?: string): Promise<Request[]> {
+  try {
+    // No need to manually add token - the axios interceptor will handle it
+    let url = '/requests?populate[0]=startup';
+    if (startupId) {
+      url += `&filters[startup][documentId][$eq]=${startupId}`;
+    }
+    return await fetchPaginatedApi<Request>(url);
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading requests');
+  }
+}
+
+export interface CreateRequest {
+  comment: string;
+  startup?: { id: number | string };
+  readAt?: string;
+}
+
+export async function strapiCreateRequest(request: CreateRequest): Promise<Request> {
+  try {
+    // Format the data for Strapi v5
+    const formattedData = {
+      ...request,
+      startup: request.startup ? request.startup.id : undefined,
+    };
+
+    const url = '/requests?populate[0]=startup';
+
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchSingleApi<Request>(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: formattedData,
+      }),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Request creation failed');
+  }
+}
+
+export interface UpdateRequest {
+  documentId: string;
+  comment?: string;
+  startup?: { id: number | string };
+  readAt?: string;
+}
+
+export async function strapiUpdateRequest(updateRequest: UpdateRequest): Promise<Request> {
+  try {
+    const { documentId, ...payload } = updateRequest;
+    const url = `/requests/${documentId}?populate[0]=startup`;
+
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchSingleApi<Request>(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: payload,
+      }),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Request update failed');
+  }
+}
+
+export async function strapiDeleteRequest(documentId: string): Promise<void> {
+  try {
+    const url = `/requests/${documentId}`;
+
+    // No need to manually add token - the axios interceptor will handle it
+    await fetchApi(url, {
+      method: 'DELETE',
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Request deletion failed');
   }
 }

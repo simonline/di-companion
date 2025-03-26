@@ -22,12 +22,12 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { Startup } from '@/types/strapi';
-import { strapiGetRecommendations } from '@/lib/strapi';
+import { strapiGetRequests } from '@/lib/strapi';
 import React from 'react';
 
 export default function OverviewView() {
   const { user } = useAuth();
-  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [requests, setRequests] = useState<any[]>([]);
 
   // Get count of coachees
   const coacheesCount = user?.coachees?.length || 0;
@@ -54,22 +54,22 @@ export default function OverviewView() {
 
   const averageScore = calculateAverageScore();
 
-  // Get unread recommendations (used as requests)
+  // Get requests
   useEffect(() => {
-    const fetchRecommendations = async () => {
+    const fetchData = async () => {
       try {
-        const data = await strapiGetRecommendations();
-        setRecommendations(data || []);
+        const requestsData = await strapiGetRequests();
+        setRequests(requestsData || []);
       } catch (error) {
-        console.error('Error fetching recommendations:', error);
+        console.error('Error fetching data:', error);
       }
     };
 
-    fetchRecommendations();
+    fetchData();
   }, []);
 
-  // Count unread recommendations
-  const unreadRequestsCount = recommendations.filter((rec) => !rec.readAt).length;
+  // Count unread requests
+  const unreadRequestsCount = requests.filter((req) => !req.readAt).length;
 
   // Helper function to get startup score
   const getStartupScore = (startup: Startup): number => {
@@ -136,7 +136,7 @@ export default function OverviewView() {
                   {unreadRequestsCount}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Unprocessed messages
+                  Unprocessed requests
                 </Typography>
               </CardContent>
             </Card>
@@ -156,13 +156,13 @@ export default function OverviewView() {
               {user?.coachees &&
                 user.coachees.map((startup, index, array) => {
                   // Count unread requests for this startup
-                  const startupAlerts = recommendations.filter(
+                  const startupRequests = requests.filter(
                     (r) => r.startup?.documentId === startup.documentId && !r.readAt,
                   ).length;
 
-                  // Determine activity level based on alerts and score
+                  // Determine activity level based on requests and score
                   const activityLevel =
-                    startupAlerts > 2 ? 'High' : startupAlerts > 0 ? 'Medium' : 'Low';
+                    startupRequests > 2 ? 'High' : startupRequests > 0 ? 'Medium' : 'Low';
 
                   // Get startup score
                   const score = getStartupScore(startup);
@@ -211,17 +211,17 @@ export default function OverviewView() {
                                 </Typography>
                               </Box>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                {startupAlerts > 0 ? (
+                                {startupRequests > 0 ? (
                                   <Chip
-                                    label={`${startupAlerts} Alert${
-                                      startupAlerts !== 1 ? 's' : ''
+                                    label={`${startupRequests} Request${
+                                      startupRequests !== 1 ? 's' : ''
                                     }`}
-                                    color="error"
+                                    color="primary"
                                     size="small"
-                                    sx={{ bgcolor: '#ffebee', color: '#d32f2f' }}
+                                    sx={{ color: '#fff' }}
                                   />
                                 ) : (
-                                  <Chip label="0 Alerts" variant="outlined" size="small" />
+                                  <Chip label="0 Requests" variant="outlined" size="small" />
                                 )}
                                 <Box sx={{ textAlign: 'right' }}>
                                   <Typography variant="body2">Activity: {activityLevel}</Typography>

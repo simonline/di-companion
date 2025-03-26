@@ -8,17 +8,48 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
+  Tabs,
+  Tab,
 } from '@mui/material';
-import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';
+import {
+  Add as AddIcon,
+  Refresh as RefreshIcon,
+  Message as MessageIcon,
+  Recommend as RecommendIcon,
+} from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import useRecommendations from '@/hooks/useRecommendations';
-import { Recommendation, Startup } from '@/types/strapi';
+import useRequests from '@/hooks/useRequests';
+import { Recommendation, Startup, Request } from '@/types/strapi';
 import { CreateRecommendation, UpdateRecommendation, strapiGetStartup } from '@/lib/strapi';
 import RecommendationForm from './components/RecommendationForm';
 import RecommendationList from './components/RecommendationList';
+import RequestList from './components/RequestList';
 import { useParams } from 'react-router-dom';
 import Loading from '@/components/Loading';
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+    </div>
+  );
+}
 
 export default function StartupView() {
   const { id: startupId } = useParams<{ id: string }>();
@@ -32,17 +63,28 @@ export default function StartupView() {
     message: string;
     severity: 'success' | 'error' | 'info' | 'warning';
   } | null>(null);
+  const [tabValue, setTabValue] = useState(0);
 
   const {
     recommendations,
-    loading,
-    error,
+    loading: loadingRecommendations,
+    error: errorRecommendations,
     fetchRecommendations,
     createRecommendation,
     updateRecommendation,
     deleteRecommendation,
-    clearError,
+    clearError: clearRecommendationError,
   } = useRecommendations();
+
+  const {
+    requests,
+    loading: loadingRequests,
+    error: errorRequests,
+    fetchRequests,
+    updateRequest,
+    deleteRequest,
+    clearError: clearRequestError,
+  } = useRequests();
 
   // Fetch startup details and recommendations when the component mounts
   useEffect(() => {
@@ -61,11 +103,16 @@ export default function StartupView() {
 
     fetchStartupDetails();
     fetchRecommendations(startupId);
-  }, [startupId, fetchRecommendations]);
+    fetchRequests(startupId);
+  }, [startupId, fetchRecommendations, fetchRequests]);
 
   if (!startupId) {
     return <Loading />;
   }
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
 
   const handleOpenForm = () => {
     setEditingRecommendation(undefined);
@@ -107,6 +154,7 @@ export default function StartupView() {
       });
     } finally {
       setIsSubmitting(false);
+      handleCloseForm();
     }
   };
 
@@ -125,12 +173,49 @@ export default function StartupView() {
     }
   };
 
+  const handleMarkRequestAsRead = async (request: Request) => {
+    try {
+      await updateRequest({
+        documentId: request.documentId,
+        readAt: new Date().toISOString(),
+      });
+      setNotification({
+        message: 'Request marked as read',
+        severity: 'success',
+      });
+    } catch (err) {
+      setNotification({
+        message: `Error: ${(err as Error).message}`,
+        severity: 'error',
+      });
+    }
+  };
+
+  const handleDeleteRequest = async (id: string) => {
+    try {
+      await deleteRequest(id);
+      setNotification({
+        message: 'Request deleted successfully',
+        severity: 'success',
+      });
+    } catch (err) {
+      setNotification({
+        message: `Error: ${(err as Error).message}`,
+        severity: 'error',
+      });
+    }
+  };
+
   const handleCloseNotification = () => {
     setNotification(null);
   };
 
   const handleRefresh = () => {
-    fetchRecommendations(startupId);
+    if (tabValue === 0) {
+      fetchRecommendations(startupId);
+    } else {
+      fetchRequests(startupId);
+    }
   };
 
   return (
@@ -143,40 +228,81 @@ export default function StartupView() {
               variant="outlined"
               startIcon={<RefreshIcon />}
               onClick={handleRefresh}
-              disabled={loading}
+              disabled={tabValue === 0 ? loadingRecommendations : loadingRequests}
             >
               Refresh
             </Button>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenForm}>
-              Add Recommendation
-            </Button>
+            {tabValue === 0 && (
+              <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenForm}>
+                Add Recommendation
+              </Button>
+            )}
           </Box>
         </Box>
 
-        {error && (
+        {errorRecommendations && tabValue === 0 && (
           <Alert severity="error" sx={{ mb: 3, width: '100%' }}>
-            {error}
-            <Button size="small" onClick={clearError} sx={{ ml: 2 }}>
+            {errorRecommendations}
+            <Button size="small" onClick={clearRecommendationError} sx={{ ml: 2 }}>
               Dismiss
             </Button>
           </Alert>
         )}
 
+        {errorRequests && tabValue === 1 && (
+          <Alert severity="error" sx={{ mb: 3, width: '100%' }}>
+            {errorRequests}
+            <Button size="small" onClick={clearRequestError} sx={{ ml: 2 }}>
+              Dismiss
+            </Button>
+          </Alert>
+        )}
+
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          sx={{ width: '100%', mb: 2, borderBottom: 1, borderColor: 'divider' }}
+        >
+          <Tab icon={<RecommendIcon />} label="Recommendations" iconPosition="start" />
+          <Tab
+            icon={<MessageIcon />}
+            label="Requests"
+            iconPosition="start"
+            sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem' } }}
+          />
+        </Tabs>
+
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Card>
               <CardContent sx={{ p: 0 }}>
-                {loading ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                    <CircularProgress />
-                  </Box>
-                ) : (
-                  <RecommendationList
-                    recommendations={recommendations || []}
-                    onEdit={handleEditRecommendation}
-                    onDelete={handleDeleteRecommendation}
-                  />
-                )}
+                <TabPanel value={tabValue} index={0}>
+                  {loadingRecommendations ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : (
+                    <RecommendationList
+                      recommendations={recommendations || []}
+                      onEdit={handleEditRecommendation}
+                      onDelete={handleDeleteRecommendation}
+                    />
+                  )}
+                </TabPanel>
+                <TabPanel value={tabValue} index={1}>
+                  {loadingRequests ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : (
+                    <RequestList
+                      requests={requests || []}
+                      onMarkAsRead={handleMarkRequestAsRead}
+                      onDelete={handleDeleteRequest}
+                      loading={loadingRequests}
+                    />
+                  )}
+                </TabPanel>
               </CardContent>
             </Card>
           </Grid>
