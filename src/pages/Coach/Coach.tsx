@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import {
   Box,
   Button,
-  Chip,
   CircularProgress,
   List,
   ListItem,
@@ -233,41 +232,48 @@ export const Coach: React.FC = () => {
         )}
         <Divider sx={{ width: '100%', mb: 2 }} />
 
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Recommendations from Your Coach
+        </Typography>
+
         <List sx={{ width: '100%' }}>
-          {recommendations.map((recommendation) => (
-            <ListItem
-              key={recommendation.documentId}
-              onClick={() => handleRecommendationClick(recommendation)}
-              sx={{
-                cursor: 'pointer',
-                '&:hover': {
-                  backgroundColor: '#f5f5f5 !important',
-                },
-                bgcolor: recommendation.readAt ? 'transparent' : 'action.hover',
-              }}
-            >
-              <ListItemIcon>{getRecommendationIcon(recommendation.type)}</ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography
-                    component="span"
-                    variant="body1"
-                    sx={{ fontWeight: recommendation.readAt ? 'normal' : 'bold' }}
-                  >
-                    {recommendation.comment}
-                    {recommendation.patterns
-                      ? recommendation.patterns.map((pattern) => (
-                          <Chip key={pattern.documentId} label={pattern.name} />
-                        ))
-                      : recommendation.comment}
-                  </Typography>
-                }
-              />
-              <Typography variant="body2" color="text.secondary">
-                {format(new Date(recommendation.publishedAt), 'MMM dd, yyyy')}
-              </Typography>
-            </ListItem>
-          ))}
+          {recommendations
+            .slice()
+            .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+            .map((recommendation) => (
+              <ListItem
+                key={recommendation.documentId}
+                onClick={() => handleRecommendationClick(recommendation)}
+                sx={{
+                  cursor: 'pointer',
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5 !important',
+                  },
+                  bgcolor: recommendation.readAt ? 'transparent' : 'action.hover',
+                }}
+              >
+                <ListItemIcon>{getRecommendationIcon(recommendation.type)}</ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Typography
+                      component="span"
+                      variant="body1"
+                      sx={{ fontWeight: recommendation.readAt ? 'normal' : 'bold' }}
+                    >
+                      {recommendation.comment}
+                    </Typography>
+                  }
+                  secondary={
+                    recommendation.patterns && recommendation.patterns.length > 0
+                      ? recommendation.patterns.map((pattern) => pattern.name).join(', ')
+                      : null
+                  }
+                />
+                <Typography variant="body2" color="text.secondary">
+                  {format(new Date(recommendation.publishedAt), 'MMM dd, yyyy')}
+                </Typography>
+              </ListItem>
+            ))}
         </List>
       </CenteredFlexBox>
     </>
