@@ -169,7 +169,7 @@ const useRoutes = (): Partial<Routes> => {
       requiresAuth: true,
       requiresStartup: true,
     },
-    [Pages.StartupInvitations]: {
+    [Pages.StartupTeam]: {
       component: asyncComponentLoader(() => import('@/pages/Profile/StartupTeam')),
       path: '/profile/startup/:startupId/team',
       title: 'Manage Team',

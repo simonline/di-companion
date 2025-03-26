@@ -29,7 +29,7 @@ export enum Pages {
   SelfAssessment,
   NotFound,
   NoStartup,
-  StartupInvitations,
+  StartupTeam,
   AcceptInvitation,
   UpdateProfile,
 }

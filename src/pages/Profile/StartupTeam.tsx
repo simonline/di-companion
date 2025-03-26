@@ -283,7 +283,11 @@ const StartupTeam: React.FC = () => {
       );
     }
 
-    if (!invitations || invitations.length === 0) {
+    const pendingInvitations = invitations.filter(
+      (invitation) => invitation.invitationStatus === InvitationStatusEnum.pending,
+    );
+
+    if (!pendingInvitations || pendingInvitations.length === 0) {
       return (
         <Typography variant="body2" color="text.secondary" sx={{ p: 2, textAlign: 'center' }}>
           No pending invitations
@@ -293,7 +297,7 @@ const StartupTeam: React.FC = () => {
 
     return (
       <List>
-        {invitations.map((invitation) => (
+        {pendingInvitations.map((invitation) => (
           <React.Fragment key={invitation.documentId}>
             <ListItem
               secondaryAction={

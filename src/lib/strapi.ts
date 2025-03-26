@@ -907,7 +907,7 @@ export async function strapiGetStartupMembers(startupDocumentId: string): Promis
   try {
     // With our custom backend controller, we're enforcing authorization there
     // So we only need to make the query with the startup filter
-    const url = `/users?populate[startups][filters][documentId][$eq]=${startupDocumentId}`;
+    const url = `/users?filters[startups][documentId][$eq]=${startupDocumentId}`;
 
     // The custom controller will handle authorization and filtering
     const members = await fetchApi<User[]>(url);
