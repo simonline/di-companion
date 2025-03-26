@@ -4,11 +4,30 @@
 
 import { factories } from '@strapi/strapi';
 
+// Define types for query structure
+interface StartupFilters {
+    documentId?: {
+        $eq?: string;
+    };
+}
+
+interface QueryPopulate {
+    startups?: {
+        filters?: StartupFilters;
+    };
+}
+
+interface StrapiQuery {
+    populate?: QueryPopulate;
+    filters?: Record<string, any>;
+}
+
 export default factories.createCoreController('plugin::users-permissions.user', ({ strapi }) => ({
     // Override the find method to filter users based on startup membership
     async find(ctx) {
         // Get the startup filter from the query parameters
-        const startupDocumentId = ctx.query?.populate?.startups?.filters?.documentId?.$eq;
+        const query = ctx.query as StrapiQuery;
+        const startupDocumentId = query?.populate?.startups?.filters?.documentId?.$eq;
 
         // Get the current user
         const user = ctx.state.user;
@@ -37,16 +56,16 @@ export default factories.createCoreController('plugin::users-permissions.user', 
 
         // Only show users who belong to this startup
         ctx.query = {
-            ...ctx.query,
+            ...query,
             filters: {
-                ...(ctx.query.filters || {}),
+                ...(query.filters || {}),
                 startups: {
                     documentId: {
                         $eq: startupDocumentId,
                     },
                 },
             },
-        };
+        } as any; // Type assertion needed since we're modifying ctx.query
 
         // Call the original find controller method with the modified query
         return await super.find(ctx);
