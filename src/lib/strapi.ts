@@ -732,9 +732,9 @@ export async function strapiGetRecommendations(startupId?: string): Promise<Reco
 export interface CreateRecommendation {
   comment: string;
   type: 'pattern' | 'url' | 'file' | 'contact';
-  patterns?: string[];
-  coach?: { id: number | string };
-  startup?: { id: number | string };
+  patterns?: { set: string[] };
+  coach?: string;
+  startup?: string;
   readAt?: string;
 }
 
@@ -742,14 +742,6 @@ export async function strapiCreateRecommendation(
   recommendation: CreateRecommendation,
 ): Promise<Recommendation> {
   try {
-    // Format the data for Strapi v5
-    const formattedData = {
-      ...recommendation,
-      patterns: recommendation.patterns,
-      coach: recommendation.coach ? recommendation.coach.id : undefined,
-      startup: recommendation.startup ? recommendation.startup.id : undefined,
-    };
-
     const url = '/recommendations?populate[0]=patterns&populate[1]=coach&populate[2]=startup';
 
     // No need to manually add token - the axios interceptor will handle it
@@ -759,7 +751,7 @@ export async function strapiCreateRecommendation(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        data: formattedData,
+        data: recommendation,
       }),
     });
   } catch (error) {
@@ -772,9 +764,9 @@ export interface UpdateRecommendation {
   documentId: string;
   comment?: string;
   type?: 'pattern' | 'url' | 'file' | 'contact';
-  patterns?: string[];
-  coach?: { id: number | string };
-  startup?: { id: number | string };
+  patterns?: { set: string[] };
+  coach?: string;
+  startup?: string;
   readAt?: string;
 }
 

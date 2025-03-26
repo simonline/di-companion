@@ -1,33 +1,4 @@
 {
-<<<<<<< Updated upstream
-    "kind": "collectionType",
-    "collectionName": "requests",
-    "info": {
-        "singularName": "request",
-        "pluralName": "requests",
-        "displayName": "Request",
-        "description": "Requests from startups to coaches"
-    },
-    "options": {
-        "draftAndPublish": true
-    },
-    "pluginOptions": {},
-    "attributes": {
-        "startup": {
-            "type": "relation",
-            "relation": "oneToOne",
-            "target": "api::startup.startup"
-        },
-        "comment": {
-            "type": "text",
-            "required": true
-        },
-        "readAt": {
-            "type": "datetime"
-        }
-    }
-}
-=======
   "kind": "collectionType",
   "collectionName": "requests",
   "info": {
@@ -55,4 +26,3 @@
     }
   }
 }
->>>>>>> Stashed changes

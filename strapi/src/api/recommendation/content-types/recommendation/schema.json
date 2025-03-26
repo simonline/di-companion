@@ -18,14 +18,6 @@
       "target": "api::startup.startup",
       "inversedBy": "recommendations"
     },
-<<<<<<< Updated upstream
-    "coach": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "plugin::users-permissions.user"
-    },
-=======
->>>>>>> Stashed changes
     "comment": {
       "type": "richtext"
     },
@@ -39,12 +31,6 @@
       ]
     },
     "patterns": {
-<<<<<<< Updated upstream
-      "type": "json"
-    },
-    "isRead": {
-      "type": "boolean"
-=======
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::pattern.pattern"
@@ -56,7 +42,6 @@
     },
     "readAt": {
       "type": "datetime"
->>>>>>> Stashed changes
     }
   }
 }

@@ -2,11 +2,7 @@ export default ({ env }: { env: (key: string, defaultValue?: any) => any }) => (
   "users-permissions": {
     config: {
       register: {
-<<<<<<< Updated upstream
-        allowedFields: ["givenName", "familyName", "gender", "position", "bio", "linkedinProfile", "avatar"],
-=======
         allowedFields: ["givenName", "familyName", "gender", "position", "bio", "linkedinProfile", "phone", "isPhonePublic", "avatar"],
->>>>>>> Stashed changes
       },
     },
   },

@@ -225,14 +225,6 @@ const useRoutes = (): Partial<Routes> => {
       requiresAuth: true,
       requiresStartup: true,
     },
-    [Pages.CoachChat]: {
-      component: asyncComponentLoader(() => import('@/pages/Coach/CoachChat')),
-      path: '/coach/:id',
-      title: 'Coach Chat',
-      visibleTo: ['startup'],
-      requiresAuth: true,
-      requiresStartup: true,
-    },
     [Pages.Startup]: {
       component: asyncComponentLoader(() => import('@/pages/Startups/Startup')),
       path: '/startups/:id',

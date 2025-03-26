@@ -106,9 +106,12 @@ function CreateStartup() {
 
                 try {
                   console.log('Submitting startup data:', values);
+                  if (!user?.id) {
+                    throw new Error('User not found');
+                  }
                   await createStartup({
                     ...values,
-                    users: { set: [user?.id] },
+                    users: { set: [user.id] },
                   });
                   navigate('/dashboard');
                 } catch (err: unknown) {

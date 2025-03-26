@@ -16,7 +16,6 @@ export enum Pages {
   ProgressPattern,
   Dashboard,
   Coach,
-  CoachChat,
   Startups,
   Startup,
   Profile,
