@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Form, Formik, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
+import { v4 as uuidv4 } from 'uuid';
 import {
   TextField,
   Button,
@@ -20,7 +21,6 @@ import {
   FormHelperText,
   Avatar,
 } from '@mui/material';
-import Meta from '@/components/Meta';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/sections/Header';
@@ -49,7 +49,7 @@ const validationSchema = Yup.object().shape({
   familyName: Yup.string().required('Required'),
   gender: Yup.string(),
   position: Yup.string(),
-  bio: Yup.string(),
+  bio: Yup.string().max(200, 'Must be 200 characters or less'),
   linkedinProfile: Yup.string().url('Must be a valid URL'),
 });
 
@@ -75,7 +75,7 @@ function Register() {
     setIsSubmitting(true);
     try {
       const result = await register({
-        username: values.email,
+        username: uuidv4(),
         email: values.email,
         password: values.password,
         givenName: values.givenName,
@@ -95,7 +95,7 @@ function Register() {
     } catch (err) {
       const error = err as Error;
       console.error('Registration error:', error);
-      setErrors({ submit: error.message });
+      setErrors({ submit: error.message || 'Registration failed. Please try again.' });
     } finally {
       setIsSubmitting(false);
       setSubmitting(false);
@@ -104,11 +104,31 @@ function Register() {
 
   // Avatar upload component
   const AvatarUploadField = ({ form }: { form: any }) => {
+    const [uploadError, setUploadError] = useState<string | null>(null);
+
     const onDrop = useCallback(
       (acceptedFiles: File[]) => {
+        // Clear any previous errors
+        setUploadError(null);
+
         // Only use the first file if multiple are uploaded
         if (acceptedFiles.length > 0) {
-          form.setFieldValue('avatar', acceptedFiles[0]);
+          const file = acceptedFiles[0];
+
+          // Check file size (5MB limit as example)
+          if (file.size > 5 * 1024 * 1024) {
+            setUploadError('File too large. Maximum size is 5MB.');
+            return;
+          }
+
+          // Check file type
+          const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+          if (!validTypes.includes(file.type)) {
+            setUploadError('Invalid file format. Please upload a JPG, PNG or GIF image.');
+            return;
+          }
+
+          form.setFieldValue('avatar', file);
         }
       },
       [form],
@@ -121,6 +141,17 @@ function Register() {
       },
       maxFiles: 1,
       multiple: false,
+      maxSize: 5 * 1024 * 1024, // 5MB size limit
+      onDropRejected: (rejections) => {
+        const rejection = rejections[0];
+        if (rejection?.errors[0]?.code === 'file-too-large') {
+          setUploadError('File is too large. Maximum size is 5MB.');
+        } else if (rejection?.errors[0]?.code === 'file-invalid-type') {
+          setUploadError('Invalid file type. Please upload an image file.');
+        } else {
+          setUploadError('Error uploading file. Please try again.');
+        }
+      },
     });
 
     // Create preview for selected avatar
@@ -144,6 +175,7 @@ function Register() {
       e.stopPropagation();
       form.setFieldValue('avatar', undefined);
       setPreviewUrl(null);
+      setUploadError(null);
     };
 
     return (
@@ -165,7 +197,11 @@ function Register() {
               width: 100,
               height: 100,
               mb: 2,
-              border: isDragActive ? '2px dashed primary.main' : '2px dashed transparent',
+              border: isDragActive
+                ? '2px dashed primary.main'
+                : uploadError
+                  ? '2px dashed #f44336'
+                  : '2px dashed transparent',
               bgcolor: 'grey.200',
             }}
           >
@@ -180,33 +216,20 @@ function Register() {
             Remove
           </Button>
         )}
+        {uploadError && (
+          <Typography variant="body2" color="error" align="center" sx={{ mt: 1 }}>
+            {uploadError}
+          </Typography>
+        )}
       </Box>
     );
   };
 
   return (
     <>
-      <Header>
-        <Meta title="Create Your Account" />
-        <Container maxWidth="md">
-          <Box sx={{ py: 4 }}>
-            <Typography
-              variant="h4"
-              component="h1"
-              gutterBottom
-              align="center"
-              sx={{ fontWeight: 'bold', mb: 3 }}
-            >
-              Create Your Account
-            </Typography>
-            <Typography variant="body1" color="textSecondary" align="center" sx={{ mb: 4 }}>
-              Join our platform to get personalized guidance and support for your startup journey.
-            </Typography>
-          </Box>
-        </Container>
-      </Header>
+      <Header title="Create Your Account" />
 
-      <Container maxWidth="md" sx={{ mb: 8 }}>
+      <Container maxWidth="md" sx={{ my: 8 }}>
         <Card elevation={3} sx={{ borderRadius: 2, overflow: 'visible' }}>
           <CardContent>
             <Formik
@@ -325,7 +348,11 @@ function Register() {
                           multiline
                           rows={3}
                           error={touched.bio && errors.bio}
-                          helperText={touched.bio && errors.bio}
+                          helperText={
+                            (touched.bio && errors.bio) ||
+                            `${formProps.values.bio?.length || 0}/200 characters`
+                          }
+                          inputProps={{ maxLength: 200 }}
                         />
                       </Grid>
                       <Grid item xs={12}>
@@ -351,6 +378,15 @@ function Register() {
                       backgroundColor: theme.palette.grey[50],
                     }}
                   >
+                    {errors.submit && (
+                      <Typography
+                        variant="body2"
+                        color="error"
+                        sx={{ mr: 'auto', alignSelf: 'center' }}
+                      >
+                        {errors.submit}
+                      </Typography>
+                    )}
                     <Button
                       variant="contained"
                       color="primary"

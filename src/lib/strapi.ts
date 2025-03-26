@@ -195,26 +195,66 @@ export async function strapiRegister(user: UserRegistration): Promise<StrapiAuth
     if (avatar && response.user?.id) {
       console.log('Uploading avatar for newly registered user:', response.user.id);
 
-      const formData = new FormData();
-      formData.append('files', avatar, avatar.name);
-      formData.append('refId', response.user.id.toString());
-      formData.append('ref', 'plugin::users-permissions.user');
-      formData.append('field', 'avatar');
-      await fetchApi<any>(`/upload`, {
-        method: 'POST',
-        body: formData,
-      });
+      try {
+        // Validate file size before upload attempt
+        if (avatar.size > 5 * 1024 * 1024) {
+          // 5MB size limit
+          console.warn('Avatar file too large, skipping upload');
+        } else {
+          // Validate file type (basic check)
+          const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+          if (!validTypes.includes(avatar.type)) {
+            console.warn('Invalid avatar file type, skipping upload');
+          } else {
+            const formData = new FormData();
+            formData.append('files', avatar, avatar.name);
+            formData.append('refId', response.user.id.toString());
+            formData.append('ref', 'plugin::users-permissions.user');
+            formData.append('field', 'avatar');
+            await fetchApi<any>(`/upload`, {
+              method: 'POST',
+              body: formData,
+            });
 
-      // Refresh user data to include the avatar
-      const updatedUser = await strapiMe();
-      response.user = updatedUser;
+            // Refresh user data to include the avatar
+            const updatedUser = await strapiMe();
+            response.user = updatedUser;
+          }
+        }
+      } catch (uploadError) {
+        // Log the error but continue with registration
+        console.error('Avatar upload error:', uploadError);
+        // Don't throw an error, just continue with the registration
+      }
     }
 
     return response;
   } catch (error) {
     console.error('Error in strapiRegister:', error);
     const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Registration failed');
+
+    // Extract more descriptive error messages
+    if (
+      strapiError.error?.message?.includes('payload too large') ||
+      strapiError.error?.message?.includes('request entity too large')
+    ) {
+      throw new Error('Image file is too large. Maximum upload size is 5MB.');
+    } else if (
+      strapiError.error?.message?.includes('image') ||
+      strapiError.error?.message?.includes('file type')
+    ) {
+      throw new Error('Invalid image format. Please upload a valid image file (JPG, PNG, GIF).');
+    } else if (strapiError.error?.message?.includes('email')) {
+      throw new Error(strapiError.error.message || 'Email is invalid or already in use.');
+    } else if (strapiError.error?.message?.includes('password')) {
+      throw new Error(strapiError.error.message || 'Password does not meet requirements.');
+    } else if (strapiError.error?.message) {
+      throw new Error(strapiError.error.message);
+    } else if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error('Registration failed. Please try again.');
+    }
   }
 }
 
