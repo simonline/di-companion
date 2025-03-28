@@ -299,7 +299,7 @@ export const Coach: React.FC = () => {
         )}
         <Divider sx={{ width: '100%', mb: 2 }} />
 
-        {recommendations.length > 0 && (
+        {recommendations && recommendations.length > 0 && (
           <>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Recommendations from Your Coach
