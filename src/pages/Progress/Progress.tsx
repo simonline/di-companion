@@ -224,8 +224,7 @@ const Progress: React.FC = () => {
         <Paper
           elevation={0}
           sx={{
-            p: 2,
-            mb: 3,
+            mb: 4,
             width: '100%',
             bgcolor: 'background.default',
             borderRadius: 2,
@@ -240,6 +239,7 @@ const Progress: React.FC = () => {
               }
             }}
             aria-label="pattern status filter"
+            orientation="vertical"
             sx={{
               width: '100%',
               '& .MuiToggleButton-root': {
@@ -247,12 +247,21 @@ const Progress: React.FC = () => {
                 borderRadius: 2,
                 px: 3,
                 py: 1.5,
+                width: '100%',
+                mb: 1,
                 '&.Mui-selected': {
                   bgcolor: 'primary.main',
                   color: 'white',
                   '&:hover': {
                     bgcolor: 'primary.dark',
                   },
+                },
+              },
+              '@media (min-width: 600px)': {
+                flexDirection: 'row',
+                '& .MuiToggleButton-root': {
+                  flex: 1,
+                  mb: 0,
                 },
               },
             }}
@@ -305,7 +314,7 @@ const Progress: React.FC = () => {
           </ToggleButtonGroup>
         </Paper>
 
-        <List sx={{ width: '100%', px: 2 }}>
+        <List sx={{ width: '100%' }}>
           {filteredPatterns?.map((startupPattern) => (
             <ListItem
               key={startupPattern.documentId}

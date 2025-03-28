@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Button, CircularProgress, Typography, Box, Container } from '@mui/material';
+import { Button, CircularProgress, Typography, Box } from '@mui/material';
 import useRecommendedPatterns from '@/hooks/useRecommendedPatterns';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import PatternCard from '@/components/PatternCard';
@@ -53,33 +53,13 @@ const Explore: React.FC = () => {
 
   return (
     <>
-      <Header>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            width: '100%',
-            maxWidth: 'lg',
-            mx: 'auto',
-            px: 2,
-          }}
-        >
-          <Box sx={{ width: '100px', flexGrow: 0 }} /> {/* Left spacer */}
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, textAlign: 'center' }}>
-            Explore
-          </Typography>
-          <Box sx={{ flexGrow: 0, width: 'auto' }}>
-            {' '}
-            {/* Right side for search */}
-            <SearchComponent />
-          </Box>
-        </Box>
-      </Header>
-      <Container maxWidth="lg">
-        <FullSizeCenteredFlexBox>
-          <PatternCard pattern={recommendedPatterns[0]} nextUrl="/explore" />
-        </FullSizeCenteredFlexBox>
-      </Container>
+      <Header title="Explore" />
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+        <SearchComponent />
+      </Box>
+      <FullSizeCenteredFlexBox>
+        <PatternCard pattern={recommendedPatterns[0]} nextUrl="/explore" />
+      </FullSizeCenteredFlexBox>
     </>
   );
 };

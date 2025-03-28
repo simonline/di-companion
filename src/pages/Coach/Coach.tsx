@@ -135,7 +135,7 @@ export const Coach: React.FC = () => {
     );
   }
 
-  if (!recommendations?.length) {
+  if (!coach) {
     return (
       <Box
         sx={{
@@ -146,7 +146,7 @@ export const Coach: React.FC = () => {
           p: 4,
         }}
       >
-        <Typography variant="h6">No patterns available</Typography>
+        <Typography variant="h6">No coach assigned yet.</Typography>
       </Box>
     );
   }
@@ -162,188 +162,210 @@ export const Coach: React.FC = () => {
               width: '100%',
               mb: 4,
               display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
+              flexDirection: 'column',
               alignItems: 'center',
             }}
           >
-            <Avatar
-              src={coach.avatar?.url}
-              sx={{
-                width: { xs: 90, sm: 100 },
-                height: { xs: 90, sm: 100 },
-                mr: { xs: 0, sm: 4 },
-                mb: { xs: 3, sm: 0 },
-              }}
-            >
-              {coach.givenName.charAt(0)}
-              {coach.familyName.charAt(0)}
-            </Avatar>
             <Box
               sx={{
-                flex: 1,
                 width: '100%',
                 display: 'flex',
-                flexDirection: 'column',
+                flexDirection: 'row',
+                alignItems: 'center',
+                mb: 2,
               }}
             >
-              <Box
+              <Avatar
+                src={coach.avatar?.url}
                 sx={{
-                  display: 'flex',
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  justifyContent: 'space-between',
-                  alignItems: { xs: 'flex-start', sm: 'center' },
+                  width: 60,
+                  height: 60,
+                  mr: 2,
                 }}
               >
-                <Box>
-                  <Typography
-                    variant="overline"
-                    color="text.secondary"
-                    sx={{ fontSize: '0.75rem', letterSpacing: 1 }}
+                {coach.givenName.charAt(0)}
+                {coach.familyName.charAt(0)}
+              </Avatar>
+              <Box>
+                <Typography
+                  variant="overline"
+                  color="text.secondary"
+                  sx={{ fontSize: '0.75rem', letterSpacing: 1 }}
+                >
+                  YOUR COACH
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 500, mb: 0.5 }}>
+                  {coach.givenName} {coach.familyName}
+                </Typography>
+
+                {coach.position && (
+                  <Typography variant="body2" color="text.secondary">
+                    {coach.position}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 1,
+                width: '100%',
+                flexWrap: 'wrap',
+              }}
+            >
+              <Button
+                variant="contained"
+                size="small"
+                disableElevation
+                startIcon={
+                  <Box
+                    component="svg"
+                    sx={{ width: 16, height: 16 }}
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
                   >
-                    YOUR COACH
-                  </Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 500, mb: 0.5 }}>
-                    {coach.givenName} {coach.familyName}
-                  </Typography>
+                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                  </Box>
+                }
+                href={`mailto:${coach.email}`}
+                sx={{
+                  textTransform: 'none',
+                  px: 2,
+                  py: 0.75,
+                  flex: 1,
+                  minWidth: '120px',
+                }}
+              >
+                Email
+              </Button>
 
-                  {coach.position && (
-                    <Typography variant="body2" color="text.secondary">
-                      {coach.position}
-                    </Typography>
-                  )}
-                </Box>
-
-                <Box
+              {coach.isPhoneVisible && coach.phone && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  disableElevation
+                  startIcon={
+                    <Box
+                      component="svg"
+                      sx={{ width: 16, height: 16 }}
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z" />
+                    </Box>
+                  }
+                  href={`tel:${coach.phone}`}
                   sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    gap: 2,
-                    mt: { xs: 2, sm: 0 },
+                    textTransform: 'none',
+                    px: 2,
+                    py: 0.75,
+                    flex: 1,
+                    minWidth: '120px',
                   }}
                 >
-                  <Button
-                    variant="contained"
-                    size="small"
-                    disableElevation
-                    startIcon={
-                      <Box
-                        component="svg"
-                        sx={{ width: 16, height: 16 }}
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-                      </Box>
-                    }
-                    href={`mailto:${coach.email}`}
-                    sx={{
-                      textTransform: 'none',
-                      px: 2,
-                      py: 0.75,
-                    }}
-                  >
-                    Email
-                  </Button>
+                  Call
+                </Button>
+              )}
 
-                  {coach.isPhoneVisible && coach.phone && (
-                    <Button
-                      variant="contained"
-                      size="small"
-                      disableElevation
-                      startIcon={
-                        <Box
-                          component="svg"
-                          sx={{ width: 16, height: 16 }}
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z" />
-                        </Box>
-                      }
-                      href={`tel:${coach.phone}`}
-                      sx={{
-                        textTransform: 'none',
-                        px: 2,
-                        py: 0.75,
-                      }}
-                    >
-                      Call
-                    </Button>
-                  )}
-
-                  <Button
-                    variant="contained"
-                    size="small"
-                    color="primary"
-                    onClick={handleOpenRequestForm}
-                    startIcon={
-                      <Box
-                        component="svg"
-                        sx={{ width: 16, height: 16 }}
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
-                      </Box>
-                    }
-                    sx={{
-                      textTransform: 'none',
-                      px: 2,
-                      py: 0.75,
-                    }}
+              <Button
+                variant="contained"
+                size="small"
+                color="primary"
+                onClick={handleOpenRequestForm}
+                startIcon={
+                  <Box
+                    component="svg"
+                    sx={{ width: 16, height: 16 }}
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
                   >
-                    Send Request
-                  </Button>
-                </Box>
-              </Box>
+                    <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
+                  </Box>
+                }
+                sx={{
+                  textTransform: 'none',
+                  px: 2,
+                  py: 0.75,
+                  flex: 1,
+                  minWidth: '120px',
+                }}
+              >
+                Send Request
+              </Button>
             </Box>
           </Box>
         )}
         <Divider sx={{ width: '100%', mb: 2 }} />
 
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Recommendations from Your Coach
-        </Typography>
+        {recommendations.length > 0 && (
+          <>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Recommendations from Your Coach
+            </Typography>
 
-        <List sx={{ width: '100%' }}>
-          {recommendations
-            .slice()
-            .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-            .map((recommendation) => (
-              <ListItem
-                key={recommendation.documentId}
-                onClick={() => handleRecommendationClick(recommendation)}
-                sx={{
-                  cursor: 'pointer',
-                  '&:hover': {
-                    backgroundColor: '#f5f5f5 !important',
-                  },
-                  bgcolor: recommendation.readAt ? 'transparent' : 'action.hover',
-                }}
-              >
-                <ListItemIcon>{getRecommendationIcon(recommendation.type)}</ListItemIcon>
-                <ListItemText
-                  primary={
-                    <Typography
-                      component="span"
-                      variant="body1"
-                      sx={{ fontWeight: recommendation.readAt ? 'normal' : 'bold' }}
-                    >
-                      {recommendation.comment}
-                    </Typography>
-                  }
-                  secondary={
-                    recommendation.patterns && recommendation.patterns.length > 0
-                      ? recommendation.patterns.map((pattern) => pattern.name).join(', ')
-                      : null
-                  }
-                />
-                <Typography variant="body2" color="text.secondary">
-                  {format(new Date(recommendation.publishedAt), 'MMM dd, yyyy')}
-                </Typography>
-              </ListItem>
-            ))}
-        </List>
+            <List sx={{ width: '100%' }}>
+              {recommendations
+                .slice()
+                .sort(
+                  (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+                )
+                .map((recommendation) => (
+                  <ListItem
+                    key={recommendation.documentId}
+                    onClick={() => handleRecommendationClick(recommendation)}
+                    sx={{
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: '#f5f5f5 !important',
+                      },
+                      bgcolor: recommendation.readAt ? 'transparent' : 'action.hover',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      py: 2,
+                      px: 2,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 1 }}>
+                      <ListItemIcon sx={{ minWidth: 40 }}>
+                        {getRecommendationIcon(recommendation.type)}
+                      </ListItemIcon>
+                      <Typography variant="body2" color="text.secondary" sx={{ ml: 'auto' }}>
+                        {format(new Date(recommendation.publishedAt), 'MMM dd, yyyy')}
+                      </Typography>
+                    </Box>
+                    <ListItemText
+                      primary={
+                        <Typography
+                          component="span"
+                          variant="body1"
+                          sx={{
+                            fontWeight: recommendation.readAt ? 'normal' : 'bold',
+                          }}
+                        >
+                          {recommendation.comment}
+                        </Typography>
+                      }
+                      secondary={
+                        recommendation.patterns && recommendation.patterns.length > 0 ? (
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{
+                              mt: 1,
+                            }}
+                          >
+                            {recommendation.patterns.map((pattern) => pattern.name).join(', ')}
+                          </Typography>
+                        ) : null
+                      }
+                    />
+                  </ListItem>
+                ))}
+            </List>
+          </>
+        )}
 
         {/* Request Form Dialog */}
         <RequestForm

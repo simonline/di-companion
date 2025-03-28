@@ -204,7 +204,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
       <Box
         sx={{
           bgcolor: categoryColors[pattern.category] || '#grey',
-          padding: '16px 32px',
+          padding: { xs: '8px 16px', sm: '16px 32px' },
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
           display: 'flex',
@@ -215,7 +215,12 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
         <Box
           sx={{
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: { xs: 'row', sm: 'column' },
+            alignItems: { xs: 'center', sm: 'flex-start' },
+            flex: 1,
+            mr: { xs: 2, sm: 0 },
+            gap: { xs: 1, sm: 0 },
+            minWidth: 0,
           }}
         >
           <Typography
@@ -224,26 +229,50 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
             fontSize="1em"
             lineHeight="1.1em"
             fontWeight="bold"
+            sx={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '100%',
+            }}
           >
             {categoryDisplayNames[pattern.category]}
           </Typography>
-          <Typography variant="h6" color="white" fontSize="1em" lineHeight="1.1em">
+          <Typography
+            variant="h6"
+            color="white"
+            fontSize="1em"
+            lineHeight="1.1em"
+            sx={{
+              display: { xs: 'none', sm: 'block' },
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '100%',
+            }}
+          >
             {pattern.subcategory}
           </Typography>
         </Box>
 
         <Box
           sx={{
-            bgcolor: categoryColors[pattern.category] || '#grey',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            paddingLeft: 4,
-            borderTopRightRadius: 16,
-            borderBottomLeftRadius: 16,
+            flexShrink: 0,
+            ml: { xs: 1, sm: 2 },
           }}
         >
-          <img src={categoryIcons[pattern.category]} alt={''} height={70} />
+          <img
+            src={categoryIcons[pattern.category]}
+            alt={''}
+            height={40}
+            style={{
+              height: 'clamp(30px, 5vw, 40px)',
+              width: 'auto',
+            }}
+          />
         </Box>
       </Box>
     </Box>
@@ -303,8 +332,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
       <CardContent
         sx={{
           display: 'flex',
-          paddingX: 4,
-          paddingY: 4,
+          padding: { xs: 2, sm: 4 },
           flexDirection: 'column',
           alignItems: 'flex-start',
         }}
@@ -317,7 +345,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
           lineHeight="1.1em"
           color={categoryColors[pattern.category]}
           sx={{ flex: 1 }}
-          marginBottom="2em"
+          marginBottom={{ xs: '.5em', sm: '2em' }}
         >
           {pattern.name}
         </Typography>
@@ -332,26 +360,24 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
             </Typography>
             <Box
               sx={{
-                display: 'flex',
-                flexDirection: 'row',
-                columnGap: 1,
-                rowGap: 0,
-                flexWrap: 'wrap',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                display: '-webkit-box',
               }}
             >
               {pattern.relatedPatterns.map((relPattern, index) => (
-                <>
+                <React.Fragment key={relPattern.name}>
                   <Typography
-                    key={relPattern.name}
                     component="a"
                     variant="body2"
                     onClick={() => navigate(`/explore/${relPattern.documentId}`)}
-                    mx="0"
                     color="black"
                     lineHeight="1.2em"
                     sx={{
                       cursor: 'pointer',
                       textDecoration: 'none',
+                      display: 'inline',
                       '&:hover': {
                         textDecoration: 'underline',
                       },
@@ -360,16 +386,17 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
                     {relPattern.name}
                   </Typography>
                   {index !== pattern.relatedPatterns.length - 1 && (
-                    <Typography variant="body2" lineHeight="1.2em">
-                      –
+                    <Typography variant="body2" lineHeight="1.2em" sx={{ display: 'inline' }}>
+                      {' '}
+                      –{' '}
                     </Typography>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </Box>
           </Box>
         )}
-        <Box sx={{ position: 'absolute', bottom: '80px', right: '40px' }}>
+        <Box sx={{ position: 'absolute', bottom: '70px', right: '40px' }}>
           <Chip
             size="small"
             label={pattern.patternId}
@@ -397,7 +424,12 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
     >
       {cardHeader}
       <CardContent
-        sx={{ height: '100%', display: 'flex', flexDirection: 'column', paddingTop: '2em' }}
+        sx={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          paddingTop: { xs: '.5em', sm: '2em' },
+        }}
       >
         <Typography
           variant="h3"
@@ -405,11 +437,18 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
           fontWeight="900"
           lineHeight="1.1em"
           color={categoryColors[pattern.category]}
-          marginBottom=".8em"
+          marginBottom={{ xs: '.2em', sm: '.8em' }}
         >
           {pattern.name}
         </Typography>
-        <Typography variant="body1">{pattern.description}</Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+          }}
+        >
+          {pattern.description}
+        </Typography>
         <Box
           sx={{
             position: 'absolute',
