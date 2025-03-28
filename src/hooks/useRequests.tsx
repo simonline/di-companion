@@ -16,7 +16,7 @@ interface UseRequests {
 }
 
 interface UseRequestsReturn extends UseRequests {
-  fetchRequests: (startupId?: string) => void;
+  fetchRequests: (startupId: string) => void;
   createRequest: (data: CreateRequest) => Promise<Request>;
   updateRequest: (data: UpdateRequest) => Promise<Request>;
   deleteRequest: (documentId: string) => Promise<void>;
@@ -34,10 +34,10 @@ export default function useRequests(): UseRequestsReturn {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const fetchRequests = useCallback(async (startupId?: string) => {
+  const fetchRequests = useCallback(async (startupId: string) => {
     try {
       setState((prev) => ({ ...prev, loading: true }));
-      const requests = await strapiGetRequests(startupId);
+      const requests = await strapiGetRequests([startupId]);
       setState({ requests, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

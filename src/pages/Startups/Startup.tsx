@@ -88,8 +88,8 @@ export default function StartupView() {
 
   // Fetch startup details and recommendations when the component mounts
   useEffect(() => {
+    if (!startupId) return;
     const fetchStartupDetails = async () => {
-      if (!startupId) return;
       try {
         const startup = await strapiGetStartup(startupId);
         setCurrentStartup(startup);
@@ -100,7 +100,6 @@ export default function StartupView() {
         });
       }
     };
-
     fetchStartupDetails();
     fetchRecommendations(startupId);
     fetchRequests(startupId);
