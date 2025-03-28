@@ -14,20 +14,41 @@ import {
   ListItemText,
   Avatar,
   IconButton,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Snackbar,
+  Alert,
+  Menu,
 } from '@mui/material';
-import { ChevronRight as ChevronRightIcon } from '@mui/icons-material';
+import { Add as AddIcon, MoreVert as MoreVertIcon } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { Link } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { Startup } from '@/types/strapi';
-import { strapiGetRequests } from '@/lib/strapi';
+import { strapiGetRequests, strapiGetAvailableStartups, strapiUpdateUser } from '@/lib/strapi';
 import React from 'react';
 
 export default function OverviewView() {
   const { user } = useAuthContext();
   const [requests, setRequests] = useState<any[]>([]);
+  const [availableStartups, setAvailableStartups] = useState<Startup[]>([]);
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [selectedStartup, setSelectedStartup] = useState<string>('');
+  const [notification, setNotification] = useState<{
+    message: string;
+    severity: 'success' | 'error' | 'info' | 'warning';
+  } | null>(null);
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedStartupForMenu, setSelectedStartupForMenu] = useState<Startup | null>(null);
 
   // Get count of coachees
   const coacheesCount = user?.coachees?.length || 0;
@@ -54,19 +75,25 @@ export default function OverviewView() {
 
   const averageScore = calculateAverageScore();
 
-  // Get requests
+  // Get requests and available startups
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const requestsData = await strapiGetRequests();
+        // Get startup IDs from user's coachees
+        const startupIds = user?.coachees?.map((startup) => startup.documentId) || [];
+        const [requestsData, startupsData] = await Promise.all([
+          strapiGetRequests(startupIds),
+          strapiGetAvailableStartups(),
+        ]);
         setRequests(requestsData || []);
+        setAvailableStartups(startupsData || []);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [user?.coachees]);
 
   // Count unread requests
   const unreadRequestsCount = requests.filter((req) => !req.readAt).length;
@@ -80,6 +107,79 @@ export default function OverviewView() {
         : 0;
     }
     return 0;
+  };
+
+  const handleAssignStartup = async () => {
+    if (!selectedStartup || !user?.id) return;
+
+    try {
+      // Get the startup to be assigned
+      const startupToAssign = availableStartups.find(
+        (startup) => startup.documentId === selectedStartup,
+      );
+      if (!startupToAssign) return;
+
+      // Get the current coachees plus the new startup
+      const updatedCoachees = [...(user.coachees || []), startupToAssign];
+
+      // Update the user with the new coachees list
+      await strapiUpdateUser({
+        id: user.id,
+        documentId: user.documentId,
+        coachees: updatedCoachees,
+      });
+
+      // Refresh the page to update the list
+      window.location.reload();
+    } catch (error) {
+      setNotification({
+        message: `Error: ${(error as Error).message}`,
+        severity: 'error',
+      });
+    }
+  };
+
+  const handleUnassignStartup = async (startupId: string) => {
+    try {
+      if (!user?.id) return;
+
+      // Get the current coachees excluding the one to be unassigned
+      const updatedCoachees =
+        user.coachees?.filter((startup) => startup.documentId !== startupId) || [];
+
+      // Update the user with the new coachees list
+      await strapiUpdateUser({
+        id: user.id,
+        documentId: user.documentId,
+        coachees: updatedCoachees,
+      });
+
+      // Refresh the page to update the list
+      window.location.reload();
+    } catch (error) {
+      setNotification({
+        message: `Error: ${(error as Error).message}`,
+        severity: 'error',
+      });
+    }
+  };
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, startup: Startup) => {
+    event.preventDefault(); // Prevent navigation
+    setMenuAnchorEl(event.currentTarget);
+    setSelectedStartupForMenu(startup);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+    setSelectedStartupForMenu(null);
+  };
+
+  const handleUnassignFromMenu = () => {
+    if (selectedStartupForMenu) {
+      handleUnassignStartup(selectedStartupForMenu.documentId);
+      handleMenuClose();
+    }
   };
 
   return (
@@ -150,6 +250,15 @@ export default function OverviewView() {
             subheader="Progress and status of mentored startups"
             titleTypographyProps={{ variant: 'h6' }}
             subheaderTypographyProps={{ variant: 'body2' }}
+            action={
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setIsAssignDialogOpen(true)}
+              >
+                Assign Startup
+              </Button>
+            }
           />
           <CardContent>
             <List sx={{ width: '100%' }}>
@@ -173,8 +282,8 @@ export default function OverviewView() {
                         component={Link}
                         to={`/startups/${startup.documentId || startup.name?.toLowerCase()}`}
                         secondaryAction={
-                          <IconButton edge="end">
-                            <ChevronRightIcon />
+                          <IconButton edge="end" onClick={(e) => handleMenuClick(e, startup)}>
+                            <MoreVertIcon />
                           </IconButton>
                         }
                         sx={{ py: 2, textDecoration: 'none', color: 'inherit' }}
@@ -258,6 +367,60 @@ export default function OverviewView() {
             </List>
           </CardContent>
         </Card>
+
+        {/* Assign Startup Dialog */}
+        <Dialog open={isAssignDialogOpen} onClose={() => setIsAssignDialogOpen(false)}>
+          <DialogTitle>Assign Startup</DialogTitle>
+          <DialogContent>
+            <FormControl fullWidth sx={{ mt: 2 }}>
+              <InputLabel>Select Startup</InputLabel>
+              <Select
+                value={selectedStartup}
+                onChange={(e) => setSelectedStartup(e.target.value)}
+                label="Select Startup"
+              >
+                {availableStartups.map((startup) => (
+                  <MenuItem key={startup.documentId} value={startup.documentId}>
+                    {startup.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsAssignDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAssignStartup} variant="contained" disabled={!selectedStartup}>
+              Assign
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Menu for startup actions */}
+        <Menu
+          anchorEl={menuAnchorEl}
+          open={Boolean(menuAnchorEl)}
+          onClose={handleMenuClose}
+          onClick={(e) => e.preventDefault()} // Prevent navigation when clicking menu items
+        >
+          <MenuItem onClick={handleUnassignFromMenu}>Unassign Startup</MenuItem>
+        </Menu>
+
+        {/* Notification Snackbar */}
+        {notification && (
+          <Snackbar
+            open={!!notification}
+            autoHideDuration={6000}
+            onClose={() => setNotification(null)}
+          >
+            <Alert
+              onClose={() => setNotification(null)}
+              severity={notification.severity}
+              sx={{ width: '100%' }}
+            >
+              {notification.message}
+            </Alert>
+          </Snackbar>
+        )}
       </CenteredFlexBox>
     </>
   );

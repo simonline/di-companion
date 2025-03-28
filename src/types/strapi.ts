@@ -24,6 +24,7 @@ export interface UpdateUser {
   bio?: string;
   linkedinProfile?: string;
   avatar?: File;
+  coachees?: Startup[];
 }
 
 export interface User {

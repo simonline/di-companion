@@ -1023,12 +1023,13 @@ export async function strapiGetStartup(documentId: string): Promise<Startup> {
 }
 
 // Request CRUD Operations
-export async function strapiGetRequests(startupId?: string): Promise<Request[]> {
+export async function strapiGetRequests(startupIds?: string[]): Promise<Request[]> {
   try {
     // No need to manually add token - the axios interceptor will handle it
     let url = '/requests?populate[0]=startup';
-    if (startupId) {
-      url += `&filters[startup][documentId][$eq]=${startupId}`;
+    if (startupIds && startupIds.length > 0) {
+      // Filter by multiple startup IDs using $in operator
+      url += `&filters[startup][documentId][$in]=${startupIds.join(',')}`;
     }
     return await fetchPaginatedApi<Request>(url);
   } catch (error) {
@@ -1108,5 +1109,41 @@ export async function strapiDeleteRequest(documentId: string): Promise<void> {
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Request deletion failed');
+  }
+}
+
+export interface UpdateStartupCoach {
+  documentId: string;
+  coach?: { set: number | null };
+}
+
+export async function strapiUpdateStartupCoach(
+  updateStartupCoach: UpdateStartupCoach,
+): Promise<Startup> {
+  try {
+    const { documentId, ...payload } = updateStartupCoach;
+    const url = `/startups/${documentId}`;
+
+    return await fetchSingleApi<Startup>(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: payload,
+      }),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Failed to update startup coach');
+  }
+}
+
+export async function strapiGetAvailableStartups(): Promise<Startup[]> {
+  try {
+    return await fetchCollectionApi<Startup>('/startups?filters[coach][id][$null]=true');
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Failed to fetch available startups');
   }
 }

@@ -41,6 +41,7 @@ interface UseAuthReturn extends AuthState {
   isAuthenticated: boolean;
   clearError: () => void;
   checkTokenExpiration: () => boolean;
+  refreshData: () => void;
 }
 
 export function useAuth(): UseAuthReturn {
@@ -353,11 +354,18 @@ export function useAuth(): UseAuthReturn {
     return maturityScores;
   }, [state.startup, updateStartup]);
 
+  const refreshData = useCallback(async () => {
+    try {
+      const user = await strapiMe();
+      const startup = user.startups?.[0] || null;
+      setState((prev) => ({ ...prev, user, startup, loading: false }));
+    } catch (error) {
+      setState((prev) => ({ ...prev, loading: false }));
+    }
+  }, []);
+
   return {
-    user: state.user,
-    startup: state.startup,
-    loading: state.loading,
-    error: state.error,
+    ...state,
     login,
     register,
     createStartup,
@@ -365,9 +373,10 @@ export function useAuth(): UseAuthReturn {
     updateUser,
     updateScores,
     logout,
-    isAuthenticated: Boolean(state.user),
+    isAuthenticated: !!state.user,
     clearError,
     checkTokenExpiration,
+    refreshData,
   };
 }
 
@@ -379,6 +388,14 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const auth = useAuth();
+
+  useEffect(() => {
+    const token = localStorage.getItem('strapi_jwt');
+    if (token && !isTokenExpired()) {
+      auth.refreshData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Remove auth from dependencies to prevent infinite loop
 
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 }
