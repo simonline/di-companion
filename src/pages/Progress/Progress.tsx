@@ -239,29 +239,45 @@ const Progress: React.FC = () => {
               }
             }}
             aria-label="pattern status filter"
-            orientation="vertical"
+            orientation="horizontal"
             sx={{
               width: '100%',
+              display: 'flex',
+              flexDirection: 'row',
               '& .MuiToggleButton-root': {
                 border: 'none',
                 borderRadius: 2,
-                px: 3,
+                px: 2,
                 py: 1.5,
-                width: '100%',
-                mb: 1,
+                flex: 1,
+                minWidth: 0,
                 '&.Mui-selected': {
                   bgcolor: 'primary.main',
                   color: 'white',
                   '&:hover': {
                     bgcolor: 'primary.dark',
                   },
+                  '& .MuiBadge-badge': {
+                    bgcolor: 'white',
+                    color: 'primary.main',
+                  },
                 },
-              },
-              '@media (min-width: 600px)': {
-                flexDirection: 'row',
-                '& .MuiToggleButton-root': {
-                  flex: 1,
-                  mb: 0,
+                '@media (max-width: 600px)': {
+                  px: 1.5,
+                  py: 1,
+                  '& .MuiSvgIcon-root': {
+                    fontSize: '1.5rem',
+                  },
+                  '& .MuiBadge-badge': {
+                    fontSize: '0.75rem',
+                  },
+                  '& .button-text': {
+                    display: 'none',
+                  },
+                  '&.Mui-selected .button-text, &:hover .button-text': {
+                    display: 'inline',
+                    marginLeft: '0.5rem',
+                  },
                 },
               },
             }}
@@ -269,16 +285,16 @@ const Progress: React.FC = () => {
             <ToggleButton value="in_progress" aria-label="in progress patterns" sx={{ flex: 1 }}>
               <Badge
                 badgeContent={inProgressCount}
-                color="primary"
+                color="success"
                 sx={{
                   '& .MuiBadge-badge': {
-                    bgcolor: 'white',
-                    color: 'primary.main',
+                    bgcolor: 'primary.main',
+                    color: 'white',
                   },
                 }}
               >
-                <PendingIcon sx={{ mr: 1 }} />
-                In Progress
+                <PendingIcon />
+                <span className="button-text">In Progress</span>
               </Badge>
             </ToggleButton>
             <ToggleButton value="applied" aria-label="applied patterns" sx={{ flex: 1 }}>
@@ -287,13 +303,13 @@ const Progress: React.FC = () => {
                 color="success"
                 sx={{
                   '& .MuiBadge-badge': {
-                    bgcolor: 'white',
-                    color: 'success.main',
+                    bgcolor: 'primary.main',
+                    color: 'white',
                   },
                 }}
               >
-                <CheckIcon sx={{ mr: 1 }} />
-                Applied
+                <CheckIcon />
+                <span className="button-text">Applied</span>
               </Badge>
             </ToggleButton>
             <ToggleButton value="not_applied" aria-label="not applied patterns" sx={{ flex: 1 }}>
@@ -302,13 +318,13 @@ const Progress: React.FC = () => {
                 color="error"
                 sx={{
                   '& .MuiBadge-badge': {
-                    bgcolor: 'white',
-                    color: 'success.main',
+                    bgcolor: 'primary.main',
+                    color: 'white',
                   },
                 }}
               >
-                <QuestionMarkIcon sx={{ mr: 1 }} />
-                Not Applied
+                <QuestionMarkIcon />
+                <span className="button-text">Not Applied</span>
               </Badge>
             </ToggleButton>
           </ToggleButtonGroup>
