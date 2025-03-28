@@ -12,7 +12,6 @@ import {
   Divider,
   Box,
   Chip,
-  Tooltip,
   Snackbar,
   Alert,
   CircularProgress,
@@ -20,6 +19,8 @@ import {
   ListItemAvatar,
   Tab,
   Tabs,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 import { CenteredFlexBox } from '@/components/styled';
 import Header from '@/sections/Header';
@@ -38,6 +39,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PersonIcon from '@mui/icons-material/Person';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -87,6 +89,8 @@ const StartupTeam: React.FC = () => {
     message: '',
     severity: 'info',
   });
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
 
   const baseUrl = window.location.origin;
 
@@ -209,17 +213,31 @@ const StartupTeam: React.FC = () => {
     });
   };
 
-  const getStatusChip = (status: InvitationStatusEnum) => {
-    switch (status) {
-      case InvitationStatusEnum.pending:
-        return <Chip size="small" label="Pending" color="warning" />;
-      case InvitationStatusEnum.accepted:
-        return <Chip size="small" label="Accepted" color="success" />;
-      case InvitationStatusEnum.rejected:
-        return <Chip size="small" label="Rejected" color="error" />;
-      default:
-        return null;
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, invitation: Invitation) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedInvitation(invitation);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedInvitation(null);
+  };
+
+  const handleMenuAction = async (action: 'copy' | 'resend' | 'delete') => {
+    if (!selectedInvitation) return;
+
+    switch (action) {
+      case 'copy':
+        copyInvitationLink(selectedInvitation.token);
+        break;
+      case 'resend':
+        await handleResendInvitation(selectedInvitation.documentId);
+        break;
+      case 'delete':
+        await handleDeleteInvitation(selectedInvitation.documentId);
+        break;
     }
+    handleMenuClose();
   };
 
   const renderMemberList = () => {
@@ -301,59 +319,108 @@ const StartupTeam: React.FC = () => {
           <React.Fragment key={invitation.documentId}>
             <ListItem
               secondaryAction={
-                <Box>
-                  {invitation.invitationStatus === InvitationStatusEnum.pending && (
-                    <>
-                      <Tooltip title="Copy invitation link">
-                        <IconButton edge="end" onClick={() => copyInvitationLink(invitation.token)}>
-                          <ContentCopyIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Resend invitation">
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleResendInvitation(invitation.documentId)}
-                        >
-                          <RefreshIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </>
-                  )}
-                  <Tooltip title="Delete invitation">
-                    <IconButton
-                      edge="end"
-                      onClick={() => handleDeleteInvitation(invitation.documentId)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
+                <IconButton
+                  edge="end"
+                  onClick={(e) => handleMenuClick(e, invitation)}
+                  size="small"
+                  sx={{
+                    minWidth: 32,
+                    width: 32,
+                    height: 32,
+                    padding: 0,
+                    '& .MuiSvgIcon-root': {
+                      fontSize: 20,
+                    },
+                  }}
+                >
+                  <MoreVertIcon />
+                </IconButton>
               }
+              sx={{
+                py: 1,
+                pr: 1,
+                '& .MuiListItemSecondaryAction-root': {
+                  position: 'static',
+                  transform: 'none',
+                  marginLeft: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                },
+              }}
             >
-              <ListItemAvatar>
-                <Avatar>
-                  <PersonAddIcon />
+              <ListItemAvatar sx={{ minWidth: 40 }}>
+                <Avatar sx={{ width: 32, height: 32 }}>
+                  <PersonAddIcon fontSize="small" />
                 </Avatar>
               </ListItemAvatar>
               <ListItemText
                 primary={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {invitation.email}
-                    {getStatusChip(invitation.invitationStatus)}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      flexWrap: 'wrap',
+                      pr: 4,
+                    }}
+                  >
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        wordBreak: 'break-all',
+                        flex: '1 1 auto',
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                      }}
+                    >
+                      {invitation.email}
+                    </Typography>
                   </Box>
                 }
                 secondary={
-                  invitation.invitedBy && invitation.createdAt
-                    ? `Invited by ${invitation.invitedBy.username} on ${new Date(
-                        invitation.createdAt,
-                      ).toLocaleDateString()}`
-                    : 'Invitation details unavailable'
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      display: 'block',
+                      mt: 0.25,
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    }}
+                  >
+                    {invitation.invitedBy && invitation.createdAt
+                      ? `Invited by ${invitation.invitedBy.username} on ${new Date(
+                          invitation.createdAt,
+                        ).toLocaleDateString()}`
+                      : 'Invitation details unavailable'}
+                  </Typography>
                 }
               />
             </ListItem>
             <Divider component="li" />
           </React.Fragment>
         ))}
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+          onClick={handleMenuClose}
+        >
+          {selectedInvitation?.invitationStatus === InvitationStatusEnum.pending && (
+            <>
+              <MenuItem onClick={() => handleMenuAction('copy')}>
+                <ContentCopyIcon fontSize="small" sx={{ mr: 1 }} />
+                Copy invitation link
+              </MenuItem>
+              <MenuItem onClick={() => handleMenuAction('resend')}>
+                <RefreshIcon fontSize="small" sx={{ mr: 1 }} />
+                Resend invitation
+              </MenuItem>
+            </>
+          )}
+          <MenuItem onClick={() => handleMenuAction('delete')} sx={{ color: 'error.main' }}>
+            <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+            Delete invitation
+          </MenuItem>
+        </Menu>
       </List>
     );
   };
