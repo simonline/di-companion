@@ -46,6 +46,7 @@ export default factories.createCoreController('plugin::users-permissions.user', 
             }
         );
 
+        // @ts-expect-error - startups relation exists in schema but not in generated types
         const hasAccess = currentUserWithStartups?.startups?.some(
             (startup) => startup.documentId === startupDocumentId
         );
@@ -102,8 +103,9 @@ export default factories.createCoreController('plugin::users-permissions.user', 
             }
         );
 
-        // Check if they share any startups
+        // @ts-expect-error - startups relation exists in schema but not in generated types
         const sharedStartups = targetUser.startups?.filter(targetStartup =>
+            // @ts-expect-error - startups relation exists in schema but not in generated types
             currentUserWithStartups.startups?.some(
                 userStartup => userStartup.id === targetStartup.id
             )
