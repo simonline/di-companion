@@ -102,6 +102,7 @@ export interface Pattern {
   relatedPatterns: Pattern[];
   exercise: StrapiRelated | null;
   survey: StrapiRelated | null;
+  questions: Question[];
 }
 
 export interface Exercise {
@@ -115,26 +116,41 @@ export enum QuestionType {
   select = 'select',
   select_multiple = 'select_multiple',
   checkbox = 'checkbox',
+  checkbox_multiple = 'checkbox_multiple',
   text_short = 'text_short',
   text_long = 'text_long',
   email = 'email',
   number = 'number',
+  rank = 'rank',
+  scale = 'scale',
 }
 
 export interface QuestionOption {
   value: string;
   label: string;
   points?: number;
+  position?: number;
+}
+
+export interface ScaleOptions {
+  min: number;
+  max: number;
+  minLabel: string;
+  maxLabel: string;
 }
 
 export interface Question {
   documentId: string;
   question: string;
   type: QuestionType;
-  options: QuestionOption[] | null;
+  options: QuestionOption[] | ScaleOptions | null;
   isRequired: boolean;
   order: number;
   weight: number;
+  helpText?: string;
+  showRequestCoach?: boolean;
+  maxLength?: number;
+  isHidden?: boolean;
 }
 
 export interface Survey {

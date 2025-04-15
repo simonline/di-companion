@@ -1,18 +1,18 @@
 import React, { useEffect } from 'react';
 import { Button, CircularProgress, Typography, Box } from '@mui/material';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
-import useStartupPattern from '@/hooks/useStartupPattern';
+import usePattern from '@/hooks/usePattern';
 import PatternCard from '@/components/PatternCard';
 import { useParams } from 'react-router-dom';
 import Header from '@/sections/Header';
 
 const Progress: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const { fetchStartupPattern, startupPattern, loading, error } = useStartupPattern();
+  const { id: patternId } = useParams<{ id: string }>();
+  const { fetchPattern, pattern, loading, error } = usePattern();
 
   useEffect(() => {
-    fetchStartupPattern(id as string);
-  }, [fetchStartupPattern, id]);
+    fetchPattern(patternId as string);
+  }, [fetchPattern, patternId]);
 
   if (loading) {
     return (
@@ -51,7 +51,7 @@ const Progress: React.FC = () => {
     );
   }
 
-  if (!startupPattern) {
+  if (!fetchPattern) {
     return (
       <Box
         sx={{
@@ -71,7 +71,7 @@ const Progress: React.FC = () => {
     <>
       <Header title="Progress" />
       <FullSizeCenteredFlexBox>
-        <PatternCard pattern={startupPattern.pattern} nextUrl="/progress" />
+        <PatternCard pattern={pattern} nextUrl="/progress" />
       </FullSizeCenteredFlexBox>
     </>
   );

@@ -4,17 +4,11 @@ import {
   CircularProgress,
   Typography,
   Box,
-  TextField,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-  FormLabel,
-  Select,
-  MenuItem,
-  Checkbox,
-  FormGroup,
-  FormHelperText,
+  Grid,
+  Paper,
+  Stepper,
+  Step,
+  StepLabel,
 } from '@mui/material';
 import { CenteredFlexBox } from '@/components/styled';
 import usePattern from '@/hooks/usePattern';
@@ -30,6 +24,8 @@ import * as Yup from 'yup';
 import Header from '@/sections/Header';
 import { useAuthContext } from '@/hooks/useAuth';
 import useNotifications from '@/store/notifications';
+import SurveyField from '@/components/SurveyField';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 interface FormValues {
   [key: string]: string | string[] | number | boolean;
@@ -57,6 +53,13 @@ const Survey: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
+  const hasPatternQuestions = pattern?.questions && pattern.questions.length > 0;
+  const hasSurveyQuestions = survey?.questions && survey.questions.length > 0;
+
+  useEffect(() => {
+    setActiveStep(hasPatternQuestions ? 0 : 1);
+  }, [hasPatternQuestions]);
 
   useEffect(() => {
     fetchPattern(patternId as string);
@@ -174,137 +177,6 @@ const Survey: React.FC = () => {
     });
 
     return values;
-  };
-
-  const renderField = (question: Question, { field, form }: any) => {
-    const error = form.touched[question.documentId] && form.errors[question.documentId];
-    switch (question.type) {
-      case QuestionType.radio:
-        return (
-          <FormControl component="fieldset" error={!!error} fullWidth>
-            <FormLabel component="legend">{question.question}</FormLabel>
-            <RadioGroup {...field} row>
-              {question.options &&
-                question.options.map(({ value, label }) => (
-                  <FormControlLabel
-                    key={value}
-                    value={value}
-                    control={<Radio sx={{ p: 0.5 }} />}
-                    label={label}
-                    sx={{
-                      margin: 0, // Remove margin around each FormControlLabel
-                      mr: 1, // Add small right margin between items to space them out slightly
-                      '& .MuiTypography-root': {
-                        fontSize: '0.875rem', // Adjust font size of label
-                      },
-                    }}
-                  />
-                ))}
-            </RadioGroup>
-            {error && <FormHelperText>{error}</FormHelperText>}
-          </FormControl>
-        );
-
-      case QuestionType.select:
-        return (
-          <FormControl fullWidth error={!!error}>
-            <FormLabel>{question.question}</FormLabel>
-            <Select {...field}>
-              {question.options &&
-                question.options.map(({ value, label }) => (
-                  <MenuItem key={value} value={value}>
-                    {label}
-                  </MenuItem>
-                ))}
-            </Select>
-            {error && <FormHelperText>{error}</FormHelperText>}
-          </FormControl>
-        );
-
-      case QuestionType.select_multiple:
-        return (
-          <FormControl fullWidth error={!!error}>
-            <FormLabel>{question.question}</FormLabel>
-            <Select
-              {...field}
-              multiple
-              renderValue={(selected: string[]) =>
-                selected.map((value: any) => question.options?.[value]).join(', ')
-              }
-            >
-              {question.options &&
-                question.options.map(({ value, label }) => (
-                  <MenuItem key={value} value={value}>
-                    <Checkbox checked={field.value.includes(value)} />
-                    {label}
-                  </MenuItem>
-                ))}
-            </Select>
-            {error && <FormHelperText>{error}</FormHelperText>}
-          </FormControl>
-        );
-
-      case QuestionType.checkbox:
-        return (
-          <FormControl component="fieldset" error={!!error} fullWidth>
-            <FormGroup>
-              <FormControlLabel
-                control={<Checkbox {...field} checked={field.value} />}
-                label={question.question}
-              />
-            </FormGroup>
-            {error && <FormHelperText>{error}</FormHelperText>}
-          </FormControl>
-        );
-
-      case QuestionType.text_long:
-        return (
-          <TextField
-            {...field}
-            fullWidth
-            label={question.question}
-            multiline
-            rows={4}
-            error={!!error}
-            helperText={error}
-          />
-        );
-
-      case QuestionType.email:
-        return (
-          <TextField
-            {...field}
-            fullWidth
-            label={question.question}
-            type="email"
-            error={!!error}
-            helperText={error}
-          />
-        );
-
-      case QuestionType.number:
-        return (
-          <TextField
-            {...field}
-            fullWidth
-            label={question.question}
-            type="number"
-            error={!!error}
-            helperText={error}
-          />
-        );
-
-      default: // text_short
-        return (
-          <TextField
-            {...field}
-            fullWidth
-            label={question.question}
-            error={!!error}
-            helperText={error}
-          />
-        );
-    }
   };
 
   const handleSubmit = async (values: FormValues) => {
@@ -425,48 +297,136 @@ const Survey: React.FC = () => {
     <>
       <Header title={pattern.name} />
       <CenteredFlexBox>
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="body1" sx={{ mb: 4 }}>
-            {survey.description}
-          </Typography>
+        <Grid container spacing={3} sx={{ maxWidth: '1200px', width: '100%' }}>
+          {/* Form */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 4,
+                }}
+              >
+                <Typography variant="h5">{pattern.name}</Typography>
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate(`/progress/${pattern.documentId}`)}
+                  startIcon={<ArrowBackIcon />}
+                >
+                  Back to Pattern
+                </Button>
+              </Box>
 
-          <Formik
-            initialValues={generateInitialValues(survey.questions)}
-            validationSchema={generateValidationSchema(survey.questions)}
-            onSubmit={handleSubmit}
-          >
-            {() => (
-              <Form>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 0 }}>
-                  {survey.questions
-                    .sort((a, b) => a.order - b.order)
-                    .map((question) => (
-                      <Field key={question.documentId} name={question.documentId}>
-                        {(fieldProps: any) => renderField(question, fieldProps)}
-                      </Field>
-                    ))}
+              {hasPatternQuestions && hasSurveyQuestions && (
+                <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+                  <Step>
+                    <StepLabel>Quiz</StepLabel>
+                  </Step>
+                  <Step>
+                    <StepLabel>Check</StepLabel>
+                  </Step>
+                </Stepper>
+              )}
 
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    disabled={isSubmitting}
-                    sx={{ mt: 2 }}
-                  >
-                    {isSubmitting ? (
-                      <CircularProgress size={24} />
-                    ) : startupQuestions?.length ? (
-                      'Update Response'
-                    ) : (
-                      'Submit Response'
-                    )}
-                  </Button>
-                </Box>
-              </Form>
-            )}
-          </Formik>
-        </Box>
+              {activeStep === 0 && hasPatternQuestions && (
+                <Formik
+                  initialValues={generateInitialValues(pattern.questions)}
+                  validationSchema={generateValidationSchema(pattern.questions)}
+                  onSubmit={handleSubmit}
+                >
+                  {({ isValid }) => (
+                    <Form>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {pattern.questions
+                          .sort((a: Question, b: Question) => a.order - b.order)
+                          .map((question: Question) => (
+                            <Field key={question.documentId} name={question.documentId}>
+                              {(fieldProps: any) => (
+                                <SurveyField
+                                  question={question}
+                                  field={fieldProps.field}
+                                  form={fieldProps.form}
+                                />
+                              )}
+                            </Field>
+                          ))}
+
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            disabled={isSubmitting || !isValid}
+                          >
+                            {isSubmitting ? (
+                              <CircularProgress size={24} />
+                            ) : startupQuestions?.length ? (
+                              'Update Response'
+                            ) : (
+                              'Submit Response'
+                            )}
+                          </Button>
+                        </Box>
+                      </Box>
+                    </Form>
+                  )}
+                </Formik>
+              )}
+
+              {activeStep === 1 && hasSurveyQuestions && (
+                <Formik
+                  initialValues={generateInitialValues(survey.questions)}
+                  validationSchema={generateValidationSchema(survey.questions)}
+                  onSubmit={handleSubmit}
+                >
+                  {({ isValid }) => (
+                    <Form>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {survey.questions
+                          .sort((a: Question, b: Question) => a.order - b.order)
+                          .map((question: Question) => (
+                            <Field key={question.documentId} name={question.documentId}>
+                              {(fieldProps: any) => (
+                                <SurveyField
+                                  question={question}
+                                  field={fieldProps.field}
+                                  form={fieldProps.form}
+                                />
+                              )}
+                            </Field>
+                          ))}
+
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
+                          {hasPatternQuestions && (
+                            <Button variant="outlined" onClick={() => setActiveStep(0)}>
+                              Back
+                            </Button>
+                          )}
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            disabled={isSubmitting || !isValid}
+                          >
+                            {isSubmitting ? (
+                              <CircularProgress size={24} />
+                            ) : startupQuestions?.length ? (
+                              'Update Response'
+                            ) : (
+                              'Submit Response'
+                            )}
+                          </Button>
+                        </Box>
+                      </Box>
+                    </Form>
+                  )}
+                </Formik>
+              )}
+            </Paper>
+          </Grid>
+        </Grid>
       </CenteredFlexBox>
     </>
   );

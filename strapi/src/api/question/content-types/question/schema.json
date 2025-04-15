@@ -28,10 +28,13 @@
         "select",
         "select_multiple",
         "checkbox",
+        "checkbox_multiple",
         "text_short",
         "text_long",
         "email",
-        "number"
+        "number",
+        "rank",
+        "scale"
       ]
     },
     "options": {

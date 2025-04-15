@@ -131,9 +131,10 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
 interface PatternCardProps {
   pattern: Pattern;
   nextUrl: string;
+  isInteractive?: boolean;
 }
 
-const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
+const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl, isInteractive = true }) => {
   const navigate = useNavigate();
   const [isFlipped, setIsFlipped] = React.useState(false);
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -178,6 +179,8 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
   };
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (!isInteractive) return;
+
     const SWIPE_THRESHOLD = 100;
 
     if (Math.abs(info.offset.x) > SWIPE_THRESHOLD) {
@@ -562,15 +565,15 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
         aspectRatio: '2/3',
         mx: 'auto',
         position: 'relative',
-        touchAction: 'pan-y',
+        touchAction: isInteractive ? 'pan-y' : 'none',
       }}
     >
       <AnimatePresence mode="wait" custom={exitDirection}>
         {cardContainer}
       </AnimatePresence>
 
-      {/* Only show buttons if card is visible */}
-      {isVisible && (
+      {/* Only show buttons if card is visible and interactive */}
+      {isVisible && isInteractive && (
         <Box
           sx={{
             position: 'absolute',
@@ -595,15 +598,18 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl }) => {
         </Box>
       )}
 
-      <ActionDialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        nextUrl={nextUrl}
-        pattern={pattern}
-        responseType={dialogConfig.responseType}
-        title={dialogConfig.title}
-        actions={dialogConfig.actions}
-      />
+      {/* Only show dialog if interactive */}
+      {isInteractive && (
+        <ActionDialog
+          open={dialogOpen}
+          onClose={handleDialogClose}
+          nextUrl={nextUrl}
+          pattern={pattern}
+          responseType={dialogConfig.responseType}
+          title={dialogConfig.title}
+          actions={dialogConfig.actions}
+        />
+      )}
     </Box>
   );
 };
