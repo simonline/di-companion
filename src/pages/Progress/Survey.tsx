@@ -14,22 +14,19 @@ import { CenteredFlexBox } from '@/components/styled';
 import usePattern from '@/hooks/usePattern';
 import useSurvey from '@/hooks/useSurvey';
 import useStartupQuestions from '@/hooks/useStartupQuestions';
-import { Question, QuestionType, StartupQuestion } from '@/types/strapi';
+import { Question, StartupQuestion } from '@/types/strapi';
 import useStartupQuestion from '@/hooks/useStartupQuestion';
 import useStartupPattern from '@/hooks/useStartupPattern';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
 import Header from '@/sections/Header';
 import { useAuthContext } from '@/hooks/useAuth';
 import useNotifications from '@/store/notifications';
 import SurveyField from '@/components/SurveyField';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-
-interface FormValues {
-  [key: string]: string | string[] | number | boolean;
-}
+import { generateValidationSchema, FormValues } from '@/utils/generateValidationSchema';
+import { generateInitialValues } from '@/utils/generateInitialValues';
 
 const Survey: React.FC = () => {
   const { patternId } = useParams<{ patternId: string }>();
@@ -115,71 +112,52 @@ const Survey: React.FC = () => {
     notificationsActions,
   ]);
 
-  const generateValidationSchema = (questions: Question[]) => {
-    const schema: { [key: string]: any } = {};
+  const handleAssessmentSubmit = async (values: FormValues) => {
+    try {
+      setIsSubmitting(true);
+      if (!pattern || !startup || !patternId) return;
 
-    questions.forEach((question) => {
-      const fieldName = question.documentId;
-      let validator;
+      // Process each question's answer
+      const questionPromises = pattern.questions.map(async (question) => {
+        const answer = values[question.documentId];
+        const existingResponse = startupQuestions?.find(
+          (sq) => sq.question.documentId === question.documentId,
+        );
 
-      switch (question.type) {
-        case QuestionType.email:
-          validator = Yup.string().email('Invalid email address');
-          break;
-        case QuestionType.number:
-          validator = Yup.number().typeError('Must be a number');
-          break;
-        case QuestionType.select_multiple:
-          validator = Yup.array().of(Yup.string());
-          break;
-        case QuestionType.checkbox:
-          validator = Yup.boolean();
-          break;
-        default:
-          validator = Yup.string();
-      }
+        const payload = {
+          startup: { set: { documentId: startup.documentId } },
+          pattern: { set: { documentId: patternId } },
+          question: { set: { documentId: question.documentId } },
+          answer: JSON.stringify(answer),
+        };
 
-      if (question.isRequired) {
-        validator = validator.required('This field is required');
-      }
-
-      schema[fieldName] = validator;
-    });
-
-    return Yup.object().shape(schema);
-  };
-
-  const generateInitialValues = (questions: Question[]): FormValues => {
-    const values: FormValues = {};
-
-    questions.forEach((question) => {
-      const existingAnswer = startupQuestions?.find(
-        (sq) => sq.question.documentId === question.documentId,
-      );
-
-      if (existingAnswer?.answer !== undefined) {
-        values[question.documentId] = JSON.parse(existingAnswer.answer);
-      } else {
-        switch (question.type) {
-          case QuestionType.select_multiple:
-            values[question.documentId] = [];
-            break;
-          case QuestionType.checkbox:
-            values[question.documentId] = false;
-            break;
-          case QuestionType.number:
-            values[question.documentId] = '';
-            break;
-          default:
-            values[question.documentId] = '';
+        if (existingResponse) {
+          return updateStartupQuestion({
+            documentId: existingResponse.documentId,
+            ...payload,
+          });
+        } else {
+          return createStartupQuestion(payload);
         }
-      }
-    });
+      });
 
-    return values;
+      await Promise.all(questionPromises);
+
+      // Refetch to get the created/updated startup questions
+      clearStartupQuestions();
+      fetchStartupQuestions(startup.documentId, patternId, survey?.documentId);
+      setIsApplied(true);
+    } catch (error) {
+      notificationsActions.push({
+        options: { variant: 'error' },
+        message: 'Failed to submit assessment',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleEffortSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
       if (!survey || !startup || !patternId) return;
@@ -217,7 +195,7 @@ const Survey: React.FC = () => {
     } catch (error) {
       notificationsActions.push({
         options: { variant: 'error' },
-        message: 'Failed to submit response',
+        message: 'Failed to submit effort',
       });
     } finally {
       setIsSubmitting(false);
@@ -298,7 +276,6 @@ const Survey: React.FC = () => {
       <Header title={pattern.name} />
       <CenteredFlexBox>
         <Grid container spacing={3} sx={{ maxWidth: '1200px', width: '100%' }}>
-          {/* Form */}
           <Grid item xs={12}>
             <Paper sx={{ p: 3 }}>
               <Box
@@ -322,22 +299,54 @@ const Survey: React.FC = () => {
               {hasPatternQuestions && hasSurveyQuestions && (
                 <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
                   <Step>
-                    <StepLabel>Quiz</StepLabel>
+                    <StepLabel>Assessment</StepLabel>
                   </Step>
                   <Step>
-                    <StepLabel>Check</StepLabel>
+                    <StepLabel>Effort</StepLabel>
                   </Step>
                 </Stepper>
               )}
 
               {activeStep === 0 && hasPatternQuestions && (
                 <Formik
-                  initialValues={generateInitialValues(pattern.questions)}
+                  initialValues={generateInitialValues(
+                    pattern.questions,
+                    startupQuestions || undefined,
+                  )}
                   validationSchema={generateValidationSchema(pattern.questions)}
-                  onSubmit={handleSubmit}
+                  onSubmit={handleAssessmentSubmit}
+                  validateOnChange={true}
+                  validateOnBlur={true}
                 >
-                  {({ isValid }) => (
+                  {({ isValid, errors }) => (
                     <Form>
+                      {Object.keys(errors).length > 0 && (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                          <Typography variant="body2" color="error">
+                            Some fields are not valid:
+                            {pattern.questions
+                              .filter((question) => errors[question.documentId])
+                              .map((question) => (
+                                <Typography key={question.documentId}>
+                                  {question.question}: {errors[question.documentId]}
+                                </Typography>
+                              ))}
+                          </Typography>
+                          {/* Debug section - can be removed later */}
+                          <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
+                            <Typography variant="caption" color="text.secondary">
+                              Debug Info:
+                              <br />
+                              Total Errors: {Object.keys(errors).length}
+                              <br />
+                              Form Valid: {isValid ? 'Yes' : 'No'}
+                              <br />
+                              Required Fields:{' '}
+                              {pattern.questions.filter((q) => q.isRequired).length}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      )}
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         {pattern.questions
                           .sort((a: Question, b: Question) => a.order - b.order)
@@ -363,9 +372,9 @@ const Survey: React.FC = () => {
                             {isSubmitting ? (
                               <CircularProgress size={24} />
                             ) : startupQuestions?.length ? (
-                              'Update Response'
+                              'Update Assessment'
                             ) : (
-                              'Submit Response'
+                              'Submit Assessment'
                             )}
                           </Button>
                         </Box>
@@ -377,9 +386,12 @@ const Survey: React.FC = () => {
 
               {activeStep === 1 && hasSurveyQuestions && (
                 <Formik
-                  initialValues={generateInitialValues(survey.questions)}
+                  initialValues={generateInitialValues(
+                    survey.questions,
+                    startupQuestions || undefined,
+                  )}
                   validationSchema={generateValidationSchema(survey.questions)}
-                  onSubmit={handleSubmit}
+                  onSubmit={handleEffortSubmit}
                 >
                   {({ isValid }) => (
                     <Form>
@@ -401,7 +413,7 @@ const Survey: React.FC = () => {
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
                           {hasPatternQuestions && (
                             <Button variant="outlined" onClick={() => setActiveStep(0)}>
-                              Back
+                              Back to Assessment
                             </Button>
                           )}
                           <Button
@@ -413,9 +425,9 @@ const Survey: React.FC = () => {
                             {isSubmitting ? (
                               <CircularProgress size={24} />
                             ) : startupQuestions?.length ? (
-                              'Update Response'
+                              'Update Effort'
                             ) : (
-                              'Submit Response'
+                              'Submit Effort'
                             )}
                           </Button>
                         </Box>
