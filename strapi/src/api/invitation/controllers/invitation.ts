@@ -14,7 +14,7 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     // Create the invitation with pending status
-    const invitation = await strapi.entityService.create('api::invitation.invitation', {
+    const invitation = await strapi.documents('api::invitation.invitation').create({
       data: {
         ...data,
         token,
@@ -138,19 +138,23 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
     }
 
     // Update the invitation status
-    const updatedInvitation = await strapi.entityService.update('api::invitation.invitation', invitation.id, {
+    const updatedInvitation = await strapi.documents('api::invitation.invitation').update({
+      documentId: "__TODO__",
+
       data: {
         invitationStatus: 'accepted',
-      } as any,
+      } as any
     });
 
     // Add the startup to the user's startups
-    await strapi.entityService.update('plugin::users-permissions.user', user.id, {
+    await strapi.documents('plugin::users-permissions.user').update({
+      documentId: "__TODO__",
+
       data: {
         startups: {
           connect: [invitation.startup.id],
         },
-      } as any,
+      } as any
     });
 
     return { data: updatedInvitation };

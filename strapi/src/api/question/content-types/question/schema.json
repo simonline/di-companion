@@ -79,6 +79,18 @@
         "time_space"
       ],
       "customField": "plugin::multi-select.multi-select"
+    },
+    "helpText": {
+      "type": "text"
+    },
+    "maxLength": {
+      "type": "string"
+    },
+    "showRequestCoach": {
+      "type": "boolean"
+    },
+    "isHidden": {
+      "type": "boolean"
     }
   }
 }

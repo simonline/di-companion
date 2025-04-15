@@ -4,7 +4,8 @@
   "info": {
     "singularName": "method",
     "pluralName": "methods",
-    "displayName": "Method"
+    "displayName": "Method",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -47,6 +48,9 @@
     },
     "content": {
       "type": "richtext"
+    },
+    "url": {
+      "type": "string"
     }
   }
 }

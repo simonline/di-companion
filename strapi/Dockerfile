@@ -25,4 +25,4 @@ USER node
 RUN npx @strapi/upgrade minor
 RUN ["npm", "run", "build"]
 EXPOSE 1337
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "develop"]

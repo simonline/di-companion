@@ -38,13 +38,10 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         }
 
         // Check if the current user belongs to the requested startup
-        const currentUserWithStartups = await strapi.entityService.findOne(
-            'plugin::users-permissions.user',
-            user.id,
-            {
-                populate: ['startups'],
-            }
-        );
+        const currentUserWithStartups = await strapi.documents('plugin::users-permissions.user').findOne({
+            documentId: "__TODO__",
+            populate: ['startups']
+        });
 
         const hasAccess = currentUserWithStartups?.startups?.some(
             (startup) => startup.documentId === startupDocumentId
@@ -81,26 +78,20 @@ export default factories.createCoreController('plugin::users-permissions.user', 
         }
 
         // First get the target user with their startups
-        const targetUser = await strapi.entityService.findOne(
-            'plugin::users-permissions.user',
-            id,
-            {
-                populate: ['startups'],
-            }
-        );
+        const targetUser = await strapi.documents('plugin::users-permissions.user').findOne({
+            documentId: "__TODO__",
+            populate: ['startups']
+        });
 
         if (!targetUser) {
             return ctx.notFound('User not found');
         }
 
         // Get the current user with their startups
-        const currentUserWithStartups = await strapi.entityService.findOne(
-            'plugin::users-permissions.user',
-            user.id,
-            {
-                populate: ['startups'],
-            }
-        );
+        const currentUserWithStartups = await strapi.documents('plugin::users-permissions.user').findOne({
+            documentId: "__TODO__",
+            populate: ['startups']
+        });
 
         const sharedStartups = targetUser.startups?.filter(targetStartup =>
             currentUserWithStartups.startups?.some(
