@@ -1,13 +1,12 @@
 import type {
   CreateStartup,
   CreateStartupPattern,
-  CreateStartupExercise,
-  Exercise,
+  CreateStartupMethod,
   Pattern,
   Question,
   Recommendation,
   Startup,
-  StartupExercise,
+  StartupMethod,
   StartupPattern,
   StrapiAuthResponse,
   StrapiError,
@@ -18,7 +17,7 @@ import type {
   User,
   UserRegistration,
   UpdateStartup,
-  UpdateStartupExercise,
+  UpdateStartupMethod,
   UpdateStartupPattern,
   Invitation,
   CreateInvitation,
@@ -28,6 +27,7 @@ import type {
   UserQuestion,
   CreateUserQuestion,
   UpdateUserQuestion,
+  Method,
 } from '../types/strapi';
 import { CategoryEnum } from '../utils/constants';
 import axiosInstance from './axios';
@@ -312,7 +312,7 @@ export async function strapiGetPatterns(category?: CategoryEnum): Promise<Patter
     let url = '/patterns?';
     url += '&populate[relatedPatterns][populate]=*';
     url += '&populate[image][fields][0]=url';
-    url += '&populate[exercise][fields][0]=documentId';
+    // url += '&populate[methods][fields][0]=documentId';
     url += '&populate[survey][fields][0]=documentId';
     if (category) {
       url += `&filters[category][$eq]=${category}`;
@@ -331,7 +331,7 @@ export async function strapiGetPattern(documentId: string): Promise<Pattern> {
     let url = `/patterns/${documentId}`;
     url += '?populate[relatedPatterns][populate]=*';
     url += '&populate[image][fields][0]=url';
-    url += '&populate[exercise][fields][0]=documentId';
+    // url += '&populate[methods][fields][0]=documentId';
     url += '&populate[survey][fields][0]=documentId';
     url += '&populate[questions][populate]=*';
 
@@ -367,16 +367,6 @@ export async function fetchPatternsById(patternIds: string[]): Promise<Pattern[]
   } catch (error) {
     console.error('Error fetching patterns by IDs:', error);
     throw error;
-  }
-}
-
-export async function strapiGetExercises(): Promise<Exercise[]> {
-  try {
-    // No need to manually add token - the axios interceptor will handle it
-    return await fetchPaginatedApi<Exercise>('/exercises');
-  } catch (error) {
-    const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Error loading exercises');
   }
 }
 
@@ -487,233 +477,100 @@ export async function strapiUpdateStartupPattern(
   }
 }
 
-export async function strapiGetStartupExercises(
+export async function strapiGetStartupMethods(
   startupDocumentId?: string,
   patternDocumentId?: string,
-  exerciseDocumentId?: string,
-): Promise<StartupExercise[]> {
+  methodDocumentId?: string,
+): Promise<StartupMethod[]> {
   try {
     // No need to manually add token - the axios interceptor will handle it
-    let url = '/startup-exercises?populate[resultFiles][filters][publishedAt][$notNull]=true';
+    let url = '/startup-methods?populate[resultFiles][filters][publishedAt][$notNull]=true';
     if (startupDocumentId) {
       url += `&filters[startup][documentId][$eq]=${startupDocumentId}`;
     }
     if (patternDocumentId) {
       url += `&filters[pattern][documentId][$eq]=${patternDocumentId}`;
     }
-    if (exerciseDocumentId) {
-      url += `&filters[exercise][documentId][$eq]=${exerciseDocumentId}`;
+    if (methodDocumentId) {
+      url += `&filters[method][documentId][$eq]=${methodDocumentId}`;
     }
 
-    return await fetchPaginatedApi<StartupExercise>(url);
+    return await fetchPaginatedApi<StartupMethod>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Error loading startup exercises');
+    throw new Error(strapiError.error?.message || 'Error loading startup methods');
   }
 }
 
-export async function strapiGetStartupExercise(documentId: string): Promise<StartupExercise> {
+export async function strapiGetStartupMethod(documentId: string): Promise<StartupMethod> {
   try {
     // No need to manually add token - the axios interceptor will handle it
-    const url = `/startup-exercises/${documentId}`;
+    const url = `/startup-methods/${documentId}`;
 
-    return await fetchSingleApi<StartupExercise>(url);
+    return await fetchSingleApi<StartupMethod>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Error loading startup exercise');
+    throw new Error(strapiError.error?.message || 'Error loading startup method');
   }
 }
 
-export async function strapiFindStartupExercise(
-  startupDocumentId: string,
-  patternDocumentId: string,
-  exerciseDocumentId: string,
-): Promise<StartupExercise | null> {
+export async function strapiFindStartupMethod(
+  startupId: string,
+  patternId: string,
+  methodId: string,
+): Promise<StartupMethod> {
   try {
-    // No need to manually add token - the axios interceptor will handle it
-    const startupExercises = await strapiGetStartupExercises(
-      startupDocumentId,
-      patternDocumentId,
-      exerciseDocumentId,
-    );
-    if (startupExercises.length === 0) {
-      return null;
+    const url = `/startup-methods/find`;
+    const response = await fetchApi<{ data: StartupMethod[] }>(url, {
+      method: 'GET',
+      params: {
+        filters: {
+          startup: { documentId: startupId },
+          pattern: { documentId: patternId },
+          method: { documentId: methodId },
+        },
+      },
+    });
+
+    if (response.data.length === 0) {
+      throw new Error('Startup method not found');
     }
-    return startupExercises[0];
+
+    return response.data[0];
   } catch (error) {
     const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Error loading startup exercise');
+    throw new Error(strapiError.error?.message || 'Error finding startup method');
   }
 }
 
-export async function strapiCreateStartupExercise(
-  createStartupExercise: CreateStartupExercise,
-): Promise<StartupExercise> {
+export async function strapiCreateStartupMethod(data: CreateStartupMethod): Promise<StartupMethod> {
   try {
-    // No need to manually add token - the axios interceptor will handle it
-    const { resultFiles, ...payload } = createStartupExercise;
-    // First create the startup exercise
-    const startupExercise = await fetchSingleApi<StartupExercise>('/startup-exercises', {
+    const url = '/startup-methods';
+    const response = await fetchApi<{ data: StartupMethod }>(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: payload,
-      }),
+      body: JSON.stringify({ data }),
     });
-    if (!startupExercise.id) {
-      throw new Error('Startup exercise creation failed');
-    }
-    // Then upload the files, linking them to the startup exercise
-    await Promise.all(
-      resultFiles.map(async (file) => {
-        const formData = new FormData();
-        formData.append('files', file, file.name);
-        formData.append('refId', startupExercise.id);
-        formData.append('ref', 'api::startup-exercise.startup-exercise');
-        formData.append('field', 'resultFiles');
-        const response = await fetchApi<{ documentId: string }[]>(`/upload`, {
-          method: 'POST',
-          body: formData,
-        });
-        return response[0].documentId;
-      }),
-    );
-
-    return startupExercise;
+    return response.data;
   } catch (error) {
     const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Startup exercise creation failed');
+    throw new Error(strapiError.error?.message || 'Error creating startup method');
   }
 }
 
-export async function strapiUpdateStartupExercise(
-  updateStartupExercise: UpdateStartupExercise,
-): Promise<StartupExercise> {
+export async function strapiUpdateStartupMethod(data: UpdateStartupMethod): Promise<StartupMethod> {
   try {
-    const { documentId, ...payload } = updateStartupExercise;
-    const url = `/startup-exercises/${documentId}`;
-
-    // No need to manually add token - the axios interceptor will handle it
-    return await fetchSingleApi<StartupExercise>(url, {
+    const url = `/startup-methods/${data.documentId}`;
+    const response = await fetchApi<{ data: StartupMethod }>(url, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: payload,
-      }),
+      body: JSON.stringify({ data }),
     });
+    return response.data;
   } catch (error) {
     const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Startup exercise update failed');
+    throw new Error(strapiError.error?.message || 'Error updating startup method');
   }
 }
 
-export async function strapiGetStartupQuestions(
-  startupDocumentId?: string,
-  patternDocumentId?: string,
-  surveyDocumentId?: string,
-): Promise<StartupQuestion[]> {
-  try {
-    // No need to manually add token - the axios interceptor will handle it
-    let url = '/startup-questions?populate[question][fields][0]=documentId';
-    if (startupDocumentId) {
-      url += `&filters[startup][documentId][$eq]=${startupDocumentId}`;
-    }
-    if (patternDocumentId) {
-      url += `&filters[pattern][documentId][$eq]=${patternDocumentId}`;
-    }
-    if (surveyDocumentId) {
-      url += `&filters[question][survey][documentId][$eq]=${surveyDocumentId}`;
-    }
-
-    return await fetchCollectionApi<StartupQuestion>(url);
-  } catch (error) {
-    const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Error loading startup questions');
-  }
-}
-
-export async function strapiGetStartupQuestion(documentId: string): Promise<StartupQuestion> {
-  try {
-    // No need to manually add token - the axios interceptor will handle it
-    const url = `/startup-questions/${documentId}`;
-
-    return await fetchSingleApi<StartupQuestion>(url);
-  } catch (error) {
-    const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Error loading startup question');
-  }
-}
-
-export async function strapiFindStartupQuestion(
-  startupDocumentId: string,
-  patternDocumentId: string,
-  questionDocumentId: string,
-): Promise<StartupQuestion> {
-  try {
-    // No need to manually add token - the axios interceptor will handle it
-    const startupQuestions = await strapiGetStartupQuestions();
-    const startupQuestion = startupQuestions.find(
-      (sq) =>
-        sq.startup.documentId === startupDocumentId &&
-        sq.pattern.documentId === patternDocumentId &&
-        sq.question.documentId === questionDocumentId,
-    );
-    if (!startupQuestion) {
-      throw new Error('Startup question not found');
-    }
-    return startupQuestion;
-  } catch (error) {
-    const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Error loading startup question');
-  }
-}
-
-export async function strapiCreateStartupQuestion(
-  createStartupQuestion: CreateStartupQuestion,
-): Promise<StartupQuestion> {
-  try {
-    // No need to manually add token - the axios interceptor will handle it
-    return await fetchSingleApi<StartupQuestion>('/startup-questions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: createStartupQuestion,
-      }),
-    });
-  } catch (error) {
-    const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Startup question creation failed');
-  }
-}
-
-export async function strapiUpdateStartupQuestion(
-  updateStartupQuestion: UpdateStartupQuestion,
-): Promise<StartupQuestion> {
-  try {
-    const { documentId, ...payload } = updateStartupQuestion;
-    const url = `/startup-questions/${documentId}`;
-
-    // No need to manually add token - the axios interceptor will handle it
-    return await fetchSingleApi<StartupQuestion>(url, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: payload,
-      }),
-    });
-  } catch (error) {
-    const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Startup question update failed');
-  }
-}
 
 export async function strapiGetRecommendations(startupId?: string): Promise<Recommendation[]> {
   try {
@@ -807,17 +664,6 @@ export async function strapiDeleteRecommendation(documentId: string): Promise<vo
   }
 }
 
-export async function strapiGetExercise(documentId: string): Promise<Exercise> {
-  try {
-    // No need to manually add token - the axios interceptor will handle it
-    const url = `/exercises/${documentId}`;
-
-    return await fetchSingleApi<Exercise>(url);
-  } catch (error) {
-    const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Error loading exercise');
-  }
-}
 
 export async function strapiGetSurvey(documentId: string): Promise<Survey> {
   try {
@@ -1265,5 +1111,24 @@ export async function strapiUpdateUserQuestion(
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'User question update failed');
+  }
+}
+
+export async function strapiGetMethods(): Promise<Method[]> {
+  try {
+    return await fetchPaginatedApi<Method>('/methods');
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading methods');
+  }
+}
+
+export async function strapiGetMethod(documentId: string): Promise<Method> {
+  try {
+    const url = `/methods/${documentId}`;
+    return await fetchSingleApi<Method>(url);
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading method');
   }
 }

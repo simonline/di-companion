@@ -53,7 +53,7 @@ export default function useSearchPatterns(): UseSearchPatternsReturn {
       let endpoint = '/patterns?';
       endpoint += '&populate[relatedPatterns][populate]=*';
       endpoint += '&populate[image][fields][0]=url';
-      endpoint += '&populate[exercise][fields][0]=documentId';
+      // endpoint += '&populate[methods][fields][0]=documentId';
       endpoint += '&populate[survey][fields][0]=documentId';
       endpoint += `&filters[$or][0][name][$containsi]=${encodeURIComponent(query)}`;
       endpoint += `&filters[$or][1][description][$containsi]=${encodeURIComponent(query)}`;

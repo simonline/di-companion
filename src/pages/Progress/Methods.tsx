@@ -1,8 +1,8 @@
 import React, { useEffect, useCallback } from 'react';
-import { Button, CircularProgress, Typography, Box, TextField, Paper } from '@mui/material';
-import { FullSizeCenteredFlexBox } from '@/components/styled';
-import useExercise from '@/hooks/useExercise';
-import useStartupExercise from '@/hooks/useStartupExercise';
+import { Button, CircularProgress, Typography, Box, TextField, Paper, Link } from '@mui/material';
+import { CenteredFlexBox } from '@/components/styled';
+import useMethod from '@/hooks/useMethod';
+import useStartupMethod from '@/hooks/useStartupMethod';
 import usePattern from '@/hooks/usePattern';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
@@ -14,8 +14,10 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ImageIcon from '@mui/icons-material/Image';
 import ArticleIcon from '@mui/icons-material/Article';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useAuthContext } from '@/hooks/useAuth';
 import useNotifications from '@/store/notifications';
+import { Grid } from '@mui/material';
 
 const validationSchema = Yup.object({
   resultText: Yup.string().required('Please describe the tools or methods you applied'),
@@ -27,57 +29,64 @@ interface FormValues {
   resultFiles: File[];
 }
 
-const Exercise: React.FC = () => {
+const Methods: React.FC = () => {
   const { patternId } = useParams<{ patternId: string }>();
   const navigate = useNavigate();
   const [, notificationsActions] = useNotifications();
   const { startup } = useAuthContext();
   const { fetchPattern, pattern, loading: patternLoading, error: patternError } = usePattern();
-  const { fetchExercise, exercise, loading: exerciseLoading, error: exerciseError } = useExercise();
+  const { fetchMethod, method, loading: methodLoading, error: methodError } = useMethod();
   const {
-    findPatternExercise,
-    createStartupExercise,
-    updateStartupExercise,
-    startupExercise,
-    loading: startupExerciseLoading,
-    error: startupExerciseError,
-  } = useStartupExercise();
+    findPatternMethod,
+    createStartupMethod,
+    updateStartupMethod,
+    startupMethod,
+    loading: startupMethodLoading,
+    error: startupMethodError,
+  } = useStartupMethod();
 
   useEffect(() => {
     fetchPattern(patternId as string);
   }, [fetchPattern, patternId]);
 
   useEffect(() => {
-    if (pattern && pattern.exercise) {
-      fetchExercise(pattern.exercise.documentId);
+    if (pattern && pattern.method) {
+      fetchMethod(pattern.method.documentId);
     }
-  }, [fetchExercise, pattern]);
+  }, [fetchMethod, pattern]);
 
   useEffect(() => {
-    if (startup && pattern && exercise) {
-      findPatternExercise(startup.documentId, pattern.documentId, exercise.documentId);
+    console.log('patternLoading', patternLoading);
+    console.log('startupPatternLoading', startupMethodLoading);
+    console.log('methodLoading', methodLoading);
+  }, [patternLoading, startupMethodLoading, methodLoading]);
+
+
+  useEffect(() => {
+    if (startup && pattern && method) {
+      findPatternMethod(startup.documentId, pattern.documentId, method.documentId);
     }
-  }, [findPatternExercise, startup, pattern, exercise]);
+  }, [findPatternMethod, startup, pattern, method]);
 
   const initialValues: FormValues = {
-    resultText: startupExercise?.resultText || '',
+    resultText: startupMethod?.resultText || '',
     // @ts-expect-error resultFiles is not a string
-    resultFiles: startupExercise?.resultFiles || [],
+    resultFiles: startupMethod?.resultFiles || [],
   };
 
   const handleSubmit = async (values: FormValues, { setSubmitting }: any) => {
     try {
-      if (!pattern || !startup || !exercise) return;
-      if (startupExercise) {
-        updateStartupExercise({
-          documentId: startupExercise.documentId,
+      if (!pattern || !startup || !method) return;
+      if (startupMethod) {
+        updateStartupMethod({
+          documentId: startupMethod.documentId,
           resultText: values.resultText,
           resultFiles: values.resultFiles,
         });
       } else {
-        createStartupExercise({
+        createStartupMethod({
           startup: { set: { documentId: startup.documentId } },
-          exercise: { set: { documentId: exercise.documentId } },
+          method: { set: { documentId: method.documentId } },
           pattern: { set: { documentId: pattern.documentId } },
           resultText: values.resultText,
           resultFiles: values.resultFiles,
@@ -87,7 +96,7 @@ const Exercise: React.FC = () => {
         options: {
           variant: 'success',
         },
-        message: 'Exercise completed successfully',
+        message: 'Method completed successfully',
       });
       // Continue with survey to complete the pattern
       navigate(`/progress/${patternId}/survey`);
@@ -97,7 +106,7 @@ const Exercise: React.FC = () => {
         options: {
           variant: 'error',
         },
-        message: 'Exercise could not be completed',
+        message: 'Method could not be completed',
       });
     } finally {
       setSubmitting(false);
@@ -212,7 +221,7 @@ const Exercise: React.FC = () => {
     );
   };
 
-  if (patternLoading || exerciseLoading || startupExerciseLoading) {
+  if (patternLoading || methodLoading || startupMethodLoading) {
     return (
       <Box
         sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}
@@ -222,8 +231,8 @@ const Exercise: React.FC = () => {
     );
   }
 
-  if (patternError || exerciseError || startupExerciseError) {
-    console.error('Error loading exercise:', patternError || exerciseError || startupExerciseError);
+  if (patternError || methodError || startupMethodError) {
+    console.error('Error loading methods:', patternError || methodError || startupMethodError);
     return (
       <Box
         sx={{
@@ -236,7 +245,7 @@ const Exercise: React.FC = () => {
         }}
       >
         <Typography variant="h6" color="error" sx={{ mb: 2 }}>
-          Error loading exercise
+          Error loading methods
         </Typography>
         <Button variant="contained" onClick={() => window.location.reload()}>
           Try Again
@@ -245,7 +254,7 @@ const Exercise: React.FC = () => {
     );
   }
 
-  if (!pattern || !exercise) {
+  if (!pattern) {
     return (
       <Box
         sx={{
@@ -256,7 +265,7 @@ const Exercise: React.FC = () => {
           p: 4,
         }}
       >
-        <Typography variant="h6">Exercise not found</Typography>
+        <Typography variant="h6">Pattern not found</Typography>
       </Box>
     );
   }
@@ -264,55 +273,100 @@ const Exercise: React.FC = () => {
   return (
     <>
       <Header title={pattern.name} />
-      <FullSizeCenteredFlexBox>
-        <Box sx={{ width: '100%', maxWidth: 600, mt: 4, px: 2 }}>
-          <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ isSubmitting, errors, touched }) => (
-              <Form>
-                <Field name="resultText">
-                  {({ field }: any) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      multiline
-                      rows={4}
-                      label="Which tools or methods did you apply here?"
-                      error={touched.resultText && Boolean(errors.resultText)}
-                      helperText={touched.resultText && errors.resultText}
-                      sx={{ mb: 3 }}
-                    />
-                  )}
-                </Field>
-
-                <Field name="resultFiles" component={FileUploadField} />
-
+      <CenteredFlexBox>
+        <Grid container spacing={3} sx={{ maxWidth: '1200px', width: '100%' }}>
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 4,
+                }}
+              >
+                <Typography variant="h5">{pattern.name}</Typography>
                 <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  disabled={patternLoading || exerciseLoading || isSubmitting}
-                  sx={{ mt: 2 }}
+                  variant="outlined"
+                  onClick={() => navigate(`/progress/${pattern.documentId}`)}
+                  startIcon={<ArrowBackIcon />}
                 >
-                  {isSubmitting ? (
-                    <CircularProgress size={24} />
-                  ) : startupExercise ? (
-                    'Update your learnings'
-                  ) : (
-                    'Share your learnings'
-                  )}
+                  Back to Pattern
                 </Button>
-              </Form>
-            )}
-          </Formik>
-        </Box>
-      </FullSizeCenteredFlexBox>
+              </Box>
+
+              {!method ? (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                    This pattern has no assigned methods yet.
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    Please refer to your Coach for guidance.
+                  </Typography>
+                </Box>
+              ) : (
+                <Box sx={{ width: '100%', maxWidth: 600, mt: 4, px: 2 }}>
+                  {method.url && (
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="h6" gutterBottom>
+                        Method Details
+                      </Typography>
+                      <Link href={method.url} target="_blank" rel="noopener noreferrer">
+                        View Method Documentation
+                      </Link>
+                    </Box>
+                  )}
+                  <Formik
+                    initialValues={initialValues}
+                    validationSchema={validationSchema}
+                    onSubmit={handleSubmit}
+                  >
+                    {({ isSubmitting, errors, touched }) => (
+                      <Form>
+                        <Field name="resultText">
+                          {({ field }: any) => (
+                            <TextField
+                              {...field}
+                              fullWidth
+                              multiline
+                              rows={4}
+                              label="Which tools or methods did you apply here?"
+                              error={touched.resultText && Boolean(errors.resultText)}
+                              helperText={touched.resultText && errors.resultText}
+                              sx={{ mb: 3 }}
+                            />
+                          )}
+                        </Field>
+
+                        <Field name="resultFiles" component={FileUploadField} />
+
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          color="primary"
+                          fullWidth
+                          disabled={patternLoading || methodLoading || isSubmitting}
+                          sx={{ mt: 2 }}
+                        >
+                          {isSubmitting ? (
+                            <CircularProgress size={24} />
+                          ) : startupMethod ? (
+                            'Update your learnings'
+                          ) : (
+                            'Share your learnings'
+                          )}
+                        </Button>
+                      </Form>
+                    )}
+                  </Formik>
+                </Box>
+              )}
+            </Paper>
+          </Grid>
+        </Grid>
+      </CenteredFlexBox>
     </>
   );
 };
 
-export default Exercise;
+export default Methods;

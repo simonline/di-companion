@@ -74,7 +74,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
             navigate(`/progress/${pattern.documentId}/survey`, { state: { nextUrl } });
             return;
           case ResponseEnum.perform_exercise:
-            navigate(`/progress/${pattern.documentId}/exercise`, { state: { nextUrl } });
+            navigate(`/progress/${pattern.documentId}/methods`, { state: { nextUrl } });
             return;
           case ResponseEnum.think_later:
             break;
@@ -157,8 +157,8 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl, isInteracti
           responseType: ResponseTypeEnum.accept,
           title: 'Great! What would you like to do?',
           actions: [
+            ['Explore methods', ResponseEnum.perform_exercise],
             ['Share reflection', ResponseEnum.share_reflection],
-            ['Perform exercise', ResponseEnum.perform_exercise],
             ['Think about it later', ResponseEnum.think_later],
           ],
         });

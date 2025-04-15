@@ -90,25 +90,29 @@ export interface StrapiSetRelated {
 
 export interface Pattern {
   documentId: string;
-  patternId: string;
   name: string;
   description: string;
-  image: {
-    url: string;
-  };
-  category: CategoryEnum;
-  subcategory: string;
-  phases: PhaseEnum[];
   relatedPatterns: Pattern[];
-  exercise: StrapiRelated | null;
-  survey: StrapiRelated | null;
+  image: string;
+  phases: string[];
+  category: string;
+  method: Method;
+  survey: Survey;
+  subcategory: string;
+  patternId: string;
+  methods: Method[];
   questions: Question[];
 }
 
-export interface Exercise {
+export interface Method {
   documentId: string;
   name: string;
   description: string;
+  phases: string[];
+  categories: string[];
+  content: string;
+  url: string;
+  patterns: Pattern[];
 }
 
 export enum QuestionType {
@@ -269,33 +273,32 @@ export interface UpdateStartupPattern {
   points?: number;
 }
 
-export interface StartupExercise {
+export interface StartupMethod {
   documentId: string;
   id: string;
   startup: Startup;
   pattern: Pattern;
-  exercise: Exercise;
+  method: Method;
   resultFiles: string[];
   resultText: string;
 }
 
-export interface CreateStartupExercise {
+export interface CreateStartupMethod {
   startup: StrapiSetRelated;
   pattern: StrapiSetRelated;
-  exercise: StrapiSetRelated;
+  method: StrapiSetRelated;
   resultFiles: File[];
   resultText: string;
 }
 
-export interface UpdateStartupExercise {
+export interface UpdateStartupMethod {
   documentId: string;
   startup?: StrapiSetRelated;
   pattern?: StrapiSetRelated;
-  exercise?: StrapiSetRelated;
+  method?: StrapiSetRelated;
   resultFiles?: File[];
   resultText?: string;
 }
-
 
 export interface Recommendation {
   documentId: string;

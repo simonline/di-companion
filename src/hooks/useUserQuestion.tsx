@@ -15,10 +15,10 @@ interface UseUserQuestion {
 
 interface UseUserQuestionReturn extends UseUserQuestion {
     fetchUserQuestion: (documentId: string) => void;
-    findPatternExercise: (
+    findPatternMethod: (
         userDocumentId: string,
         patternDocumentId: string,
-        exerciseDocumentId: string,
+        methodDocumentId: string,
     ) => void;
     createUserQuestion: (createUserQuestion: CreateUserQuestion) => void;
     updateUserQuestion: (updateUserQuestion: UpdateUserQuestion) => void;
@@ -46,13 +46,13 @@ export default function useUserQuestion(): UseUserQuestionReturn {
         }
     }, []);
 
-    const findPatternExercise = useCallback(
-        async (userDocumentId: string, patternDocumentId: string, exerciseDocumentId: string) => {
+    const findPatternMethod = useCallback(
+        async (userDocumentId: string, patternDocumentId: string, methodDocumentId: string) => {
             try {
                 const userQuestion = await strapiFindUserQuestion(
                     userDocumentId,
                     patternDocumentId,
-                    exerciseDocumentId,
+                    methodDocumentId,
                 );
                 setState({ userQuestion, loading: false, error: null });
             } catch (err: unknown) {
@@ -91,7 +91,7 @@ export default function useUserQuestion(): UseUserQuestionReturn {
 
     return {
         fetchUserQuestion,
-        findPatternExercise,
+        findPatternMethod,
         createUserQuestion,
         updateUserQuestion,
         userQuestion: state.userQuestion,

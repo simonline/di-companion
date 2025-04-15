@@ -201,10 +201,10 @@ const useRoutes = (): Partial<Routes> => {
       requiresAuth: true,
       requiresStartup: true,
     },
-    [Pages.Exercise]: {
-      component: asyncComponentLoader(() => import('@/pages/Progress/Exercise')),
-      path: '/progress/:patternId/exercise',
-      title: 'Exercise',
+    [Pages.Method]: {
+      component: asyncComponentLoader(() => import('@/pages/Progress/Methods')),
+      path: '/progress/:patternId/methods',
+      title: 'Methods',
       visibleTo: ['startup'],
       requiresAuth: true,
       requiresStartup: true,

@@ -9,7 +9,7 @@ export enum Pages {
   CreateStartup,
   Login,
   Logout,
-  Exercise,
+  Method,
   Explore,
   ExplorePattern,
   Progress,
