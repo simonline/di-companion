@@ -51,7 +51,7 @@ export default function useSearchPatterns(): UseSearchPatternsReturn {
       // Create a search URL with the query parameter
       const STRAPI_API_PREFIX = '/api';
       let endpoint = '/patterns?';
-      endpoint += '&populate[relatedPatterns]=*';
+      endpoint += '&populate[relatedPatterns][populate]=*';
       endpoint += '&populate[image][fields][0]=url';
       endpoint += '&populate[exercise][fields][0]=documentId';
       endpoint += '&populate[survey][fields][0]=documentId';

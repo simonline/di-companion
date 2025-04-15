@@ -295,28 +295,6 @@ export interface UpdateStartupExercise {
   resultText?: string;
 }
 
-export interface StartupQuestion {
-  documentId: string;
-  startup: Startup;
-  pattern: Pattern;
-  question: Question;
-  answer: string;
-}
-
-export interface CreateStartupQuestion {
-  startup: StrapiSetRelated;
-  pattern: StrapiSetRelated;
-  question: StrapiSetRelated;
-  answer: string;
-}
-
-export interface UpdateStartupQuestion {
-  documentId: string;
-  startup?: StrapiSetRelated;
-  pattern?: StrapiSetRelated;
-  question?: StrapiSetRelated;
-  answer?: string;
-}
 
 export interface Recommendation {
   documentId: string;
@@ -380,4 +358,27 @@ export interface StrapiCollectionResponse<T> {
       total: number;
     };
   };
+}
+
+export interface UserQuestion {
+  documentId: string;
+  user: User;
+  pattern: Pattern;
+  question: Question;
+  answer: string;
+}
+
+export interface CreateUserQuestion {
+  user: StrapiSetRelated;
+  pattern: StrapiSetRelated;
+  question: StrapiSetRelated;
+  answer: string;
+}
+
+export interface UpdateUserQuestion {
+  documentId: string;
+  user?: StrapiSetRelated;
+  pattern?: StrapiSetRelated;
+  question?: StrapiSetRelated;
+  answer?: string;
 }

@@ -28,6 +28,9 @@ import type {
   UpdateInvitation,
   UpdateUser,
   Request,
+  UserQuestion,
+  CreateUserQuestion,
+  UpdateUserQuestion,
 } from '../types/strapi';
 import { CategoryEnum } from '../utils/constants';
 import axiosInstance from './axios';
@@ -107,9 +110,8 @@ async function fetchPaginatedApi<T>(endpoint: string, options: any = {}): Promis
   let allData: T[] = [];
 
   while (hasMore) {
-    const paginatedEndpoint = `${endpoint}${
-      endpoint.includes('?') ? '&' : '?'
-    }pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
+    const paginatedEndpoint = `${endpoint}${endpoint.includes('?') ? '&' : '?'
+      }pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
 
     const response = await fetchApi<StrapiCollectionResponse<T>>(paginatedEndpoint, options);
 
@@ -311,7 +313,7 @@ export async function strapiGetPatterns(category?: CategoryEnum): Promise<Patter
   try {
     // No need to manually add token - the axios interceptor will handle it
     let url = '/patterns?';
-    url += '&populate[relatedPatterns]=*';
+    url += '&populate[relatedPatterns][populate]=*';
     url += '&populate[image][fields][0]=url';
     url += '&populate[exercise][fields][0]=documentId';
     url += '&populate[survey][fields][0]=documentId';
@@ -330,11 +332,11 @@ export async function strapiGetPattern(documentId: string): Promise<Pattern> {
   try {
     // No need to manually add token - the axios interceptor will handle it
     let url = `/patterns/${documentId}`;
-    url += '?populate[relatedPatterns]=*';
+    url += '?populate[relatedPatterns][populate]=*';
     url += '&populate[image][fields][0]=url';
     url += '&populate[exercise][fields][0]=documentId';
     url += '&populate[survey][fields][0]=documentId';
-    url += '&populate[questions]=*';
+    url += '&populate[questions][populate]=*';
 
     return await fetchSingleApi<Pattern>(url);
   } catch (error) {
@@ -1146,5 +1148,109 @@ export async function strapiGetAvailableStartups(): Promise<Startup[]> {
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Failed to fetch available startups');
+  }
+}
+
+export async function strapiGetUserQuestions(
+  userDocumentId?: string,
+  patternDocumentId?: string,
+  surveyDocumentId?: string,
+): Promise<UserQuestion[]> {
+  try {
+    // No need to manually add token - the axios interceptor will handle it
+    let url = '/user-questions?populate[question][fields][0]=documentId';
+    if (userDocumentId) {
+      url += `&filters[user][documentId][$eq]=${userDocumentId}`;
+    }
+    if (patternDocumentId) {
+      url += `&filters[pattern][documentId][$eq]=${patternDocumentId}`;
+    }
+    if (surveyDocumentId) {
+      url += `&filters[question][survey][documentId][$eq]=${surveyDocumentId}`;
+    }
+
+    return await fetchCollectionApi<UserQuestion>(url);
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading user questions');
+  }
+}
+
+export async function strapiGetUserQuestion(documentId: string): Promise<UserQuestion> {
+  try {
+    // No need to manually add token - the axios interceptor will handle it
+    const url = `/user-questions/${documentId}`;
+
+    return await fetchSingleApi<UserQuestion>(url);
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading user question');
+  }
+}
+
+export async function strapiFindUserQuestion(
+  userDocumentId: string,
+  patternDocumentId: string,
+  questionDocumentId: string,
+): Promise<UserQuestion> {
+  try {
+    // No need to manually add token - the axios interceptor will handle it
+    const userQuestions = await strapiGetUserQuestions();
+    const userQuestion = userQuestions.find(
+      (uq) =>
+        uq.user.documentId === userDocumentId &&
+        uq.pattern.documentId === patternDocumentId &&
+        uq.question.documentId === questionDocumentId,
+    );
+    if (!userQuestion) {
+      throw new Error('User question not found');
+    }
+    return userQuestion;
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading user question');
+  }
+}
+
+export async function strapiCreateUserQuestion(
+  createUserQuestion: CreateUserQuestion,
+): Promise<UserQuestion> {
+  try {
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchSingleApi<UserQuestion>('/user-questions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: createUserQuestion,
+      }),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'User question creation failed');
+  }
+}
+
+export async function strapiUpdateUserQuestion(
+  updateUserQuestion: UpdateUserQuestion,
+): Promise<UserQuestion> {
+  try {
+    const { documentId, ...payload } = updateUserQuestion;
+    const url = `/user-questions/${documentId}`;
+
+    // No need to manually add token - the axios interceptor will handle it
+    return await fetchSingleApi<UserQuestion>(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: payload,
+      }),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'User question update failed');
   }
 }

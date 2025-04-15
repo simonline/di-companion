@@ -13,9 +13,9 @@ import {
 import { CenteredFlexBox } from '@/components/styled';
 import usePattern from '@/hooks/usePattern';
 import useSurvey from '@/hooks/useSurvey';
-import useStartupQuestions from '@/hooks/useStartupQuestions';
-import { Question, StartupQuestion } from '@/types/strapi';
-import useStartupQuestion from '@/hooks/useStartupQuestion';
+import useUserQuestions from '@/hooks/useUserQuestions';
+import { Question, UserQuestion } from '@/types/strapi';
+import useUserQuestion from '@/hooks/useUserQuestion';
 import useStartupPattern from '@/hooks/useStartupPattern';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
@@ -33,20 +33,20 @@ const Survey: React.FC = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [, notificationsActions] = useNotifications();
-  const { startup, updateScores } = useAuthContext();
+  const { user, updateScores } = useAuthContext();
   const { fetchPattern, pattern, loading: patternLoading, error: patternError } = usePattern();
   const { fetchSurvey, survey, loading: surveyLoading, error: surveyError } = useSurvey();
   const { updateStartupPattern } = useStartupPattern();
   const { fetchStartupPatterns, startupPatterns } = useStartupPatterns();
   const {
-    fetchStartupQuestions,
-    startupQuestions,
-    clearStartupQuestions,
-    loading: startupQuestionsLoading,
-    error: startupQuestionsError,
-  } = useStartupQuestions();
-  const { createStartupQuestion, updateStartupQuestion } = useStartupQuestion();
-  const startupDocumentId = startup?.documentId;
+    fetchUserQuestions,
+    userQuestions,
+    clearUserQuestions,
+    loading: userQuestionsLoading,
+    error: userQuestionsError,
+  } = useUserQuestions();
+  const { createUserQuestion, updateUserQuestion } = useUserQuestion();
+  const userDocumentId = user?.documentId;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
@@ -70,20 +70,20 @@ const Survey: React.FC = () => {
   }, [fetchSurvey, pattern]);
 
   useEffect(() => {
-    if (startupDocumentId && patternId && survey) {
-      fetchStartupQuestions(startupDocumentId, patternId, survey.documentId);
+    if (userDocumentId && patternId && survey) {
+      fetchUserQuestions(userDocumentId, patternId, survey.documentId);
     }
-  }, [fetchStartupQuestions, startupDocumentId, patternId, survey]);
+  }, [fetchUserQuestions, userDocumentId, patternId, survey]);
 
   useEffect(() => {
-    if (startupDocumentId && patternId) {
-      fetchStartupPatterns(startupDocumentId, patternId);
+    if (userDocumentId && patternId) {
+      fetchStartupPatterns(userDocumentId, patternId);
     }
-  }, [fetchStartupPatterns, startupDocumentId, patternId]);
+  }, [fetchStartupPatterns, userDocumentId, patternId]);
 
   useEffect(() => {
-    if (isApplied && startupPatterns && startupPatterns.length && survey && startupQuestions) {
-      const points = calculatePoints(survey.questions, startupQuestions);
+    if (isApplied && startupPatterns && startupPatterns.length && survey && userQuestions) {
+      const points = calculatePoints(survey.questions, userQuestions);
 
       // Update the startup pattern with the points
       updateStartupPattern({
@@ -104,7 +104,7 @@ const Survey: React.FC = () => {
     isApplied,
     startupPatterns,
     survey,
-    startupQuestions,
+    userQuestions,
     updateScores,
     updateStartupPattern,
     navigate,
@@ -115,37 +115,37 @@ const Survey: React.FC = () => {
   const handleAssessmentSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
-      if (!pattern || !startup || !patternId) return;
+      if (!pattern || !user || !patternId) return;
 
       // Process each question's answer
       const questionPromises = pattern.questions.map(async (question) => {
         const answer = values[question.documentId];
-        const existingResponse = startupQuestions?.find(
-          (sq) => sq.question.documentId === question.documentId,
+        const existingResponse = userQuestions?.find(
+          (uq) => uq.question.documentId === question.documentId,
         );
 
         const payload = {
-          startup: { set: { documentId: startup.documentId } },
+          user: { set: { documentId: user.documentId } },
           pattern: { set: { documentId: patternId } },
           question: { set: { documentId: question.documentId } },
           answer: JSON.stringify(answer),
         };
 
         if (existingResponse) {
-          return updateStartupQuestion({
+          return updateUserQuestion({
             documentId: existingResponse.documentId,
             ...payload,
           });
         } else {
-          return createStartupQuestion(payload);
+          return createUserQuestion(payload);
         }
       });
 
       await Promise.all(questionPromises);
 
-      // Refetch to get the created/updated startup questions
-      clearStartupQuestions();
-      fetchStartupQuestions(startup.documentId, patternId, survey?.documentId);
+      // Refetch to get the created/updated user questions
+      clearUserQuestions();
+      fetchUserQuestions(user.documentId, patternId, survey?.documentId);
       setIsApplied(true);
     } catch (error) {
       notificationsActions.push({
@@ -160,37 +160,37 @@ const Survey: React.FC = () => {
   const handleEffortSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
-      if (!survey || !startup || !patternId) return;
+      if (!survey || !user || !patternId) return;
 
       // Process each question's answer
       const questionPromises = survey.questions.map(async (question) => {
         const answer = values[question.documentId];
-        const existingResponse = startupQuestions?.find(
-          (sq) => sq.question.documentId === question.documentId,
+        const existingResponse = userQuestions?.find(
+          (uq) => uq.question.documentId === question.documentId,
         );
 
         const payload = {
-          startup: { set: { documentId: startup.documentId } },
+          user: { set: { documentId: user.documentId } },
           pattern: { set: { documentId: patternId } },
           question: { set: { documentId: question.documentId } },
           answer: JSON.stringify(answer),
         };
 
         if (existingResponse) {
-          return updateStartupQuestion({
+          return updateUserQuestion({
             documentId: existingResponse.documentId,
             ...payload,
           });
         } else {
-          return createStartupQuestion(payload);
+          return createUserQuestion(payload);
         }
       });
 
       await Promise.all(questionPromises);
 
-      // Refetch to get the created/updated startup questions (for points calculation)
-      clearStartupQuestions();
-      fetchStartupQuestions(startup.documentId, patternId, survey.documentId);
+      // Refetch to get the created/updated user questions (for points calculation)
+      clearUserQuestions();
+      fetchUserQuestions(user.documentId, patternId, survey.documentId);
       setIsApplied(true);
     } catch (error) {
       notificationsActions.push({
@@ -202,20 +202,22 @@ const Survey: React.FC = () => {
     }
   };
 
-  const calculatePoints = (questions: Question[], startupQuestions: StartupQuestion[]): number => {
+  const calculatePoints = (questions: Question[], userQuestions: UserQuestion[]): number => {
     return questions.reduce((acc, question) => {
       // Skip questions without weight
       if (!question.weight) return acc;
 
-      // Find the startup's response to the question
-      const startupQuestion = startupQuestions.find(
-        (sq) => sq.question.documentId === question.documentId,
+      // Find the user's response to the question
+      const userQuestion = userQuestions.find(
+        (uq) => uq.question.documentId === question.documentId,
       );
 
-      if (!startupQuestion) return acc;
-      const answer = JSON.parse(startupQuestion.answer);
+      if (!userQuestion) return acc;
+      const answer = JSON.parse(userQuestion.answer);
       // Find the option that corresponds to the answer
-      const option = question.options?.find((o) => o.value === answer);
+      const option = Array.isArray(question.options)
+        ? question.options.find((o: { value: any }) => o.value === answer)
+        : undefined;
       if (!option?.points) return acc;
       // Calculate points for the question
       const points = option.points * question.weight;
@@ -223,7 +225,7 @@ const Survey: React.FC = () => {
     }, 0);
   };
 
-  if (patternLoading || surveyLoading || startupQuestionsLoading) {
+  if (patternLoading || surveyLoading || userQuestionsLoading) {
     return (
       <Box
         sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}
@@ -233,7 +235,7 @@ const Survey: React.FC = () => {
     );
   }
 
-  if (patternError || surveyError || startupQuestionsError) {
+  if (patternError || surveyError || userQuestionsError) {
     return (
       <Box
         sx={{
@@ -311,7 +313,7 @@ const Survey: React.FC = () => {
                 <Formik
                   initialValues={generateInitialValues(
                     pattern.questions,
-                    startupQuestions || undefined,
+                    userQuestions || undefined,
                   )}
                   validationSchema={generateValidationSchema(pattern.questions)}
                   onSubmit={handleAssessmentSubmit}
@@ -371,7 +373,7 @@ const Survey: React.FC = () => {
                           >
                             {isSubmitting ? (
                               <CircularProgress size={24} />
-                            ) : startupQuestions?.length ? (
+                            ) : userQuestions?.length ? (
                               'Update Assessment'
                             ) : (
                               'Submit Assessment'
@@ -388,7 +390,7 @@ const Survey: React.FC = () => {
                 <Formik
                   initialValues={generateInitialValues(
                     survey.questions,
-                    startupQuestions || undefined,
+                    userQuestions || undefined,
                   )}
                   validationSchema={generateValidationSchema(survey.questions)}
                   onSubmit={handleEffortSubmit}
@@ -424,7 +426,7 @@ const Survey: React.FC = () => {
                           >
                             {isSubmitting ? (
                               <CircularProgress size={24} />
-                            ) : startupQuestions?.length ? (
+                            ) : userQuestions?.length ? (
                               'Update Effort'
                             ) : (
                               'Submit Effort'
