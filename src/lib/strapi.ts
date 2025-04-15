@@ -311,8 +311,8 @@ export async function strapiGetPatterns(category?: CategoryEnum): Promise<Patter
     // No need to manually add token - the axios interceptor will handle it
     let url = '/patterns?';
     url += '&populate[relatedPatterns][populate]=*';
+    url += '&populate[methods][populate]=*';
     url += '&populate[image][fields][0]=url';
-    // url += '&populate[methods][fields][0]=documentId';
     url += '&populate[survey][fields][0]=documentId';
     if (category) {
       url += `&filters[category][$eq]=${category}`;
@@ -330,8 +330,8 @@ export async function strapiGetPattern(documentId: string): Promise<Pattern> {
     // No need to manually add token - the axios interceptor will handle it
     let url = `/patterns/${documentId}`;
     url += '?populate[relatedPatterns][populate]=*';
+    url += '&populate[methods][populate]=*';
     url += '&populate[image][fields][0]=url';
-    // url += '&populate[methods][fields][0]=documentId';
     url += '&populate[survey][fields][0]=documentId';
     url += '&populate[questions][populate]=*';
 
@@ -518,25 +518,14 @@ export async function strapiFindStartupMethod(
   startupId: string,
   patternId: string,
   methodId: string,
-): Promise<StartupMethod> {
+): Promise<StartupMethod | null> {
   try {
-    const url = `/startup-methods/find`;
-    const response = await fetchApi<{ data: StartupMethod[] }>(url, {
-      method: 'GET',
-      params: {
-        filters: {
-          startup: { documentId: startupId },
-          pattern: { documentId: patternId },
-          method: { documentId: methodId },
-        },
-      },
-    });
-
-    if (response.data.length === 0) {
-      throw new Error('Startup method not found');
+    // No need to manually add token - the axios interceptor will handle it
+    const startupMethods = await strapiGetStartupMethods(startupId, patternId, methodId);
+    if (startupMethods.length === 0) {
+      return null;
     }
-
-    return response.data[0];
+    return startupMethods[0];
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error finding startup method');
@@ -545,32 +534,83 @@ export async function strapiFindStartupMethod(
 
 export async function strapiCreateStartupMethod(data: CreateStartupMethod): Promise<StartupMethod> {
   try {
-    const url = '/startup-methods';
-    const response = await fetchApi<{ data: StartupMethod }>(url, {
+    const { resultFiles, ...payload } = data;
+    // First create the startup method
+    const startupMethod = await fetchSingleApi<StartupMethod>('/startup-methods', {
       method: 'POST',
-      body: JSON.stringify({ data }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: payload,
+      }),
     });
-    return response.data;
+    if (!startupMethod.id) {
+      throw new Error('Startup method creation failed');
+    }
+    // Then upload the files, linking them to the startup method
+    await Promise.all(
+      resultFiles.map(async (file) => {
+        const formData = new FormData();
+        formData.append('files', file, file.name);
+        formData.append('refId', startupMethod.id);
+        formData.append('ref', 'api::startup-method.startup-method');
+        formData.append('field', 'resultFiles');
+        const response = await fetchApi<{ documentId: string }[]>(`/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+        return response[0].documentId;
+      }),
+    );
+
+    return startupMethod;
   } catch (error) {
     const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Error creating startup method');
+    throw new Error(strapiError.error?.message || 'Startup method creation failed');
   }
 }
 
 export async function strapiUpdateStartupMethod(data: UpdateStartupMethod): Promise<StartupMethod> {
   try {
-    const url = `/startup-methods/${data.documentId}`;
-    const response = await fetchApi<{ data: StartupMethod }>(url, {
+    const { documentId, resultFiles, ...payload } = data;
+    const url = `/startup-methods/${documentId}`;
+
+    // First update the startup method
+    const startupMethod = await fetchSingleApi<StartupMethod>(url, {
       method: 'PUT',
-      body: JSON.stringify({ data }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: payload,
+      }),
     });
-    return response.data;
+
+    // Then upload the files if they exist
+    if (resultFiles && resultFiles.length > 0) {
+      await Promise.all(
+        resultFiles.map(async (file) => {
+          const formData = new FormData();
+          formData.append('files', file, file.name);
+          formData.append('refId', startupMethod.id);
+          formData.append('ref', 'api::startup-method.startup-method');
+          formData.append('field', 'resultFiles');
+          const response = await fetchApi<{ documentId: string }[]>(`/upload`, {
+            method: 'POST',
+            body: formData,
+          });
+          return response[0].documentId;
+        }),
+      );
+    }
+
+    return startupMethod;
   } catch (error) {
     const strapiError = error as StrapiError;
-    throw new Error(strapiError.error?.message || 'Error updating startup method');
+    throw new Error(strapiError.error?.message || 'Startup method update failed');
   }
 }
-
 
 export async function strapiGetRecommendations(startupId?: string): Promise<Recommendation[]> {
   try {
@@ -663,7 +703,6 @@ export async function strapiDeleteRecommendation(documentId: string): Promise<vo
     throw new Error(strapiError.error?.message || 'Recommendation deletion failed');
   }
 }
-
 
 export async function strapiGetSurvey(documentId: string): Promise<Survey> {
   try {

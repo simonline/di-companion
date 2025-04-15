@@ -341,7 +341,9 @@ const Survey: React.FC = () => {
                   mb: 4,
                 }}
               >
-                <Typography variant="h5">{pattern.name}</Typography>
+                <Typography variant="h4" fontWeight="bold" color="primary">
+                  {pattern.name}
+                </Typography>
                 <Button
                   variant="outlined"
                   onClick={() => navigate(`/progress/${pattern.documentId}`)}

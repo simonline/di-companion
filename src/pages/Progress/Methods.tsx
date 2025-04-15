@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
-import { Button, CircularProgress, Typography, Box, TextField, Paper, Link } from '@mui/material';
+import { Button, CircularProgress, Typography, Box, TextField, Paper } from '@mui/material';
 import { CenteredFlexBox } from '@/components/styled';
 import useMethod from '@/hooks/useMethod';
 import useStartupMethod from '@/hooks/useStartupMethod';
@@ -50,17 +50,10 @@ const Methods: React.FC = () => {
   }, [fetchPattern, patternId]);
 
   useEffect(() => {
-    if (pattern && pattern.method) {
-      fetchMethod(pattern.method.documentId);
+    if (pattern && pattern.methods && pattern.methods.length > 0) {
+      fetchMethod(pattern.methods[0].documentId);
     }
   }, [fetchMethod, pattern]);
-
-  useEffect(() => {
-    console.log('patternLoading', patternLoading);
-    console.log('startupPatternLoading', startupMethodLoading);
-    console.log('methodLoading', methodLoading);
-  }, [patternLoading, startupMethodLoading, methodLoading]);
-
 
   useEffect(() => {
     if (startup && pattern && method) {
@@ -221,7 +214,7 @@ const Methods: React.FC = () => {
     );
   };
 
-  if (patternLoading || methodLoading || startupMethodLoading) {
+  if ((patternLoading || pattern?.methods?.length) && (methodLoading || startupMethodLoading)) {
     return (
       <Box
         sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}
@@ -269,14 +262,15 @@ const Methods: React.FC = () => {
       </Box>
     );
   }
+  console.log(method)
 
   return (
     <>
       <Header title={pattern.name} />
       <CenteredFlexBox>
-        <Grid container spacing={3} sx={{ maxWidth: '1200px', width: '100%' }}>
+        <Grid container spacing={3} sx={{ maxWidth: '800px', width: '100%' }}>
           <Grid item xs={12}>
-            <Paper sx={{ p: 3 }}>
+            <Paper sx={{ p: 4, borderRadius: 2 }}>
               <Box
                 sx={{
                   display: 'flex',
@@ -285,7 +279,9 @@ const Methods: React.FC = () => {
                   mb: 4,
                 }}
               >
-                <Typography variant="h5">{pattern.name}</Typography>
+                <Typography variant="h4" fontWeight="bold" color="primary">
+                  {pattern.name}
+                </Typography>
                 <Button
                   variant="outlined"
                   onClick={() => navigate(`/progress/${pattern.documentId}`)}
@@ -305,17 +301,25 @@ const Methods: React.FC = () => {
                   </Typography>
                 </Box>
               ) : (
-                <Box sx={{ width: '100%', maxWidth: 600, mt: 4, px: 2 }}>
-                  {method.url && (
-                    <Box sx={{ mb: 3 }}>
-                      <Typography variant="h6" gutterBottom>
-                        Method Details
-                      </Typography>
-                      <Link href={method.url} target="_blank" rel="noopener noreferrer">
-                        View Method Documentation
-                      </Link>
-                    </Box>
-                  )}
+                <Box>
+                  <Box sx={{ mb: 4 }}>
+                    <Typography variant="h5" gutterBottom fontWeight="bold">
+                      {method.name}
+                    </Typography>
+                    {method.url && (
+                      <Button
+                        variant="contained"
+                        href={method.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        startIcon={<ArticleIcon />}
+                        sx={{ mb: 3 }}
+                      >
+                        View Method Details
+                      </Button>
+                    )}
+                  </Box>
+
                   <Formik
                     initialValues={initialValues}
                     validationSchema={validationSchema}

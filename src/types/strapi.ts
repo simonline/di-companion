@@ -96,11 +96,10 @@ export interface Pattern {
   image: string;
   phases: string[];
   category: string;
-  method: Method;
+  methods: Method[];
   survey: Survey;
   subcategory: string;
   patternId: string;
-  methods: Method[];
   questions: Question[];
 }
 
