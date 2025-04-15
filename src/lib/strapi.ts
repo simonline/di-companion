@@ -2,7 +2,6 @@ import type {
   CreateStartup,
   CreateStartupPattern,
   CreateStartupExercise,
-  CreateStartupQuestion,
   Exercise,
   Pattern,
   Question,
@@ -10,7 +9,6 @@ import type {
   Startup,
   StartupExercise,
   StartupPattern,
-  StartupQuestion,
   StrapiAuthResponse,
   StrapiError,
   StrapiLoginCredentials,
@@ -22,7 +20,6 @@ import type {
   UpdateStartup,
   UpdateStartupExercise,
   UpdateStartupPattern,
-  UpdateStartupQuestion,
   Invitation,
   CreateInvitation,
   UpdateInvitation,
@@ -834,6 +831,22 @@ export async function strapiGetSurvey(documentId: string): Promise<Survey> {
   }
 }
 
+export async function strapiGetSurveyByName(name: string): Promise<Survey> {
+  try {
+    // No need to manually add token - the axios interceptor will handle it
+    const url = `/surveys?filters[name][$eq]=${encodeURIComponent(name)}&populate[0]=questions`;
+
+    const surveys = await fetchCollectionApi<Survey>(url);
+    if (surveys.length === 0) {
+      throw new Error(`Survey with name "${name}" not found`);
+    }
+    return surveys[0];
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Error loading survey by name');
+  }
+}
+
 export async function strapiGetInvitations(startupDocumentId: string): Promise<Invitation[]> {
   try {
     // Get all fields for invitedBy and explicitly filter by startup documentId
@@ -1152,21 +1165,21 @@ export async function strapiGetAvailableStartups(): Promise<Startup[]> {
 }
 
 export async function strapiGetUserQuestions(
+  startupDocumentId?: string,
   userDocumentId?: string,
   patternDocumentId?: string,
-  surveyDocumentId?: string,
 ): Promise<UserQuestion[]> {
   try {
     // No need to manually add token - the axios interceptor will handle it
     let url = '/user-questions?populate[question][fields][0]=documentId';
+    if (startupDocumentId) {
+      url += `&filters[startup][documentId][$eq]=${startupDocumentId}`;
+    }
     if (userDocumentId) {
       url += `&filters[user][documentId][$eq]=${userDocumentId}`;
     }
     if (patternDocumentId) {
       url += `&filters[pattern][documentId][$eq]=${patternDocumentId}`;
-    }
-    if (surveyDocumentId) {
-      url += `&filters[question][survey][documentId][$eq]=${surveyDocumentId}`;
     }
 
     return await fetchCollectionApi<UserQuestion>(url);

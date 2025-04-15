@@ -344,11 +344,14 @@ export function useAuth(): UseAuthReturn {
     );
     const maturityScores = Object.fromEntries(categoryScores);
     console.log(maturityScores);
+    // Calculate the total score (average of all category scores)
+    const totalScore = (Object.values(maturityScores) as number[]).reduce((sum, score) => sum + score, 0) / Object.keys(maturityScores).length;
 
     // Update the startup with the new scores
     updateStartup({
       documentId: currentStartup.documentId,
       scores: maturityScores,
+      score: totalScore,
     });
 
     return maturityScores;

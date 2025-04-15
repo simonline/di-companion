@@ -17,6 +17,8 @@ export const generateInitialValues = (
     } else {
       switch (question.type) {
         case QuestionType.select_multiple:
+        case QuestionType.checkbox_multiple:
+        case QuestionType.rank:
           values[question.documentId] = [];
           break;
         case QuestionType.checkbox:

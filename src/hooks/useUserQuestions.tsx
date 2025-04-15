@@ -10,9 +10,9 @@ interface UseUserQuestions {
 
 interface UseUserQuestionsReturn extends UseUserQuestions {
     fetchUserQuestions: (
+        startupDocumentId?: string,
         userDocumentId?: string,
         patternDocumentId?: string,
-        surveyDocumentId?: string,
     ) => void;
     clearError: () => void;
     clearUserQuestions: () => void;
@@ -34,12 +34,12 @@ export default function useUserQuestions(): UseUserQuestionsReturn {
     }, []);
 
     const fetchUserQuestions = useCallback(
-        async (userDocumentId?: string, patternDocumentId?: string, surveyDocumentId?: string) => {
+        async (startupDocumentId?: string, userDocumentId?: string, patternDocumentId?: string) => {
             try {
                 const userQuestions = await strapiGetUserQuestions(
+                    startupDocumentId,
                     userDocumentId,
                     patternDocumentId,
-                    surveyDocumentId,
                 );
                 setState({ userQuestions, loading: false, error: null });
             } catch (err: unknown) {

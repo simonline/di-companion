@@ -219,6 +219,7 @@ export interface UpdateStartup {
   isPrototypeValidated?: boolean;
   isMvpTested?: boolean;
   scores?: Record<CategoryEnum, number>;
+  score?: number;
 }
 
 /* Startup content */

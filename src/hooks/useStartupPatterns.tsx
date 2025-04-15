@@ -36,19 +36,18 @@ export default function useStartupPatterns(): UseStartupPatternsReturn {
         // FIXME: Create /latest endpoint for this (in progress)
         const latestPatterns = startupPatterns
           ? Object.values(
-              startupPatterns.reduce(
-                (acc, pattern) => {
-                  const key = `${pattern.startup.documentId}-${pattern.pattern.documentId}`;
-                  if (!acc[key] || acc[key].createdAt > pattern.createdAt) {
-                    acc[key] = pattern;
-                  }
-                  return acc;
-                },
-                {} as Record<string, StartupPattern>,
-              ),
-            )
+            startupPatterns.reduce(
+              (acc, pattern) => {
+                const key = `${pattern.startup.documentId}-${pattern.pattern.documentId}`;
+                if (!acc[key] || acc[key].createdAt > pattern.createdAt) {
+                  acc[key] = pattern;
+                }
+                return acc;
+              },
+              {} as Record<string, StartupPattern>,
+            ),
+          )
           : [];
-
         setState({ startupPatterns: latestPatterns, loading: false, error: null });
       } catch (err: unknown) {
         const error = err as Error;

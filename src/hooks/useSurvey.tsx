@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { strapiGetPattern, strapiGetSurvey } from '@/lib/strapi';
+import { strapiGetPattern, strapiGetSurvey, strapiGetSurveyByName } from '@/lib/strapi';
 import type { Survey } from '@/types/strapi';
 
 interface UseSurvey {
@@ -11,6 +11,7 @@ interface UseSurvey {
 interface UseSurveyReturn extends UseSurvey {
   fetchSurvey: (documentId: string) => void;
   fetchSurveyByPattern: (patternId: string) => void;
+  fetchSurveyByName: (name: string) => void;
   clearError: () => void;
 }
 
@@ -49,9 +50,20 @@ export default function useSurvey(): UseSurveyReturn {
     }
   }, []);
 
+  const fetchSurveyByName = useCallback(async (name: string) => {
+    try {
+      const survey = await strapiGetSurveyByName(name);
+      setState({ survey, loading: false, error: null });
+    } catch (err: unknown) {
+      const error = err as Error;
+      setState({ survey: null, loading: false, error: error.message });
+    }
+  }, []);
+
   return {
     fetchSurvey,
     fetchSurveyByPattern,
+    fetchSurveyByName,
     survey: state.survey,
     loading: state.loading,
     error: state.error,
