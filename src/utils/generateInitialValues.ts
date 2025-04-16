@@ -13,7 +13,7 @@ export const generateInitialValues = (
     );
 
     if (existingAnswer?.answer !== undefined) {
-      values[question.documentId] = JSON.parse(existingAnswer.answer);
+      values[question.documentId] = existingAnswer.answer;
     } else {
       switch (question.type) {
         case QuestionType.select_multiple:

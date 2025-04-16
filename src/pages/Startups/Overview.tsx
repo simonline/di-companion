@@ -35,6 +35,8 @@ import { useAuthContext } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { Startup } from '@/types/strapi';
 import { strapiGetRequests, strapiGetAvailableStartups, strapiUpdateUser } from '@/lib/strapi';
+import useStartupPatterns from '@/hooks/useStartupPatterns';
+import { formatDistanceToNow } from 'date-fns';
 import React from 'react';
 
 export default function OverviewView() {
@@ -49,6 +51,7 @@ export default function OverviewView() {
   } | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedStartupForMenu, setSelectedStartupForMenu] = useState<Startup | null>(null);
+  const { fetchStartupPatterns, startupPatterns } = useStartupPatterns();
 
   // Get count of coachees
   const coacheesCount = user?.coachees?.length || 0;
@@ -87,13 +90,22 @@ export default function OverviewView() {
         ]);
         setRequests(requestsData || []);
         setAvailableStartups(startupsData || []);
+
+        // Fetch patterns for each startup
+        if (user?.coachees) {
+          user.coachees.forEach((startup) => {
+            if (startup.documentId) {
+              fetchStartupPatterns(startup.documentId);
+            }
+          });
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
     fetchData();
-  }, [user?.coachees]);
+  }, [user?.coachees, fetchStartupPatterns]);
 
   // Count unread requests
   const unreadRequestsCount = requests.filter((req) => !req.readAt).length;
@@ -107,6 +119,23 @@ export default function OverviewView() {
         : 0;
     }
     return 0;
+  };
+
+  // Helper function to get last activity date
+  const getLastActivityDate = (startup: Startup): string => {
+    if (!startupPatterns) return 'No activity yet';
+
+    const startupPatternsForStartup = startupPatterns.filter(
+      (pattern) => pattern.startup.documentId === startup.documentId
+    );
+
+    if (startupPatternsForStartup.length === 0) return 'No activity yet';
+
+    const latestPattern = startupPatternsForStartup.reduce((latest, current) => {
+      return new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest;
+    });
+
+    return `${formatDistanceToNow(new Date(latestPattern.createdAt), { addSuffix: true })}`;
   };
 
   const handleAssignStartup = async () => {
@@ -269,10 +298,6 @@ export default function OverviewView() {
                     (r) => r.startup?.documentId === startup.documentId && !r.readAt,
                   ).length;
 
-                  // Determine activity level based on requests and score
-                  const activityLevel =
-                    startupRequests > 2 ? 'High' : startupRequests > 0 ? 'Medium' : 'Low';
-
                   // Get startup score
                   const score = getStartupScore(startup);
 
@@ -322,9 +347,8 @@ export default function OverviewView() {
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 {startupRequests > 0 ? (
                                   <Chip
-                                    label={`${startupRequests} Request${
-                                      startupRequests !== 1 ? 's' : ''
-                                    }`}
+                                    label={`${startupRequests} Request${startupRequests !== 1 ? 's' : ''
+                                      }`}
                                     color="primary"
                                     size="small"
                                     sx={{ color: '#fff' }}
@@ -333,7 +357,7 @@ export default function OverviewView() {
                                   <Chip label="0 Requests" variant="outlined" size="small" />
                                 )}
                                 <Box sx={{ textAlign: 'right' }}>
-                                  <Typography variant="body2">Activity: {activityLevel}</Typography>
+                                  <Typography variant="body2">Last Activity: {getLastActivityDate(startup)}</Typography>
                                 </Box>
                               </Box>
                             </Box>

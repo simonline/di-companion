@@ -10,54 +10,49 @@ import type { UserQuestion, CreateUserQuestion, UpdateUserQuestion } from '@/typ
 interface UseUserQuestion {
     userQuestion: UserQuestion | null;
     loading: boolean;
-    error: string | null;
 }
 
 interface UseUserQuestionReturn extends UseUserQuestion {
-    fetchUserQuestion: (documentId: string) => void;
+    fetchUserQuestion: (documentId: string) => Promise<void>;
     findPatternMethod: (
         userDocumentId: string,
         patternDocumentId: string,
         methodDocumentId: string,
-    ) => void;
-    createUserQuestion: (createUserQuestion: CreateUserQuestion) => void;
-    updateUserQuestion: (updateUserQuestion: UpdateUserQuestion) => void;
-    clearError: () => void;
+    ) => Promise<void>;
+    createUserQuestion: (createUserQuestion: CreateUserQuestion) => Promise<UserQuestion>;
+    updateUserQuestion: (updateUserQuestion: UpdateUserQuestion) => Promise<UserQuestion>;
 }
 
 export default function useUserQuestion(): UseUserQuestionReturn {
     const [state, setState] = useState<UseUserQuestion>({
         userQuestion: null,
         loading: true,
-        error: null,
     });
-
-    const clearError = useCallback(() => {
-        setState((prev) => ({ ...prev, error: null }));
-    }, []);
 
     const fetchUserQuestion = useCallback(async (documentId: string) => {
         try {
+            setState(prev => ({ ...prev, loading: true }));
             const userQuestion = await strapiGetUserQuestion(documentId);
-            setState({ userQuestion, loading: false, error: null });
+            setState({ userQuestion, loading: false });
         } catch (err: unknown) {
-            const error = err as Error;
-            setState({ userQuestion: null, loading: false, error: error.message });
+            setState(prev => ({ ...prev, loading: false }));
+            throw err;
         }
     }, []);
 
     const findPatternMethod = useCallback(
         async (userDocumentId: string, patternDocumentId: string, methodDocumentId: string) => {
             try {
+                setState(prev => ({ ...prev, loading: true }));
                 const userQuestion = await strapiFindUserQuestion(
                     userDocumentId,
                     patternDocumentId,
                     methodDocumentId,
                 );
-                setState({ userQuestion, loading: false, error: null });
+                setState({ userQuestion, loading: false });
             } catch (err: unknown) {
-                const error = err as Error;
-                setState({ userQuestion: null, loading: false, error: error.message });
+                setState(prev => ({ ...prev, loading: false }));
+                throw err;
             }
         },
         [],
@@ -66,11 +61,13 @@ export default function useUserQuestion(): UseUserQuestionReturn {
     const createUserQuestion = useCallback(
         async (createUserQuestion: CreateUserQuestion) => {
             try {
+                setState(prev => ({ ...prev, loading: true }));
                 const userQuestion = await strapiCreateUserQuestion(createUserQuestion);
-                setState({ userQuestion, loading: false, error: null });
+                setState({ userQuestion, loading: false });
+                return userQuestion;
             } catch (err: unknown) {
-                const error = err as Error;
-                setState({ userQuestion: null, loading: false, error: error.message });
+                setState(prev => ({ ...prev, loading: false }));
+                throw err;
             }
         },
         [],
@@ -79,11 +76,13 @@ export default function useUserQuestion(): UseUserQuestionReturn {
     const updateUserQuestion = useCallback(
         async (updateUserQuestion: UpdateUserQuestion) => {
             try {
+                setState(prev => ({ ...prev, loading: true }));
                 const userQuestion = await strapiUpdateUserQuestion(updateUserQuestion);
-                setState({ userQuestion, loading: false, error: null });
+                setState({ userQuestion, loading: false });
+                return userQuestion;
             } catch (err: unknown) {
-                const error = err as Error;
-                setState({ userQuestion: null, loading: false, error: error.message });
+                setState(prev => ({ ...prev, loading: false }));
+                throw err;
             }
         },
         [],
@@ -96,7 +95,5 @@ export default function useUserQuestion(): UseUserQuestionReturn {
         updateUserQuestion,
         userQuestion: state.userQuestion,
         loading: state.loading,
-        error: state.error,
-        clearError,
     };
 } 

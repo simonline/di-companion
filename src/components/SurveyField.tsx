@@ -15,6 +15,7 @@ import {
   IconButton,
   Tooltip,
   Slider,
+  Typography,
 } from '@mui/material';
 import { DragDropContext, Droppable, DroppableProps, Draggable } from 'react-beautiful-dnd';
 import { Question, QuestionType, ScaleOptions } from '@/types/strapi';
@@ -44,6 +45,27 @@ export const StrictDroppable = ({ children, ...props }: DroppableProps) => {
     return null;
   }
   return <Droppable {...props}>{children}</Droppable>;
+};
+
+const HtmlTooltip = ({ title, children }: { title: string; children: React.ReactElement }) => {
+  return (
+    <Tooltip
+      title={
+        <Typography
+          component="div"
+          dangerouslySetInnerHTML={{ __html: title }}
+          sx={{
+            maxWidth: 300,
+            fontSize: '0.875rem',
+            lineHeight: 1.5
+          }}
+        />
+      }
+      placement="right"
+    >
+      {children}
+    </Tooltip>
+  );
 };
 
 const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
@@ -103,11 +125,11 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
       {fieldComponent}
       {question.helpText && (
-        <Tooltip title={question.helpText} placement="right">
+        <HtmlTooltip title={question.helpText}>
           <IconButton size="small" sx={{ ml: 1 }}>
             <HelpOutlineIcon fontSize="small" />
           </IconButton>
-        </Tooltip>
+        </HtmlTooltip>
       )}
       {question.showRequestCoach && (
         <Tooltip title="Ask your coach for help" placement="right">
@@ -137,9 +159,6 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
                   sx={{
                     margin: 0,
                     mr: 1,
-                    '& .MuiTypography-root': {
-                      fontSize: '0.875rem',
-                    },
                   }}
                 />
               ))}
@@ -260,7 +279,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
 
     case QuestionType.rank:
       // Initialize the field value if it's not set
-      if (!field.value && question.options) {
+      if ((!field.value || field.value.length === 0) && question.options) {
         const initialValues = question.options.map((opt) => opt.value);
         form.setFieldValue(question.documentId, initialValues);
       }

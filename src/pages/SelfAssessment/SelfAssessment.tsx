@@ -1,182 +1,153 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
   Card,
   CardContent,
   Container,
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  Grid,
-  Radio,
-  RadioGroup,
+  Typography,
+  Stepper,
   Step,
   StepLabel,
-  Stepper,
-  Typography,
-  useTheme,
+  CircularProgress,
 } from '@mui/material';
 import Header from '@/sections/Header';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { CategoryEnum, categoryColors, categoryDisplayNames } from '@/utils/constants';
-import InfoIcon from '@mui/icons-material/Info';
-import Tooltip from '@mui/material/Tooltip';
-
-// Define the assessment questions for each category
-const assessmentQuestions = {
-  [CategoryEnum.entrepreneur]: [
-    {
-      question: 'How clear is your vision for your startup?',
-      options: [
-        { label: 'Very unclear', value: 0 },
-        { label: 'Somewhat unclear', value: 0.25 },
-        { label: 'Neutral', value: 0.5 },
-        { label: 'Somewhat clear', value: 0.75 },
-        { label: 'Very clear', value: 1 },
-      ],
-    },
-    {
-      question: 'How would you rate your ability to adapt to changes?',
-      options: [
-        { label: 'Very poor', value: 0 },
-        { label: 'Poor', value: 0.25 },
-        { label: 'Average', value: 0.5 },
-        { label: 'Good', value: 0.75 },
-        { label: 'Excellent', value: 1 },
-      ],
-    },
-  ],
-  [CategoryEnum.team]: [
-    {
-      question: 'How effective is communication within your team?',
-      options: [
-        { label: 'Very ineffective', value: 0 },
-        { label: 'Somewhat ineffective', value: 0.25 },
-        { label: 'Neutral', value: 0.5 },
-        { label: 'Somewhat effective', value: 0.75 },
-        { label: 'Very effective', value: 1 },
-      ],
-    },
-    {
-      question: 'How well-defined are roles and responsibilities in your team?',
-      options: [
-        { label: 'Not defined at all', value: 0 },
-        { label: 'Poorly defined', value: 0.25 },
-        { label: 'Somewhat defined', value: 0.5 },
-        { label: 'Well defined', value: 0.75 },
-        { label: 'Very well defined', value: 1 },
-      ],
-    },
-  ],
-  [CategoryEnum.stakeholders]: [
-    {
-      question: 'How well do you understand your target customers?',
-      options: [
-        { label: 'Very poorly', value: 0 },
-        { label: 'Poorly', value: 0.25 },
-        { label: 'Moderately', value: 0.5 },
-        { label: 'Well', value: 0.75 },
-        { label: 'Very well', value: 1 },
-      ],
-    },
-    {
-      question: 'How effectively do you engage with your stakeholders?',
-      options: [
-        { label: 'Very ineffectively', value: 0 },
-        { label: 'Ineffectively', value: 0.25 },
-        { label: 'Moderately', value: 0.5 },
-        { label: 'Effectively', value: 0.75 },
-        { label: 'Very effectively', value: 1 },
-      ],
-    },
-  ],
-  [CategoryEnum.product]: [
-    {
-      question: 'How well does your product solve the identified problem?',
-      options: [
-        { label: 'Very poorly', value: 0 },
-        { label: 'Poorly', value: 0.25 },
-        { label: 'Moderately', value: 0.5 },
-        { label: 'Well', value: 0.75 },
-        { label: 'Very well', value: 1 },
-      ],
-    },
-    {
-      question: 'How unique is your product compared to competitors?',
-      options: [
-        { label: 'Not unique at all', value: 0 },
-        { label: 'Slightly unique', value: 0.25 },
-        { label: 'Moderately unique', value: 0.5 },
-        { label: 'Very unique', value: 0.75 },
-        { label: 'Extremely unique', value: 1 },
-      ],
-    },
-  ],
-  [CategoryEnum.sustainability]: [
-    {
-      question: 'How sustainable is your business model?',
-      options: [
-        { label: 'Not sustainable', value: 0 },
-        { label: 'Slightly sustainable', value: 0.25 },
-        { label: 'Moderately sustainable', value: 0.5 },
-        { label: 'Very sustainable', value: 0.75 },
-        { label: 'Extremely sustainable', value: 1 },
-      ],
-    },
-    {
-      question: 'How well do you consider environmental impact in your operations?',
-      options: [
-        { label: 'Not at all', value: 0 },
-        { label: 'Minimally', value: 0.25 },
-        { label: 'Moderately', value: 0.5 },
-        { label: 'Significantly', value: 0.75 },
-        { label: 'Extensively', value: 1 },
-      ],
-    },
-  ],
-  [CategoryEnum.time_space]: [
-    {
-      question: 'How effectively do you manage time and resources?',
-      options: [
-        { label: 'Very ineffectively', value: 0 },
-        { label: 'Ineffectively', value: 0.25 },
-        { label: 'Moderately', value: 0.5 },
-        { label: 'Effectively', value: 0.75 },
-        { label: 'Very effectively', value: 1 },
-      ],
-    },
-    {
-      question: 'How well do you plan for the future of your startup?',
-      options: [
-        { label: 'Very poorly', value: 0 },
-        { label: 'Poorly', value: 0.25 },
-        { label: 'Moderately', value: 0.5 },
-        { label: 'Well', value: 0.75 },
-        { label: 'Very well', value: 1 },
-      ],
-    },
-  ],
-};
+import { Formik, Form, Field } from 'formik';
+import useSurvey from '@/hooks/useSurvey';
+import useUserQuestions from '@/hooks/useUserQuestions';
+import useUserQuestion from '@/hooks/useUserQuestion';
+import useNotifications from '@/store/notifications';
+import SurveyField from '@/components/SurveyField';
+import { generateValidationSchema, FormValues } from '@/utils/generateValidationSchema';
+import { generateInitialValues } from '@/utils/generateInitialValues';
+import { Question } from '@/types/strapi';
+import { CategoryEnum, categoryDisplayNames } from '@/utils/constants';
 
 const SelfAssessment: React.FC = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
-  const { startup, updateStartup, updateScores } = useAuthContext();
-  const [activeStep, setActiveStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const { user, startup, updateScores } = useAuthContext();
+  const { fetchSurveyByName, survey, loading: surveyLoading, error: surveyError } = useSurvey();
+  const {
+    fetchUserQuestions,
+    userQuestions,
+    clearUserQuestions,
+    loading: userQuestionsLoading,
+    error: userQuestionsError,
+  } = useUserQuestions();
+  const { createUserQuestion, updateUserQuestion } = useUserQuestion();
+  const [, notificationsActions] = useNotifications();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeStep, setActiveStep] = useState(() => {
+    // Restore activeStep from localStorage on mount
+    const savedStep = localStorage.getItem('selfAssessmentActiveStep');
+    return savedStep ? parseInt(savedStep, 10) : 0;
+  });
 
-  const categories = Object.keys(assessmentQuestions) as CategoryEnum[];
+  // Save activeStep to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('selfAssessmentActiveStep', activeStep.toString());
+  }, [activeStep]);
+
+  // Group questions by category
+  const questionsByCategory = React.useMemo(() => {
+    if (!survey?.questions) return {} as Record<CategoryEnum, Question[]>;
+    return survey.questions.reduce((acc: Record<CategoryEnum, Question[]>, question: Question) => {
+      const categories = (question as any).categories || [CategoryEnum.entrepreneur];
+      categories.forEach((category: CategoryEnum) => {
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(question);
+      });
+      return acc;
+    }, {} as Record<CategoryEnum, Question[]>);
+  }, [survey]);
+
+  const categories = Object.keys(questionsByCategory) as CategoryEnum[];
   const currentCategory = categories[activeStep];
-  const questions = assessmentQuestions[currentCategory];
+  const currentQuestions = questionsByCategory[currentCategory] || [];
 
-  const handleNext = () => {
-    if (activeStep < categories.length - 1) {
-      setActiveStep((prevStep) => prevStep + 1);
-    } else {
-      handleSubmit();
+  useEffect(() => {
+    fetchSurveyByName("Self Assessment");
+  }, [fetchSurveyByName]);
+
+  useEffect(() => {
+    if (startup?.documentId && user?.documentId) {
+      fetchUserQuestions(startup.documentId, user.documentId);
+    }
+  }, [fetchUserQuestions, startup, user]);
+
+  const handleSubmit = async (values: FormValues) => {
+    if (!user || !startup || !survey) return;
+
+    try {
+      setIsSubmitting(true);
+
+      // Process each question's answer
+      for (const question of currentQuestions) {
+        const answer = values[question.documentId];
+        const existingResponse = userQuestions?.find(
+          (uq) => uq.question.documentId === question.documentId,
+        );
+
+        // Skip if answer is empty and question is not required
+        if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.isRequired) continue;
+
+        // Skip if answer hasn't changed
+        if (existingResponse) {
+          const existingAnswer = existingResponse.answer;
+          if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) continue;
+        }
+
+        const payload = {
+          user: { set: { documentId: user.documentId } },
+          question: { set: { documentId: question.documentId } },
+          startup: { set: { documentId: startup.documentId } },
+          answer: JSON.stringify(answer),
+        };
+
+        try {
+          if (existingResponse) {
+            await updateUserQuestion({
+              documentId: existingResponse.documentId,
+              ...payload,
+            });
+          } else {
+            await createUserQuestion(payload);
+          }
+        } catch (error) {
+          throw new Error(`Failed to save answer for question "${question.question}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+
+      // Refetch to get the created/updated user questions
+      clearUserQuestions();
+      await fetchUserQuestions(startup.documentId, user.documentId);
+
+      if (activeStep < categories.length - 1) {
+        setActiveStep(prev => prev + 1);
+        notificationsActions.push({
+          options: { variant: 'success' },
+          message: 'Answers saved successfully',
+        });
+      } else {
+        // Only update scores when we've completed all steps
+        await updateScores();
+        notificationsActions.push({
+          options: { variant: 'success' },
+          message: 'Self assessment completed successfully',
+        });
+        // Clear the saved step from localStorage
+        localStorage.removeItem('selfAssessmentActiveStep');
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      notificationsActions.push({
+        options: { variant: 'error' },
+        message: error instanceof Error ? error.message : 'Failed to save answers. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -184,67 +155,51 @@ const SelfAssessment: React.FC = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
 
-  const handleAnswerChange = (questionIndex: number, value: number) => {
-    const key = `${currentCategory}_${questionIndex}`;
-    setAnswers((prev) => ({ ...prev, [key]: value }));
-  };
+  if (surveyLoading || userQuestionsLoading) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  const isStepComplete = () => {
-    return questions.every((_, index) => {
-      const key = `${currentCategory}_${index}`;
-      return answers[key] !== undefined;
-    });
-  };
+  if (surveyError || userQuestionsError) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          p: 4,
+        }}
+      >
+        <Typography variant="h6" color="error" sx={{ mb: 2 }}>
+          Error loading assessment
+        </Typography>
+        <Button variant="contained" onClick={() => window.location.reload()}>
+          Try Again
+        </Button>
+      </Box>
+    );
+  }
 
-  const calculateScores = () => {
-    const scores: Record<CategoryEnum, number> = {
-      [CategoryEnum.entrepreneur]: 0,
-      [CategoryEnum.team]: 0,
-      [CategoryEnum.stakeholders]: 0,
-      [CategoryEnum.product]: 0,
-      [CategoryEnum.sustainability]: 0,
-      [CategoryEnum.time_space]: 0,
-    };
-
-    // Calculate average score for each category
-    Object.entries(answers).forEach(([key, value]) => {
-      const [category] = key.split('_');
-      scores[category as CategoryEnum] += value;
-    });
-
-    // Normalize scores (average)
-    categories.forEach((category) => {
-      const questionCount = assessmentQuestions[category].length;
-      scores[category] = scores[category] / questionCount;
-    });
-
-    return scores;
-  };
-
-  const handleSubmit = async () => {
-    if (!startup) return;
-
-    setIsSubmitting(true);
-    try {
-      const scores = calculateScores();
-
-      // Update startup with new scores
-      await updateStartup({
-        documentId: startup.documentId,
-        scores,
-      });
-
-      // Refresh scores in the system
-      await updateScores();
-
-      // Navigate back to dashboard
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Error updating scores:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  if (!survey) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          p: 4,
+        }}
+      >
+        <Typography variant="h6">Assessment not found</Typography>
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -253,13 +208,11 @@ const SelfAssessment: React.FC = () => {
         <Card>
           <CardContent>
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h5" gutterBottom>
-                Startup Maturity Self-Assessment
+              <Typography variant="h4" fontWeight="bold" color="primary">
+                {survey.name}
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Answer these questions to help us calculate your startup&apos;s maturity score
-                across different perspectives. This will help us provide more tailored
-                recommendations for your startup&apos;s growth.
+                {survey.description}
               </Typography>
             </Box>
 
@@ -270,10 +223,7 @@ const SelfAssessment: React.FC = () => {
                     <Typography
                       variant="body2"
                       sx={{
-                        color:
-                          activeStep === categories.indexOf(category)
-                            ? categoryColors[category]
-                            : 'inherit',
+                        textTransform: 'capitalize',
                         fontWeight: activeStep === categories.indexOf(category) ? 'bold' : 'normal',
                       }}
                     >
@@ -284,97 +234,48 @@ const SelfAssessment: React.FC = () => {
               ))}
             </Stepper>
 
-            <Box sx={{ mb: 4 }}>
-              <Typography
-                variant="h6"
-                gutterBottom
-                sx={{
-                  color: categoryColors[currentCategory],
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                }}
-              >
-                {categoryDisplayNames[currentCategory]}
-                <Tooltip title="Your answers in this section will help us understand your startup's maturity in this perspective.">
-                  <InfoIcon fontSize="small" />
-                </Tooltip>
-              </Typography>
-
-              {questions.map((q, index) => (
-                <Box key={index} sx={{ mb: 3 }}>
-                  <FormControl component="fieldset" fullWidth>
-                    <FormLabel component="legend" sx={{ mb: 1 }}>
-                      <Typography variant="body1" fontWeight="medium">
-                        {q.question}
-                      </Typography>
-                    </FormLabel>
-                    <RadioGroup
-                      value={answers[`${currentCategory}_${index}`] ?? ''}
-                      onChange={(e) => handleAnswerChange(index, parseFloat(e.target.value))}
-                    >
-                      <Grid container spacing={1}>
-                        {q.options.map((option) => (
-                          <Grid item xs={12} sm={6} key={option.value}>
-                            <FormControlLabel
-                              value={option.value}
-                              control={
-                                <Radio
-                                  sx={{
-                                    color: categoryColors[currentCategory],
-                                    '&.Mui-checked': {
-                                      color: categoryColors[currentCategory],
-                                    },
-                                  }}
-                                />
-                              }
-                              label={option.label}
-                              sx={{
-                                width: '100%',
-                                border: '1px solid',
-                                borderColor:
-                                  answers[`${currentCategory}_${index}`] === option.value
-                                    ? categoryColors[currentCategory]
-                                    : 'divider',
-                                borderRadius: 1,
-                                p: 1,
-                                m: 0,
-                                '&:hover': {
-                                  bgcolor: `${categoryColors[currentCategory]}10`,
-                                },
-                              }}
+            <Formik
+              initialValues={generateInitialValues(currentQuestions, userQuestions || undefined)}
+              validationSchema={generateValidationSchema(currentQuestions)}
+              onSubmit={handleSubmit}
+            >
+              {({ isValid }) => (
+                <Form>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {currentQuestions
+                      .sort((a: Question, b: Question) => (a.order || 0) - (b.order || 0))
+                      .map((question: Question) => (
+                        <Field key={question.documentId} name={question.documentId}>
+                          {(fieldProps: any) => (
+                            <SurveyField
+                              question={question}
+                              field={fieldProps.field}
+                              form={fieldProps.form}
                             />
-                          </Grid>
-                        ))}
-                      </Grid>
-                    </RadioGroup>
-                  </FormControl>
-                </Box>
-              ))}
-            </Box>
+                          )}
+                        </Field>
+                      ))}
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Button variant="outlined" onClick={handleBack} disabled={activeStep === 0}>
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                disabled={!isStepComplete() || isSubmitting}
-                sx={{
-                  bgcolor: categoryColors[currentCategory],
-                  '&:hover': {
-                    bgcolor:
-                      theme.palette.mode === 'light'
-                        ? `${categoryColors[currentCategory]}CC`
-                        : `${categoryColors[currentCategory]}AA`,
-                  },
-                }}
-              >
-                {activeStep === categories.length - 1 ? 'Submit' : 'Next'}
-              </Button>
-            </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+                      <Button
+                        variant="outlined"
+                        onClick={handleBack}
+                        disabled={activeStep === 0}
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        disabled={isSubmitting || !isValid}
+                      >
+                        {activeStep === categories.length - 1 ? 'Complete Assessment' : 'Next'}
+                      </Button>
+                    </Box>
+                  </Box>
+                </Form>
+              )}
+            </Formik>
           </CardContent>
         </Card>
       </Container>
