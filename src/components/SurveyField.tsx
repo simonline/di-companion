@@ -18,7 +18,7 @@ import {
   Typography,
 } from '@mui/material';
 import { DragDropContext, Droppable, DroppableProps, Draggable } from 'react-beautiful-dnd';
-import { Question, QuestionType, ScaleOptions } from '@/types/strapi';
+import { Question, QuestionType, ScaleOptions, QuestionOption } from '@/types/strapi';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import { useAuthContext } from '@/hooks/useAuth';
@@ -198,10 +198,10 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
                 if (!Array.isArray(question.options)) return '';
                 return selected
                   .map((value: string) => {
-                    const option = question.options.find(
-                      (opt: QuestionOption) => opt.value === value,
-                    );
-                    return option?.label || '';
+                    const foundOption = Array.isArray(question.options)
+                      ? question.options.find((opt: QuestionOption) => opt.value === value)
+                      : null;
+                    return foundOption?.label || '';
                   })
                   .join(', ');
               }}
@@ -279,8 +279,8 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
 
     case QuestionType.rank:
       // Initialize the field value if it's not set
-      if ((!field.value || field.value.length === 0) && question.options) {
-        const initialValues = question.options.map((opt) => opt.value);
+      if ((!field.value || field.value.length === 0) && question.options && Array.isArray(question.options)) {
+        const initialValues = question.options.map((opt: QuestionOption) => opt.value);
         form.setFieldValue(question.documentId, initialValues);
       }
 
@@ -295,8 +295,10 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
                 {(provided) => (
                   <Box {...provided.droppableProps} ref={provided.innerRef} sx={{ width: '100%' }}>
                     {(field.value || []).map((value: string, index: number) => {
-                      const option = question.options?.find((opt) => opt.value === value);
-                      if (!option) {
+                      const foundOption = Array.isArray(question.options)
+                        ? question.options.find((opt: QuestionOption) => opt.value === value)
+                        : null;
+                      if (!foundOption) {
                         console.warn(`Option not found for value: ${value}`);
                         return null;
                       }
@@ -323,7 +325,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
                               }}
                             >
                               <DragIndicatorIcon sx={{ mr: 1 }} />
-                              <span>{option.label}</span>
+                              <span>{foundOption.label}</span>
                             </Box>
                           )}
                         </Draggable>

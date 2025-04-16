@@ -71,7 +71,7 @@ const Progress: React.FC = () => {
     <>
       <Header title="Progress" />
       <FullSizeCenteredFlexBox>
-        <PatternCard pattern={pattern} nextUrl="/progress" />
+        {pattern && <PatternCard pattern={pattern} nextUrl="/progress" />}
       </FullSizeCenteredFlexBox>
     </>
   );

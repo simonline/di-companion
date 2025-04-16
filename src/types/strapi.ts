@@ -93,9 +93,11 @@ export interface Pattern {
   name: string;
   description: string;
   relatedPatterns: Pattern[];
-  image: string;
+  image: {
+    url: string;
+  };
   phases: string[];
-  category: string;
+  category: CategoryEnum;
   methods: Method[];
   survey: Survey;
   subcategory: string;
@@ -373,7 +375,7 @@ export interface UserQuestion {
 
 export interface CreateUserQuestion {
   user: StrapiSetRelated;
-  pattern: StrapiSetRelated;
+  pattern?: StrapiSetRelated;
   question: StrapiSetRelated;
   answer: string;
 }

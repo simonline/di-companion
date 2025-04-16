@@ -26,6 +26,7 @@ import {
   phaseNumbers,
   phaseDisplayNames,
   PhaseEnum,
+  CategoryEnum,
 } from '@/utils/constants';
 import { useNavigate } from 'react-router-dom';
 import useStartupPattern from '@/hooks/useStartupPattern';
@@ -206,7 +207,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl, isInteracti
     >
       <Box
         sx={{
-          bgcolor: categoryColors[pattern.category] || '#grey',
+          bgcolor: categoryColors[pattern.category as CategoryEnum] || '#grey',
           padding: { xs: '8px 16px', sm: '16px 32px' },
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
@@ -239,7 +240,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl, isInteracti
               maxWidth: '100%',
             }}
           >
-            {categoryDisplayNames[pattern.category]}
+            {categoryDisplayNames[pattern.category as CategoryEnum]}
           </Typography>
           <Typography
             variant="h6"
@@ -268,7 +269,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl, isInteracti
           }}
         >
           <img
-            src={categoryIcons[pattern.category]}
+            src={categoryIcons[pattern.category as CategoryEnum]}
             alt={''}
             height={40}
             style={{
@@ -346,7 +347,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl, isInteracti
           fontSize="1.8em"
           fontWeight="900"
           lineHeight="1.1em"
-          color={categoryColors[pattern.category]}
+          color={categoryColors[pattern.category as CategoryEnum]}
           sx={{ flex: 1 }}
           marginBottom={{ xs: '.5em', sm: '2em' }}
         >
@@ -439,7 +440,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl, isInteracti
           fontSize="1.8em"
           fontWeight="900"
           lineHeight="1.1em"
-          color={categoryColors[pattern.category]}
+          color={categoryColors[pattern.category as CategoryEnum]}
           marginBottom={{ xs: '.2em', sm: '.8em' }}
         >
           {pattern.name}

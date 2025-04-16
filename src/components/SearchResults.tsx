@@ -2,7 +2,7 @@ import React from 'react';
 import { Typography, List, ListItem, ListItemText, Paper, Fade, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import type { Pattern } from '@/types/strapi';
-import { categoryColors } from '@/utils/constants';
+import { categoryColors, CategoryEnum } from '@/utils/constants';
 
 interface SearchResultsProps {
   results: Pattern[] | null;
@@ -96,7 +96,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   left: 0,
                   width: '4px',
                   height: '100%',
-                  backgroundColor: categoryColors[pattern.category] || '#ccc',
+                  backgroundColor: categoryColors[pattern.category as CategoryEnum] || '#ccc',
                   borderTopLeftRadius: pattern.documentId === results[0].documentId ? 4 : 0,
                   borderBottomLeftRadius:
                     pattern.documentId === results[results.length - 1].documentId ? 4 : 0,
