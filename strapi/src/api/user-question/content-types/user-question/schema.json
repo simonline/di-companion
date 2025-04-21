@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_questions",
+  "info": {
+    "singularName": "user-question",
+    "pluralName": "user-questions",
+    "displayName": "UserQuestion",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "question": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::question.question"
+    },
+    "startup": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::startup.startup"
+    },
+    "answer": {
+      "type": "json"
+    },
+    "pattern": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::pattern.pattern"
+    }
+  }
+}

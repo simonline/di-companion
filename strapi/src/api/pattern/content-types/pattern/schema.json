@@ -1,5 +1,4 @@
 {
-  "kind": "collectionType",
   "collectionName": "patterns",
   "info": {
     "singularName": "pattern",
@@ -82,5 +81,6 @@
       "target": "api::question.question",
       "mappedBy": "patterns"
     }
-  }
+  },
+  "kind": "collectionType"
 }

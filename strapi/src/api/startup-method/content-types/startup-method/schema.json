@@ -1,16 +1,15 @@
 {
   "kind": "collectionType",
-  "collectionName": "startup_exercises",
+  "collectionName": "startup_methods",
   "info": {
-    "singularName": "startup-exercise",
-    "pluralName": "startup-exercises",
-    "displayName": "StartupExercise",
+    "singularName": "startup-method",
+    "pluralName": "startup-methods",
+    "displayName": "StartupMethod",
     "description": ""
   },
   "options": {
     "draftAndPublish": false
   },
-  "pluginOptions": {},
   "attributes": {
     "startup": {
       "type": "relation",
@@ -22,10 +21,10 @@
       "relation": "oneToOne",
       "target": "api::pattern.pattern"
     },
-    "exercise": {
+    "method": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::exercise.exercise"
+      "target": "api::method.method"
     },
     "resultFiles": {
       "type": "media",
