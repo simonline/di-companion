@@ -31,6 +31,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import useStartupPattern from '@/hooks/useStartupPattern';
 import { useAuthContext } from '@/hooks/useAuth';
+import useRequests from '@/hooks/useRequests';
+import useNotifications from '@/store/notifications';
 
 interface ActionDialogProps {
   open: boolean;
@@ -54,6 +56,8 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
   const { startup } = useAuthContext();
   const navigate = useNavigate();
   const { createStartupPattern, startupPattern } = useStartupPattern();
+  const { createRequest } = useRequests();
+  const [, notificationsActions] = useNotifications();
   const [response, setResponse] = React.useState<ResponseEnum | null>(null);
 
   useEffect(() => {
@@ -89,8 +93,28 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
           case ResponseEnum.maybe_later:
             break;
           case ResponseEnum.no_value:
+            if (startup?.documentId) {
+              createRequest({
+                startup: { id: startup.documentId },
+                comment: `I don't see value in the pattern: ${pattern.name}`,
+              });
+              notificationsActions.push({
+                options: { variant: 'success' },
+                message: 'Request sent to your coach',
+              });
+            }
             break;
           case ResponseEnum.dont_understand:
+            if (startup?.documentId) {
+              createRequest({
+                startup: { id: startup.documentId },
+                comment: `I don't understand the pattern: ${pattern.name}`,
+              });
+              notificationsActions.push({
+                options: { variant: 'success' },
+                message: 'Request sent to your coach',
+              });
+            }
             break;
           default:
             break;
@@ -98,7 +122,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
       }
       navigate(nextUrl);
     }
-  }, [response, startupPattern, navigate, pattern, nextUrl, responseType]);
+  }, [response, startupPattern, navigate, pattern, nextUrl, responseType, startup, createRequest, notificationsActions]);
 
   return (
     <Dialog open={open} onClose={onClose}>

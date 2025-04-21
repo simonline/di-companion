@@ -97,6 +97,14 @@ const useRoutes = (): Partial<Routes> => {
       requiresAuth: false,
       requiresStartup: false,
     },
+    [Pages.ResetPassword]: {
+      component: asyncComponentLoader(() => import('@/pages/ResetPassword')),
+      path: '/reset-password',
+      title: 'Reset Password',
+      visibleTo: ['startup', 'coach'],
+      requiresAuth: false,
+      requiresStartup: false,
+    },
     [Pages.CreateStartup]: {
       component: asyncComponentLoader(() => import('@/pages/Register/CreateStartup')),
       path: '/create-startup',

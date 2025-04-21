@@ -183,6 +183,7 @@ export interface Startup {
   isPrototypeValidated: boolean;
   isMvpTested: boolean;
   scores?: Record<CategoryEnum, number>;
+  score?: number;
   coach?: User;
 }
 
