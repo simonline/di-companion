@@ -309,7 +309,9 @@ export async function strapiGetPatterns(category?: CategoryEnum): Promise<Patter
     // No need to manually add token - the axios interceptor will handle it
     let url = '/patterns?';
     url += '&populate[relatedPatterns][populate]=*';
-    url += '&populate[methods][populate]=*';
+    url += '&populate[methods][fields][0]=name';
+    url += '&populate[methods][fields][1]=content';
+    url += '&populate[methods][fields][2]=url';
     url += '&populate[image][fields][0]=url';
     url += '&populate[survey][fields][0]=documentId';
     if (category) {
