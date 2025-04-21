@@ -88,6 +88,7 @@ export default function OverviewView() {
           strapiGetRequests(startupIds),
           strapiGetAvailableStartups(),
         ]);
+        console.log('requestsData', requestsData);
         setRequests(requestsData || []);
         setAvailableStartups(startupsData || []);
 
@@ -109,17 +110,6 @@ export default function OverviewView() {
 
   // Count unread requests
   const unreadRequestsCount = requests.filter((req) => !req.readAt).length;
-
-  // Helper function to get startup score
-  const getStartupScore = (startup: Startup): number => {
-    if (startup.scores) {
-      const scoresValues = Object.values(startup.scores);
-      return scoresValues.length > 0
-        ? Math.round(scoresValues.reduce((a, b) => a + b, 0) / scoresValues.length)
-        : 0;
-    }
-    return 0;
-  };
 
   // Helper function to get last activity date
   const getLastActivityDate = (startup: Startup): string => {
@@ -298,9 +288,6 @@ export default function OverviewView() {
                     (r) => r.startup?.documentId === startup.documentId && !r.readAt,
                   ).length;
 
-                  // Get startup score
-                  const score = getStartupScore(startup);
-
                   return (
                     <React.Fragment key={startup.documentId || index}>
                       <ListItem
@@ -341,7 +328,7 @@ export default function OverviewView() {
                                   {startup.name}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                  Maturity Score: {score}%
+                                  Maturity Score: {startup.score || 0}%
                                 </Typography>
                               </Box>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -365,7 +352,7 @@ export default function OverviewView() {
                           secondary={
                             <LinearProgress
                               variant="determinate"
-                              value={score}
+                              value={startup.score || 0}
                               sx={{ height: 8, borderRadius: 4, mt: 1 }}
                             />
                           }

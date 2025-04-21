@@ -65,12 +65,6 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
       }),
   );
 
-  // Calculate overall maturity score (average of all categories)
-  const overallScore =
-    Object.values(startup.scores).reduce((sum, score) => sum + score, 0) /
-    Object.values(startup.scores).length;
-  const overallScorePercentage = Math.round(overallScore * 100);
-
   return (
     <Card>
       <CardContent>
@@ -111,7 +105,7 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
                   width: 120,
                   height: 120,
                   borderRadius: '50%',
-                  background: `conic-gradient(#4CAF50 ${overallScorePercentage}%, #e0e0e0 0)`,
+                  background: `conic-gradient(#4CAF50 ${startup.score || 0}%, #e0e0e0 0)`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -134,7 +128,7 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
                     zIndex: 1,
                   }}
                 >
-                  {overallScorePercentage}%
+                  {startup.score || 0}%
                 </Typography>
               </Box>
             </Grid>

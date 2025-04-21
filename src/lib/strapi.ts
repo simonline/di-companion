@@ -175,8 +175,6 @@ export async function strapiRegister(user: UserRegistration): Promise<StrapiAuth
   try {
     const { avatar, ...userData } = user;
 
-    console.log('Registering user:', userData);
-
     // First, register the user without the avatar
     const response = await fetchApi<StrapiAuthResponse>('/auth/local/register', {
       method: 'POST',
@@ -344,8 +342,6 @@ export async function strapiGetPattern(documentId: string): Promise<Pattern> {
 
 export async function fetchPatternsById(patternIds: string[]): Promise<Pattern[]> {
   try {
-    console.log('Fetching patterns by IDs:', patternIds);
-
     if (!patternIds || !Array.isArray(patternIds) || patternIds.length === 0) {
       console.warn('No valid pattern IDs provided');
       return [];
@@ -359,7 +355,6 @@ export async function fetchPatternsById(patternIds: string[]): Promise<Pattern[]
 
     const patterns = await Promise.all(
       validIds.map((patternId) => {
-        console.log('Fetching pattern with ID:', patternId);
         return strapiGetPattern(patternId);
       }),
     );
@@ -845,8 +840,6 @@ export async function strapiGetStartupMembers(startupDocumentId: string): Promis
     // The custom controller will handle authorization and filtering
     const members = await fetchApi<User[]>(url);
 
-    console.log(`Found ${members.length} users that are members of startup ${startupDocumentId}`);
-
     return members;
   } catch (error) {
     const strapiError = error as StrapiError;
@@ -893,7 +886,6 @@ export async function strapiUpdateUser(updateUser: UpdateUser): Promise<User> {
     }
 
     // Then update the user data
-    console.log('Updating user data:', payload);
     const updateResponse = await fetchApi<User>(url, {
       method: 'PUT',
       headers: {
@@ -901,8 +893,6 @@ export async function strapiUpdateUser(updateUser: UpdateUser): Promise<User> {
       },
       body: JSON.stringify(payload),
     });
-
-    console.log('User update response:', updateResponse);
 
     // Refresh user data to get the updated user with avatar
     return await strapiMe();
@@ -929,8 +919,10 @@ export async function strapiGetRequests(startupIds?: string[]): Promise<Request[
     // No need to manually add token - the axios interceptor will handle it
     let url = '/requests?populate[0]=startup';
     if (startupIds && startupIds.length > 0) {
-      // Filter by multiple startup IDs using $in operator
-      url += `&filters[startup][documentId][$in]=${startupIds.join(',')}`;
+      // Filter by multiple startup IDs using indexed keys
+      startupIds.forEach((id, index) => {
+        url += `&filters[startup][documentId][$in][${index}]=${id}`;
+      });
     }
     return await fetchPaginatedApi<Request>(url);
   } catch (error) {
@@ -1169,5 +1161,45 @@ export async function strapiGetMethod(documentId: string): Promise<Method> {
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading method');
+  }
+}
+
+export async function strapiForgotPassword(email: string): Promise<void> {
+  try {
+    await fetchApi('/auth/forgot-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+      }),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Failed to send password reset email');
+  }
+}
+
+export async function strapiResetPassword(
+  code: string,
+  password: string,
+  passwordConfirmation: string,
+): Promise<void> {
+  try {
+    await fetchApi('/auth/reset-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code,
+        password,
+        passwordConfirmation,
+      }),
+    });
+  } catch (error) {
+    const strapiError = error as StrapiError;
+    throw new Error(strapiError.error?.message || 'Failed to reset password');
   }
 }

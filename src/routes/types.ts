@@ -31,6 +31,7 @@ export enum Pages {
   StartupTeam,
   AcceptInvitation,
   UpdateProfile,
+  ResetPassword,
 }
 
 type PathRouteCustomProps = {
