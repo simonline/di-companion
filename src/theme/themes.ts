@@ -19,6 +19,31 @@ const sharedTheme = {
         disableRipple: true,
       },
     },
+    MuiAlert: {
+      styleOverrides: {
+        standardWarning: {
+          backgroundColor: '#07bce5', // Blue background
+          color: '#ffffff', // White text
+          '& .MuiAlert-icon': {
+            color: '#ffffff', // White icon
+          },
+          '& .MuiButton-root': {
+            color: '#ffffff', // White text for buttons
+          },
+        },
+      },
+    },
+    MuiCssBaseline: {
+      styleOverrides: `
+        .notistack-MuiContent-warning {
+          background-color: #07bce5 !important;
+          color: #ffffff !important;
+        }
+        .notistack-MuiContent-warning .MuiButton-root {
+          color: #ffffff !important;
+        }
+      `,
+    },
     MuiDivider: {
       styleOverrides: {
         vertical: {
