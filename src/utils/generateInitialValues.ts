@@ -13,7 +13,13 @@ export const generateInitialValues = (
     );
 
     if (existingAnswer?.answer !== undefined) {
-      values[question.documentId] = existingAnswer.answer;
+      try {
+        // Parse the JSON string to get the actual value
+        values[question.documentId] = JSON.parse(existingAnswer.answer);
+      } catch (error) {
+        // Fallback to the raw value if parsing fails
+        values[question.documentId] = existingAnswer.answer;
+      }
     } else {
       switch (question.type) {
         case QuestionType.select_multiple:

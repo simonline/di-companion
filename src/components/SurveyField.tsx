@@ -193,6 +193,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
             <Select
               {...field}
               multiple
+              value={Array.isArray(field.value) ? field.value : []}
               sx={{ width: '100%' }}
               renderValue={(selected: string[]) => {
                 if (!Array.isArray(question.options)) return '';
@@ -209,7 +210,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
               {Array.isArray(question.options) &&
                 question.options.map(({ value, label }) => (
                   <MenuItem key={value} value={value}>
-                    <Checkbox checked={field.value.includes(value)} />
+                    <Checkbox checked={Array.isArray(field.value) && field.value.includes(value)} />
                     {label}
                   </MenuItem>
                 ))}
@@ -259,7 +260,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
                     key={value}
                     control={
                       <Checkbox
-                        checked={field.value?.includes(value)}
+                        checked={Array.isArray(field.value) && field.value.includes(value)}
                         onChange={(e) => {
                           const newValue = e.target.checked
                             ? [...(field.value || []), value]
@@ -294,7 +295,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
               <StrictDroppable droppableId={`rank-list-${question.documentId}`}>
                 {(provided) => (
                   <Box {...provided.droppableProps} ref={provided.innerRef} sx={{ width: '100%' }}>
-                    {(field.value || []).map((value: string, index: number) => {
+                    {Array.isArray(field.value) && field.value.map((value: string, index: number) => {
                       const foundOption = Array.isArray(question.options)
                         ? question.options.find((opt: QuestionOption) => opt.value === value)
                         : null;
