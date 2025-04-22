@@ -3,10 +3,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   Typography,
   Avatar,
   Divider,
@@ -305,65 +301,109 @@ export const Coach: React.FC = () => {
               Recommendations from Your Coach
             </Typography>
 
-            <List sx={{ width: '100%' }}>
+            <Box sx={{ width: '100%', mb: 2 }}>
               {recommendations
                 .slice()
                 .sort(
                   (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
                 )
                 .map((recommendation) => (
-                  <ListItem
+                  <Box
                     key={recommendation.documentId}
                     onClick={() => handleRecommendationClick(recommendation)}
                     sx={{
                       cursor: 'pointer',
+                      borderRadius: 2,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      mb: 2,
+                      overflow: 'hidden',
+                      position: 'relative',
+                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                       '&:hover': {
-                        backgroundColor: '#f5f5f5 !important',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
                       },
-                      bgcolor: recommendation.readAt ? 'transparent' : 'action.hover',
-                      flexDirection: 'column',
-                      alignItems: 'flex-start',
-                      py: 2,
-                      px: 2,
+                      ...(recommendation.readAt ? {} : {
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: 4,
+                          height: '100%',
+                          backgroundColor: 'primary.main',
+                        }
+                      })
                     }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 1 }}>
-                      <ListItemIcon sx={{ minWidth: 40 }}>
-                        {getRecommendationIcon(recommendation.type)}
-                      </ListItemIcon>
-                      <Typography variant="body2" color="text.secondary" sx={{ ml: 'auto' }}>
-                        {format(new Date(recommendation.publishedAt), 'MMM dd, yyyy')}
-                      </Typography>
+                    <Box
+                      sx={{
+                        p: 2.5,
+                        backgroundColor: recommendation.readAt ? 'background.paper' : 'action.hover',
+                      }}
+                    >
+                      <Box sx={{ display: 'flex' }}>
+                        <Box sx={{
+                          color: 'primary.main',
+                          mr: 2,
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          pt: 0.25
+                        }}>
+                          {getRecommendationIcon(recommendation.type)}
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                          <Box sx={{ display: 'flex', width: '100%', mb: 1 }}>
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                fontWeight: recommendation.readAt ? 'normal' : 'medium',
+                                lineHeight: 1.4,
+                                flex: 1,
+                                pr: 2,
+                              }}
+                            >
+                              {recommendation.comment}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{
+                                whiteSpace: 'nowrap',
+                                alignSelf: 'flex-start',
+                                mt: 0.3,
+                              }}
+                            >
+                              {format(new Date(recommendation.publishedAt), 'MMM dd, yyyy')}
+                            </Typography>
+                          </Box>
+
+                          {recommendation.patterns && recommendation.patterns.length > 0 && (
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                              {recommendation.patterns.map((pattern) => (
+                                <Typography
+                                  key={pattern.documentId}
+                                  variant="body2"
+                                  sx={{
+                                    backgroundColor: 'action.hover',
+                                    borderRadius: 1,
+                                    px: 1,
+                                    py: 0.5,
+                                    color: 'text.secondary',
+                                    fontSize: '0.8rem',
+                                  }}
+                                >
+                                  {pattern.name}
+                                </Typography>
+                              ))}
+                            </Box>
+                          )}
+                        </Box>
+                      </Box>
                     </Box>
-                    <ListItemText
-                      primary={
-                        <Typography
-                          component="span"
-                          variant="body1"
-                          sx={{
-                            fontWeight: recommendation.readAt ? 'normal' : 'bold',
-                          }}
-                        >
-                          {recommendation.comment}
-                        </Typography>
-                      }
-                      secondary={
-                        recommendation.patterns && recommendation.patterns.length > 0 ? (
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                              mt: 1,
-                            }}
-                          >
-                            {recommendation.patterns.map((pattern) => pattern.name).join(', ')}
-                          </Typography>
-                        ) : null
-                      }
-                    />
-                  </ListItem>
+                  </Box>
                 ))}
-            </List>
+            </Box>
           </>
         )}
 

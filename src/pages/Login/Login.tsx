@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Formik, Form, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
-import { TextField, Button, Box, Link, Alert, IconButton, InputAdornment } from '@mui/material';
+import { TextField, Button, Box, Link, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import Meta from '@/components/Meta';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
 import Header from '@/sections/Header';
+import useNotifications from '@/store/notifications';
 
 interface LoginFormValues {
   email: string;
@@ -24,8 +25,8 @@ const LoginSchema = Yup.object().shape({
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { user, login } = useAuthContext();
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [, { push }] = useNotifications();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -44,7 +45,10 @@ const Login: React.FC = () => {
     } catch (err) {
       const error = err as Error;
       console.error('Login error:', error);
-      setError(error.message);
+      push({
+        message: error.message,
+        options: { variant: 'error' }
+      });
     } finally {
       setSubmitting(false);
     }
@@ -64,12 +68,6 @@ const Login: React.FC = () => {
       <Meta title="Login" />
       <Header title="Login" />
       <FullSizeCenteredFlexBox>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-            {error}
-          </Alert>
-        )}
-
         <Formik
           initialValues={initialValues}
           validationSchema={LoginSchema}
