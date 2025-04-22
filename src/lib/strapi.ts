@@ -732,7 +732,9 @@ export async function strapiGetSurveyByName(name: string): Promise<Survey> {
 export async function strapiGetInvitations(startupDocumentId: string): Promise<Invitation[]> {
   try {
     // Get all fields for invitedBy and explicitly filter by startup documentId
-    const url = `/invitations?populate[startup]=*&populate[invitedBy]=*&filters[startup][documentId][$eq]=${startupDocumentId}`;
+    let url = `/invitations?populate[startup][fields][0]=documentId`;
+    url += `&populate[1]=invitedBy&populate[invitedBy][fields][0]=documentId`;
+    url += `&filters[startup][documentId][$eq]=${startupDocumentId}`;
 
     const invitations = await fetchPaginatedApi<Invitation>(url);
     console.log(`Fetched ${invitations.length} invitations for startup ${startupDocumentId}`);

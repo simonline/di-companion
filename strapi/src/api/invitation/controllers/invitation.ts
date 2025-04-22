@@ -139,7 +139,7 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
 
     // Update the invitation status
     const updatedInvitation = await strapi.documents('api::invitation.invitation').update({
-      documentId: "__TODO__",
+      documentId: invitation.documentId,
 
       data: {
         invitationStatus: 'accepted',
@@ -148,7 +148,7 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
 
     // Add the startup to the user's startups
     await strapi.documents('plugin::users-permissions.user').update({
-      documentId: "__TODO__",
+      documentId: user.documentId,
 
       data: {
         startups: {

@@ -74,7 +74,7 @@ function Register() {
   ): Promise<void> => {
     setIsSubmitting(true);
     try {
-      const result = await register({
+      await register({
         username: uuidv4(),
         email: values.email,
         password: values.password,
@@ -87,11 +87,8 @@ function Register() {
         avatar: values.avatar,
       });
 
-      // Store user data
-      localStorage.setItem('user', JSON.stringify(result));
-
       // Navigate based on user selection
-      navigate('/dashboard');
+      navigate('/login');
     } catch (err) {
       const error = err as Error;
       console.error('Registration error:', error);

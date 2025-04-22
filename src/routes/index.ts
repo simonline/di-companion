@@ -110,7 +110,7 @@ const useRoutes = (): Partial<Routes> => {
       path: '/create-startup',
       title: 'Create Startup',
       visibleTo: ['startup'],
-      requiresAuth: false,
+      requiresAuth: true,
       requiresStartup: false,
     },
     [Pages.NoStartup]: {
