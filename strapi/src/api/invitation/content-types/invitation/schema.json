@@ -1,5 +1,4 @@
 {
-  "kind": "collectionType",
   "collectionName": "invitations",
   "info": {
     "singularName": "invitation",
@@ -41,5 +40,6 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "invitations"
     }
-  }
+  },
+  "kind": "collectionType"
 }
