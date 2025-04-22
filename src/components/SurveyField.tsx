@@ -48,12 +48,15 @@ export const StrictDroppable = ({ children, ...props }: DroppableProps) => {
 };
 
 const HtmlTooltip = ({ title, children }: { title: string; children: React.ReactElement }) => {
+  // Convert newlines to <br> tags
+  const formattedTitle = title ? title.replace(/\n/g, '<br>') : '';
+
   return (
     <Tooltip
       title={
         <Typography
           component="div"
-          dangerouslySetInnerHTML={{ __html: title }}
+          dangerouslySetInnerHTML={{ __html: formattedTitle }}
           sx={{
             maxWidth: 300,
             fontSize: '0.875rem',
