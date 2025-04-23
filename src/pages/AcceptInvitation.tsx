@@ -45,8 +45,7 @@ const AcceptInvitation: React.FC = () => {
       await strapiAcceptInvitation(token);
       setSuccess(true);
     } catch (error) {
-      console.error('Error accepting invitation:', error);
-      setError('Failed to accept invitation. The invitation may be invalid or expired.');
+      setError(error.message);
     } finally {
       setLoading(false);
     }

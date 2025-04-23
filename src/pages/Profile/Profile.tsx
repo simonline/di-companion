@@ -9,7 +9,7 @@ import Header from '@/sections/Header';
 import { getAvatarUrl } from '@/lib/strapi';
 
 function Profile() {
-  const { user } = useAuthContext();
+  const { user, startup } = useAuthContext();
   const navigate = useNavigate();
 
   const joinDate = new Date().toLocaleDateString('en-US', {
@@ -68,15 +68,12 @@ function Profile() {
 
           <Divider />
 
-          {user.startups &&
-            user.startups.map((startup) => (
-              <MenuItem
-                key={startup.documentId}
-                label={startup.name}
-                icon={<Rocket />}
-                onClick={() => navigate(`/profile/startup/${startup.documentId}`)}
-              />
-            ))}
+          <MenuItem
+            key={startup.documentId}
+            label={startup.name}
+            icon={<Rocket />}
+            onClick={() => navigate(`/profile/startup/${startup.documentId}`)}
+          />
         </List>
 
         <Stack sx={{ mt: 4 }}>

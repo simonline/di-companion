@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, createContext, useContext, ReactNode 
 import {
   strapiGetStartupPatterns,
   strapiGetPatterns,
+  strapiGetStartup,
   strapiMe,
   strapiLogin,
   strapiLogout,
@@ -148,7 +149,11 @@ export function useAuth(): UseAuthReturn {
         // JWT token is stored by strapiLogin function
         const userData = await strapiMe();
         setUser(userData);
-        userData.startups?.length > 0 && setStartup(userData.startups[0]);
+        let startup: Startup | null = null;
+        if (userData.startups?.length > 0) {
+          startup = await strapiGetStartup(userData.startups[0].documentId);
+        }
+        setStartup(startup);
         return userData;
       } catch (error) {
         const err = error as Error;
@@ -358,9 +363,14 @@ export function useAuth(): UseAuthReturn {
   }, [state.startup, updateStartup]);
 
   const refreshData = useCallback(async () => {
+    console.log('Refreshing data');
     try {
       const user = await strapiMe();
-      const startup = user.startups?.[0] || null;
+      let startup: Startup | null = null;
+      if (user.startups?.length > 0) {
+        startup = await strapiGetStartup(user.startups[0].documentId);
+      }
+      console.log(startup);
       setState((prev) => ({ ...prev, user, startup, loading: false }));
     } catch (error) {
       setState((prev) => ({ ...prev, loading: false }));

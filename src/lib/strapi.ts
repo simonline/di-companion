@@ -133,10 +133,11 @@ async function fetchPaginatedApi<T>(endpoint: string, options: any = {}): Promis
 
 export async function strapiMe(): Promise<User> {
   try {
+    let url = '/users/me?populate[startups][fields][0]=documentId';
+    url += '&populate[avatar]=*';
+    url += '&populate[coachees]=*';
     // No need to manually add token - the axios interceptor will handle it
-    return await fetchApi<User>(
-      '/users/me?populate[startups][filters][publishedAt][$notNull]=true&populate[startups][populate][coach]=*&populate[avatar]=*&populate[coachees]=*',
-    );
+    return await fetchApi<User>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading user');
@@ -910,7 +911,9 @@ export async function strapiUpdateUser(updateUser: UpdateUser): Promise<User> {
 export async function strapiGetStartup(documentId: string): Promise<Startup> {
   try {
     // No need to manually add token - the axios interceptor will handle it
-    return await fetchSingleApi<Startup>(`/startups/${documentId}`);
+    let url = `/startups/${documentId}`;
+    url += '?populate[0]=coach';
+    return await fetchSingleApi<Startup>(url);
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading startup');

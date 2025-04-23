@@ -11,10 +11,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 const StartupProfile: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuthContext();
-
-  // Find the current startup to show its name
-  const startup = user?.startups?.find((s) => s.documentId === id);
+  const { startup } = useAuthContext();
 
   return (
     <>

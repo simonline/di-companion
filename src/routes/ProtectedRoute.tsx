@@ -13,7 +13,7 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({
   requiresAuth = true,
   requiresStartup = true,
 }) => {
-  const { isAuthenticated, startup, loading } = useAuthContext();
+  const { isAuthenticated, user, startup, loading } = useAuthContext();
   const location = useLocation();
 
   // Show a loading state or return null while authentication state is loading
@@ -39,6 +39,8 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({
 
   // If the user is not associated with a startup, redirect to create-startup
   if (requiresStartup && !startup) {
+    console.log(user);
+    console.log(startup);
     return <Navigate to="/no-startup" state={{ from: location }} replace />;
   }
 

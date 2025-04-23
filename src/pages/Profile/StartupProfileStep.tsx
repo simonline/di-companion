@@ -9,9 +9,8 @@ import { Startup } from '@/types/strapi';
 
 const StartupProfileStep: React.FC = () => {
   const { startupId, stepId } = useParams<{ startupId: string; stepId: string }>();
-  const { user } = useAuthContext();
+  const { user, startup } = useAuthContext();
 
-  const startup = user?.startups?.find((startup) => startup.documentId === startupId);
   const step = steps[parseInt(stepId || '0')];
 
   if (!user) return null;

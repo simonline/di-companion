@@ -27,12 +27,9 @@ function StartupEdit() {
   const theme = useTheme();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { user, updateStartup } = useAuthContext();
+  const { startup, updateStartup } = useAuthContext();
   const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Find the current startup to pre-populate the form
-  const startup = user?.startups?.find((s) => s.documentId === id);
 
   if (!startup) {
     return (
