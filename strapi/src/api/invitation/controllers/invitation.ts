@@ -82,7 +82,7 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
       const invitationLink = `${process.env.FRONTEND_URL}/accept-invitation?token=${invitationData.token}`;
       const currentYear = new Date().getFullYear().toString();
 
-      const emailHtml = await emailTemplates.getEmailTemplate('invitation-reminder', {
+      const emailHtml = await emailTemplates.getEmailTemplate('invitation', {
         inviterName: invitationData.invitedBy?.username,
         startupName: invitationData.startup?.name,
         invitationLink,

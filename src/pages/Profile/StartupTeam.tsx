@@ -386,10 +386,10 @@ const StartupTeam: React.FC = () => {
                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
                     }}
                   >
-                    {invitation.invitedBy && invitation.createdAt
-                      ? `Invited by ${invitation.invitedBy.username} on ${new Date(
-                          invitation.createdAt,
-                        ).toLocaleDateString()}`
+                    {invitation.createdAt
+                      ? `Invited on ${new Date(
+                        invitation.createdAt,
+                      ).toLocaleDateString()}`
                       : 'Invitation details unavailable'}
                   </Typography>
                 }
