@@ -67,13 +67,14 @@ function Profile() {
           <MenuItem label="Profile" icon={<Person />} onClick={() => navigate('/profile/user')} />
 
           <Divider />
-
-          <MenuItem
-            key={startup.documentId}
-            label={startup.name}
-            icon={<Rocket />}
-            onClick={() => navigate(`/profile/startup/${startup.documentId}`)}
-          />
+          {startup && (
+            <MenuItem
+              key={startup.documentId}
+              label={startup.name}
+              icon={<Rocket />}
+              onClick={() => navigate(`/profile/startup/${startup.documentId}`)}
+            />
+          )}
         </List>
 
         <Stack sx={{ mt: 4 }}>

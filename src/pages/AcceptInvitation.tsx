@@ -45,7 +45,7 @@ const AcceptInvitation: React.FC = () => {
       await strapiAcceptInvitation(token);
       setSuccess(true);
     } catch (error) {
-      setError(error.message);
+      setError((error as Error).message);
     } finally {
       setLoading(false);
     }
