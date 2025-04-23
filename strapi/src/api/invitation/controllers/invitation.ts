@@ -137,6 +137,11 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
       return ctx.unauthorized('You must be logged in to accept an invitation');
     }
 
+    // Check if the logged in user's email matches the invitation email
+    if (user.email !== invitation.email) {
+      return ctx.forbidden('This invitation was sent to a different email address');
+    }
+
     // Update the invitation status
     const updatedInvitation = await strapi.documents('api::invitation.invitation').update({
       documentId: invitation.documentId,

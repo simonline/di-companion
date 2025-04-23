@@ -10,42 +10,47 @@ const AcceptInvitation: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading: userLoading } = useAuthContext();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const acceptInvitation = async () => {
-      const params = new URLSearchParams(location.search);
-      const token = params.get('token');
+    const params = new URLSearchParams(location.search);
+    const invitationToken = params.get('token');
 
-      if (!token) {
-        setError('Invalid invitation link');
-        setLoading(false);
-        return;
-      }
+    if (!invitationToken) {
+      setError('Invalid invitation link');
+      return;
+    }
 
-      if (!userLoading && !user) {
-        // If user is not logged in, redirect to login page with return URL
-        const returnUrl = encodeURIComponent(`/accept-invitation?token=${token}`);
-        navigate(`/login?returnUrl=${returnUrl}`);
-        return;
-      }
+    setToken(invitationToken);
 
-      try {
-        // Call Strapi API to accept invitation
-        await strapiAcceptInvitation(token);
-        setSuccess(true);
-      } catch (error) {
-        console.error('Error accepting invitation:', error);
-        setError('Failed to accept invitation. The invitation may be invalid or expired.');
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!userLoading && !user) {
+      // If user is not logged in, redirect to login page with return URL
+      const returnUrl = encodeURIComponent(`/accept-invitation?token=${invitationToken}`);
+      navigate(`/login?returnUrl=${returnUrl}`);
+    }
+  }, [location, user, userLoading, navigate]);
 
-    acceptInvitation();
-  }, [location.search, user, navigate, userLoading]);
+  const acceptInvitation = async () => {
+    if (!token) {
+      setError('Invalid invitation link');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Call Strapi API to accept invitation
+      await strapiAcceptInvitation(token);
+      setSuccess(true);
+    } catch (error) {
+      console.error('Error accepting invitation:', error);
+      setError('Failed to accept invitation. The invitation may be invalid or expired.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -75,6 +80,18 @@ const AcceptInvitation: React.FC = () => {
               </Typography>
               <Button variant="contained" fullWidth onClick={() => navigate('/dashboard')}>
                 Go to Dashboard
+              </Button>
+            </>
+          ) : token ? (
+            <>
+              <Typography variant="h6" sx={{ mb: 3 }}>
+                You have been invited to join a startup
+              </Typography>
+              <Typography variant="body1" paragraph>
+                Click the button below to accept the invitation and gain access to the startup&apos;s dashboard.
+              </Typography>
+              <Button variant="contained" fullWidth onClick={acceptInvitation}>
+                Accept Invitation
               </Button>
             </>
           ) : null}
