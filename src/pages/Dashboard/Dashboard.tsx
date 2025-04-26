@@ -144,7 +144,7 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
                   {/* Progress Bar */}
                   <LinearProgress
                     variant="determinate"
-                    value={score * 100}
+                    value={score}
                     sx={{
                       height: 40,
                       borderRadius: 8,
@@ -212,7 +212,7 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
                     </Typography>
                     {/* Percentage */}
                     <Typography variant="body1" sx={{ color: 'white', ml: 'auto' }}>
-                      {Math.round(score * 100)}%
+                      {score}%
                     </Typography>
                   </Box>
                 </Box>

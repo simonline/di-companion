@@ -344,7 +344,7 @@ export function useAuth(): UseAuthReturn {
       ([category, [pointsAchieved, totalPoints]]) => [
         category as CategoryEnum,
         // Round score to 2 decimal places
-        Math.round((pointsAchieved / totalPoints) * 100) / 100,
+        Math.round((pointsAchieved / totalPoints) * 100),
       ],
     );
     const maturityScores = Object.fromEntries(categoryScores);
