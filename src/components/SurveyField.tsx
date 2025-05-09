@@ -64,7 +64,20 @@ const HtmlTooltip = ({ title, children }: { title: string; children: React.React
           }}
         />
       }
-      placement="right"
+      placement="left"
+      enterTouchDelay={0}
+      leaveTouchDelay={2000}
+      PopperProps={{
+        modifiers: [
+          {
+            name: 'preventOverflow',
+            options: {
+              altAxis: true,
+              padding: 8,
+            },
+          },
+        ],
+      }}
     >
       {children}
     </Tooltip>
@@ -122,6 +135,12 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
     error: !!error,
     helperText: error,
     inputProps: question.maxLength ? { maxLength: question.maxLength } : undefined,
+    InputLabelProps: {
+      sx: {
+        whiteSpace: 'normal',
+        lineHeight: 1.2,
+      },
+    },
   };
 
   const renderFieldWithHelp = (fieldComponent: React.ReactNode) => (

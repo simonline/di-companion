@@ -333,6 +333,15 @@ const Survey: React.FC = () => {
         <Grid container spacing={3} sx={{ maxWidth: '1200px', width: '100%' }}>
           <Grid item xs={12}>
             <Paper sx={{ p: 3 }}>
+              <Button
+                variant="outlined"
+                onClick={() => navigate(`/progress/${pattern.documentId}`)}
+                startIcon={<ArrowBackIcon />}
+                size="small"
+                sx={{ mb: 4 }}
+              >
+                Back to Pattern
+              </Button>
               <Box
                 sx={{
                   display: 'flex',
@@ -344,13 +353,6 @@ const Survey: React.FC = () => {
                 <Typography variant="h4" fontWeight="bold" color="primary">
                   {pattern.name}
                 </Typography>
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate(`/progress/${pattern.documentId}`)}
-                  startIcon={<ArrowBackIcon />}
-                >
-                  Back to Pattern
-                </Button>
               </Box>
 
               {hasPatternQuestions && hasSurveyQuestions && (

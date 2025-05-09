@@ -216,7 +216,26 @@ const SelfAssessment: React.FC = () => {
               </Typography>
             </Box>
 
-            <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+            <Stepper
+              activeStep={activeStep}
+              alternativeLabel
+              sx={{
+                mb: 4,
+                '& .MuiStepLabel-label': {
+                  display: { xs: 'none', sm: 'block' }
+                },
+                '& .MuiStepLabel-iconContainer': {
+                  paddingRight: { xs: 0, sm: 2 }
+                },
+                '& .MuiStepLabel-alternativeLabel': {
+                  marginTop: { xs: 0, sm: 1 }
+                },
+                '& .MuiStepConnector-line': {
+                  marginTop: { xs: 0, sm: '14px' },
+                  paddingRight: { xs: 0, sm: '28px' }
+                }
+              }}
+            >
               {categories.map((category) => (
                 <Step key={category}>
                   <StepLabel>
@@ -225,6 +244,7 @@ const SelfAssessment: React.FC = () => {
                       sx={{
                         textTransform: 'capitalize',
                         fontWeight: activeStep === categories.indexOf(category) ? 'bold' : 'normal',
+                        display: { xs: 'none', sm: 'block' }
                       }}
                     >
                       {categoryDisplayNames[category]}
@@ -233,6 +253,24 @@ const SelfAssessment: React.FC = () => {
                 </Step>
               ))}
             </Stepper>
+
+            {/* Mobile Step Indicator */}
+            <Box
+              sx={{
+                display: { xs: 'flex', sm: 'none' },
+                justifyContent: 'center',
+                alignItems: 'center',
+                mb: 4,
+                gap: 1
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                Step {activeStep + 1} of {categories.length}:
+              </Typography>
+              <Typography variant="body2" fontWeight="bold">
+                {categoryDisplayNames[categories[activeStep]]}
+              </Typography>
+            </Box>
 
             <Formik
               initialValues={generateInitialValues(currentQuestions, userQuestions || undefined)}
