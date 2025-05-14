@@ -30,7 +30,7 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
 
       // Use the data from the request directly
       const startupName = data.startupName || 'a startup';
-      const inviterName = data.inviterName || 'Someone';
+      const inviterName = invitation.invitedBy?.givenName || 'Someone';
 
       const emailHtml = await emailTemplates.getEmailTemplate('invitation', {
         inviterName,
@@ -73,8 +73,20 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
       return ctx.badRequest('Invitation is no longer pending');
     }
 
+    // Set new expiration date (7 days from now)
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    // Update the invitation with new expiration date
+    const updatedInvitation = await strapi.documents('api::invitation.invitation').update({
+      documentId: invitation.documentId,
+      data: {
+        expiresAt,
+      } as any
+    });
+
     // Create temporary objects with type assertions to satisfy TypeScript
-    const invitationData = invitation as any;
+    const invitationData = updatedInvitation as any;
 
     // Send invitation email again
     try {
@@ -83,10 +95,10 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
       const currentYear = new Date().getFullYear().toString();
 
       const emailHtml = await emailTemplates.getEmailTemplate('invitation', {
-        inviterName: invitationData.invitedBy?.username,
+        inviterName: invitationData.invitedBy?.givenName,
         startupName: invitationData.startup?.name,
         invitationLink,
-        expirationDate: new Date(invitationData.expiresAt).toLocaleDateString(),
+        expirationDate: expiresAt.toLocaleDateString(),
         currentYear,
       });
 
@@ -100,7 +112,7 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
       return ctx.badRequest('Failed to send invitation email');
     }
 
-    return { data: invitation };
+    return { data: updatedInvitation };
   },
 
   async accept(ctx) {

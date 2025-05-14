@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
       margin: 0 auto;
       padding: 20px;
     }
+
     .header {
       background-color: #f7a74a;
       color: white;
@@ -20,12 +22,14 @@
       text-align: center;
       border-radius: 5px 5px 0 0;
     }
+
     .content {
       padding: 20px;
       border: 1px solid #ddd;
       border-top: none;
       border-radius: 0 0 5px 5px;
     }
+
     .button {
       display: inline-block;
       background-color: #4a6cf7;
@@ -35,6 +39,7 @@
       border-radius: 5px;
       margin: 20px 0;
     }
+
     .footer {
       margin-top: 20px;
       font-size: 12px;
@@ -43,35 +48,37 @@
     }
   </style>
 </head>
+
 <body>
   <div class="header">
     <h1>Reminder: You've Been Invited!</h1>
   </div>
   <div class="content">
     <p>Hello,</p>
-    
-    <p>This is a friendly reminder that <strong>{{inviterName}}</strong> has invited you to join <strong>{{startupName}}</strong> on our platform.</p>
-    
+
+    <p>This is a friendly reminder that <strong>{{inviterName}}</strong> has invited you to join
+      <strong>{{startupName}}</strong> on our platform.</p>
+
     <p>We noticed you haven't accepted the invitation yet. As a team member, you'll have access to:</p>
     <ul>
       <li>Startup profile and information</li>
       <li>Progress tracking and patterns</li>
       <li>Team collaboration tools</li>
     </ul>
-    
+
     <p>Click the button below to accept the invitation:</p>
-    
+
     <p style="text-align: center;">
       <a href="{{invitationLink}}" class="button">Accept Invitation</a>
     </p>
-    
+
     <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
     <p style="word-break: break-all; font-size: 12px;">{{invitationLink}}</p>
-    
+
     <p>This invitation will expire on <strong>{{expirationDate}}</strong>.</p>
-    
-    <p>If you have any questions, please contact us at support@example.com.</p>
-    
+
+    <p>If you have any questions, please contact us at di@sce.de.</p>
+
     <p>Best regards,<br>The Team</p>
   </div>
   <div class="footer">
@@ -80,4 +87,5 @@
     <p>&copy; {{currentYear}} Your Company Name. All rights reserved.</p>
   </div>
 </body>
+
 </html>
