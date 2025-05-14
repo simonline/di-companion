@@ -78,11 +78,20 @@ export default factories.createCoreController('api::invitation.invitation', ({ s
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     // Update the invitation with new expiration date
-    const updatedInvitation = await strapi.documents('api::invitation.invitation').update({
+    await strapi.documents('api::invitation.invitation').update({
       documentId: invitation.documentId,
       data: {
         expiresAt,
       } as any
+    });
+
+    // Fetch the updated invitation with populated relations
+    const updatedInvitation = await strapi.db.query('api::invitation.invitation').findOne({
+      where: { documentId: id },
+      populate: {
+        startup: true,
+        invitedBy: true,
+      },
     });
 
     // Create temporary objects with type assertions to satisfy TypeScript
