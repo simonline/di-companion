@@ -37,21 +37,23 @@ import useNotifications from '@/store/notifications';
 interface ActionDialogProps {
   open: boolean;
   onClose: () => void;
-  nextUrl: string;
   pattern: Pattern;
   responseType: ResponseTypeEnum;
   title: string;
   actions: [string, ResponseEnum][];
+  onComplete?: () => void;
+  nextUrl?: string;
 }
 
 const ActionDialog: React.FC<ActionDialogProps> = ({
   open,
   onClose,
-  nextUrl,
   pattern,
   responseType,
   title,
   actions,
+  onComplete,
+  nextUrl,
 }) => {
   const { startup } = useAuthContext();
   const navigate = useNavigate();
@@ -76,10 +78,12 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
       if (responseType === ResponseTypeEnum.accept) {
         switch (response) {
           case ResponseEnum.share_reflection:
-            navigate(`/progress/${pattern.documentId}/survey`, { state: { nextUrl } });
+            navigate(`/progress/${pattern.documentId}/survey`, { state: { nextUrl: nextUrl || '/explore' } });
             return;
           case ResponseEnum.perform_exercise:
-            navigate(`/progress/${pattern.documentId}/methods`, { state: { nextUrl } });
+            navigate(`/progress/${pattern.documentId}/methods`, {
+              state: { nextUrl: `/progress/${pattern.documentId}/survey?nextUrl=${nextUrl || '/explore'}` }
+            });
             return;
           case ResponseEnum.think_later:
             break;
@@ -120,9 +124,14 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
             break;
         }
       }
-      navigate(nextUrl);
+
+      console.log('onComplete1', onComplete);
+      if (onComplete) {
+        console.log('onComplete');
+        onComplete();
+      }
     }
-  }, [response, startupPattern, navigate, pattern, nextUrl, responseType, startup, createRequest, notificationsActions]);
+  }, [response, startupPattern, navigate, pattern, responseType, startup, createRequest, notificationsActions, onComplete]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -155,11 +164,12 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
 
 interface PatternCardProps {
   pattern: Pattern;
-  nextUrl: string;
   isInteractive?: boolean;
+  onComplete?: () => void;
+  nextUrl?: string;
 }
 
-const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl, isInteractive = true }) => {
+const PatternCard: React.FC<PatternCardProps> = ({ pattern, isInteractive = true, onComplete, nextUrl }) => {
   const navigate = useNavigate();
   const [isFlipped, setIsFlipped] = React.useState(false);
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -628,11 +638,12 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, nextUrl, isInteracti
         <ActionDialog
           open={dialogOpen}
           onClose={handleDialogClose}
-          nextUrl={nextUrl}
           pattern={pattern}
           responseType={dialogConfig.responseType}
           title={dialogConfig.title}
           actions={dialogConfig.actions}
+          onComplete={onComplete}
+          nextUrl={nextUrl}
         />
       )}
     </Box>

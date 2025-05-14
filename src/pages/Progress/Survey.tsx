@@ -82,12 +82,6 @@ const Survey: React.FC = () => {
   }, [fetchStartupPatterns, startup, patternId]);
 
   useEffect(() => {
-    if (startupPatterns) {
-      console.log('startupPatterns', startupPatterns);
-    }
-  }, [startupPatterns]);
-
-  useEffect(() => {
     if (isApplied && pattern && survey && userQuestions && startupPatterns && startup?.documentId && patternId) {
       const points = calculatePoints(
         [

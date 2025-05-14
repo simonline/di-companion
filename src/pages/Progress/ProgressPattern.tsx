@@ -3,16 +3,21 @@ import { Button, CircularProgress, Typography, Box } from '@mui/material';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import usePattern from '@/hooks/usePattern';
 import PatternCard from '@/components/PatternCard';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/sections/Header';
 
 const Progress: React.FC = () => {
   const { id: patternId } = useParams<{ id: string }>();
   const { fetchPattern, pattern, loading, error } = usePattern();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchPattern(patternId as string);
   }, [fetchPattern, patternId]);
+
+  const handlePatternComplete = () => {
+    navigate('/progress');
+  };
 
   if (loading) {
     return (
@@ -71,7 +76,13 @@ const Progress: React.FC = () => {
     <>
       <Header title="Progress" />
       <FullSizeCenteredFlexBox>
-        {pattern && <PatternCard pattern={pattern} nextUrl="/progress" />}
+        {pattern && (
+          <PatternCard
+            pattern={pattern}
+            onComplete={handlePatternComplete}
+            nextUrl="/progress"
+          />
+        )}
       </FullSizeCenteredFlexBox>
     </>
   );

@@ -3,7 +3,7 @@ import { Button, CircularProgress, Typography, Box } from '@mui/material';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import usePattern from '@/hooks/usePattern';
 import PatternCard from '@/components/PatternCard';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/sections/Header';
 import useSearch from '@/hooks/useSearch';
 
@@ -11,10 +11,15 @@ const ExplorePattern: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { fetchPattern, pattern, loading, error } = usePattern();
   const { SearchComponent } = useSearch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchPattern(id as string);
   }, [fetchPattern, id]);
+
+  const handlePatternComplete = () => {
+    navigate('/explore');
+  };
 
   if (loading) {
     return (
@@ -76,7 +81,7 @@ const ExplorePattern: React.FC = () => {
         <SearchComponent />
       </Box>
       <FullSizeCenteredFlexBox>
-        <PatternCard pattern={pattern} nextUrl="/explore" />
+        <PatternCard pattern={pattern} onComplete={handlePatternComplete} />
       </FullSizeCenteredFlexBox>
     </>
   );

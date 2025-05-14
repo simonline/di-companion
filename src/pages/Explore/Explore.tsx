@@ -14,6 +14,10 @@ const Explore: React.FC = () => {
     getRecommendedPatterns();
   }, [getRecommendedPatterns]);
 
+  const handlePatternComplete = () => {
+    getRecommendedPatterns()
+  };
+
   if (loading || !recommendedPatterns) {
     return (
       <Box
@@ -58,7 +62,11 @@ const Explore: React.FC = () => {
         <SearchComponent />
       </Box>
       <FullSizeCenteredFlexBox>
-        <PatternCard pattern={recommendedPatterns[0]} nextUrl="/explore" />
+        <PatternCard
+          pattern={recommendedPatterns[0]}
+          onComplete={handlePatternComplete}
+          nextUrl="/explore"
+        />
       </FullSizeCenteredFlexBox>
     </>
   );
