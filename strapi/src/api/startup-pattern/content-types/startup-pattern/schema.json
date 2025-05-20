@@ -46,6 +46,11 @@
     },
     "points": {
       "type": "decimal"
+    },
+    "user": {
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "type": "relation"
     }
   }
 }

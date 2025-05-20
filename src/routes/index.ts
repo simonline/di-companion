@@ -4,6 +4,7 @@ import SpeedIcon from '@mui/icons-material/Speed';
 import ForumIcon from '@mui/icons-material/Forum';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ListIcon from '@mui/icons-material/List';
+import AnalyticsIcon from '@mui/icons-material/Analytics';
 import { useAuthContext } from '@/hooks/useAuth';
 
 import asyncComponentLoader from '@/utils/loader';
@@ -55,6 +56,15 @@ export const useAppRoutes = (): Partial<AppRoutes> => {
       path: '/startups',
       title: 'Startups',
       icon: ListIcon,
+      requiresAuth: true,
+      visibleTo: ['coach'],
+      requiresStartup: false,
+    },
+    [Pages.Analytics]: {
+      component: asyncComponentLoader(() => import('@/pages/Startups/Analytics')),
+      path: '/analytics',
+      title: 'Analytics',
+      icon: AnalyticsIcon,
       requiresAuth: true,
       visibleTo: ['coach'],
       requiresStartup: false,

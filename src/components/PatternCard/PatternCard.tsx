@@ -55,7 +55,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
   onComplete,
   nextUrl,
 }) => {
-  const { startup } = useAuthContext();
+  const { startup, user } = useAuthContext();
   const navigate = useNavigate();
   const { createStartupPattern, startupPattern } = useStartupPattern();
   const { createRequest } = useRequests();
@@ -67,6 +67,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
       createStartupPattern({
         startup: { set: { documentId: startup?.documentId as string } },
         pattern: { set: { documentId: pattern.documentId } },
+        user: { set: { documentId: user?.documentId as string } },
         responseType,
         response,
       });

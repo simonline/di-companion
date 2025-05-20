@@ -185,6 +185,7 @@ export interface Startup {
   scores?: Record<CategoryEnum, number>;
   score?: number;
   coach?: User;
+  users?: User[];
 }
 
 export interface CreateStartup {
@@ -254,6 +255,7 @@ export interface StartupPattern {
   responseType: ResponseTypeEnum;
   response: ResponseEnum;
   points: number;
+  user?: User;
 }
 
 export interface CreateStartupPattern {
@@ -263,6 +265,7 @@ export interface CreateStartupPattern {
   response: ResponseEnum;
   appliedAt?: string;
   points?: number;
+  user?: StrapiSetRelated;
 }
 
 export interface UpdateStartupPattern {
@@ -273,6 +276,7 @@ export interface UpdateStartupPattern {
   response?: ResponseEnum;
   appliedAt?: string;
   points?: number;
+  user?: StrapiSetRelated;
 }
 
 export interface StartupMethod {

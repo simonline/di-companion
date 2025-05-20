@@ -328,7 +328,7 @@ export default function OverviewView() {
                                   {startup.name}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                  Maturity Score: {startup.score || 0}%
+                                  Performance Score: {startup.score || 0}%
                                 </Typography>
                               </Box>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

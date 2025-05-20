@@ -136,6 +136,7 @@ export async function strapiMe(): Promise<User> {
     let url = '/users/me?populate[startups][fields][0]=documentId';
     url += '&populate[avatar]=*';
     url += '&populate[coachees]=*';
+    url += '&populate[coachees][populate][0]=users'; // Populate users within coachees
     // No need to manually add token - the axios interceptor will handle it
     return await fetchApi<User>(url);
   } catch (error) {
@@ -391,7 +392,7 @@ export async function strapiGetQuestions(): Promise<Question[]> {
 export async function strapiGetStartups(): Promise<Startup[]> {
   try {
     // No need to manually add token - the axios interceptor will handle it
-    return await fetchPaginatedApi<Startup>('/startups');
+    return await fetchPaginatedApi<Startup>('/startups?populate=users');
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Error loading startups');
@@ -401,16 +402,27 @@ export async function strapiGetStartups(): Promise<Startup[]> {
 export async function strapiGetStartupPatterns(
   startupDocumentId: string,
   patternDocumentId?: string,
+  dateRange?: { startDate: Date; endDate: Date }
 ): Promise<StartupPattern[]> {
   try {
     // No need to manually add token - the axios interceptor will handle it
     let url =
       '/startup-patterns?populate[0]=pattern&populate[1]=pattern.image&populate[2]=pattern.relatedPatterns';
     url += '&populate[3]=startup';
+    url += '&populate[4]=user';
     url += `&filters[startup][documentId][$eq]=${startupDocumentId}`;
     if (patternDocumentId) {
       url += `&filters[pattern][documentId][$eq]=${patternDocumentId}`;
     }
+
+    // Add date range filter if provided
+    if (dateRange) {
+      const startDateStr = dateRange.startDate.toISOString();
+      const endDateStr = dateRange.endDate.toISOString();
+      url += `&filters[createdAt][$gte]=${startDateStr}`;
+      url += `&filters[createdAt][$lte]=${endDateStr}`;
+    }
+
     url += '&sort=createdAt';
 
     return await fetchPaginatedApi<StartupPattern>(url);
@@ -1041,7 +1053,7 @@ export async function strapiUpdateStartupCoach(
 
 export async function strapiGetAvailableStartups(): Promise<Startup[]> {
   try {
-    return await fetchCollectionApi<Startup>('/startups?filters[coach][id][$null]=true');
+    return await fetchCollectionApi<Startup>('/startups?filters[coach][id][$null]=true&populate[0]=users');
   } catch (error) {
     const strapiError = error as StrapiError;
     throw new Error(strapiError.error?.message || 'Failed to fetch available startups');

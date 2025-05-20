@@ -97,6 +97,7 @@ const Survey: React.FC = () => {
       if (!startupPatterns || startupPatterns.length === 0) {
         createStartupPattern({
           startup: { set: { documentId: startup.documentId } },
+          user: { set: { documentId: user?.documentId as string } },
           pattern: { set: { documentId: patternId } },
           responseType: ResponseTypeEnum.accept,
           response: ResponseEnum.share_reflection,

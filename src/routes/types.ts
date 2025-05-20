@@ -17,6 +17,7 @@ export enum Pages {
   Dashboard,
   Coach,
   Startups,
+  Analytics,
   Startup,
   Profile,
   UserProfile,

@@ -70,9 +70,9 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
       <CardContent>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h6" fontWeight="700" gutterBottom>
-            Your Maturity Score
+            Your Performance Score
           </Typography>
-          <Tooltip title="Your maturity score is calculated based on the patterns you've applied and your self-assessment results. It represents your startup's progress across different perspectives.">
+          <Tooltip title="Your performance score is calculated based on the patterns you've applied and your self-assessment results. It represents your startup's progress across different perspectives.">
             <InfoIcon color="action" fontSize="small" />
           </Tooltip>
         </Box>
@@ -92,7 +92,7 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={6}>
               <Typography variant="h5" fontWeight="bold" gutterBottom>
-                Overall Maturity Score
+                Overall Performance Score
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                 Your startup&apos;s overall maturity across all perspectives
@@ -326,7 +326,7 @@ const RecommendationSection: React.FC<DashboardWidgetProps> = () => {
           Recommended Patterns
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Based on your current maturity score, we recommend the following pattern to help you
+          Based on your current performance score, we recommend the following pattern to help you
           improve.
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>

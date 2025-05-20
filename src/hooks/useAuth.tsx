@@ -339,7 +339,7 @@ export function useAuth(): UseAuthReturn {
       categoryPoints[pattern.category][1] += 5;
     });
 
-    // Calculate the maturity score for each category
+    // Calculate the performance score for each category
     const categoryScores = Object.entries(categoryPoints).map(
       ([category, [pointsAchieved, totalPoints]]) => [
         category as CategoryEnum,
