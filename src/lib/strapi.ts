@@ -136,7 +136,6 @@ export async function strapiMe(): Promise<User> {
     let url = '/users/me?populate[startups][fields][0]=documentId';
     url += '&populate[avatar]=*';
     url += '&populate[coachees]=*';
-    url += '&populate[coachees][populate][0]=users'; // Populate users within coachees
     // No need to manually add token - the axios interceptor will handle it
     return await fetchApi<User>(url);
   } catch (error) {
