@@ -52,14 +52,25 @@ export default function usePatterns(): UsePatternsReturn {
     return array[Math.floor(Math.random() * array.length)];
   };
 
-  const getRecommendedCategory = useCallback((startup: Startup): CategoryEnum => {
+  const getRecommendedCategory = useCallback((startup: Startup, excludedCategories: CategoryEnum[] = []): CategoryEnum | null => {
     if (!startup?.scores) return CategoryEnum.entrepreneur;
+
     const scores = startup.scores;
-    const lowestScore = Math.min(...Object.values(scores));
-    const lowestCategories = Object.keys(startup.scores).filter(
-      (category) => scores[category as CategoryEnum] === lowestScore,
+    const categories = Object.keys(scores).filter(
+      category => !excludedCategories.includes(category as CategoryEnum)
+    ) as CategoryEnum[];
+
+    // If all categories are excluded, return null
+    if (categories.length === 0) return null;
+
+    // Find the lowest score among remaining categories
+    const lowestScore = Math.min(...categories.map(category => scores[category]));
+
+    const lowestCategories = categories.filter(
+      category => scores[category] === lowestScore
     );
-    return getRandomItem(lowestCategories) as CategoryEnum;
+
+    return getRandomItem(lowestCategories);
   }, []);
 
   const getRecommendedPatterns = useCallback(
@@ -72,27 +83,43 @@ export default function usePatterns(): UsePatternsReturn {
 
       setState((prev) => ({ ...prev, loading: true }));
       try {
-        // Get category with lowest score
-        const category = getRecommendedCategory(state.startup as Startup);
-
-        // Fetch available patterns for that category
-        const availablePatterns = await strapiGetPatterns(category);
-
         // Fetch patterns already started/applied by startup
         let usedPatterns: StartupPattern[] = [];
         if (state.startup) {
           usedPatterns = await strapiGetStartupPatterns(state.startup.documentId);
         }
 
-        // Remove patterns already started/applied by startup
-        const filteredPatterns = availablePatterns.filter(
-          (pattern) =>
-            !usedPatterns.some(
-              (usedPattern) => usedPattern.pattern?.documentId === pattern.documentId,
-            ),
-        );
+        // Get used pattern documentIds
+        const usedPatternDocumentIds = usedPatterns.map((usedPattern) => usedPattern.pattern?.documentId);
 
-        // Get a random pattern from available patterns
+        // Try to find patterns from categories starting with the lowest score
+        const excludedCategories: CategoryEnum[] = [];
+        let availablePatterns: Pattern[] = [];
+        let filteredPatterns: Pattern[] = [];
+        let category: CategoryEnum | null;
+
+        // Keep trying categories until we find patterns or run out of categories
+        while (filteredPatterns.length === 0) {
+          category = getRecommendedCategory(state.startup as Startup, excludedCategories);
+
+          // If all categories have been tried, break the loop
+          if (category === null) break;
+
+          // Fetch available patterns for that category
+          availablePatterns = await strapiGetPatterns(category);
+
+          // Remove patterns already started/applied by startup
+          filteredPatterns = availablePatterns.filter(
+            (pattern) => !usedPatternDocumentIds.includes(pattern.documentId)
+          );
+
+          // If no patterns available in this category, exclude it and try another
+          if (filteredPatterns.length === 0) {
+            excludedCategories.push(category);
+          }
+        }
+
+        // Get random patterns from available patterns
         const randomPatterns: Pattern[] = [];
         // Loop over count to get multiple patterns (default 1), avoid duplicates
         for (let i = 0; i < (count || 1); i++) {
