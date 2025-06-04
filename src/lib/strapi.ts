@@ -1107,7 +1107,7 @@ export async function strapiFindUserQuestion(
     const userQuestion = userQuestions.find(
       (uq) =>
         uq.user.documentId === userDocumentId &&
-        uq.pattern.documentId === patternDocumentId &&
+        uq.pattern?.documentId === patternDocumentId &&
         uq.question.documentId === questionDocumentId,
     );
     if (!userQuestion) {

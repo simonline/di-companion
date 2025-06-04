@@ -88,7 +88,7 @@ export default function usePatterns(): UsePatternsReturn {
         const filteredPatterns = availablePatterns.filter(
           (pattern) =>
             !usedPatterns.some(
-              (usedPattern) => usedPattern.pattern.documentId === pattern.documentId,
+              (usedPattern) => usedPattern.pattern?.documentId === pattern.documentId,
             ),
         );
 

@@ -264,16 +264,16 @@ export default function AnalyticsView() {
                         // Add pattern interaction
                         const interactionDate = new Date(pattern.createdAt);
                         analytics.patternInteractions.push({
-                            patternId: pattern.pattern.documentId,
-                            patternName: pattern.pattern.name || 'Unnamed Pattern',
+                            patternId: pattern.pattern?.documentId,
+                            patternName: pattern.pattern?.name || 'Unnamed Pattern',
                             lastInteraction: interactionDate,
-                            category: pattern.pattern.category as CategoryEnum,
-                            phases: pattern.pattern.phases as PhaseEnum[],
-                            imageUrl: pattern.pattern.image?.url,
+                            category: pattern.pattern?.category as CategoryEnum,
+                            phases: pattern.pattern?.phases as PhaseEnum[],
+                            imageUrl: pattern.pattern?.image?.url,
                         });
 
                         // Add unique pattern
-                        analytics.uniquePatterns.add(pattern.pattern.documentId);
+                        analytics.uniquePatterns.add(pattern.pattern?.documentId);
 
                         // Increment interaction count
                         analytics.interactionCount++;

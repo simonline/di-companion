@@ -334,7 +334,7 @@ const Progress: React.FC = () => {
           {filteredPatterns?.map((startupPattern) => (
             <ListItem
               key={startupPattern.documentId}
-              onClick={() => navigate(state?.nextUrl || `/progress/${startupPattern.pattern.documentId}`)}
+              onClick={() => navigate(state?.nextUrl || `/progress/${startupPattern.pattern?.documentId}`)}
               sx={{ cursor: 'pointer', padding: 0 }}
             >
               <PatternListItem startupPattern={startupPattern} />

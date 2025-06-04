@@ -327,9 +327,9 @@ export function useAuth(): UseAuthReturn {
 
     // Get total points achieved for each category
     startupPatterns.forEach((startupPattern) => {
-      if (!startupPattern.pattern.category) return;
-      console.log(startupPattern.pattern.category);
-      categoryPoints[startupPattern.pattern.category][0] += startupPattern.points;
+      if (!startupPattern.pattern?.category) return;
+      console.log(startupPattern.pattern?.category);
+      categoryPoints[startupPattern.pattern?.category][0] += startupPattern.points;
     });
     console.log(categoryPoints);
 

@@ -38,7 +38,9 @@ export default function useStartupPatterns(): UseStartupPatternsReturn {
           ? Object.values(
             startupPatterns.reduce(
               (acc, pattern) => {
-                const key = `${pattern.startup.documentId}-${pattern.pattern.documentId}`;
+                // Ignore if no pattern given
+                if (!pattern.pattern) return acc;
+                const key = `${pattern.startup.documentId}-${pattern.pattern?.documentId}`;
                 if (!acc[key] || acc[key].createdAt > pattern.createdAt) {
                   acc[key] = pattern;
                 }
