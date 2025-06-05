@@ -233,7 +233,7 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={6}>
               <Typography variant="h5" fontWeight="bold" gutterBottom>
-                Overall Performance Score
+                Overall Score
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                 Your startup&apos;s overall maturity across all perspectives
