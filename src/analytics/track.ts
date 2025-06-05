@@ -6,7 +6,10 @@
  * Helper to check if Amplitude is available and configured
  */
 const isAmplitudeAvailable = (): boolean => {
-    return Boolean(window.amplitude && import.meta.env.PROD && import.meta.env.VITE_AMPLITUDE_API_KEY);
+    const enableInDev = import.meta.env.VITE_ENABLE_ANALYTICS_IN_DEV === 'true';
+    const shouldEnableAnalytics = import.meta.env.PROD || enableInDev;
+
+    return Boolean(window.amplitude && shouldEnableAnalytics && import.meta.env.VITE_AMPLITUDE_API_KEY);
 };
 
 /**

@@ -23,6 +23,7 @@ import type {
 } from '@/types/strapi';
 import type { CategoryEnum } from '@/utils/constants';
 import { authEvents, isTokenExpired } from '@/lib/axios';
+import { identifyUser } from '@/analytics/track';
 
 interface AuthState {
   user: User | null;
@@ -122,9 +123,11 @@ export function useAuth(): UseAuthReturn {
     setState((prev) => ({ ...prev, user: userData, error: null }));
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData));
+      identifyUser(userData.id);
     } else {
       localStorage.removeItem('user');
       localStorage.removeItem('strapi_jwt'); // Also remove JWT when clearing user
+      identifyUser(null);
     }
   }, []);
 

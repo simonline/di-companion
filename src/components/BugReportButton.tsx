@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, useTheme, Button, Slide, Paper, IconButton, Tooltip } from '@mui/material';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import CloseIcon from '@mui/icons-material/Close';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { trackEvent } from '../analytics/track';
 
 interface BugReportButtonProps {
@@ -13,6 +14,7 @@ export function BugReportButton({ showFloatingButton = true }: BugReportButtonPr
     const [expanded, setExpanded] = useState(false);
     const [description, setDescription] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [panelSubmitted, setPanelSubmitted] = useState(false);
     const theme = useTheme();
 
     useEffect(() => {
@@ -27,7 +29,11 @@ export function BugReportButton({ showFloatingButton = true }: BugReportButtonPr
     }, []);
 
     const handleExpand = () => setExpanded(true);
-    const handleCollapse = () => setExpanded(false);
+    const handleCollapse = () => {
+        setExpanded(false);
+        // Reset panel submitted state after panel is closed
+        setTimeout(() => setPanelSubmitted(false), 300);
+    };
 
     const handleClose = () => {
         setOpen(false);
@@ -45,6 +51,23 @@ export function BugReportButton({ showFloatingButton = true }: BugReportButtonPr
 
         setSubmitted(true);
         setTimeout(handleClose, 1500);
+    };
+
+    const handlePanelSubmit = () => {
+        // Send bug report to Amplitude
+        trackEvent('bug_report_submitted', {
+            description,
+            url: window.location.href,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString(),
+        });
+
+        // Show success message in panel
+        setPanelSubmitted(true);
+        setDescription('');
+
+        // Close panel after delay
+        setTimeout(handleCollapse, 1500);
     };
 
     if (!showFloatingButton) return null;
@@ -104,37 +127,53 @@ export function BugReportButton({ showFloatingButton = true }: BugReportButtonPr
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <BugReportIcon color="primary" style={{ marginRight: '8px' }} />
-                                    <span style={{ fontWeight: 'bold' }}>Report a Bug</span>
+                                    <span style={{ fontWeight: 'bold' }}>
+                                        {panelSubmitted ? "Thank you!" : "Report a Bug"}
+                                    </span>
                                 </div>
                                 <IconButton size="small" onClick={handleCollapse}>
                                     <CloseIcon fontSize="small" />
                                 </IconButton>
                             </div>
-                            <TextField
-                                autoFocus
-                                margin="dense"
-                                label="What went wrong?"
-                                fullWidth
-                                multiline
-                                rows={4}
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                variant="outlined"
-                                size="small"
-                            />
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-                                <Button
-                                    variant="contained"
-                                    size="small"
-                                    disabled={!description.trim()}
-                                    onClick={() => {
-                                        handleSubmit();
-                                        handleCollapse();
-                                    }}
-                                >
-                                    Submit
-                                </Button>
-                            </div>
+
+                            {panelSubmitted ? (
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '16px 0',
+                                    color: theme.palette.success.main
+                                }}>
+                                    <CheckCircleIcon style={{ fontSize: '36px', marginBottom: '8px' }} />
+                                    <span>Your bug report has been submitted!</span>
+                                </div>
+                            ) : (
+                                <>
+                                    <TextField
+                                        autoFocus
+                                        margin="dense"
+                                        label="What went wrong?"
+                                        fullWidth
+                                        multiline
+                                        rows={4}
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        variant="outlined"
+                                        size="small"
+                                    />
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                                        <Button
+                                            variant="contained"
+                                            size="small"
+                                            disabled={!description.trim()}
+                                            onClick={handlePanelSubmit}
+                                        >
+                                            Submit
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
                         </Paper>
                     </Slide>
                 )}

@@ -202,6 +202,12 @@ To configure Amplitude, add your API key to the `.env` file:
 VITE_AMPLITUDE_API_KEY=your_amplitude_api_key
 ```
 
+By default, analytics events are only sent in production mode. If you need to test analytics on localhost or in development, add this to your `.env`:
+
+```
+VITE_ENABLE_ANALYTICS_IN_DEV=true
+```
+
 The application automatically tracks page views as users navigate through the app. 
 
 To track custom events, you can use the utility functions in `src/analytics/track.ts`:

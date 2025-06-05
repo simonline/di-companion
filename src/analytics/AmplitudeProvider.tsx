@@ -25,10 +25,15 @@ export function AmplitudeProvider({ children, apiKey }: AmplitudeProviderProps) 
     // Use the provided API key or fall back to environment variable
     const amplitudeApiKey = apiKey || import.meta.env.VITE_AMPLITUDE_API_KEY;
 
+    // Check if analytics should be enabled in development mode
+    const enableInDev = import.meta.env.VITE_ENABLE_ANALYTICS_IN_DEV === 'true';
+
+    // Enable analytics in production or if explicitly enabled in development
+    const shouldEnableAnalytics = import.meta.env.PROD || enableInDev;
+
     useEffect(() => {
-        // Only load Amplitude in production to avoid tracking during development
-        // Also ensure we have an API key
-        if (import.meta.env.PROD && amplitudeApiKey) {
+        // Only load Amplitude if analytics should be enabled and we have an API key
+        if (shouldEnableAnalytics && amplitudeApiKey) {
             // Load Amplitude script
             const amplitudeScript = document.createElement('script');
             amplitudeScript.src = `https://cdn.amplitude.com/script/${amplitudeApiKey}.js`;
@@ -41,6 +46,11 @@ export function AmplitudeProvider({ children, apiKey }: AmplitudeProviderProps) 
                         fetchRemoteConfig: true,
                         autocapture: true,
                     });
+
+                    // Log in dev mode that analytics is enabled
+                    if (!import.meta.env.PROD && enableInDev) {
+                        console.log('[Amplitude] Analytics enabled in development mode');
+                    }
                 }
             };
             document.head.appendChild(amplitudeScript);
@@ -48,12 +58,12 @@ export function AmplitudeProvider({ children, apiKey }: AmplitudeProviderProps) 
 
         return () => {
             // Cleanup if needed
-            if (import.meta.env.PROD && amplitudeApiKey) {
+            if (shouldEnableAnalytics && amplitudeApiKey) {
                 const scriptSelector = `script[src="https://cdn.amplitude.com/script/${amplitudeApiKey}.js"]`;
                 document.querySelector(scriptSelector)?.remove();
             }
         };
-    }, [amplitudeApiKey]);
+    }, [amplitudeApiKey, shouldEnableAnalytics, enableInDev]);
 
     return <>{children}</>;
 }
