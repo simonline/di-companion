@@ -10,6 +10,8 @@ import {
   CircularProgress,
   Tabs,
   Tab,
+  Typography,
+  Chip,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -28,6 +30,7 @@ import RecommendationList from './components/RecommendationList';
 import RequestList from './components/RequestList';
 import { useParams } from 'react-router-dom';
 import Loading from '@/components/Loading';
+import { CategoryEnum, categoryDisplayNames, categoryColors } from '@/utils/constants';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -238,6 +241,29 @@ export default function StartupView() {
             )}
           </Box>
         </Box>
+
+        {/* Display Categories */}
+        {currentStartup?.categories && currentStartup.categories.length > 0 && (
+          <Card sx={{ width: '100%', mb: 3 }}>
+            <CardContent>
+              <Typography variant="subtitle1" gutterBottom>
+                Assigned Categories
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {(currentStartup.categories as CategoryEnum[]).map((category) => (
+                  <Chip
+                    key={category}
+                    label={categoryDisplayNames[category]}
+                    sx={{
+                      backgroundColor: categoryColors[category],
+                      color: '#fff',
+                    }}
+                  />
+                ))}
+              </Box>
+            </CardContent>
+          </Card>
+        )}
 
         {errorRecommendations && tabValue === 0 && (
           <Alert severity="error" sx={{ mb: 3, width: '100%' }}>

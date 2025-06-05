@@ -170,16 +170,31 @@ const Progress: React.FC = () => {
     }
   }, [fetchStartupPatterns, startup]);
 
-  const filteredPatterns = startupPatterns?.filter(
-    (pattern) => getPatternStatus(pattern) === filterStatus,
+  const filteredPatterns = startupPatterns?.filter((pattern) => {
+    // Filter by status
+    const statusMatch = getPatternStatus(pattern) === filterStatus;
+
+    // Filter by startup categories if available
+    const categoryMatch =
+      !startup?.categories?.length ||
+      startup.categories.includes(pattern.pattern?.category);
+
+    return statusMatch && categoryMatch;
+  });
+
+  // Filter patterns by category first
+  const categoryFilteredPatterns = startupPatterns?.filter(pattern =>
+    !startup?.categories?.length ||
+    startup.categories.includes(pattern.pattern?.category)
   );
 
+  // Then count based on status
   const inProgressCount =
-    startupPatterns?.filter((pattern) => getPatternStatus(pattern) === 'in_progress').length || 0;
+    categoryFilteredPatterns?.filter((pattern) => getPatternStatus(pattern) === 'in_progress').length || 0;
   const appliedCount =
-    startupPatterns?.filter((pattern) => getPatternStatus(pattern) === 'applied').length || 0;
+    categoryFilteredPatterns?.filter((pattern) => getPatternStatus(pattern) === 'applied').length || 0;
   const notAppliedCount =
-    startupPatterns?.filter((pattern) => getPatternStatus(pattern) === 'not_applied').length || 0;
+    categoryFilteredPatterns?.filter((pattern) => getPatternStatus(pattern) === 'not_applied').length || 0;
 
   if (loading) {
     return (

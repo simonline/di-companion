@@ -26,18 +26,23 @@ import {
   Snackbar,
   Alert,
   Menu,
+  Checkbox,
+  FormGroup,
+  FormControlLabel,
+  Tooltip,
 } from '@mui/material';
-import { Add as AddIcon, MoreVert as MoreVertIcon } from '@mui/icons-material';
+import { Add as AddIcon, MoreVert as MoreVertIcon, Category as CategoryIcon } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { Link } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { Startup } from '@/types/strapi';
-import { strapiGetRequests, strapiGetAvailableStartups, strapiUpdateUser } from '@/lib/strapi';
+import { strapiGetRequests, strapiGetAvailableStartups, strapiUpdateUser, strapiUpdateStartup } from '@/lib/strapi';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { formatDistanceToNow } from 'date-fns';
 import React from 'react';
+import { CategoryEnum, categoryDisplayNames, categoryColors } from '@/utils/constants';
 
 export default function OverviewView() {
   const { user } = useAuthContext();
@@ -52,6 +57,15 @@ export default function OverviewView() {
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedStartupForMenu, setSelectedStartupForMenu] = useState<Startup | null>(null);
   const { fetchStartupPatterns, startupPatterns } = useStartupPatterns();
+
+  // State for category assignment dialog
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<CategoryEnum[]>([]);
+
+  // State for bulk category assignment
+  const [isBulkCategoryDialogOpen, setIsBulkCategoryDialogOpen] = useState(false);
+  const [selectedStartups, setSelectedStartups] = useState<Startup[]>([]);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // Get count of coachees
   const coacheesCount = user?.coachees?.length || 0;
@@ -107,6 +121,13 @@ export default function OverviewView() {
 
     fetchData();
   }, [user?.coachees, fetchStartupPatterns]);
+
+  // Reset selection mode when coachees list changes
+  useEffect(() => {
+    if (isSelectionMode) {
+      setSelectedStartups([]);
+    }
+  }, [user?.coachees, isSelectionMode]);
 
   // Count unread requests
   const unreadRequestsCount = requests.filter((req) => !req.readAt).length;
@@ -201,6 +222,155 @@ export default function OverviewView() {
     }
   };
 
+  // Handle opening the category dialog
+  const handleOpenCategoryDialog = () => {
+    if (selectedStartupForMenu) {
+      // Initialize selected categories from startup if available
+      const currentCategories = selectedStartupForMenu.categories || [];
+      setSelectedCategories(currentCategories as CategoryEnum[]);
+      setIsCategoryDialogOpen(true);
+    }
+  };
+
+  // Handle category selection
+  const handleCategoryChange = (category: CategoryEnum) => {
+    setSelectedCategories((prev) => {
+      if (prev.includes(category)) {
+        return prev.filter(c => c !== category);
+      } else {
+        return [...prev, category];
+      }
+    });
+  };
+
+  // Save selected categories to startup
+  const handleSaveCategories = async () => {
+    if (!selectedStartupForMenu) return;
+
+    try {
+      await strapiUpdateStartup({
+        documentId: selectedStartupForMenu.documentId,
+        categories: selectedCategories,
+      });
+
+      // Update the local state to reflect changes
+      if (user?.coachees) {
+        const updatedCoachees = user.coachees.map(startup => {
+          if (startup.documentId === selectedStartupForMenu.documentId) {
+            return { ...startup, categories: selectedCategories };
+          }
+          return startup;
+        });
+
+        // Update user with updated coachees
+        if (user.id) {
+          await strapiUpdateUser({
+            id: user.id,
+            documentId: user.documentId,
+            coachees: updatedCoachees,
+          });
+        }
+      }
+
+      setNotification({
+        message: 'Categories updated successfully',
+        severity: 'success',
+      });
+
+      setIsCategoryDialogOpen(false);
+      handleMenuClose();
+    } catch (error) {
+      setNotification({
+        message: `Error: ${(error as Error).message}`,
+        severity: 'error',
+      });
+    }
+  };
+
+  // Toggle startup selection for bulk operations
+  const handleStartupSelection = (startup: Startup) => {
+    setSelectedStartups(prev => {
+      const isSelected = prev.some(s => s.documentId === startup.documentId);
+      if (isSelected) {
+        return prev.filter(s => s.documentId !== startup.documentId);
+      } else {
+        return [...prev, startup];
+      }
+    });
+  };
+
+  // Toggle selection mode
+  const handleToggleSelectionMode = () => {
+    setIsSelectionMode(prev => !prev);
+    if (isSelectionMode) {
+      setSelectedStartups([]);
+    }
+  };
+
+  // Open bulk category assignment dialog
+  const handleOpenBulkCategoryDialog = () => {
+    if (selectedStartups.length === 0) {
+      setNotification({
+        message: 'Please select at least one startup',
+        severity: 'warning',
+      });
+      return;
+    }
+
+    setSelectedCategories([]);
+    setIsBulkCategoryDialogOpen(true);
+  };
+
+  // Save categories to multiple startups
+  const handleSaveBulkCategories = async () => {
+    if (selectedStartups.length === 0) return;
+
+    try {
+      // Update each selected startup
+      const updatePromises = selectedStartups.map(startup =>
+        strapiUpdateStartup({
+          documentId: startup.documentId,
+          categories: selectedCategories,
+        })
+      );
+
+      await Promise.all(updatePromises);
+
+      // Update the local state to reflect changes
+      if (user?.coachees) {
+        const updatedCoachees = user.coachees.map(startup => {
+          if (selectedStartups.some(s => s.documentId === startup.documentId)) {
+            return { ...startup, categories: selectedCategories };
+          }
+          return startup;
+        });
+
+        // Update user with updated coachees
+        if (user.id) {
+          await strapiUpdateUser({
+            id: user.id,
+            documentId: user.documentId,
+            coachees: updatedCoachees,
+          });
+        }
+      }
+
+      setNotification({
+        message: `Categories updated for ${selectedStartups.length} startups`,
+        severity: 'success',
+      });
+
+      setIsBulkCategoryDialogOpen(false);
+      setIsSelectionMode(false);
+      setSelectedStartups([]);
+    } catch (error) {
+      setNotification({
+        message: `Error: ${(error as Error).message}`,
+        severity: 'error',
+      });
+    }
+  };
+
   return (
     <>
       <Header title="Coach" />
@@ -270,13 +440,46 @@ export default function OverviewView() {
             titleTypographyProps={{ variant: 'h6' }}
             subheaderTypographyProps={{ variant: 'body2' }}
             action={
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => setIsAssignDialogOpen(true)}
-              >
-                Assign Startup
-              </Button>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                {isSelectionMode ? (
+                  <>
+                    <Button
+                      variant="outlined"
+                      onClick={handleToggleSelectionMode}
+                      color="secondary"
+                    >
+                      Cancel Selection
+                    </Button>
+                    <Button
+                      variant="contained"
+                      startIcon={<CategoryIcon />}
+                      onClick={handleOpenBulkCategoryDialog}
+                      disabled={selectedStartups.length === 0}
+                    >
+                      Assign Categories ({selectedStartups.length})
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Tooltip title="Select multiple startups to assign categories">
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={handleToggleSelectionMode}
+                      >
+                        Assign Categories
+                      </Button>
+                    </Tooltip>
+                    <Button
+                      variant="contained"
+                      startIcon={<AddIcon />}
+                      onClick={() => setIsAssignDialogOpen(true)}
+                    >
+                      Assign Startup
+                    </Button>
+                  </>
+                )}
+              </Box>
             }
           />
           <CardContent>
@@ -288,30 +491,58 @@ export default function OverviewView() {
                     (r) => r.startup?.documentId === startup.documentId && !r.readAt,
                   ).length;
 
+                  // Check if this startup is selected for bulk operations
+                  const isSelected = selectedStartups.some(s => s.documentId === startup.documentId);
+
                   return (
                     <React.Fragment key={startup.documentId || index}>
                       <ListItem
-                        component={Link}
-                        to={`/startups/${startup.documentId || startup.name?.toLowerCase()}`}
+                        component={isSelectionMode ? 'div' : Link}
+                        to={isSelectionMode ? undefined : `/startups/${startup.documentId || startup.name?.toLowerCase()}`}
                         secondaryAction={
-                          <IconButton edge="end" onClick={(e) => handleMenuClick(e, startup)}>
-                            <MoreVertIcon />
-                          </IconButton>
+                          isSelectionMode ? undefined : (
+                            <IconButton edge="end" onClick={(e) => handleMenuClick(e, startup)}>
+                              <MoreVertIcon />
+                            </IconButton>
+                          )
                         }
-                        sx={{ py: 2, textDecoration: 'none', color: 'inherit' }}
+                        sx={{
+                          py: 2,
+                          textDecoration: 'none',
+                          color: 'inherit',
+                          bgcolor: isSelectionMode && isSelected ? 'action.selected' : 'inherit',
+                          cursor: isSelectionMode ? 'pointer' : 'inherit',
+                        }}
+                        onClick={isSelectionMode ? () => handleStartupSelection(startup) : undefined}
                       >
-                        <ListItemAvatar>
-                          <Avatar
-                            sx={{
-                              bgcolor: 'background.paper',
-                              color: 'text.primary',
-                              fontWeight: 'bold',
-                              border: '1px solid #e0e0e0',
-                            }}
-                          >
-                            {startup.name ? startup.name.charAt(0) : '?'}
-                          </Avatar>
-                        </ListItemAvatar>
+                        {isSelectionMode ? (
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={isSelected}
+                                color="primary"
+                                onChange={() => handleStartupSelection(startup)}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            }
+                            label=""
+                            sx={{ mr: 1, minWidth: '42px' }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <ListItemAvatar>
+                            <Avatar
+                              sx={{
+                                bgcolor: 'background.paper',
+                                color: 'text.primary',
+                                fontWeight: 'bold',
+                                border: '1px solid #e0e0e0',
+                              }}
+                            >
+                              {startup.name ? startup.name.charAt(0) : '?'}
+                            </Avatar>
+                          </ListItemAvatar>
+                        )}
                         <ListItemText
                           primary={
                             <Box
@@ -330,6 +561,22 @@ export default function OverviewView() {
                                 <Typography variant="body2" color="text.secondary">
                                   Performance Score: {startup.score || 0}%
                                 </Typography>
+                                {/* Display categories if available */}
+                                {startup.categories && startup.categories.length > 0 && (
+                                  <Box sx={{ display: 'flex', mt: 1, flexWrap: 'wrap', gap: 0.5 }}>
+                                    {(startup.categories as CategoryEnum[]).map((category) => (
+                                      <Chip
+                                        key={category}
+                                        label={categoryDisplayNames[category]}
+                                        size="small"
+                                        sx={{
+                                          backgroundColor: categoryColors[category],
+                                          color: '#fff',
+                                        }}
+                                      />
+                                    ))}
+                                  </Box>
+                                )}
                               </Box>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 {startupRequests > 0 ? (
@@ -406,6 +653,82 @@ export default function OverviewView() {
           </DialogActions>
         </Dialog>
 
+        {/* Single Startup Categories Dialog */}
+        <Dialog open={isCategoryDialogOpen} onClose={() => setIsCategoryDialogOpen(false)}>
+          <DialogTitle>Assign Categories</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              Select categories that apply to this startup:
+            </Typography>
+            <FormGroup>
+              {Object.entries(categoryDisplayNames).map(([key, value]) => (
+                <FormControlLabel
+                  key={key}
+                  control={
+                    <Checkbox
+                      checked={selectedCategories.includes(key as CategoryEnum)}
+                      onChange={() => handleCategoryChange(key as CategoryEnum)}
+                      sx={{
+                        '&.Mui-checked': {
+                          color: categoryColors[key as CategoryEnum]
+                        }
+                      }}
+                    />
+                  }
+                  label={value}
+                />
+              ))}
+            </FormGroup>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsCategoryDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveCategories} variant="contained">
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Bulk Categories Dialog */}
+        <Dialog open={isBulkCategoryDialogOpen} onClose={() => setIsBulkCategoryDialogOpen(false)}>
+          <DialogTitle>Bulk Assign Categories</DialogTitle>
+          <DialogContent>
+            <Typography variant="body1" gutterBottom>
+              Assign categories to {selectedStartups.length} selected startups:
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Selected startups: {selectedStartups.map(s => s.name).join(', ')}
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 2, mt: 2, color: 'warning.main' }}>
+              Note: This will replace any existing categories on the selected startups.
+            </Typography>
+            <FormGroup>
+              {Object.entries(categoryDisplayNames).map(([key, value]) => (
+                <FormControlLabel
+                  key={key}
+                  control={
+                    <Checkbox
+                      checked={selectedCategories.includes(key as CategoryEnum)}
+                      onChange={() => handleCategoryChange(key as CategoryEnum)}
+                      sx={{
+                        '&.Mui-checked': {
+                          color: categoryColors[key as CategoryEnum]
+                        }
+                      }}
+                    />
+                  }
+                  label={value}
+                />
+              ))}
+            </FormGroup>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsBulkCategoryDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveBulkCategories} variant="contained">
+              Save to All Selected
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {/* Menu for startup actions */}
         <Menu
           anchorEl={menuAnchorEl}
@@ -413,6 +736,7 @@ export default function OverviewView() {
           onClose={handleMenuClose}
           onClick={(e) => e.preventDefault()} // Prevent navigation when clicking menu items
         >
+          <MenuItem onClick={handleOpenCategoryDialog}>Assign Categories</MenuItem>
           <MenuItem onClick={handleUnassignFromMenu}>Unassign Startup</MenuItem>
         </Menu>
 

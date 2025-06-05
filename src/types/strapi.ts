@@ -1,4 +1,4 @@
-import { CategoryEnum, PhaseEnum } from '@/utils/constants';
+import { CategoryEnum } from '@/utils/constants';
 
 export interface UserRegistration {
   username: string;
@@ -189,6 +189,7 @@ export interface Startup {
   score?: number;
   coach?: User;
   users?: User[];
+  categories?: CategoryEnum[];
 }
 
 export interface CreateStartup {
@@ -209,6 +210,7 @@ export interface CreateStartup {
   isMvpTested: boolean;
   scores?: Record<CategoryEnum, number>;
   users?: { set: number[] };
+  categories?: CategoryEnum[];
 }
 
 export interface UpdateStartup {
@@ -230,6 +232,7 @@ export interface UpdateStartup {
   isMvpTested?: boolean;
   scores?: Record<CategoryEnum, number>;
   score?: number;
+  categories?: CategoryEnum[];
 }
 
 /* Startup content */

@@ -56,9 +56,18 @@ export default function usePatterns(): UsePatternsReturn {
     if (!startup?.scores) return CategoryEnum.entrepreneur;
 
     const scores = startup.scores;
-    const categories = Object.keys(scores).filter(
+
+    // Start with all scored categories that aren't excluded
+    let categories = Object.keys(scores).filter(
       category => !excludedCategories.includes(category as CategoryEnum)
     ) as CategoryEnum[];
+
+    // If startup.categories exists and is not empty, only consider categories from that list
+    if (startup.categories && startup.categories.length > 0) {
+      categories = categories.filter(category =>
+        startup.categories!.includes(category)
+      );
+    }
 
     // If all categories are excluded, return null
     if (categories.length === 0) return null;
