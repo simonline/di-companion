@@ -123,11 +123,11 @@ export function useAuth(): UseAuthReturn {
     setState((prev) => ({ ...prev, user: userData, error: null }));
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData));
-      identifyUser(userData.id);
+      identifyUser(userData.id.toString());
     } else {
       localStorage.removeItem('user');
       localStorage.removeItem('strapi_jwt'); // Also remove JWT when clearing user
-      identifyUser(null);
+      identifyUser("");
     }
   }, []);
 
