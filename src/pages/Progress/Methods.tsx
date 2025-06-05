@@ -1,5 +1,5 @@
-import React, { useEffect, useCallback } from 'react';
-import { Button, CircularProgress, Typography, Box, TextField, Paper } from '@mui/material';
+import React, { useEffect, useCallback, useState } from 'react';
+import { Button, CircularProgress, Typography, Box, TextField, Paper, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material';
 import { CenteredFlexBox } from '@/components/styled';
 import useMethod from '@/hooks/useMethod';
 import useStartupMethod from '@/hooks/useStartupMethod';
@@ -18,6 +18,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useAuthContext } from '@/hooks/useAuth';
 import useNotifications from '@/store/notifications';
 import { Grid } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 const validationSchema = Yup.object({
   resultText: Yup.string().required('Please describe the tools or methods you applied'),
@@ -44,6 +45,7 @@ const Methods: React.FC = () => {
     loading: startupMethodLoading,
     error: startupMethodError,
   } = useStartupMethod();
+  const [methodModalOpen, setMethodModalOpen] = useState(false);
 
   useEffect(() => {
     fetchPattern(patternId as string);
@@ -104,6 +106,10 @@ const Methods: React.FC = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleCloseModal = () => {
+    setMethodModalOpen(false);
   };
 
   const FileUploadField = ({ field, form }: any) => {
@@ -270,7 +276,16 @@ const Methods: React.FC = () => {
       <CenteredFlexBox>
         <Grid container spacing={3} sx={{ maxWidth: '800px', width: '100%' }}>
           <Grid item xs={12}>
-            <Paper sx={{ p: 4, borderRadius: 2 }}>
+            <Paper sx={{ p: 3 }}>
+              <Button
+                variant="outlined"
+                onClick={() => navigate(`/progress/${pattern.documentId}`)}
+                startIcon={<ArrowBackIcon />}
+                size="small"
+                sx={{ mb: 4 }}
+              >
+                Back to Pattern
+              </Button>
               <Box
                 sx={{
                   display: 'flex',
@@ -282,14 +297,8 @@ const Methods: React.FC = () => {
                 <Typography variant="h4" fontWeight="bold" color="primary">
                   {pattern.name}
                 </Typography>
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate(`/progress/${pattern.documentId}`)}
-                  startIcon={<ArrowBackIcon />}
-                >
-                  Back to Pattern
-                </Button>
               </Box>
+
 
               {!method ? (
                 <Box sx={{ textAlign: 'center', py: 4 }}>
@@ -309,9 +318,7 @@ const Methods: React.FC = () => {
                     {method.url && (
                       <Button
                         variant="contained"
-                        href={method.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        onClick={() => setMethodModalOpen(true)}
                         startIcon={<ArticleIcon />}
                         sx={{ mb: 3 }}
                       >
@@ -369,6 +376,50 @@ const Methods: React.FC = () => {
           </Grid>
         </Grid>
       </CenteredFlexBox>
+
+      {/* Method details modal */}
+      <Dialog
+        open={methodModalOpen}
+        onClose={handleCloseModal}
+        maxWidth="lg"
+        fullWidth
+        aria-labelledby="method-details-dialog"
+      >
+        <DialogTitle id="method-details-dialog">
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6">{method?.name} - Details</Typography>
+            <IconButton edge="end" color="inherit" onClick={handleCloseModal} aria-label="close">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent dividers sx={{ p: 0, height: '75vh' }}>
+          {method?.url && (
+            <iframe
+              src={method.url.replace('notion.site', 'notion.site/ebd')}
+              title={`${method.name} details`}
+              width="100%"
+              height="100%"
+              style={{ border: 'none' }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseModal}>Close</Button>
+          {method?.url && (
+            <Button
+              variant="contained"
+              color="primary"
+              href={method.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              startIcon={<ArticleIcon />}
+            >
+              Open in New Tab
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
