@@ -20,8 +20,10 @@ import {
   Select,
   FormHelperText,
   Avatar,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
 import Header from '@/sections/Header';
 import { useDropzone } from 'react-dropzone';
@@ -40,6 +42,8 @@ interface RegisterFormValues {
   createNewStartup: boolean;
   avatar?: File;
   submit?: string;
+  phone?: string;
+  isPhoneVisible?: boolean;
 }
 
 const validationSchema = Yup.object().shape({
@@ -49,6 +53,10 @@ const validationSchema = Yup.object().shape({
   familyName: Yup.string().required('Required'),
   gender: Yup.string(),
   position: Yup.string(),
+  phone: Yup.string().when('isCoach', {
+    is: true,
+    then: (schema) => schema.required('Required for coaches'),
+  }),
   bio: Yup.string().max(200, 'Must be 200 characters or less'),
   linkedinProfile: Yup.string().url('Must be a valid URL'),
 });
@@ -65,8 +73,12 @@ const genderOptions = [
 function Register() {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const { register } = useAuthContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Check if the coach parameter exists in the URL
+  const isCoach = new URLSearchParams(location.search).get('coach') !== null;
 
   const handleSubmit = async (
     values: RegisterFormValues,
@@ -81,10 +93,12 @@ function Register() {
         givenName: values.givenName,
         familyName: values.familyName,
         gender: values.gender,
-        position: values.position,
+        position: isCoach ? undefined : values.position,
         bio: values.bio,
         linkedinProfile: values.linkedinProfile,
         avatar: values.avatar,
+        isCoach: isCoach,
+        ...(isCoach && { phone: values.phone, isPhoneVisible: values.isPhoneVisible }),
       });
 
       // Navigate based on user selection
@@ -224,7 +238,7 @@ function Register() {
 
   return (
     <>
-      <Header title="Create Your Account" />
+      <Header title={isCoach ? "Create Coach Account" : "Create Your Account"} />
 
       <Container maxWidth="md" sx={{ my: 8 }}>
         <Card elevation={3} sx={{ borderRadius: 2, overflow: 'visible' }}>
@@ -243,6 +257,8 @@ function Register() {
                   startupId: '',
                   createNewStartup: false,
                   avatar: undefined,
+                  phone: '',
+                  isPhoneVisible: false,
                 } as RegisterFormValues
               }
               validationSchema={validationSchema}
@@ -305,7 +321,7 @@ function Register() {
                     <Divider sx={{ my: 4 }} />
 
                     <Typography variant="h6" sx={{ mb: 3, fontWeight: 'medium' }}>
-                      Professional Information
+                      {isCoach ? "Coach Information" : "Professional Information"}
                     </Typography>
 
                     <Grid container spacing={3}>
@@ -325,15 +341,17 @@ function Register() {
                         </FormControl>
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <Field
-                          as={TextField}
-                          fullWidth
-                          name="position"
-                          label="Position"
-                          placeholder="e.g., CTO, Product Manager, UX Designer"
-                          error={touched.position && errors.position}
-                          helperText={touched.position && errors.position}
-                        />
+                        {!isCoach && (
+                          <Field
+                            as={TextField}
+                            fullWidth
+                            name="position"
+                            label="Position"
+                            placeholder="e.g., CTO, Product Manager, UX Designer"
+                            error={touched.position && errors.position}
+                            helperText={touched.position && errors.position}
+                          />
+                        )}
                       </Grid>
                       <Grid item xs={12}>
                         <Field
@@ -363,6 +381,42 @@ function Register() {
                           helperText={touched.linkedinProfile && errors.linkedinProfile}
                         />
                       </Grid>
+                      {isCoach && (
+                        <>
+                          <Grid item xs={12} container spacing={2} alignItems="center">
+                            <Grid item xs={12} sm={6}>
+                              <Field
+                                as={TextField}
+                                fullWidth
+                                name="phone"
+                                label="Phone Number"
+                                placeholder="e.g., +1 234 567 8900"
+                                error={touched.phone && errors.phone}
+                                helperText={touched.phone && errors.phone}
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <Field
+                                name="isPhoneVisible"
+                                type="checkbox"
+                                render={({ field }: any) => (
+                                  <FormControl fullWidth>
+                                    <FormControlLabel
+                                      control={
+                                        <Switch
+                                          {...field}
+                                          checked={field.value}
+                                        />
+                                      }
+                                      label="Make my phone number visible to startups"
+                                    />
+                                  </FormControl>
+                                )}
+                              />
+                            </Grid>
+                          </Grid>
+                        </>
+                      )}
                     </Grid>
                   </Box>
 

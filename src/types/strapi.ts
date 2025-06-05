@@ -11,6 +11,9 @@ export interface UserRegistration {
   bio?: string;
   linkedinProfile?: string;
   avatar?: File;
+  isCoach?: boolean;
+  phone?: string;
+  isPhoneVisible?: boolean;
 }
 
 export interface UpdateUser {
