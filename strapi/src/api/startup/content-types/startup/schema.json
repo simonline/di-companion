@@ -72,6 +72,18 @@
         "implement"
       ]
     },
+    "phases": {
+      "type": "customField",
+      "default": "[]",
+      "options": [
+        "start",
+        "discover_explore",
+        "transform",
+        "create",
+        "implement"
+      ],
+      "customField": "plugin::multi-select.multi-select"
+    },
     "productType": {
       "type": "enumeration",
       "enum": [
