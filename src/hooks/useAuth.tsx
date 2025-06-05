@@ -177,7 +177,7 @@ export function useAuth(): UseAuthReturn {
         const result = await strapiRegister(data);
         // JWT token is stored by strapiRegister function
         const userData: User = result.user;
-        setUser(userData);
+        // setUser(userData);
         return userData;
       } catch (error) {
         const err = error as Error;
@@ -191,7 +191,7 @@ export function useAuth(): UseAuthReturn {
         setState((prev) => ({ ...prev, loading: false }));
       }
     },
-    [setUser],
+    [],
   );
 
   const createStartup = useCallback(

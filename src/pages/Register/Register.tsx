@@ -25,6 +25,7 @@ import {
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
+import useNotifications from '@/store/notifications';
 import Header from '@/sections/Header';
 import { useDropzone } from 'react-dropzone';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -74,11 +75,23 @@ function Register() {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const { register } = useAuthContext();
+  const { register, user } = useAuthContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, notificationsActions] = useNotifications();
 
   // Check if the coach parameter exists in the URL
   const isCoach = new URLSearchParams(location.search).get('coach') !== null;
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (user) {
+      notificationsActions.push({
+        options: { variant: 'info', autoHideDuration: 5000 },
+        message: 'You are already logged in. Registration is not needed.',
+      });
+      navigate('/');
+    }
+  }, [user, navigate, notificationsActions]);
 
   const handleSubmit = async (
     values: RegisterFormValues,
@@ -101,7 +114,13 @@ function Register() {
         ...(isCoach && { phone: values.phone, isPhoneVisible: values.isPhoneVisible }),
       });
 
-      // Navigate based on user selection
+      // Show notification about email verification
+      notificationsActions.push({
+        options: { variant: 'success', autoHideDuration: 10000 },
+        message: `Registration successful! Please check your email (${values.email}) to confirm your account.`,
+      });
+
+      // Navigate to login page
       navigate('/login');
     } catch (err) {
       const error = err as Error;
