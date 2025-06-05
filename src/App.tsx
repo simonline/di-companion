@@ -16,7 +16,7 @@ import Menu from '@/sections/Menu';
 import { AuthProvider } from '@/hooks/useAuth';
 import AmplitudeProvider from '@/analytics/AmplitudeProvider';
 import RouteTracker from '@/analytics/RouteTracker';
-import { BugReportButton } from './components/BugReportButton';
+import { BugReportButton } from '@/components/BugReportButton';
 
 function App() {
   return (
@@ -30,7 +30,7 @@ function App() {
             <Pages />
             <Menu />
             <RouteTracker />
-            <BugReportButton />
+            <BugReportButton showFloatingButton={true} />
           </BrowserRouter>
         </AuthProvider>
       </AmplitudeProvider>

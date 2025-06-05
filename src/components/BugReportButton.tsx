@@ -1,14 +1,34 @@
-import { useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, useTheme, Button, Slide, Paper, IconButton, Tooltip } from '@mui/material';
 import BugReportIcon from '@mui/icons-material/BugReport';
+import CloseIcon from '@mui/icons-material/Close';
 import { trackEvent } from '../analytics/track';
 
-export function BugReportButton() {
+interface BugReportButtonProps {
+    showFloatingButton?: boolean;
+}
+
+export function BugReportButton({ showFloatingButton = true }: BugReportButtonProps) {
     const [open, setOpen] = useState(false);
+    const [expanded, setExpanded] = useState(false);
     const [description, setDescription] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const theme = useTheme();
 
-    const handleOpen = () => setOpen(true);
+    useEffect(() => {
+        // Add event listener for the custom event from Menu component
+        const handleBugReportEvent = () => setOpen(true);
+        document.addEventListener('open-bug-report', handleBugReportEvent);
+
+        // Clean up event listener
+        return () => {
+            document.removeEventListener('open-bug-report', handleBugReportEvent);
+        };
+    }, []);
+
+    const handleExpand = () => setExpanded(true);
+    const handleCollapse = () => setExpanded(false);
+
     const handleClose = () => {
         setOpen(false);
         setTimeout(() => setSubmitted(false), 300);
@@ -27,18 +47,100 @@ export function BugReportButton() {
         setTimeout(handleClose, 1500);
     };
 
+    if (!showFloatingButton) return null;
+
     return (
         <>
-            <Button
-                startIcon={<BugReportIcon />}
-                onClick={handleOpen}
-                variant="outlined"
-                size="small"
-                sx={{ position: 'fixed', bottom: 16, right: 16 }}
-            >
-                Report Bug
-            </Button>
+            {/* Small indicator that slides out */}
+            <div style={{ position: 'fixed', right: 0, bottom: '120px', zIndex: 1000 }}>
+                {!expanded ? (
+                    <Tooltip title="Report a bug" placement="left">
+                        <Paper
+                            elevation={3}
+                            sx={{
+                                backgroundColor: theme.palette.primary.main,
+                                color: 'white',
+                                borderTopLeftRadius: '4px',
+                                borderBottomLeftRadius: '4px',
+                                cursor: 'pointer',
+                                py: 1.5,
+                                px: 0.4,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                width: '24px',
+                                '&:hover': {
+                                    backgroundColor: theme.palette.primary.dark
+                                }
+                            }}
+                            onClick={handleExpand}
+                        >
+                            <BugReportIcon sx={{ fontSize: '16px' }} />
+                            <div
+                                style={{
+                                    writingMode: 'vertical-rl',
+                                    transform: 'rotate(180deg)',
+                                    marginTop: '6px',
+                                    fontSize: '10px',
+                                    fontWeight: 'bold'
+                                }}
+                            >
+                                BUG
+                            </div>
+                        </Paper>
+                    </Tooltip>
+                ) : (
+                    <Slide direction="left" in={expanded} mountOnEnter unmountOnExit>
+                        <Paper
+                            elevation={3}
+                            sx={{
+                                p: 2,
+                                width: '260px',
+                                maxWidth: '90vw',
+                                borderTopLeftRadius: '4px',
+                                borderBottomLeftRadius: '4px'
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <BugReportIcon color="primary" style={{ marginRight: '8px' }} />
+                                    <span style={{ fontWeight: 'bold' }}>Report a Bug</span>
+                                </div>
+                                <IconButton size="small" onClick={handleCollapse}>
+                                    <CloseIcon fontSize="small" />
+                                </IconButton>
+                            </div>
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                label="What went wrong?"
+                                fullWidth
+                                multiline
+                                rows={4}
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                variant="outlined"
+                                size="small"
+                            />
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    disabled={!description.trim()}
+                                    onClick={() => {
+                                        handleSubmit();
+                                        handleCollapse();
+                                    }}
+                                >
+                                    Submit
+                                </Button>
+                            </div>
+                        </Paper>
+                    </Slide>
+                )}
+            </div>
 
+            {/* Keep the dialog for when it's triggered from elsewhere */}
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>
                     {submitted ? "Thank you for your feedback!" : "Report a Bug"}
