@@ -72,15 +72,16 @@
         "implement"
       ]
     },
-    "phases": {
+    "categories": {
       "type": "customField",
       "default": "[]",
       "options": [
-        "start",
-        "discover_explore",
-        "transform",
-        "create",
-        "implement"
+        "entrepreneur",
+        "team",
+        "stakeholders",
+        "product",
+        "sustainability",
+        "time_space"
       ],
       "customField": "plugin::multi-select.multi-select"
     },
