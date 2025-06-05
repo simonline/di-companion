@@ -40,12 +40,6 @@ function Menu() {
               icon={icon && React.createElement(icon)}
             />
           ))}
-        {/* Add Bug Report Button to navigation */}
-        <BottomNavigationAction
-          label="Report Bug"
-          icon={<BugReportIcon />}
-          onClick={handleBugReportClick}
-        />
       </BottomNavigation>
     </Paper>
   );
