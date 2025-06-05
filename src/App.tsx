@@ -14,6 +14,8 @@ import Notifications from '@/sections/Notifications';
 import SW from '@/sections/SW';
 import Menu from '@/sections/Menu';
 import { AuthProvider } from '@/hooks/useAuth';
+import AmplitudeProvider from '@/analytics/AmplitudeProvider';
+import RouteTracker from '@/analytics/RouteTracker';
 
 function App() {
   return (
@@ -21,12 +23,15 @@ function App() {
       <CssBaseline />
       <Notifications />
       <SW />
-      <AuthProvider>
-        <BrowserRouter>
-          <Pages />
-          <Menu />
-        </BrowserRouter>
-      </AuthProvider>
+      <AmplitudeProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Pages />
+            <Menu />
+            <RouteTracker />
+          </BrowserRouter>
+        </AuthProvider>
+      </AmplitudeProvider>
     </Fragment>
   );
 }

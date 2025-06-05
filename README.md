@@ -39,6 +39,8 @@ Almost all projects need to have a router, a UI framework, store integration, th
 - ✅ [Performance](#performance)
 - ✅ [Error Handling](#error-handling)
 - ✅ [Pages](#pages)
+- ✅ [Analytics](#analytics)
+  - `Amplitude`
 
 ### Dev tools and tests
 
@@ -189,6 +191,36 @@ After all these integrations the biggest bundle size is `~79KB`. It means even t
 <img src="./public/audit.png" title="audit">
 
 NOTE: The performance is not 100 because it's running on demo server.
+
+#### Analytics
+
+The project uses [Amplitude](https://amplitude.com/) for analytics. Amplitude is integrated as a provider in the application and only loads in production to avoid tracking during development.
+
+To configure Amplitude, add your API key to the `.env` file:
+
+```
+VITE_AMPLITUDE_API_KEY=your_amplitude_api_key
+```
+
+The application automatically tracks page views as users navigate through the app. 
+
+To track custom events, you can use the utility functions in `src/analytics/track.ts`:
+
+```js
+import { trackEvent, setUserProperties, identifyUser, trackPageView } from '@/analytics/track';
+
+// Track a custom event
+trackEvent('button_clicked', { buttonId: 'login-button' });
+
+// Track page view manually (if needed)
+trackPageView('Custom Page', { section: 'dashboard' });
+
+// Set user properties
+setUserProperties({ role: 'admin', plan: 'premium' });
+
+// Identify a user
+identifyUser('user-123');
+```
 
 #### Error Handling
 

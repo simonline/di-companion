@@ -316,6 +316,16 @@ export function useAuth(): UseAuthReturn {
       }));
     }
 
+    // Filter patterns by categories if specified
+    if (currentStartup.categories && Array.isArray(currentStartup.categories) && currentStartup.categories.length > 0) {
+      patterns = patterns.filter(pattern =>
+        pattern.category && currentStartup.categories?.includes(pattern.category)
+      );
+      startupPatterns = startupPatterns.filter(startupPattern =>
+        startupPattern.pattern?.category && currentStartup.categories?.includes(startupPattern.pattern.category)
+      );
+    }
+
     const categoryPoints: Record<CategoryEnum, number[]> = {
       entrepreneur: [0, 0],
       team: [0, 0],
@@ -349,8 +359,19 @@ export function useAuth(): UseAuthReturn {
     );
     const maturityScores = Object.fromEntries(categoryScores);
     console.log(maturityScores);
-    // Calculate the total score (average of all category scores)
-    const totalScore = Math.round((Object.values(maturityScores) as number[]).reduce((sum, score) => sum + score, 0) / Object.keys(maturityScores).length);
+
+    // Calculate the total score (average of categories with available points)
+    const categoriesWithPoints = Object.entries(categoryPoints).filter(
+      ([, [, totalPoints]]) => totalPoints > 0
+    );
+
+    const totalScore = categoriesWithPoints.length > 0
+      ? Math.round(
+        categoriesWithPoints.reduce((sum, [, [pointsAchieved, totalPoints]]) =>
+          sum + Math.round((pointsAchieved / totalPoints) * 100), 0
+        ) / categoriesWithPoints.length
+      )
+      : 0;
 
     // Update the startup with the new scores
     updateStartup({

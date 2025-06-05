@@ -12,8 +12,9 @@ import {
   Chip,
   Paper,
   Tooltip,
+  IconButton,
 } from '@mui/material';
-import { ArrowForward, Check, FilterList } from '@mui/icons-material';
+import { ArrowForward, Check, FilterList, Refresh } from '@mui/icons-material';
 import InfoIcon from '@mui/icons-material/Info';
 import ImageIcon from '@mui/icons-material/Image';
 import { CenteredFlexBox } from '@/components/styled';
@@ -258,6 +259,9 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
                     borderRadius: '50%',
                     background: 'white',
                   },
+                  '&:hover .refresh-icon': {
+                    opacity: 1,
+                  },
                 }}
               >
                 <Typography
@@ -270,6 +274,27 @@ const MaturityScoreSection: React.FC<DashboardWidgetProps> = () => {
                 >
                   {startup.score || 0}%
                 </Typography>
+                <Tooltip title="Recalculate score">
+                  <IconButton
+                    size="small"
+                    onClick={updateScores}
+                    className="refresh-icon"
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      bgcolor: 'background.paper',
+                      boxShadow: 1,
+                      opacity: 0,
+                      transition: 'opacity 0.2s',
+                      '&:hover': {
+                        bgcolor: 'background.paper',
+                      },
+                    }}
+                  >
+                    <Refresh fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Box>
             </Grid>
           </Grid>
