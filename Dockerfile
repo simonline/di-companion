@@ -7,14 +7,14 @@ WORKDIR /app
 # Copy package.json and package-lock.json files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies with legacy peer deps to resolve MUI conflicts
+RUN npm install --legacy-peer-deps
 
 # Copy the rest of the application code to the working directory
 COPY . .
 
-# Build the Next.js app
-RUN npm run build
+# Expose port 5173 (Vite dev server)
+EXPOSE 5173
 
-# Command to start the application
-CMD ["npm", "run", "start"]
+# Command to start the development server with hot reloading
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

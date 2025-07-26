@@ -1,4 +1,19 @@
 services:
+  frontend:
+    container_name: frontend
+    build: .
+    image: di-companion:latest
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - web
+
   postgres:
     container_name: postgres
     image: postgres:17
@@ -28,7 +43,7 @@ services:
       JWT_SECRET: 53db2b2a8735d19819553d==
       ADMIN_JWT_SECRET: lfyRXw6SNkjKlbC7VWFGYA==
       APP_KEYS: UqqG6QtSbhwwdqnimycGPQ==,/BYgWGAtZDuA1qGd/bbK6g==,XaFnxazSHGy+NGeaiWc/7A==,NMJF018HM6Er+UB+PwPw2Q==
-      NODE_ENV: production
+      NODE_ENV: development
     volumes:
       - ./strapi/config:/opt/app/config
       - ./strapi/src:/opt/app/src
