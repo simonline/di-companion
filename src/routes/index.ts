@@ -251,6 +251,38 @@ const useRoutes = (): Partial<Routes> => {
       visibleTo: ['coach'],
       requiresStartup: false,
     },
+    [Pages.TeamContract]: {
+      component: asyncComponentLoader(() => import('@/pages/Tools/TeamContract')),
+      path: '/tools/team-contract',
+      title: 'Team Contract',
+      visibleTo: ['startup'],
+      requiresAuth: true,
+      requiresStartup: true,
+    },
+    [Pages.TeamValues]: {
+      component: asyncComponentLoader(() => import('@/pages/Tools/TeamValues')),
+      path: '/tools/team-values',
+      title: 'Team Values',
+      visibleTo: ['startup'],
+      requiresAuth: true,
+      requiresStartup: true,
+    },
+    [Pages.InterviewAnalyzer]: {
+      component: asyncComponentLoader(() => import('@/pages/Tools/InterviewAnalyzer')),
+      path: '/tools/interview-analyzer',
+      title: 'Interview Analyzer',
+      visibleTo: ['startup'],
+      requiresAuth: true,
+      requiresStartup: true,
+    },
+    [Pages.PitchDeckAnalyzer]: {
+      component: asyncComponentLoader(() => import('@/pages/Tools/PitchDeckAnalyzer')),
+      path: '/tools/pitch-deck-analyzer',
+      title: 'Pitch Deck Analyzer',
+      visibleTo: ['startup'],
+      requiresAuth: true,
+      requiresStartup: true,
+    },
   };
 };
 
