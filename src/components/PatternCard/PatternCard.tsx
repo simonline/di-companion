@@ -16,7 +16,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import ImageIcon from '@mui/icons-material/Image';
-import { Close, Refresh, Check } from '@mui/icons-material';
+import { Close, Refresh, Check, Help } from '@mui/icons-material';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { type Pattern, ResponseTypeEnum, ResponseEnum } from '@/types/strapi';
 import {
@@ -34,6 +34,8 @@ import { useAuthContext } from '@/hooks/useAuth';
 import useRequests from '@/hooks/useRequests';
 import useNotifications from '@/store/notifications';
 import { useCurrentPattern } from '@/hooks/useCurrentPattern';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+import { useChatContext } from '@/components/Chat/ChatContext';
 
 interface ActionDialogProps {
   open: boolean;
@@ -183,6 +185,9 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, isInteractive = true
   const [isVisible, setIsVisible] = React.useState(true);
   const [exitDirection, setExitDirection] = React.useState<'left' | 'right' | null>(null);
   const { setCurrentPattern } = useCurrentPattern();
+  const { flags } = useFeatureFlags();
+  const { startup, user } = useAuthContext();
+  const { sendProgrammaticMessage } = useChatContext();
 
   // Set the current pattern when the pattern prop changes
   useEffect(() => {
@@ -238,6 +243,67 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, isInteractive = true
     setExitDirection(null);
     setIsVisible(true);
     setIsFlipped(false);
+  };
+
+  const handleAgentHelp = async () => {
+    if (!flags.agent) return;
+
+    try {
+      // Create a comprehensive prompt with pattern and startup information
+      const startupInfo = startup ? `
+Startup Context:
+- Name: ${startup.name}
+- Industry: ${startup.industry}${startup.industryOther ? ` (${startup.industryOther})` : ''}
+- Target Market: ${startup.targetMarket}
+- Product Type: ${startup.productType}
+- Phase: ${startup.phase}
+- Background: ${startup.background}
+- Idea: ${startup.idea}
+- Target Market: ${startup.targetMarket}
+- Problem Validated: ${startup.isProblemValidated ? 'Yes' : 'No'}
+- Target Group Defined: ${startup.isTargetGroupDefined ? 'Yes' : 'No'}
+- Prototype Validated: ${startup.isPrototypeValidated ? 'Yes' : 'No'}
+- MVP Tested: ${startup.isMvpTested ? 'Yes' : 'No'}
+- Qualified Conversations: ${startup.qualifiedConversationsCount || 0}
+- Founders Count: ${startup.foundersCount}
+- Start Date: ${startup.startDate}
+` : 'No startup information available';
+
+      const patternInfo = `
+Pattern Information:
+- Name: ${pattern.name}
+- Category: ${categoryDisplayNames[pattern.category as CategoryEnum]}
+- Subcategory: ${pattern.subcategory}
+- Description: ${pattern.description}
+- Phases: ${pattern.phases.map(phase => phaseDisplayNames[phase as PhaseEnum]).join(', ')}
+- Pattern ID: ${pattern.patternId}
+`;
+
+      const userPrompt = `I need help understanding and implementing the "${pattern.name}" pattern. Can you provide clear, actionable guidance?`;
+
+      const systemPrompt = `You are a startup coach expert who provides clear, actionable guidance. Focus on practical implementation steps and avoid jargon. Be encouraging and supportive while being direct and helpful.
+
+${patternInfo}
+
+${startupInfo}
+
+Please provide:
+1. A simple explanation of what this pattern means in practical terms
+2. Why this pattern is important for a startup like mine
+3. Step-by-step instructions on how to implement this pattern
+4. Common mistakes to avoid
+5. How to measure success with this pattern
+6. Any tools or resources that would help with implementation
+
+Make your response actionable and easy to follow.`;
+
+      // Send the message using the chat context
+      await sendProgrammaticMessage(userPrompt, systemPrompt);
+
+    } catch (error) {
+      console.error('Error sending message to agent:', error);
+      // You could show a notification here if needed
+    }
   };
 
   const cardHeader = (
@@ -499,44 +565,68 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, isInteractive = true
           sx={{
             position: 'absolute',
             bottom: '80px',
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            px: 2,
           }}
         >
-          <Stack direction="row" spacing={1} alignItems="center" mt={2}>
-            <Stack direction="row" spacing={0.5}>
-              <Typography
-                variant="body2"
-                fontWeight="900"
-                textTransform="uppercase"
-                fontSize="1em"
-                paddingTop="0.3em"
-                paddingRight=".3em"
-              >
-                Phases
-              </Typography>
-              {Object.entries(phaseNumbers).map(([phase, number]) => (
-                <Tooltip key={number} title={phaseDisplayNames[phase]}>
-                  <Chip
-                    label={number}
-                    sx={{
-                      backgroundColor: pattern.phases.includes(phase as PhaseEnum)
-                        ? '#918d73'
-                        : '#cccdcc',
-                      color: 'white',
-                      fontWeight: '900',
-                      fontSize: '1.2em',
-                      borderRadius: '50%',
-                      height: '1.5em',
-                      width: '1.5em',
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <Typography
+              variant="body2"
+              fontWeight="900"
+              textTransform="uppercase"
+              fontSize="1em"
+              paddingTop="0.3em"
+              paddingRight=".3em"
+            >
+              Phases
+            </Typography>
+            {Object.entries(phaseNumbers).map(([phase, number]) => (
+              <Tooltip key={number} title={phaseDisplayNames[phase]}>
+                <Chip
+                  label={number}
+                  sx={{
+                    backgroundColor: pattern.phases.includes(phase as PhaseEnum)
+                      ? '#918d73'
+                      : '#cccdcc',
+                    color: 'white',
+                    fontWeight: '900',
+                    fontSize: '1.2em',
+                    borderRadius: '50%',
+                    height: '1.5em',
+                    width: '1.5em',
+                    padding: 0,
+                    span: {
                       padding: 0,
-                      span: {
-                        padding: 0,
-                      },
-                    }}
-                  />
-                </Tooltip>
-              ))}
-            </Stack>
+                    },
+                  }}
+                />
+              </Tooltip>
+            ))}
           </Stack>
+          {flags.agent && (
+            <Tooltip title="Get help understanding this pattern">
+              <Button
+                variant="contained"
+                startIcon={<Help />}
+                onClick={handleAgentHelp}
+                size="small"
+                sx={{
+                  backgroundColor: categoryColors[pattern.category as CategoryEnum],
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: categoryColors[pattern.category as CategoryEnum],
+                    opacity: 0.9,
+                  },
+                }}
+              >
+                Get Help
+              </Button>
+            </Tooltip>
+          )}
         </Box>
       </CardContent>
     </Card>

@@ -20,6 +20,7 @@ import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { categoryColors, categoryDisplayNames } from '../../utils/constants';
+import { useChatContext } from './ChatContext';
 
 interface Message {
     id: string;
@@ -117,9 +118,8 @@ const specializedAgents: Agent[] = [
 const agents: Agent[] = [generalCoach, ...specializedAgents];
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentChange }) => {
-    const [messages, setMessages] = useState<Message[]>([]);
+    const { messages, addMessage, sendProgrammaticMessage, isLoading } = useChatContext();
     const [inputValue, setInputValue] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -131,73 +131,22 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
     }, [messages]);
 
     useEffect(() => {
-        // Initialize with agent's initial message
-        setMessages([
-            {
+        // Initialize with agent's initial message if no messages exist
+        if (messages.length === 0) {
+            addMessage({
                 id: '1',
                 content: selectedAgent.initialMessage,
                 sender: 'agent',
                 timestamp: new Date(),
-            },
-        ]);
-    }, [selectedAgent]);
+            });
+        }
+    }, [selectedAgent, messages.length, addMessage]);
 
     const sendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
 
-        const userMessage: Message = {
-            id: Date.now().toString(),
-            content: inputValue.trim(),
-            sender: 'user',
-            timestamp: new Date(),
-        };
-
-        setMessages(prev => [...prev, userMessage]);
+        await sendProgrammaticMessage(inputValue.trim(), selectedAgent.systemPrompt);
         setInputValue('');
-        setIsLoading(true);
-
-        try {
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: userMessage.content,
-                    systemPrompt: selectedAgent.systemPrompt,
-                    conversationHistory: messages.map(msg => ({
-                        role: msg.sender === 'user' ? 'user' : 'assistant',
-                        content: msg.content,
-                    })),
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to send message');
-            }
-
-            const data = await response.json();
-
-            const agentMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                content: data.response,
-                sender: 'agent',
-                timestamp: new Date(),
-            };
-
-            setMessages(prev => [...prev, agentMessage]);
-        } catch (error) {
-            console.error('Error sending message:', error);
-            const errorMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                content: 'Sorry, I encountered an error. Please try again.',
-                sender: 'agent',
-                timestamp: new Date(),
-            };
-            setMessages(prev => [...prev, errorMessage]);
-        } finally {
-            setIsLoading(false);
-        }
     };
 
     const handleKeyPress = (event: React.KeyboardEvent) => {
@@ -432,9 +381,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                                 <Box
                                     sx={{
                                         p: 2,
-                                        backgroundColor: message.sender === 'user' ? 'primary.main' : 'rgba(255, 255, 255, 0.5)', // White with 50% transparency
-                                        color: message.sender === 'user' ? 'primary.contrastText' : 'text.primary',
+                                        backgroundColor: message.sender === 'user' ? 'white' : 'rgba(255, 255, 255, 0.5)', // White with 50% transparency
+                                        color: message.sender === 'user' ? 'text.primary' : 'text.primary',
                                         borderRadius: 2,
+                                        border: message.sender === 'user' ? '1px solid rgba(0, 0, 0, 0.1)' : 'none',
                                     }}
                                 >
                                     <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
@@ -444,9 +394,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                                 {message.sender === 'user' && (
                                     <Avatar
                                         sx={{
-                                            bgcolor: 'primary.main',
+                                            bgcolor: 'white',
+                                            color: 'text.primary',
                                             width: 48,
                                             height: 48,
+                                            border: '1px solid rgba(0, 0, 0, 0.1)',
                                         }}
                                     >
                                         <PersonIcon sx={{ fontSize: 24 }} />

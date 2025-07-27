@@ -15,6 +15,7 @@ import SW from '@/sections/SW';
 import Menu from '@/sections/Menu';
 import { AuthProvider } from '@/hooks/useAuth';
 import { CurrentPatternProvider } from '@/hooks/useCurrentPattern';
+import { ChatProvider } from '@/components/Chat/ChatContext';
 import AmplitudeProvider from '@/analytics/AmplitudeProvider';
 import RouteTracker from '@/analytics/RouteTracker';
 import { BugReportButton } from '@/components/BugReportButton';
@@ -28,12 +29,14 @@ function App() {
       <AmplitudeProvider>
         <AuthProvider>
           <CurrentPatternProvider>
-            <BrowserRouter>
-              <Pages />
-              <Menu />
-              <RouteTracker />
-              <BugReportButton showFloatingButton={true} />
-            </BrowserRouter>
+            <ChatProvider>
+              <BrowserRouter>
+                <Pages />
+                <Menu />
+                <RouteTracker />
+                <BugReportButton showFloatingButton={true} />
+              </BrowserRouter>
+            </ChatProvider>
           </CurrentPatternProvider>
         </AuthProvider>
       </AmplitudeProvider>
