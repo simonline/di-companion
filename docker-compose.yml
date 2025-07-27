@@ -11,8 +11,26 @@ services:
       - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
     networks:
       - web
+
+  backend:
+    container_name: backend
+    build: ./backend
+    image: di-companion-backend:latest
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    env_file: ./backend/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - web
+      - backend
 
   postgres:
     container_name: postgres

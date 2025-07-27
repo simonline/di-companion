@@ -5,13 +5,21 @@ import useRoutes from '..';
 import { getPageHeight } from './utils';
 import ProtectedRoute from '../ProtectedRoute';
 import { useAuthContext } from '@/hooks/useAuth';
+import { AgentLayout } from '@/components/AgentLayout';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 function Pages() {
   const routes = useRoutes();
   const { user } = useAuthContext();
   const isCoach = user?.isCoach || false;
+  const { flags } = useFeatureFlags();
+
   return (
-    <Box sx={{ height: (theme) => getPageHeight(theme), overflowY: 'scroll' }}>
+    <Box sx={{
+      height: flags.agent ? 'calc(100vh - 80px)' : (theme) => getPageHeight(theme),
+      overflowY: flags.agent ? 'hidden' : 'scroll',
+      position: flags.agent ? 'relative' : 'static'
+    }}>
       <Routes>
         {Object.values(routes as AppRoutes)
           .filter((route) => route.visibleTo.includes(isCoach ? 'coach' : 'startup'))
@@ -22,7 +30,13 @@ function Pages() {
                 path={path}
                 element={
                   <ProtectedRoute requiresAuth={requiresAuth} requiresStartup={requiresStartup}>
-                    <Component />
+                    {flags.agent ? (
+                      <AgentLayout>
+                        <Component />
+                      </AgentLayout>
+                    ) : (
+                      <Component />
+                    )}
                   </ProtectedRoute>
                 }
               />

@@ -27,6 +27,14 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: process.env.NODE_ENV === 'production' ? 'http://backend:8000' : 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
   test: {
     root: path.resolve(__dirname, './src'),
   },

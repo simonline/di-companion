@@ -41,6 +41,9 @@ Almost all projects need to have a router, a UI framework, store integration, th
 - ✅ [Pages](#pages)
 - ✅ [Analytics](#analytics)
   - `Amplitude`
+- ✅ [AI Agent Chat](#ai-agent-chat)
+  - `ChatGPT Integration`
+  - `50:50 Split Screen Layout`
 
 ### Dev tools and tests
 
@@ -227,6 +230,57 @@ setUserProperties({ role: 'admin', plan: 'premium' });
 // Identify a user
 identifyUser('user-123');
 ```
+
+#### AI Agent Chat
+
+The application includes an AI-powered chat interface that provides startup guidance through specialized agents. To enable the agent mode, add `?agent=1` to any URL in the application.
+
+**Features:**
+- **50:50 Split Screen Layout**: When `agent=1` is present, the layout splits into two equal sections
+- **Multiple AI Agents**: Choose from different specialized advisors:
+  - Business Strategy
+  - Product Development
+  - Fundraising
+  - Team Building
+- **ChatGPT Integration**: Powered by OpenAI's GPT-3.5-turbo
+- **Conversation History**: Maintains context throughout the conversation
+
+**Setup:**
+
+**Option 1: Using Docker (Recommended)**
+```bash
+# Create backend environment file
+cp backend/env.example backend/.env
+# Add your OpenAI API key to backend/.env
+
+# Start all services
+docker-compose up -d
+
+# Access the application
+# Frontend: http://localhost:5173/dashboard?agent=1
+# Backend API: http://localhost:8000
+```
+
+**Option 2: Local Development**
+1. Start the FastAPI backend:
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   cp env.example .env
+   # Add your OpenAI API key to .env
+   python main.py
+   ```
+
+2. Start the frontend:
+   ```bash
+   npm run dev
+   ```
+
+3. Navigate to any page with `?agent=1` (e.g., `http://localhost:5173/dashboard?agent=1`)
+
+**Backend API:**
+- `POST /api/chat` - Chat endpoint for AI responses
+- See [backend/README.md](./backend/README.md) for detailed setup instructions
 
 #### Error Handling
 

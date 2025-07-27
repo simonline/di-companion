@@ -30,7 +30,7 @@ import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { useAuthContext } from '@/hooks/useAuth';
 import type { Pattern, StartupPattern } from '@/types/strapi';
 import { getPatternStatus } from '@/pages/Progress/Progress';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useRecommendedPatterns from '@/hooks/useRecommendedPatterns';
 import Loading from '@/components/Loading';
 import {
@@ -39,6 +39,7 @@ import {
   RecordVoiceOver,
   Slideshow
 } from '@mui/icons-material';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 interface DashboardWidgetProps {
   startupPatterns: StartupPattern[];
@@ -739,10 +740,7 @@ const Dashboard: React.FC = () => {
     startupPatterns,
     error: startupPatternsError,
   } = useStartupPatterns();
-  const [searchParams] = useSearchParams();
-
-  // Feature flag: show tools only if ?tools=1 is in the URL
-  const showTools = searchParams.get('tools') === '1';
+  const { flags } = useFeatureFlags();
 
   useEffect(() => {
     fetchPatterns();
@@ -774,7 +772,7 @@ const Dashboard: React.FC = () => {
             <Grid item xs={12} sm={4}>
               <PatternBacklogSection startupPatterns={startupPatterns} patterns={patterns} />
             </Grid>
-            {showTools && (
+            {flags.tools && (
               <Grid item sm={12}>
                 <ToolsSection startupPatterns={startupPatterns} patterns={patterns} />
               </Grid>

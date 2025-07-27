@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import BugReportIcon from '@mui/icons-material/BugReport';
@@ -9,6 +9,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 
 function Menu() {
   const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
   const { user } = useAuthContext();
   const isCoach = user?.isCoach || false;
   const userType = isCoach ? 'coach' : 'startup';
