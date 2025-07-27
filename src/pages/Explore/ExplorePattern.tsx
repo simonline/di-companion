@@ -6,16 +6,27 @@ import PatternCard from '@/components/PatternCard';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/sections/Header';
 import useSearch from '@/hooks/useSearch';
+import { useCurrentPattern } from '@/hooks/useCurrentPattern';
 
 const ExplorePattern: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { fetchPattern, pattern, loading, error } = usePattern();
   const { SearchComponent } = useSearch();
   const navigate = useNavigate();
+  const { setCurrentPattern } = useCurrentPattern();
 
   useEffect(() => {
     fetchPattern(id as string);
   }, [fetchPattern, id]);
+
+  // Set the current pattern when pattern is loaded
+  useEffect(() => {
+    if (pattern) {
+      setCurrentPattern(pattern);
+    } else {
+      setCurrentPattern(null);
+    }
+  }, [pattern, setCurrentPattern]);
 
   const handlePatternComplete = () => {
     navigate('/explore');

@@ -10,9 +10,16 @@ import {
     CircularProgress,
     ButtonGroup,
     Button,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Chip,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { categoryColors, categoryDisplayNames } from '../../utils/constants';
 
 interface Message {
     id: string;
@@ -38,44 +45,76 @@ interface ChatInterfaceProps {
 
 
 
-const agents: Agent[] = [
+// General coach - separated and prominent
+const generalCoach: Agent = {
+    id: 'general-coach',
+    name: 'General Coach',
+    description: 'Your comprehensive startup advisor for all aspects of entrepreneurship',
+    systemPrompt: 'You are a comprehensive startup coach with expertise across all areas of entrepreneurship. Help founders with business strategy, product development, team building, stakeholder management, sustainability, and time management. Provide holistic guidance and actionable advice.',
+    initialMessage: 'Hello! I\'m your General Coach, here to help you with any aspect of your startup journey. Whether it\'s business strategy, product development, team building, stakeholder management, sustainability, or time management - I\'m here to guide you. What would you like to discuss today?',
+    color: '#07bce5', // primary color
+    avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=coach&backgroundColor=ffffff',
+};
+
+// Specialized agents for each category
+const specializedAgents: Agent[] = [
     {
-        id: 'business-strategy',
-        name: 'Business Strategy',
-        description: 'Get guidance on business model, market positioning, and strategic planning',
-        systemPrompt: 'You are a business strategy expert specializing in startup development. Help founders with business model validation, market analysis, competitive positioning, and strategic planning. Provide actionable advice and frameworks.',
-        initialMessage: 'Hello! I\'m your Business Strategy advisor. I can help you with business model development, market analysis, competitive positioning, and strategic planning. What aspect of your business strategy would you like to discuss today?',
-        color: '#0075bc', // stakeholders color
-        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=business&backgroundColor=ffffff',
+        id: 'entrepreneur',
+        name: categoryDisplayNames.entrepreneur,
+        description: 'Personal development, leadership skills, and entrepreneurial mindset',
+        systemPrompt: 'You are an entrepreneurial development expert specializing in personal growth, leadership development, and entrepreneurial mindset. Help founders develop resilience, decision-making skills, work-life balance, and the mental frameworks needed for startup success.',
+        initialMessage: 'Hello! I\'m your Entrepreneurial Development coach. I can help you develop your leadership skills, entrepreneurial mindset, personal resilience, and work-life balance. What aspect of your personal development as an entrepreneur would you like to focus on?',
+        color: categoryColors.entrepreneur,
+        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=entrepreneur&backgroundColor=ffffff',
     },
     {
-        id: 'product-development',
-        name: 'Product Development',
-        description: 'Expert guidance on product design, development process, and user experience',
-        systemPrompt: 'You are a product development expert with deep knowledge of user-centered design, agile methodologies, MVP development, and product-market fit. Help founders build better products.',
-        initialMessage: 'Hi there! I\'m your Product Development specialist. I can assist with product design, development methodologies, user experience optimization, and MVP strategies. What product challenge are you facing?',
-        color: '#53c0d8', // product color
+        id: 'team',
+        name: categoryDisplayNames.team,
+        description: 'Build and manage high-performing teams, culture, and collaboration',
+        systemPrompt: 'You are a team building and organizational development expert. Help founders build strong teams, develop company culture, handle hiring challenges, foster collaboration, and become effective leaders.',
+        initialMessage: 'Hello! I\'m your Team & Collaboration specialist. I can help you build strong teams, develop company culture, handle hiring challenges, and foster effective collaboration. What team-related challenge are you working on?',
+        color: categoryColors.team,
+        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=team&backgroundColor=ffffff',
+    },
+    {
+        id: 'stakeholders',
+        name: categoryDisplayNames.stakeholders,
+        description: 'Customer development, stakeholder management, and market positioning',
+        systemPrompt: 'You are a stakeholder management and customer development expert. Help founders understand their customers, build relationships with stakeholders, develop market positioning strategies, and create sustainable business models.',
+        initialMessage: 'Hello! I\'m your Stakeholder Management advisor. I can help you understand your customers, build relationships with stakeholders, develop market positioning, and create sustainable business models. What stakeholder challenge are you facing?',
+        color: categoryColors.stakeholders,
+        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=stakeholders&backgroundColor=ffffff',
+    },
+    {
+        id: 'product',
+        name: categoryDisplayNames.product,
+        description: 'Product development, design thinking, and solution optimization',
+        systemPrompt: 'You are a product development expert with deep knowledge of user-centered design, agile methodologies, MVP development, product-market fit, and solution optimization. Help founders build better products and find the best solutions.',
+        initialMessage: 'Hi there! I\'m your Product Development specialist. I can assist with product design, development methodologies, user experience optimization, MVP strategies, and finding the best solutions. What product challenge are you facing?',
+        color: categoryColors.product,
         avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=product&backgroundColor=ffffff',
     },
     {
-        id: 'fundraising',
-        name: 'Fundraising',
-        description: 'Navigate the fundraising process, investor relations, and pitch preparation',
-        systemPrompt: 'You are a fundraising expert who helps startups prepare for funding rounds, develop compelling pitches, understand investor expectations, and navigate the fundraising process effectively.',
-        initialMessage: 'Welcome! I\'m your Fundraising advisor. I can help you prepare for funding rounds, develop compelling pitches, understand investor expectations, and navigate the fundraising landscape. What funding stage are you targeting?',
-        color: '#50ae3d', // sustainability color
-        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=fundraising&backgroundColor=ffffff',
+        id: 'sustainability',
+        name: categoryDisplayNames.sustainability,
+        description: 'Sustainable business practices, social responsibility, and long-term impact',
+        systemPrompt: 'You are a sustainability and social responsibility expert. Help founders develop sustainable business practices, understand their social impact, create responsible business models, and build long-term value for all stakeholders.',
+        initialMessage: 'Welcome! I\'m your Sustainability & Responsibility advisor. I can help you develop sustainable business practices, understand your social impact, create responsible business models, and build long-term value. What sustainability challenge are you working on?',
+        color: categoryColors.sustainability,
+        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sustainability&backgroundColor=ffffff',
     },
     {
-        id: 'team-building',
-        name: 'Team Building',
-        description: 'Build and manage high-performing teams, culture, and leadership',
-        systemPrompt: 'You are a team building and organizational development expert. Help founders build strong teams, develop company culture, handle hiring challenges, and become effective leaders.',
-        initialMessage: 'Hello! I\'m your Team Building specialist. I can help you build strong teams, develop company culture, handle hiring challenges, and become an effective leader. What team-related challenge are you working on?',
-        color: '#d2132a', // team color
-        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=team&backgroundColor=ffffff',
+        id: 'time-space',
+        name: categoryDisplayNames.time_space,
+        description: 'Time management, workspace optimization, and productivity systems',
+        systemPrompt: 'You are a time management and productivity expert. Help founders optimize their time, create effective workspace environments, develop productivity systems, and balance work with personal life.',
+        initialMessage: 'Hello! I\'m your Time & Space optimization specialist. I can help you manage your time effectively, optimize your workspace, develop productivity systems, and create better work-life balance. What time or space challenge are you facing?',
+        color: categoryColors.time_space,
+        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=timespace&backgroundColor=ffffff',
     },
 ];
+
+const agents: Agent[] = [generalCoach, ...specializedAgents];
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentChange }) => {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -176,7 +215,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
             backgroundColor: selectedAgent.color, // Use main agent color
             alignItems: 'center', // Center the chat container
         }}>
-            {/* Agent Selection Header */}
+            {/* Agent Selection Header - Fixed at top */}
             <Box
                 sx={{
                     p: 2,
@@ -184,6 +223,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                     mt: 2,
                     width: '75%', // 3/4 width
                     maxWidth: '500px',
+                    flexShrink: 0, // Prevent shrinking
                 }}
             >
                 <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
@@ -192,43 +232,163 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                 <Typography variant="body2" sx={{ mb: 2, color: 'rgba(255, 255, 255, 0.8)' }}>
                     Choose an expert to help with your startup challenges
                 </Typography>
-                <ButtonGroup variant="outlined" size="small" sx={{ width: '100%' }}>
-                    {agents.map((agent) => (
+
+                {/* Agent Selection Row */}
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    {/* General Coach - Left Side */}
+                    <Box sx={{ flex: 1 }}>
                         <Button
-                            key={agent.id}
-                            onClick={() => onAgentChange(agent)}
-                            variant={selectedAgent.id === agent.id ? 'contained' : 'outlined'}
+                            onClick={() => onAgentChange(generalCoach)}
+                            variant={selectedAgent.id === 'general-coach' ? 'contained' : 'outlined'}
+                            fullWidth
+                            size="small"
                             sx={{
-                                flex: 1,
-                                backgroundColor: selectedAgent.id === agent.id ? 'white' : 'transparent',
-                                color: selectedAgent.id === agent.id ? selectedAgent.color : 'white',
+                                backgroundColor: selectedAgent.id === 'general-coach' ? 'white' : 'rgba(255, 255, 255, 0.1)',
+                                color: selectedAgent.id === 'general-coach' ? generalCoach.color : 'white',
                                 borderColor: 'white',
+                                borderWidth: selectedAgent.id === 'general-coach' ? 2 : 1,
+                                height: 40, // Match dropdown height
+                                textTransform: 'none',
                                 '&:hover': {
-                                    backgroundColor: selectedAgent.id === agent.id ? 'white' : 'rgba(255, 255, 255, 0.1)',
+                                    backgroundColor: selectedAgent.id === 'general-coach' ? 'white' : 'rgba(255, 255, 255, 0.2)',
+                                    borderWidth: 2,
                                 },
                                 '&.MuiButton-contained': {
                                     backgroundColor: 'white',
-                                    color: selectedAgent.color,
+                                    color: generalCoach.color,
                                 },
                             }}
                         >
-                            {agent.name}
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Avatar
+                                    src={generalCoach.avatarUrl}
+                                    sx={{
+                                        width: 20,
+                                        height: 20,
+                                        backgroundColor: 'white',
+                                    }}
+                                />
+                                <Typography variant="body2">
+                                    {generalCoach.name}
+                                </Typography>
+                            </Box>
                         </Button>
-                    ))}
-                </ButtonGroup>
+                    </Box>
+
+                    {/* Specialized Agents Dropdown - Right Side */}
+                    <Box sx={{ flex: 1 }}>
+                        <FormControl fullWidth size="small">
+                            <Select
+                                value={selectedAgent.id === 'general-coach' ? '' : selectedAgent.id}
+                                onChange={(e) => {
+                                    const agent = agents.find(a => a.id === e.target.value);
+                                    if (agent) onAgentChange(agent);
+                                }}
+                                displayEmpty
+                                renderValue={(value) => {
+                                    if (!value) {
+                                        return (
+                                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                                                Select expert...
+                                            </Typography>
+                                        );
+                                    }
+                                    const agent = agents.find(a => a.id === value);
+                                    if (!agent) return null;
+
+                                    return (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Avatar
+                                                src={agent.avatarUrl}
+                                                sx={{
+                                                    width: 20,
+                                                    height: 20,
+                                                    backgroundColor: 'white',
+                                                }}
+                                            />
+                                            <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                                {agent.name}
+                                            </Typography>
+                                        </Box>
+                                    );
+                                }}
+                                sx={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                    color: 'white',
+                                    height: 40, // Match button height
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: 'white',
+                                    },
+                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: 'white',
+                                        borderWidth: 2,
+                                    },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: 'white',
+                                        borderWidth: 2,
+                                    },
+                                    '& .MuiSelect-icon': {
+                                        color: 'white',
+                                    },
+                                }}
+                                MenuProps={{
+                                    PaperProps: {
+                                        sx: {
+                                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                            backdropFilter: 'blur(10px)',
+                                            '& .MuiMenuItem-root': {
+                                                '&:hover': {
+                                                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                                },
+                                            },
+                                        },
+                                    },
+                                }}
+                            >
+                                <MenuItem value="" disabled>
+                                    <Typography variant="body2" sx={{ color: 'rgba(0, 0, 0, 0.6)' }}>
+                                        Select expert...
+                                    </Typography>
+                                </MenuItem>
+                                {specializedAgents.map((agent) => (
+                                    <MenuItem key={agent.id} value={agent.id}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                                            <Avatar
+                                                src={agent.avatarUrl}
+                                                sx={{
+                                                    width: 32,
+                                                    height: 32,
+                                                    backgroundColor: 'white',
+                                                    border: `2px solid ${agent.color}`,
+                                                }}
+                                            />
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                                    {agent.name}
+                                                </Typography>
+                                                <Typography variant="caption" sx={{ color: 'rgba(0, 0, 0, 0.6)' }}>
+                                                    {agent.description}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Box>
+                </Box>
             </Box>
 
-            {/* Chat Container - Takes up 3/4 width */}
+            {/* Chat Messages Area - Scrollable */}
             <Box sx={{
                 flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                maxHeight: '75%', // 3/4 of the available space
                 width: '75%', // 3/4 width
                 maxWidth: '500px',
-                mb: 2, // Add bottom margin
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: 0, // Allow flex item to shrink
             }}>
-                {/* Messages Area */}
+                {/* Messages Area - Only this part scrolls */}
                 <Box
                     sx={{
                         flex: 1,
@@ -237,7 +397,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 2,
-                        mb: 2,
+                        minHeight: 0, // Allow flex item to shrink
                     }}
                 >
                     {messages.map((message) => (
@@ -323,7 +483,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                 p: 2,
                 width: '75%', // 3/4 width
                 maxWidth: '500px',
-                mt: 'auto', // Push to bottom
+                flexShrink: 0, // Prevent shrinking
             }}>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                     <TextField

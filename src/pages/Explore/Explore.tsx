@@ -5,20 +5,38 @@ import { FullSizeCenteredFlexBox } from '@/components/styled';
 import PatternCard from '@/components/PatternCard';
 import Header from '@/sections/Header';
 import useSearch from '@/hooks/useSearch';
+import { useCurrentPattern } from '@/hooks/useCurrentPattern';
 
 const Explore: React.FC = () => {
   const { getRecommendedPatterns, recommendedPatterns, loading, error } = useRecommendedPatterns();
   const { SearchComponent } = useSearch();
+  const { setCurrentPattern } = useCurrentPattern();
 
   useEffect(() => {
     getRecommendedPatterns();
   }, [getRecommendedPatterns]);
 
+  // Set the current pattern when recommended patterns are loaded
+  useEffect(() => {
+    if (recommendedPatterns && recommendedPatterns.length > 0) {
+      setCurrentPattern(recommendedPatterns[0]);
+    } else {
+      setCurrentPattern(null);
+    }
+  }, [recommendedPatterns, setCurrentPattern]);
+
+  // Cleanup when component unmounts
+  useEffect(() => {
+    return () => {
+      setCurrentPattern(null);
+    };
+  }, [setCurrentPattern]);
+
   const handlePatternComplete = () => {
     getRecommendedPatterns()
   };
 
-  if (loading || !recommendedPatterns) {
+  if (loading) {
     return (
       <Box
         sx={{
@@ -29,6 +47,24 @@ const Explore: React.FC = () => {
         }}
       >
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!recommendedPatterns || recommendedPatterns.length === 0) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+        }}
+      >
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          You've completed all recommended patterns for now.<br />
+          Check back later for more recommendations.
+        </Typography>
       </Box>
     );
   }

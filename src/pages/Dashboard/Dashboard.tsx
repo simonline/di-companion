@@ -620,7 +620,7 @@ const ToolsSection: React.FC<DashboardWidgetProps> = () => {
         ? 'Define your personal commitment and goals'
         : 'Establish clear agreements with your team',
       icon: Description,
-      color: '#1976d2',
+      color: categoryColors.team,
       action: 'Create',
       path: '/tools/team-contract'
     },
@@ -629,7 +629,7 @@ const ToolsSection: React.FC<DashboardWidgetProps> = () => {
       title: 'Team Values',
       description: 'Define your corporate value set through collaboration',
       icon: Psychology,
-      color: '#388e3c',
+      color: categoryColors.team,
       action: 'Define',
       path: '/tools/team-values'
     },
@@ -638,7 +638,7 @@ const ToolsSection: React.FC<DashboardWidgetProps> = () => {
       title: 'Interview Analyzer',
       description: 'Record and analyze customer conversations',
       icon: RecordVoiceOver,
-      color: '#f57c00',
+      color: categoryColors.stakeholders,
       action: 'Record',
       path: '/tools/interview-analyzer'
     },
@@ -647,7 +647,7 @@ const ToolsSection: React.FC<DashboardWidgetProps> = () => {
       title: 'Pitch Deck Analyzer',
       description: 'Get AI-powered feedback on your presentations',
       icon: Slideshow,
-      color: '#7b1fa2',
+      color: categoryColors.entrepreneur,
       action: 'Analyze',
       path: '/tools/pitch-deck-analyzer'
     }
@@ -766,17 +766,17 @@ const Dashboard: React.FC = () => {
             <Grid item sm={12}>
               <MaturityScoreSection startupPatterns={startupPatterns} patterns={patterns} />
             </Grid>
+            {flags.tools && (
+              <Grid item sm={12}>
+                <ToolsSection startupPatterns={startupPatterns} patterns={patterns} />
+              </Grid>
+            )}
             <Grid item xs={12} sm={8}>
               <RecommendationSection startupPatterns={startupPatterns} patterns={patterns} />
             </Grid>
             <Grid item xs={12} sm={4}>
               <PatternBacklogSection startupPatterns={startupPatterns} patterns={patterns} />
             </Grid>
-            {flags.tools && (
-              <Grid item sm={12}>
-                <ToolsSection startupPatterns={startupPatterns} patterns={patterns} />
-              </Grid>
-            )}
           </Grid>
         ) : (
           <Loading />

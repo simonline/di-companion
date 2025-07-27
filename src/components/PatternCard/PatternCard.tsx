@@ -33,6 +33,7 @@ import useStartupPattern from '@/hooks/useStartupPattern';
 import { useAuthContext } from '@/hooks/useAuth';
 import useRequests from '@/hooks/useRequests';
 import useNotifications from '@/store/notifications';
+import { useCurrentPattern } from '@/hooks/useCurrentPattern';
 
 interface ActionDialogProps {
   open: boolean;
@@ -181,6 +182,12 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, isInteractive = true
   }>({ responseType: ResponseTypeEnum.accept, title: '', actions: [] });
   const [isVisible, setIsVisible] = React.useState(true);
   const [exitDirection, setExitDirection] = React.useState<'left' | 'right' | null>(null);
+  const { setCurrentPattern } = useCurrentPattern();
+
+  // Set the current pattern when the pattern prop changes
+  useEffect(() => {
+    setCurrentPattern(pattern);
+  }, [pattern, setCurrentPattern]);
 
   const handleSwipe = (direction: 'left' | 'right') => {
     setExitDirection(direction);

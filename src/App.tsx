@@ -14,6 +14,7 @@ import Notifications from '@/sections/Notifications';
 import SW from '@/sections/SW';
 import Menu from '@/sections/Menu';
 import { AuthProvider } from '@/hooks/useAuth';
+import { CurrentPatternProvider } from '@/hooks/useCurrentPattern';
 import AmplitudeProvider from '@/analytics/AmplitudeProvider';
 import RouteTracker from '@/analytics/RouteTracker';
 import { BugReportButton } from '@/components/BugReportButton';
@@ -26,12 +27,14 @@ function App() {
       <SW />
       <AmplitudeProvider>
         <AuthProvider>
-          <BrowserRouter>
-            <Pages />
-            <Menu />
-            <RouteTracker />
-            <BugReportButton showFloatingButton={true} />
-          </BrowserRouter>
+          <CurrentPatternProvider>
+            <BrowserRouter>
+              <Pages />
+              <Menu />
+              <RouteTracker />
+              <BugReportButton showFloatingButton={true} />
+            </BrowserRouter>
+          </CurrentPatternProvider>
         </AuthProvider>
       </AmplitudeProvider>
     </Fragment>
