@@ -28,6 +28,7 @@ export default defineConfig({
     },
   },
   server: {
+    allowedHosts: ['di.sce.de'],
     proxy: {
       '/api': {
         target: 'http://backend:8000',

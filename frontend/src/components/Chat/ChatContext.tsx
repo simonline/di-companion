@@ -11,6 +11,7 @@ interface ChatContextType {
     messages: Message[];
     addMessage: (message: Message) => void;
     sendProgrammaticMessage: (content: string, systemPrompt: string) => Promise<void>;
+    clearMessages: () => void;
     isLoading: boolean;
 }
 
@@ -34,6 +35,10 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
 
     const addMessage = useCallback((message: Message) => {
         setMessages(prev => [...prev, message]);
+    }, []);
+
+    const clearMessages = useCallback(() => {
+        setMessages([]);
     }, []);
 
     const sendProgrammaticMessage = useCallback(async (content: string, systemPrompt: string) => {
@@ -101,6 +106,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
             messages,
             addMessage,
             sendProgrammaticMessage,
+            clearMessages,
             isLoading,
         }}>
             {children}

@@ -21,6 +21,7 @@ ENV PATH=/opt/node_modules/.bin:$PATH
 WORKDIR /opt/app
 COPY . .
 RUN chown -R node:node /opt/app
+RUN chmod -R 777 /opt/app/src/extensions/
 USER node
 RUN ["npm", "run", "build"]
 EXPOSE 1337
