@@ -22,15 +22,22 @@ function Pages() {
         {Object.values(routes as AppRoutes)
           .filter((route) => route.visibleTo.includes(isCoach ? 'coach' : 'startup'))
           .map(({ path, component: Component, requiresAuth, requiresStartup }) => {
+            // Disable AgentLayout for the Welcome page (start page)
+            const shouldUseAgentLayout = path !== '/';
+            
             return (
               <Route
                 key={path}
                 path={path}
                 element={
                   <ProtectedRoute requiresAuth={requiresAuth} requiresStartup={requiresStartup}>
-                    <AgentLayout>
+                    {shouldUseAgentLayout ? (
+                      <AgentLayout>
+                        <Component />
+                      </AgentLayout>
+                    ) : (
                       <Component />
-                    </AgentLayout>
+                    )}
                   </ProtectedRoute>
                 }
               />
