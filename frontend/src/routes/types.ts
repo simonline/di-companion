@@ -15,6 +15,7 @@ export enum Pages {
   ProgressPattern,
   Dashboard,
   Startup,
+  CoachStartup,
   Coach,
   Settings,
   User,
@@ -39,6 +40,8 @@ export enum Pages {
   TeamValues,
   InterviewAnalyzer,
   PitchDeckAnalyzer,
+  FinancialPlan,
+  Capture,
 }
 
 type PathRouteCustomProps = {
@@ -50,6 +53,7 @@ type PathRouteCustomProps = {
   visibleTo: ('coach' | 'startup')[];
   requiresStartup?: boolean;
   order?: number;
+  agent?: string;
 };
 
 export type AppRoute = PathRouteProps & PathRouteCustomProps;

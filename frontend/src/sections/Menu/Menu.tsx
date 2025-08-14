@@ -43,7 +43,7 @@ function Menu() {
               const isHovered = hoveredPath === path;
               const IconComponent = (isActive || isHovered) ? icon : (iconOutlined || icon);
 
-              if (path === '/explore') {
+              if (path === '/capture') {
                 return (
                   <Tooltip key={path} title={title} placement="top" arrow>
                     <BottomNavigationAction

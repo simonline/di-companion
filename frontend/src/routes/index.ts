@@ -9,7 +9,6 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import ListIcon from '@mui/icons-material/List';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
-import { useAuthContext } from '@/hooks/useAuth';
 
 import asyncComponentLoader from '@/utils/loader';
 
@@ -27,6 +26,7 @@ export const useAppRoutes = (): Partial<AppRoutes> => {
       visibleTo: ['startup', 'coach'],
       requiresStartup: false,
       order: 1,
+      agent: 'entrepreneur',
     },
     [Pages.Startup]: {
       component: asyncComponentLoader(() => import('@/pages/Startup')),
@@ -38,16 +38,17 @@ export const useAppRoutes = (): Partial<AppRoutes> => {
       visibleTo: ['startup'],
       requiresStartup: true,
       order: 2,
+      agent: 'team',
     },
-    [Pages.Explore]: {
-      component: asyncComponentLoader(() => import('@/pages/Explore')),
-      path: '/explore',
-      title: 'Add',
+    [Pages.Capture]: {
+      component: asyncComponentLoader(() => import('@/pages/Capture')),
+      path: '/capture',
+      title: 'Capture',
       icon: AddIcon,
       iconOutlined: AddIcon,
       requiresAuth: true,
-      visibleTo: ['startup'],
-      requiresStartup: true,
+      visibleTo: ['startup', 'coach'],
+      requiresStartup: false,
       order: 3,
     },
     [Pages.Coach]: {
@@ -126,6 +127,7 @@ const useRoutes = (): Partial<Routes> => {
       requiresAuth: true,
       visibleTo: ['startup', 'coach'],
       requiresStartup: false,
+      agent: 'entrepreneur',
     },
     [Pages.Welcome]: {
       component: asyncComponentLoader(() => import('@/pages/Welcome')),
@@ -190,6 +192,7 @@ const useRoutes = (): Partial<Routes> => {
       visibleTo: ['startup', 'coach'],
       requiresAuth: true,
       requiresStartup: false,
+      agent: 'entrepreneur',
     },
     [Pages.UpdateProfile]: {
       component: asyncComponentLoader(() => import('@/pages/Profile/UpdateProfile')),
@@ -198,6 +201,7 @@ const useRoutes = (): Partial<Routes> => {
       visibleTo: ['startup', 'coach'],
       requiresAuth: true,
       requiresStartup: false,
+      agent: 'entrepreneur',
     },
     [Pages.StartupProfile]: {
       component: asyncComponentLoader(() => import('@/pages/Profile/StartupProfile')),
@@ -206,6 +210,7 @@ const useRoutes = (): Partial<Routes> => {
       visibleTo: ['startup'],
       requiresAuth: true,
       requiresStartup: true,
+      agent: 'team',
     },
     [Pages.StartupProfileStep]: {
       component: asyncComponentLoader(() => import('@/pages/Profile/StartupProfileStep')),
@@ -214,6 +219,7 @@ const useRoutes = (): Partial<Routes> => {
       visibleTo: ['startup'],
       requiresAuth: true,
       requiresStartup: true,
+      agent: 'team',
     },
     [Pages.StartupEdit]: {
       component: asyncComponentLoader(() => import('@/pages/Profile/StartupEdit')),
@@ -222,6 +228,7 @@ const useRoutes = (): Partial<Routes> => {
       visibleTo: ['startup'],
       requiresAuth: true,
       requiresStartup: true,
+      agent: 'team',
     },
     [Pages.StartupTeam]: {
       component: asyncComponentLoader(() => import('@/pages/Profile/StartupTeam')),
@@ -230,6 +237,7 @@ const useRoutes = (): Partial<Routes> => {
       visibleTo: ['startup'],
       requiresAuth: true,
       requiresStartup: true,
+      agent: 'team',
     },
     [Pages.AcceptInvitation]: {
       component: asyncComponentLoader(() => import('@/pages/AcceptInvitation')),
@@ -278,8 +286,9 @@ const useRoutes = (): Partial<Routes> => {
       visibleTo: ['startup'],
       requiresAuth: true,
       requiresStartup: true,
+      agent: 'entrepreneur',
     },
-    [Pages.Startup]: {
+    [Pages.CoachStartup]: {
       component: asyncComponentLoader(() => import('@/pages/Startups/Startup')),
       path: '/startups/:id',
       title: 'Startup',
@@ -294,6 +303,7 @@ const useRoutes = (): Partial<Routes> => {
       visibleTo: ['startup'],
       requiresAuth: true,
       requiresStartup: true,
+      agent: 'team',
     },
     [Pages.TeamValues]: {
       component: asyncComponentLoader(() => import('@/pages/Tools/TeamValues')),
@@ -302,6 +312,7 @@ const useRoutes = (): Partial<Routes> => {
       visibleTo: ['startup'],
       requiresAuth: true,
       requiresStartup: true,
+      agent: 'team',
     },
     [Pages.InterviewAnalyzer]: {
       component: asyncComponentLoader(() => import('@/pages/Tools/InterviewAnalyzer')),
@@ -310,11 +321,30 @@ const useRoutes = (): Partial<Routes> => {
       visibleTo: ['startup'],
       requiresAuth: true,
       requiresStartup: true,
+      agent: 'stakeholders',
     },
     [Pages.PitchDeckAnalyzer]: {
       component: asyncComponentLoader(() => import('@/pages/Tools/PitchDeckAnalyzer')),
       path: '/tools/pitch-deck-analyzer',
       title: 'Pitch Deck Analyzer',
+      visibleTo: ['startup'],
+      requiresAuth: true,
+      requiresStartup: true,
+      agent: 'product',
+    },
+    [Pages.FinancialPlan]: {
+      component: asyncComponentLoader(() => import('@/pages/Tools/FinancialPlan')),
+      path: '/tools/financial-plan',
+      title: 'Financial Plan',
+      visibleTo: ['startup'],
+      requiresAuth: true,
+      requiresStartup: true,
+      agent: 'sustainability',
+    },
+    [Pages.Explore]: {
+      component: asyncComponentLoader(() => import('@/pages/Explore')),
+      path: '/explore',
+      title: 'Explore',
       visibleTo: ['startup'],
       requiresAuth: true,
       requiresStartup: true,

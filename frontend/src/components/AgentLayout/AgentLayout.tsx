@@ -5,24 +5,37 @@ import { useCurrentPattern } from '@/hooks/useCurrentPattern';
 
 interface AgentLayoutProps {
     children: React.ReactNode;
+    agent?: string;
 }
 
-const AgentLayout: React.FC<AgentLayoutProps> = ({ children }) => {
+const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
     const [selectedAgent, setSelectedAgent] = useState<Agent>(generalCoach);
     const { currentPattern } = useCurrentPattern();
 
-    // Automatically select the matching agent based on pattern category
+    // Automatically select the matching agent based on prop or pattern category
     useEffect(() => {
+        // Priority 1: Explicit agent prop from route
+        if (agent) {
+            const routeAgent = agents.find(a => a.id === agent);
+            if (routeAgent) {
+                setSelectedAgent(routeAgent);
+                return;
+            }
+        }
+        
+        // Priority 2: Pattern category
         if (currentPattern?.category) {
             const agentId = categoryToAgentMap[currentPattern.category];
-            const matchingAgent = agents.find(agent => agent.id === agentId);
+            const matchingAgent = agents.find(a => a.id === agentId);
             if (matchingAgent) {
                 setSelectedAgent(matchingAgent);
+                return;
             }
-        } else {
-            setSelectedAgent(generalCoach);
         }
-    }, [currentPattern?.category]);
+        
+        // Default: General coach
+        setSelectedAgent(generalCoach);
+    }, [agent, currentPattern?.category]);
 
     return (
         <Box sx={{

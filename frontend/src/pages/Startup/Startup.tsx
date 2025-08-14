@@ -1,32 +1,27 @@
 import React from 'react';
-import { 
-  Box, 
-  Card, 
-  CardContent, 
-  Typography, 
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
   Grid,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Button,
-  Chip,
   Stack,
-  Paper,
-  Avatar
+  Avatar,
+  LinearProgress,
+  Chip,
+  IconButton
 } from '@mui/material';
-import { 
-  Business, 
-  Group, 
-  Edit, 
-  Description, 
-  Psychology, 
-  RecordVoiceOver, 
+import {
+  RocketLaunch,
+  Group,
+  Handshake,
+  Description,
+  Assessment,
+  RecordVoiceOver,
   Slideshow,
-  TrendingUp,
-  Rocket,
-  CalendarToday,
-  People,
+  AttachMoney,
+  CheckCircle,
   ArrowForward
 } from '@mui/icons-material';
 import { CenteredFlexBox } from '@/components/styled';
@@ -34,6 +29,16 @@ import { useAuthContext } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/sections/Header';
 import { categoryColors } from '@/utils/constants';
+
+interface Step {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ElementType;
+  color: string;
+  path: string;
+  completed?: boolean;
+}
 
 function Startup() {
   const { startup } = useAuthContext();
@@ -52,8 +57,8 @@ function Startup() {
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 You need to create or join a startup to access this page.
               </Typography>
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 onClick={() => navigate('/create-startup')}
               >
                 Create Startup
@@ -65,250 +70,243 @@ function Startup() {
     );
   }
 
-  const createdDate = new Date().toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric',
-  });
-
-  const isSolo = startup.foundersCount === 1;
-
-  const tools = [
+  const steps: Step[] = [
     {
-      id: 'team-contract',
-      title: isSolo ? 'Solo Contract' : 'Team Contract',
-      description: isSolo
-        ? 'Define your personal commitment and goals'
-        : 'Establish clear agreements with your team',
-      icon: Description,
+      id: 'startup-profile',
+      title: 'Startup Profile',
+      description: 'Complete your startup information and vision',
+      icon: RocketLaunch,
       color: categoryColors.team,
-      action: 'Create',
-      path: '/tools/team-contract'
+      path: `/profile/startup/${startup.documentId}/edit`,
+      completed: true // You can track actual completion status
+    },
+    {
+      id: 'startup-members',
+      title: 'Startup Members',
+      description: 'Add team members and define roles',
+      icon: Group,
+      color: categoryColors.team,
+      path: `/profile/startup/${startup.documentId}/team`,
+      completed: false
     },
     {
       id: 'team-values',
       title: 'Team Values',
-      description: 'Define your corporate value set through collaboration',
-      icon: Psychology,
+      description: 'Define your core values and culture',
+      icon: Handshake,
       color: categoryColors.team,
-      action: 'Define',
-      path: '/tools/team-values'
+      path: '/tools/team-values',
+      completed: false
     },
     {
-      id: 'interview-analyzer',
-      title: 'Interview Analyzer',
-      description: 'Record and analyze customer conversations',
+      id: 'team-contract',
+      title: 'Team Contract',
+      description: 'Establish clear agreements and expectations',
+      icon: Description,
+      color: categoryColors.team,
+      path: '/tools/team-contract',
+      completed: false
+    },
+    {
+      id: 'team-assessment',
+      title: 'Team Assessment',
+      description: 'Evaluate team dynamics and performance',
+      icon: Assessment,
+      color: categoryColors.team,
+      path: '/self-assessment',
+      completed: false
+    },
+    {
+      id: 'interviews',
+      title: 'Interviews',
+      description: 'Conduct and analyze customer interviews',
       icon: RecordVoiceOver,
       color: categoryColors.stakeholders,
-      action: 'Record',
-      path: '/tools/interview-analyzer'
+      path: '/tools/interview-analyzer',
+      completed: false
     },
     {
-      id: 'pitch-deck-analyzer',
-      title: 'Pitch Deck Analyzer',
-      description: 'Get AI-powered feedback on your presentations',
+      id: 'pitch-deck',
+      title: 'Pitch Deck',
+      description: 'Upload and analyze your pitch deck',
       icon: Slideshow,
-      color: categoryColors.entrepreneur,
-      action: 'Analyze',
-      path: '/tools/pitch-deck-analyzer'
+      color: categoryColors.product,
+      path: '/tools/pitch-deck-analyzer',
+      completed: false
+    },
+    {
+      id: 'financial-plan',
+      title: 'Financial Plan',
+      description: 'Upload financial plan, analyzer coming soon',
+      icon: AttachMoney,
+      color: categoryColors.sustainability,
+      path: '/tools/financial-plan',
+      completed: false
     }
   ];
 
+  const completedSteps = steps.filter(step => step.completed).length;
+  const progress = (completedSteps / steps.length) * 100;
+
   return (
     <>
-      <Header title="Startup" />
+      <Header title="Startup Journey" />
       <CenteredFlexBox>
-        <Grid container spacing={3}>
+        <Grid container spacing={3} sx={{ maxWidth: 1200 }}>
+          {/* Combined Header and Progress Card */}
           <Grid item xs={12}>
             <Card>
               <CardContent>
-                <Stack direction="row" spacing={3} alignItems="center">
-                  <Avatar
-                    sx={{ 
-                      width: 80, 
-                      height: 80,
-                      bgcolor: 'primary.main'
-                    }}
-                  >
-                    <Rocket />
-                  </Avatar>
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="h5" fontWeight="700">
-                      {startup.name}
-                    </Typography>
-                    <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
-                      <Chip 
-                        icon={<CalendarToday />} 
-                        label={`Founded ${createdDate}`} 
-                        size="small" 
-                        variant="outlined"
-                      />
-                      <Chip 
-                        icon={<People />} 
-                        label={`${startup.foundersCount || 1} ${startup.foundersCount === 1 ? 'Founder' : 'Founders'}`} 
-                        size="small" 
-                        variant="outlined"
-                      />
-                      {startup.score && (
-                        <Chip 
-                          icon={<TrendingUp />} 
-                          label={`${startup.score}% Performance`} 
-                          size="small" 
-                          color="primary"
-                        />
-                      )}
-                    </Stack>
+                <Stack spacing={3}>
+                  {/* Header Section */}
+                  <Stack direction="row" spacing={3} alignItems="center">
+                    <Avatar
+                      sx={{
+                        width: 60,
+                        height: 60,
+                        bgcolor: 'primary.main'
+                      }}
+                    >
+                      <RocketLaunch />
+                    </Avatar>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="h5" fontWeight="700">
+                        {startup.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Complete your startup journey step by step
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={`${completedSteps} of ${steps.length} completed`}
+                      size="small"
+                      sx={{
+                        bgcolor: progress === 100 ? categoryColors.team : 'default',
+                        color: progress === 100 ? 'white' : 'inherit'
+                      }}
+                    />
+                  </Stack>
+
+                  {/* Progress Section */}
+                  <Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={progress}
+                      sx={{
+                        height: 8,
+                        borderRadius: 4,
+                        bgcolor: 'action.hover',
+                        '& .MuiLinearProgress-bar': {
+                          borderRadius: 4,
+                          bgcolor: categoryColors.team
+                        }
+                      }}
+                    />
+                    {progress === 100 && (
+                      <Typography variant="body2" sx={{ mt: 1, color: categoryColors.team }}>
+                        🎉 Congratulations! You've completed all setup steps.
+                      </Typography>
+                    )}
                   </Box>
-                  <Button
-                    startIcon={<Edit />}
-                    variant="outlined"
-                    onClick={() => navigate(`/profile/startup/${startup.documentId}/edit`)}
-                  >
-                    Edit
-                  </Button>
                 </Stack>
               </CardContent>
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" fontWeight="600" gutterBottom>
-                  Startup Details
-                </Typography>
-                <List>
-                  <ListItemButton onClick={() => navigate(`/profile/startup/${startup.documentId}`)}>
-                    <ListItemIcon>
-                      <Business />
-                    </ListItemIcon>
-                    <ListItemText primary="View Full Profile" />
-                  </ListItemButton>
-                  <ListItemButton onClick={() => navigate(`/profile/startup/${startup.documentId}/edit`)}>
-                    <ListItemIcon>
-                      <Edit />
-                    </ListItemIcon>
-                    <ListItemText primary="Edit Startup Information" />
-                  </ListItemButton>
-                  <ListItemButton onClick={() => navigate(`/profile/startup/${startup.documentId}/team`)}>
-                    <ListItemIcon>
-                      <Group />
-                    </ListItemIcon>
-                    <ListItemText primary="Manage Team Members" />
-                  </ListItemButton>
-                </List>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" fontWeight="600" gutterBottom>
-                  Quick Stats
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <Paper elevation={0} sx={{ p: 2, bgcolor: 'background.default', textAlign: 'center' }}>
-                      <Typography variant="h4" color="primary">
-                        {startup.score || 0}%
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Performance Score
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Paper elevation={0} sx={{ p: 2, bgcolor: 'background.default', textAlign: 'center' }}>
-                      <Typography variant="h4" color="primary">
-                        {startup.foundersCount || 1}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Team Members
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          </Grid>
-
+          {/* Steps Grid */}
           <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" fontWeight="700" gutterBottom>
-                  Essential Tools
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  Powerful tools to help you build and grow your startup
-                </Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Complete Your Startup Journey
+            </Typography>
+            <Grid container spacing={2}>
+              {steps.map((step, index) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={step.id}>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      borderRadius: 2,
+                      border: '2px solid',
+                      borderColor: step.completed ? step.color : 'divider',
+                      position: 'relative',
+                      transition: 'all 0.3s',
+                      '&:hover': {
+                        boxShadow: 3,
+                        transform: 'translateY(-2px)'
+                      }
+                    }}
+                  >
+                    {/* Step Number Badge */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
+                        width: 28,
+                        height: 28,
+                        borderRadius: '50%',
+                        bgcolor: step.completed ? step.color : 'grey.200',
+                        color: step.completed ? 'white' : 'text.secondary',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.875rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      {index + 1}
+                    </Box>
 
-                <Grid container spacing={2}>
-                  {tools.map((tool) => (
-                    <Grid item xs={12} sm={6} lg={3} key={tool.id}>
-                      <Card
+                    <CardContent sx={{ flexGrow: 1, pb: 1 }}>
+                      <Box sx={{ mb: 2 }}>
+                        <Box
+                          sx={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: 2,
+                            bgcolor: `${step.color}15`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mb: 2
+                          }}
+                        >
+                          <step.icon sx={{ color: step.color, fontSize: 24 }} />
+                        </Box>
+                        <Typography variant="subtitle1" fontWeight="600" gutterBottom>
+                          {step.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {step.description}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+
+                    <Box sx={{ p: 2, pt: 0 }}>
+                      <Button
+                        onClick={() => navigate(step.path)}
+                        variant={step.completed ? 'outlined' : 'contained'}
+                        fullWidth
+                        size="small"
+                        endIcon={step.completed ? <CheckCircle /> : <ArrowForward />}
                         sx={{
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          borderRadius: 2,
-                          border: '1px solid',
-                          borderColor: 'divider',
+                          color: step.completed ? step.color : 'white',
+                          bgcolor: step.completed ? 'transparent' : step.color,
+                          borderColor: step.completed ? step.color : 'transparent',
                           '&:hover': {
-                            borderColor: tool.color,
-                            boxShadow: 2,
-                          },
+                            bgcolor: step.completed ? `${step.color}10` : step.color,
+                            opacity: step.completed ? 1 : 0.9,
+                          }
                         }}
                       >
-                        <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                            <Box
-                              sx={{
-                                width: 48,
-                                height: 48,
-                                borderRadius: 2,
-                                bgcolor: `${tool.color}15`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                mr: 2,
-                              }}
-                            >
-                              <tool.icon sx={{ color: tool.color, fontSize: 24 }} />
-                            </Box>
-                            <Box sx={{ flexGrow: 1 }}>
-                              <Typography variant="subtitle1" fontWeight="600">
-                                {tool.title}
-                              </Typography>
-                            </Box>
-                          </Box>
-                          <Typography variant="body2" color="text.secondary">
-                            {tool.description}
-                          </Typography>
-                        </CardContent>
-                        <Box sx={{ p: 2, pt: 0 }}>
-                          <Button
-                            onClick={() => navigate(tool.path)}
-                            variant="contained"
-                            fullWidth
-                            endIcon={<ArrowForward />}
-                            sx={{
-                              bgcolor: tool.color,
-                              color: 'white',
-                              '&:hover': {
-                                bgcolor: tool.color,
-                                opacity: 0.9,
-                              },
-                            }}
-                          >
-                            {tool.action}
-                          </Button>
-                        </Box>
-                      </Card>
-                    </Grid>
-                  ))}
+                        {step.completed ? 'Review' : 'Start'}
+                      </Button>
+                    </Box>
+                  </Card>
                 </Grid>
-              </CardContent>
-            </Card>
+              ))}
+            </Grid>
           </Grid>
         </Grid>
       </CenteredFlexBox>

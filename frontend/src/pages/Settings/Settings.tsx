@@ -1,26 +1,19 @@
 import React from 'react';
-import { 
-  Box, 
-  Card, 
-  CardContent, 
-  Avatar, 
-  Typography, 
-  Stack, 
+import {
+  Card,
+  CardContent,
+  Typography,
   Grid,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   ListItemButton,
-  IconButton,
-  Divider,
-  Switch,
-  FormControlLabel
+  Switch
 } from '@mui/material';
-import { 
-  Person, 
-  Email, 
-  Edit, 
+import {
+  Person,
+  Email,
   Logout,
   Security,
   NotificationsActive,
@@ -31,7 +24,6 @@ import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/sections/Header';
-import { getAvatarUrl } from '@/lib/strapi';
 
 function Settings() {
   const { user, logout } = useAuthContext();
@@ -41,14 +33,6 @@ function Settings() {
     navigate('/login');
     return null;
   }
-
-  const avatarUrl = getAvatarUrl(user.avatar?.formats?.thumbnail?.url);
-  const userInitials = `${user.givenName?.charAt(0) || ''}${user.familyName?.charAt(0) || ''}`;
-  
-  const joinDate = new Date().toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric',
-  });
 
   const handleLogout = async () => {
     await logout();
@@ -60,39 +44,6 @@ function Settings() {
       <Header title="Settings" />
       <CenteredFlexBox>
         <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Stack direction="row" spacing={3} alignItems="center">
-                  <Avatar
-                    src={avatarUrl}
-                    sx={{ width: 80, height: 80 }}
-                    alt={`${user.givenName} ${user.familyName}`}
-                  >
-                    {userInitials || user.username.charAt(0).toUpperCase()}
-                  </Avatar>
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="h6" fontWeight="600">
-                      {user.givenName} {user.familyName}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      @{user.username}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Member since {joinDate}
-                    </Typography>
-                  </Box>
-                  <IconButton 
-                    onClick={() => navigate('/profile/edit')}
-                    color="primary"
-                  >
-                    <Edit />
-                  </IconButton>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
@@ -104,7 +55,7 @@ function Settings() {
                     <ListItemIcon>
                       <Person />
                     </ListItemIcon>
-                    <ListItemText 
+                    <ListItemText
                       primary="Edit Profile"
                       secondary="Update your personal information"
                     />
@@ -113,7 +64,7 @@ function Settings() {
                     <ListItemIcon>
                       <Security />
                     </ListItemIcon>
-                    <ListItemText 
+                    <ListItemText
                       primary="Change Password"
                       secondary="Update your security credentials"
                     />
@@ -122,7 +73,7 @@ function Settings() {
                     <ListItemIcon>
                       <Email />
                     </ListItemIcon>
-                    <ListItemText 
+                    <ListItemText
                       primary="Email Preferences"
                       secondary={user.email}
                     />
@@ -175,8 +126,8 @@ function Settings() {
                     <ListItemIcon>
                       <Logout color="error" />
                     </ListItemIcon>
-                    <ListItemText 
-                      primary="Logout" 
+                    <ListItemText
+                      primary="Logout"
                       secondary="Sign out of your account"
                       primaryTypographyProps={{ color: 'error' }}
                     />
