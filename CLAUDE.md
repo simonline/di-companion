@@ -26,7 +26,7 @@ The project uses a microservices architecture with three main components:
 ### Backend (Python FastAPI)
 - **Framework**: FastAPI 0.104.1
 - **Server**: Uvicorn
-- **AI Integration**: OpenAI API (GPT models)
+- **AI Integration**: Google Gemini API (Gemini 2.0 Flash)
 - **Environment**: Python with dotenv for configuration
 
 ### CMS (Strapi)
@@ -40,7 +40,7 @@ The project uses a microservices architecture with three main components:
 2. **Pattern Library**: Browse innovation patterns and methods
 3. **Self-Assessment Tools**: Surveys and questionnaires for evaluation
 4. **Team Collaboration**: Team contracts, values, and invitations
-5. **AI Coach**: ChatGPT-powered coaching interface
+5. **AI Coach**: Google Gemini-powered coaching interface
 6. **Analytics**: Track startup progress and metrics
 7. **Recommendations**: AI-driven pattern and method recommendations
 
@@ -94,7 +94,7 @@ VITE_AMPLITUDE_API_KEY=your_amplitude_key
 
 ### Backend (.env)
 ```
-OPENAI_API_KEY=your_openai_api_key
+GEMINI_API_KEY=your_gemini_api_key
 HOST=0.0.0.0
 PORT=8000
 ```
@@ -194,7 +194,7 @@ The application is containerized and can be deployed using Docker Compose. Each 
 ## Important Notes
 - The frontend uses PWA capabilities for offline support
 - Authentication is handled through Strapi's user management
-- OpenAI API key is required for AI coaching features
+- Google Gemini API key is required for AI coaching features
 - PostgreSQL database is shared between Strapi and custom services
 - The application supports responsive design and mobile devices
 

@@ -1,6 +1,6 @@
 # DI Companion Chat Backend
 
-A FastAPI backend that provides ChatGPT integration for the DI Companion application.
+A FastAPI backend that provides Google Gemini AI integration for the DI Companion application.
 
 ## Setup
 
@@ -9,8 +9,8 @@ A FastAPI backend that provides ChatGPT integration for the DI Companion applica
 # Create environment file
 cp env.example .env
 
-# Add your OpenAI API key to the .env file:
-# OPENAI_API_KEY=your_actual_openai_api_key_here
+# Add your Google Gemini API key to the .env file:
+# GEMINI_API_KEY=your_actual_gemini_api_key_here
 
 # Start with docker-compose (from project root)
 docker-compose up -d backend
@@ -27,9 +27,9 @@ pip install -r requirements.txt
 cp env.example .env
 ```
 
-3. Add your OpenAI API key to the `.env` file:
+3. Add your Google Gemini API key to the `.env` file:
 ```
-OPENAI_API_KEY=your_actual_openai_api_key_here
+GEMINI_API_KEY=your_actual_gemini_api_key_here
 ```
 
 ## Running the Backend
@@ -95,6 +95,6 @@ Response:
 
 The backend uses:
 - FastAPI for the web framework
-- OpenAI API for AI responses
+- Google Gemini API for AI responses
 - Python-dotenv for environment variable management
 - CORS middleware for frontend communication 

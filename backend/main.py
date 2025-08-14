@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
-import openai
+from google import genai
 import os
 from dotenv import load_dotenv
 
@@ -20,8 +20,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure OpenAI
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Configure Google Gemini
+# The client will automatically use GEMINI_API_KEY env variable if set
+# Otherwise, pass the API key directly
+api_key = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=api_key) if api_key else genai.Client()
 
 class ChatMessage(BaseModel):
     role: str
@@ -42,39 +45,50 @@ async def root():
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        # Prepare messages for OpenAI
-        messages = [
-            {"role": "system", "content": request.systemPrompt}
-        ]
+        # Prepare conversation history for Gemini
+        # Gemini expects a different format than OpenAI
+        history = []
+        
+        # Add system prompt as the first message if provided
+        if request.systemPrompt:
+            history.append({
+                "role": "user",
+                "parts": [{"text": f"System instruction: {request.systemPrompt}"}]
+            })
+            history.append({
+                "role": "model",
+                "parts": [{"text": "Understood. I'll follow these instructions."}]
+            })
         
         # Add conversation history
         for msg in request.conversationHistory:
-            messages.append({
-                "role": msg.role,
-                "content": msg.content
+            # Map 'assistant' role to 'model' for Gemini
+            role = "model" if msg.role == "assistant" else msg.role
+            history.append({
+                "role": role,
+                "parts": [{"text": msg.content}]
             })
         
-        # Add the current user message
-        messages.append({
-            "role": "user",
-            "content": request.message
-        })
-        
-        # Call OpenAI API
-        response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
-            messages=messages,
-            max_tokens=1000,
-            temperature=0.7,
+        # Create a chat session with history
+        chat_session = client.chats.create(
+            model="gemini-2.0-flash-exp",  # Using latest Gemini model
+            history=history,
+            config={
+                "temperature": 0.7,
+                "max_output_tokens": 1000,
+            }
         )
         
-        # Extract the response
-        ai_response = response.choices[0].message.content
+        # Send the current message and get response
+        response = chat_session.send_message(request.message)
+        
+        # Extract the response text
+        ai_response = response.text
         
         return ChatResponse(response=ai_response)
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error communicating with OpenAI: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error communicating with Gemini: {str(e)}")
 
 @app.get("/health")
 async def health_check():

@@ -15,9 +15,9 @@ def test_chat_api():
     """Test the chat API endpoint"""
     
     # Check if API key is set
-    if not os.getenv("OPENAI_API_KEY"):
-        print("❌ OPENAI_API_KEY not found in .env file")
-        print("Please add your OpenAI API key to the .env file")
+    if not os.getenv("GEMINI_API_KEY"):
+        print("❌ GEMINI_API_KEY not found in .env file")
+        print("Please add your Google Gemini API key to the .env file")
         return False
     
     # Test data
