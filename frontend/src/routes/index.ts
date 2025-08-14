@@ -19,7 +19,7 @@ export const useAppRoutes = (): Partial<AppRoutes> => {
     [Pages.User]: {
       component: asyncComponentLoader(() => import('@/pages/User')),
       path: '/user',
-      title: 'Profile',
+      title: 'You',
       icon: PersonIcon,
       iconOutlined: PersonOutlineIcon,
       requiresAuth: true,
@@ -31,7 +31,7 @@ export const useAppRoutes = (): Partial<AppRoutes> => {
     [Pages.Startup]: {
       component: asyncComponentLoader(() => import('@/pages/Startup')),
       path: '/startup',
-      title: 'Startup',
+      title: 'Your Startup',
       icon: RocketLaunchIcon,
       iconOutlined: RocketLaunchOutlinedIcon,
       requiresAuth: true,
@@ -54,7 +54,7 @@ export const useAppRoutes = (): Partial<AppRoutes> => {
     [Pages.Coach]: {
       component: asyncComponentLoader(() => import('@/pages/Coach')),
       path: '/coach',
-      title: 'Coach',
+      title: 'Your Coach',
       icon: ForumIcon,
       iconOutlined: ForumOutlinedIcon,
       requiresAuth: true,
