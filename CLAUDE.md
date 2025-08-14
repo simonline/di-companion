@@ -21,7 +21,6 @@ The project uses a microservices architecture with three main components:
 - **Routing**: React Router v6
 - **HTTP Client**: Axios
 - **Animation**: Framer Motion
-- **PWA**: Vite PWA plugin
 
 ### Backend (Python FastAPI)
 - **Framework**: FastAPI 0.104.1
@@ -192,7 +191,6 @@ di-companion/
 The application is containerized and can be deployed using Docker Compose. Each service has its own Dockerfile for independent scaling and deployment.
 
 ## Important Notes
-- The frontend uses PWA capabilities for offline support
 - Authentication is handled through Strapi's user management
 - Google Gemini API key is required for AI coaching features
 - PostgreSQL database is shared between Strapi and custom services

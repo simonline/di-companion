@@ -4,9 +4,9 @@ import type { Notifications } from './types';
 
 const title = 'Dynamic Innovation Companion';
 
-const email = 'auther-email@gmail.com';
+const email = 'support@di-companion.com';
 
-const repository = 'https://github.com/suren-atoyan/react-pwa';
+const repository = 'https://github.com/simonline/di-companion';
 
 const messages = {
   app: {
@@ -48,7 +48,7 @@ const loader = {
 
 const defaultMetaTags = {
   image: '/cover.png',
-  description: 'Starter kit for modern web applications',
+  description: 'AI-powered platform to support startups and entrepreneurs',
 };
 const giphy404 = 'https://giphy.com/embed/xTiN0L7EW5trfOvEk0';
 
