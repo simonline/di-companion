@@ -17,8 +17,27 @@ export default defineConfig({
       devOptions: {
         enabled: false,
       },
+      registerType: 'autoUpdate', // Automatically update without user interaction
       workbox: {
         globPatterns: ['**/*.{js,css,html}', '**/*.{svg,png,jpg,gif}'],
+        skipWaiting: true, // Skip waiting, activate new service worker immediately
+        clientsClaim: true, // Take control of all clients as soon as activated
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 365 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          }
+        ]
       },
     }),
   ],
