@@ -39,7 +39,6 @@ import {
   RecordVoiceOver,
   Slideshow
 } from '@mui/icons-material';
-import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 interface DashboardWidgetProps {
   startupPatterns: StartupPattern[];
@@ -740,7 +739,6 @@ const Dashboard: React.FC = () => {
     startupPatterns,
     error: startupPatternsError,
   } = useStartupPatterns();
-  const { flags } = useFeatureFlags();
 
   useEffect(() => {
     fetchPatterns();
@@ -766,11 +764,9 @@ const Dashboard: React.FC = () => {
             <Grid item sm={12}>
               <MaturityScoreSection startupPatterns={startupPatterns} patterns={patterns} />
             </Grid>
-            {flags.tools && (
-              <Grid item sm={12}>
-                <ToolsSection startupPatterns={startupPatterns} patterns={patterns} />
-              </Grid>
-            )}
+            <Grid item sm={12}>
+              <ToolsSection startupPatterns={startupPatterns} patterns={patterns} />
+            </Grid>
             <Grid item xs={12} sm={8}>
               <RecommendationSection startupPatterns={startupPatterns} patterns={patterns} />
             </Grid>

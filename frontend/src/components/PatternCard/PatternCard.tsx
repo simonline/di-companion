@@ -34,7 +34,6 @@ import { useAuthContext } from '@/hooks/useAuth';
 import useRequests from '@/hooks/useRequests';
 import useNotifications from '@/store/notifications';
 import { useCurrentPattern } from '@/hooks/useCurrentPattern';
-import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { useChatContext } from '@/components/Chat/ChatContext';
 
 interface ActionDialogProps {
@@ -185,7 +184,6 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, isInteractive = true
   const [isVisible, setIsVisible] = React.useState(true);
   const [exitDirection, setExitDirection] = React.useState<'left' | 'right' | null>(null);
   const { setCurrentPattern } = useCurrentPattern();
-  const { flags } = useFeatureFlags();
   const { startup, user } = useAuthContext();
   const { sendProgrammaticMessage } = useChatContext();
 
@@ -246,7 +244,6 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, isInteractive = true
   };
 
   const handleAgentHelp = async () => {
-    if (!flags.agent) return;
 
     try {
       // Create a comprehensive prompt with pattern and startup information
@@ -607,26 +604,24 @@ Make your response actionable and easy to follow.`;
               </Tooltip>
             ))}
           </Stack>
-          {flags.agent && (
-            <Tooltip title="Get help understanding this pattern">
-              <Button
-                variant="contained"
-                startIcon={<Help />}
-                onClick={handleAgentHelp}
-                size="small"
-                sx={{
+          <Tooltip title="Get help understanding this pattern">
+            <Button
+              variant="contained"
+              startIcon={<Help />}
+              onClick={handleAgentHelp}
+              size="small"
+              sx={{
+                backgroundColor: categoryColors[pattern.category as CategoryEnum],
+                color: 'white',
+                '&:hover': {
                   backgroundColor: categoryColors[pattern.category as CategoryEnum],
-                  color: 'white',
-                  '&:hover': {
-                    backgroundColor: categoryColors[pattern.category as CategoryEnum],
-                    opacity: 0.9,
-                  },
-                }}
-              >
-                Get Help
-              </Button>
-            </Tooltip>
-          )}
+                  opacity: 0.9,
+                },
+              }}
+            >
+              Get Help
+            </Button>
+          </Tooltip>
         </Box>
       </CardContent>
     </Card>

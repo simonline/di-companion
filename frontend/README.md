@@ -233,10 +233,10 @@ identifyUser('user-123');
 
 #### AI Agent Chat
 
-The application includes an AI-powered chat interface that provides startup guidance through specialized agents. To enable the agent mode, add `?agent=1` to any URL in the application.
+The application includes an AI-powered chat interface that provides startup guidance through specialized agents.
 
 **Features:**
-- **50:50 Split Screen Layout**: When `agent=1` is present, the layout splits into two equal sections
+- **50:50 Split Screen Layout**: The layout splits into two equal sections for optimal interaction
 - **Multiple AI Agents**: Choose from different specialized advisors:
   - Business Strategy
   - Product Development
@@ -257,7 +257,7 @@ cp backend/env.example backend/.env
 docker-compose up -d
 
 # Access the application
-# Frontend: http://localhost:5173/dashboard?agent=1
+# Frontend: http://localhost:5173/dashboard
 # Backend API: http://localhost:8000
 ```
 
@@ -276,7 +276,7 @@ docker-compose up -d
    npm run dev
    ```
 
-3. Navigate to any page with `?agent=1` (e.g., `http://localhost:5173/dashboard?agent=1`)
+3. Navigate to any page (e.g., `http://localhost:5173/dashboard`)
 
 **Backend API:**
 - `POST /api/chat` - Chat endpoint for AI responses

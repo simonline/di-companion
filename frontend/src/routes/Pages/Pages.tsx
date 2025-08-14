@@ -6,19 +6,17 @@ import { getPageHeight } from './utils';
 import ProtectedRoute from '../ProtectedRoute';
 import { useAuthContext } from '@/hooks/useAuth';
 import { AgentLayout } from '@/components/AgentLayout';
-import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 function Pages() {
   const routes = useRoutes();
   const { user } = useAuthContext();
   const isCoach = user?.isCoach || false;
-  const { flags } = useFeatureFlags();
 
   return (
     <Box sx={{
-      height: flags.agent ? 'calc(100vh - 80px)' : (theme) => getPageHeight(theme),
-      overflowY: flags.agent ? 'hidden' : 'scroll',
-      position: flags.agent ? 'relative' : 'static'
+      height: 'calc(100vh - 80px)',
+      overflowY: 'hidden',
+      position: 'relative'
     }}>
       <Routes>
         {Object.values(routes as AppRoutes)
@@ -30,13 +28,9 @@ function Pages() {
                 path={path}
                 element={
                   <ProtectedRoute requiresAuth={requiresAuth} requiresStartup={requiresStartup}>
-                    {flags.agent ? (
-                      <AgentLayout>
-                        <Component />
-                      </AgentLayout>
-                    ) : (
+                    <AgentLayout>
                       <Component />
-                    )}
+                    </AgentLayout>
                   </ProtectedRoute>
                 }
               />
