@@ -24,7 +24,7 @@ function Pages() {
           .map(({ path, component: Component, requiresAuth, requiresStartup }) => {
             // Disable AgentLayout for Welcome page and all auth-related pages
             const authPaths = ['/', '/login', '/logout', '/signup', '/reset-password', '/no-startup'];
-            const shouldUseAgentLayout = !authPaths.includes(path);
+            const shouldUseAgentLayout = path ? !authPaths.includes(path) : true;
             
             return (
               <Route

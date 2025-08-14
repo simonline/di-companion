@@ -33,12 +33,6 @@ import { getPatternStatus } from '@/pages/Progress/Progress';
 import { useNavigate } from 'react-router-dom';
 import useRecommendedPatterns from '@/hooks/useRecommendedPatterns';
 import Loading from '@/components/Loading';
-import {
-  Description,
-  Psychology,
-  RecordVoiceOver,
-  Slideshow
-} from '@mui/icons-material';
 
 interface DashboardWidgetProps {
   startupPatterns: StartupPattern[];
@@ -606,131 +600,6 @@ const PatternBacklogSection: React.FC<DashboardWidgetProps> = ({ startupPatterns
   );
 };
 
-const ToolsSection: React.FC<DashboardWidgetProps> = () => {
-  const navigate = useNavigate();
-  const { startup } = useAuthContext();
-  const isSolo = startup?.foundersCount === 1;
-
-  const tools = [
-    {
-      id: 'team-contract',
-      title: isSolo ? 'Solo Contract' : 'Team Contract',
-      description: isSolo
-        ? 'Define your personal commitment and goals'
-        : 'Establish clear agreements with your team',
-      icon: Description,
-      color: categoryColors.team,
-      action: 'Create',
-      path: '/tools/team-contract'
-    },
-    {
-      id: 'team-values',
-      title: 'Team Values',
-      description: 'Define your corporate value set through collaboration',
-      icon: Psychology,
-      color: categoryColors.team,
-      action: 'Define',
-      path: '/tools/team-values'
-    },
-    {
-      id: 'interview-analyzer',
-      title: 'Interview Analyzer',
-      description: 'Record and analyze customer conversations',
-      icon: RecordVoiceOver,
-      color: categoryColors.stakeholders,
-      action: 'Record',
-      path: '/tools/interview-analyzer'
-    },
-    {
-      id: 'pitch-deck-analyzer',
-      title: 'Pitch Deck Analyzer',
-      description: 'Get AI-powered feedback on your presentations',
-      icon: Slideshow,
-      color: categoryColors.entrepreneur,
-      action: 'Analyze',
-      path: '/tools/pitch-deck-analyzer'
-    }
-  ];
-
-  return (
-    <Card>
-      <CardContent>
-        <Typography variant="h6" fontWeight="700" gutterBottom>
-          Essential Tools
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Powerful tools to help you build and grow your startup
-        </Typography>
-
-        <Grid container spacing={2}>
-          {tools.map((tool) => (
-            <Grid item xs={12} sm={6} key={tool.id}>
-              <Card
-                sx={{
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  '&:hover': {
-                    borderColor: tool.color,
-                    boxShadow: 2,
-                  },
-                }}
-              >
-                <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Box
-                      sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 2,
-                        bgcolor: `${tool.color}15`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mr: 2,
-                      }}
-                    >
-                      <tool.icon sx={{ color: tool.color, fontSize: 24 }} />
-                    </Box>
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="subtitle1" fontWeight="600" gutterBottom>
-                        {tool.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {tool.description}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-                <Box sx={{ p: 2, pt: 0 }}>
-                  <Button
-                    onClick={() => navigate(tool.path)}
-                    variant="contained"
-                    fullWidth
-                    sx={{
-                      bgcolor: tool.color,
-                      color: 'white',
-                      '&:hover': {
-                        bgcolor: tool.color,
-                        opacity: 0.9,
-                      },
-                    }}
-                  >
-                    {tool.action} {tool.title}
-                  </Button>
-                </Box>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </CardContent>
-    </Card>
-  );
-};
-
 const Dashboard: React.FC = () => {
   const { startup } = useAuthContext();
   const { fetchPatterns, patterns, error: patternsError } = usePatterns();
@@ -763,9 +632,6 @@ const Dashboard: React.FC = () => {
           <Grid container spacing={2}>
             <Grid item sm={12}>
               <MaturityScoreSection startupPatterns={startupPatterns} patterns={patterns} />
-            </Grid>
-            <Grid item sm={12}>
-              <ToolsSection startupPatterns={startupPatterns} patterns={patterns} />
             </Grid>
             <Grid item xs={12} sm={8}>
               <RecommendationSection startupPatterns={startupPatterns} patterns={patterns} />

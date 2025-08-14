@@ -1,8 +1,12 @@
-import StyleIcon from '@mui/icons-material/Style';
-import BookmarkIcon from '@mui/icons-material/Bookmark';
-import SpeedIcon from '@mui/icons-material/Speed';
+import PersonIcon from '@mui/icons-material/Person';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
+import AddIcon from '@mui/icons-material/Add';
 import ForumIcon from '@mui/icons-material/Forum';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
+import SettingsIcon from '@mui/icons-material/Settings';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import ListIcon from '@mui/icons-material/List';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import { useAuthContext } from '@/hooks/useAuth';
@@ -12,44 +16,61 @@ import asyncComponentLoader from '@/utils/loader';
 import { Pages, Routes, AppRoutes } from './types';
 
 export const useAppRoutes = (): Partial<AppRoutes> => {
-  const { user } = useAuthContext();
-
   return {
+    [Pages.User]: {
+      component: asyncComponentLoader(() => import('@/pages/User')),
+      path: '/user',
+      title: 'Profile',
+      icon: PersonIcon,
+      iconOutlined: PersonOutlineIcon,
+      requiresAuth: true,
+      visibleTo: ['startup', 'coach'],
+      requiresStartup: false,
+      order: 1,
+    },
+    [Pages.Startup]: {
+      component: asyncComponentLoader(() => import('@/pages/Startup')),
+      path: '/startup',
+      title: 'Startup',
+      icon: RocketLaunchIcon,
+      iconOutlined: RocketLaunchOutlinedIcon,
+      requiresAuth: true,
+      visibleTo: ['startup'],
+      requiresStartup: true,
+      order: 2,
+    },
     [Pages.Explore]: {
       component: asyncComponentLoader(() => import('@/pages/Explore')),
       path: '/explore',
-      title: 'Explore',
-      icon: StyleIcon,
+      title: 'Add',
+      icon: AddIcon,
+      iconOutlined: AddIcon,
       requiresAuth: true,
       visibleTo: ['startup'],
       requiresStartup: true,
-    },
-    [Pages.Progress]: {
-      component: asyncComponentLoader(() => import('@/pages/Progress')),
-      path: '/progress',
-      title: 'Progress',
-      icon: BookmarkIcon,
-      requiresAuth: true,
-      visibleTo: ['startup'],
-      requiresStartup: true,
-    },
-    [Pages.Dashboard]: {
-      component: asyncComponentLoader(() => import('@/pages/Dashboard')),
-      path: '/dashboard',
-      title: 'Dashboard',
-      icon: SpeedIcon,
-      requiresAuth: true,
-      visibleTo: ['startup'],
-      requiresStartup: true,
+      order: 3,
     },
     [Pages.Coach]: {
       component: asyncComponentLoader(() => import('@/pages/Coach')),
       path: '/coach',
       title: 'Coach',
       icon: ForumIcon,
+      iconOutlined: ForumOutlinedIcon,
       requiresAuth: true,
       visibleTo: ['startup'],
       requiresStartup: true,
+      order: 4,
+    },
+    [Pages.Settings]: {
+      component: asyncComponentLoader(() => import('@/pages/Settings')),
+      path: '/settings',
+      title: 'Settings',
+      icon: SettingsIcon,
+      iconOutlined: SettingsOutlinedIcon,
+      requiresAuth: true,
+      visibleTo: ['startup', 'coach'],
+      requiresStartup: false,
+      order: 5,
     },
     [Pages.Startups]: {
       component: asyncComponentLoader(() => import('@/pages/Startups/Overview')),
@@ -69,15 +90,6 @@ export const useAppRoutes = (): Partial<AppRoutes> => {
       visibleTo: ['coach'],
       requiresStartup: false,
     },
-    [Pages.Profile]: {
-      component: asyncComponentLoader(() => import('@/pages/Profile')),
-      path: '/profile',
-      title: user ? user.givenName : 'Profile',
-      icon: AccountCircleIcon,
-      requiresAuth: true,
-      visibleTo: ['startup', 'coach'],
-      requiresStartup: false,
-    },
     [Pages.NotFound]: {
       component: asyncComponentLoader(() => import('@/pages/NotFound')),
       path: '*',
@@ -91,6 +103,30 @@ export const useAppRoutes = (): Partial<AppRoutes> => {
 const useRoutes = (): Partial<Routes> => {
   return {
     ...useAppRoutes(),
+    [Pages.Dashboard]: {
+      component: asyncComponentLoader(() => import('@/pages/Dashboard')),
+      path: '/dashboard',
+      title: 'Dashboard',
+      requiresAuth: true,
+      visibleTo: ['startup'],
+      requiresStartup: true,
+    },
+    [Pages.Progress]: {
+      component: asyncComponentLoader(() => import('@/pages/Progress')),
+      path: '/progress',
+      title: 'Progress',
+      requiresAuth: true,
+      visibleTo: ['startup'],
+      requiresStartup: true,
+    },
+    [Pages.Profile]: {
+      component: asyncComponentLoader(() => import('@/pages/Profile')),
+      path: '/profile',
+      title: 'Profile',
+      requiresAuth: true,
+      visibleTo: ['startup', 'coach'],
+      requiresStartup: false,
+    },
     [Pages.Welcome]: {
       component: asyncComponentLoader(() => import('@/pages/Welcome')),
       path: '/',

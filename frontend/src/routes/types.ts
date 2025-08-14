@@ -8,17 +8,19 @@ export enum Pages {
   Register,
   CreateStartup,
   Login,
-  Logout,
   Method,
   Explore,
   ExplorePattern,
   Progress,
   ProgressPattern,
   Dashboard,
+  Startup,
   Coach,
+  Settings,
+  User,
+  Logout,
   Startups,
   Analytics,
-  Startup,
   Profile,
   UserProfile,
   UserProfileField,
@@ -43,9 +45,11 @@ type PathRouteCustomProps = {
   title?: string;
   component: FC;
   icon?: FC<SvgIconProps>;
+  iconOutlined?: FC<SvgIconProps>;
   requiresAuth?: boolean;
   visibleTo: ('coach' | 'startup')[];
   requiresStartup?: boolean;
+  order?: number;
 };
 
 export type AppRoute = PathRouteProps & PathRouteCustomProps;
