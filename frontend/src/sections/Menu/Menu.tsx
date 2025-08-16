@@ -6,18 +6,29 @@ import {
   BottomNavigationAction,
   Paper,
   Tooltip,
-  Box
+  Box,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 
 import { useAppRoutes } from '@/routes';
 import { useAuthContext } from '@/hooks/useAuth';
+import { useChatContext } from '@/components/Chat/ChatContext';
 
 function Menu() {
   const { pathname } = useLocation();
   const { user } = useAuthContext();
+  const { isMobileKeyboardVisible } = useChatContext();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isCoach = user?.isCoach || false;
   const userType = isCoach ? 'coach' : 'startup';
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
+
+  // Hide menu on mobile when keyboard is visible
+  if (isMobile && isMobileKeyboardVisible) {
+    return null;
+  }
 
 
   return (

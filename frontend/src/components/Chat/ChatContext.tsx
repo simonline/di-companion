@@ -13,6 +13,8 @@ interface ChatContextType {
     sendProgrammaticMessage: (content: string, systemPrompt: string) => Promise<void>;
     clearMessages: () => void;
     isLoading: boolean;
+    isMobileKeyboardVisible: boolean;
+    setMobileKeyboardVisible: (visible: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -32,6 +34,7 @@ interface ChatProviderProps {
 export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isMobileKeyboardVisible, setIsMobileKeyboardVisible] = useState(false);
 
     const addMessage = useCallback((message: Message) => {
         setMessages(prev => [...prev, message]);
@@ -108,6 +111,8 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
             sendProgrammaticMessage,
             clearMessages,
             isLoading,
+            isMobileKeyboardVisible,
+            setMobileKeyboardVisible: setIsMobileKeyboardVisible,
         }}>
             {children}
         </ChatContext.Provider>

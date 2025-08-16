@@ -36,7 +36,7 @@ interface ChatInterfaceProps {
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentChange, isMobile = false }) => {
-    const { messages, addMessage, sendProgrammaticMessage, clearMessages, isLoading } = useChatContext();
+    const { messages, addMessage, sendProgrammaticMessage, clearMessages, isLoading, setMobileKeyboardVisible } = useChatContext();
     const [inputValue, setInputValue] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [previousAgentId, setPreviousAgentId] = useState<string>(selectedAgent.id);
@@ -51,14 +51,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
         scrollToBottom();
     }, [messages]);
 
-    // Auto-scroll to bottom when keyboard appears on mobile
+    // Auto-scroll to bottom when keyboard appears on mobile and notify about keyboard visibility
     useEffect(() => {
         if (isMobile && isInputFocused) {
+            setMobileKeyboardVisible(true);
             setTimeout(() => {
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
             }, 300); // Delay to allow keyboard animation
+        } else if (isMobile && !isInputFocused) {
+            setMobileKeyboardVisible(false);
         }
-    }, [isInputFocused, isMobile]);
+    }, [isInputFocused, isMobile, setMobileKeyboardVisible]);
 
     useEffect(() => {
         // Check if agent has changed
@@ -90,7 +93,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
         setInputValue('');
     };
 
-    const handleKeyPress = (event: React.KeyboardEvent) => {
+    const handleKeyDown = (event: React.KeyboardEvent) => {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
             sendMessage();
@@ -119,7 +122,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                 }}
             >
                 <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
-                    AI Startup Advisor
+                    Your AI Companion
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 2, color: 'rgba(255, 255, 255, 0.8)' }}>
                     Choose an expert to help with your startup challenges
@@ -389,7 +392,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                         maxRows={4}
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        onKeyPress={handleKeyPress}
+                        onKeyDown={handleKeyDown}
                         onFocus={() => setIsInputFocused(true)}
                         onBlur={() => setIsInputFocused(false)}
                         placeholder="Type your message..."
