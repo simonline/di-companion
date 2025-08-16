@@ -21,13 +21,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useChatContext } from './ChatContext';
 import { Agent, agents, generalCoach, specializedAgents } from './types';
-
-interface Message {
-    id: string;
-    content: string;
-    sender: 'user' | 'agent';
-    timestamp: Date;
-}
+import { useLocation } from 'react-router-dom';
+import MarkdownMessage from './MarkdownMessage';
 
 interface ChatInterfaceProps {
     selectedAgent: Agent;
@@ -42,6 +37,25 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
     const [previousAgentId, setPreviousAgentId] = useState<string>(selectedAgent.id);
     const [isInputFocused, setIsInputFocused] = useState(false);
     const inputRef = useRef<HTMLDivElement>(null);
+    const location = useLocation();
+
+    // Collect page context
+    const getPageContext = () => {
+        const context = {
+            currentPath: location.pathname,
+            pageTitle: document.title,
+            // Get visible text content (you can customize this selector)
+            pageContent: document.querySelector('main')?.innerText || document.body.innerText,
+            // Get meta information
+            meta: {
+                description: document.querySelector('meta[name="description"]')?.getAttribute('content'),
+                keywords: document.querySelector('meta[name="keywords"]')?.getAttribute('content'),
+            },
+            // Get any data attributes from the current page
+            pageData: document.querySelector('[data-page-context]')?.getAttribute('data-page-context'),
+        };
+        return context;
+    };
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -89,7 +103,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
     const sendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
 
-        await sendProgrammaticMessage(inputValue.trim(), selectedAgent.systemPrompt);
+        // Get current page context
+        const pageContext = getPageContext();
+        
+        // Enhance the message with context
+        const enhancedSystemPrompt = `${selectedAgent.systemPrompt}
+
+Current Page Context:
+- Path: ${pageContext.currentPath}
+- Title: ${pageContext.pageTitle}
+- Content Preview: ${pageContext.pageContent?.substring(0, 500)}...`;
+
+        await sendProgrammaticMessage(inputValue.trim(), enhancedSystemPrompt);
         setInputValue('');
     };
 
@@ -334,9 +359,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                                         border: message.sender === 'user' ? '1px solid rgba(0, 0, 0, 0.1)' : 'none',
                                     }}
                                 >
-                                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                                        {message.content}
-                                    </Typography>
+                                    {message.sender === 'agent' ? (
+                                        <MarkdownMessage content={message.content} />
+                                    ) : (
+                                        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                                            {message.content}
+                                        </Typography>
+                                    )}
                                 </Box>
                                 {message.sender === 'user' && (
                                     <Avatar
