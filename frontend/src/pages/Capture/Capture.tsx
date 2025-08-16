@@ -177,7 +177,12 @@ const Capture: React.FC = () => {
         <Box sx={{ maxWidth: 1200, width: '100%', px: 2 }}>
           <Card sx={{ mb: 3 }}>
             <CardContent>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Stack 
+                direction={{ xs: 'column', sm: 'row' }} 
+                justifyContent="space-between" 
+                alignItems={{ xs: 'stretch', sm: 'center' }}
+                spacing={2}
+              >
                 <Box>
                   <Typography variant="h5" fontWeight="700" gutterBottom>
                     Workshop Capture
@@ -191,6 +196,10 @@ const Capture: React.FC = () => {
                   startIcon={<Add />}
                   onClick={() => handleOpenDialog()}
                   size="large"
+                  sx={{ 
+                    minWidth: { xs: '100%', sm: 'auto' },
+                    whiteSpace: 'nowrap'
+                  }}
                 >
                   Add New
                 </Button>
@@ -199,7 +208,15 @@ const Capture: React.FC = () => {
           </Card>
 
           <Paper sx={{ mb: 2, p: 2 }}>
-            <Stack direction="row" spacing={1} alignItems="center">
+            <Stack 
+              direction="row" 
+              spacing={1} 
+              alignItems="center"
+              sx={{ 
+                flexWrap: 'wrap',
+                gap: 1
+              }}
+            >
               <Typography variant="body2" sx={{ mr: 1 }}>Filter:</Typography>
               <Chip
                 label="All"

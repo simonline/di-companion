@@ -203,13 +203,52 @@ const TeamValues: React.FC = () => {
                                 </Typography>
                             </Box>
 
-                            <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+                            <Stepper 
+                                activeStep={activeStep} 
+                                sx={{ 
+                                    mb: 4,
+                                    '& .MuiStepLabel-label': {
+                                        display: { xs: 'none', sm: 'block' }
+                                    },
+                                    '& .MuiStepLabel-iconContainer': {
+                                        paddingRight: { xs: 0, sm: 2 }
+                                    }
+                                }}
+                            >
                                 {steps.map((label) => (
                                     <Step key={label}>
-                                        <StepLabel>{label}</StepLabel>
+                                        <StepLabel>
+                                            <Typography
+                                                variant="body2"
+                                                sx={{
+                                                    fontWeight: activeStep === steps.indexOf(label) ? 'bold' : 'normal',
+                                                    display: { xs: 'none', sm: 'block' }
+                                                }}
+                                            >
+                                                {label}
+                                            </Typography>
+                                        </StepLabel>
                                     </Step>
                                 ))}
                             </Stepper>
+
+                            {/* Mobile Step Indicator */}
+                            <Box
+                                sx={{
+                                    display: { xs: 'flex', sm: 'none' },
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    mb: 4,
+                                    gap: 1
+                                }}
+                            >
+                                <Typography variant="body2" color="text.secondary">
+                                    Step {activeStep + 1} of {steps.length}:
+                                </Typography>
+                                <Typography variant="body2" fontWeight="bold">
+                                    {steps[activeStep]}
+                                </Typography>
+                            </Box>
 
                             {renderStepContent()}
 

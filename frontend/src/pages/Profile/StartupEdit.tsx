@@ -110,13 +110,60 @@ function StartupEdit() {
                 Update your startup information to keep your profile current.
               </Typography>
 
-              <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+              <Stepper 
+                activeStep={activeStep} 
+                alternativeLabel 
+                sx={{ 
+                  mb: 4,
+                  '& .MuiStepLabel-label': {
+                    display: { xs: 'none', sm: 'block' }
+                  },
+                  '& .MuiStepLabel-iconContainer': {
+                    paddingRight: { xs: 0, sm: 2 }
+                  },
+                  '& .MuiStepLabel-alternativeLabel': {
+                    marginTop: { xs: 0, sm: 1 }
+                  },
+                  '& .MuiStepConnector-line': {
+                    marginTop: { xs: 0, sm: '14px' },
+                    paddingRight: { xs: 0, sm: '28px' }
+                  }
+                }}
+              >
                 {steps.map((label) => (
                   <Step key={label}>
-                    <StepLabel>{label}</StepLabel>
+                    <StepLabel>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: activeStep === steps.indexOf(label) ? 'bold' : 'normal',
+                          display: { xs: 'none', sm: 'block' }
+                        }}
+                      >
+                        {label}
+                      </Typography>
+                    </StepLabel>
                   </Step>
                 ))}
               </Stepper>
+
+              {/* Mobile Step Indicator */}
+              <Box
+                sx={{
+                  display: { xs: 'flex', sm: 'none' },
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  mb: 2,
+                  gap: 1
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  Step {activeStep + 1} of {steps.length}:
+                </Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {steps[activeStep]}
+                </Typography>
+              </Box>
 
               <LinearProgress
                 variant="determinate"
