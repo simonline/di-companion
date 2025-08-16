@@ -84,11 +84,11 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                         display: 'flex',
                         flexDirection: 'column'
                     }}>
-                        {/* Mobile Chat Header */}
+                        {/* Mobile Chat Header - Right aligned like agent button */}
                         <Box sx={{
                             position: 'absolute',
                             top: 16,
-                            left: 16,
+                            right: 16,
                             zIndex: 1100
                         }}>
                             <IconButton
@@ -108,6 +108,7 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                         <ChatInterface
                             selectedAgent={selectedAgent}
                             onAgentChange={setSelectedAgent}
+                            isMobile={true}
                         />
                     </Box>
                 </Slide>
