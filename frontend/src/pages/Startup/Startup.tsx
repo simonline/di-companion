@@ -252,7 +252,7 @@ function Startup() {
                           gap: 2,
                           mb: { xs: 0, sm: 2 },
                           flexDirection: { xs: 'row', sm: 'column' },
-                          alignItems: { xs: 'flex-start', sm: 'stretch' }
+                          alignItems: { xs: 'flex-start', sm: 'center' }
                         }}
                       >
                         <Box
@@ -292,7 +292,7 @@ function Startup() {
                           />
                           <step.icon sx={{ color: step.color, fontSize: { xs: 32, sm: 24 } }} />
                         </Box>
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{ flex: 1, textAlign: { xs: 'left', sm: 'center' } }}>
                           <Typography variant="subtitle1" fontWeight="600" gutterBottom>
                             {step.title}
                           </Typography>
