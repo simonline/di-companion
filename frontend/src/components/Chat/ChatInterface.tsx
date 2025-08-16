@@ -32,13 +32,16 @@ interface Message {
 interface ChatInterfaceProps {
     selectedAgent: Agent;
     onAgentChange: (agent: Agent) => void;
+    isMobile?: boolean;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentChange }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentChange, isMobile = false }) => {
     const { messages, addMessage, sendProgrammaticMessage, clearMessages, isLoading } = useChatContext();
     const [inputValue, setInputValue] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [previousAgentId, setPreviousAgentId] = useState<string>(selectedAgent.id);
+    const [isInputFocused, setIsInputFocused] = useState(false);
+    const inputRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -47,6 +50,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    // Auto-scroll to bottom when keyboard appears on mobile
+    useEffect(() => {
+        if (isMobile && isInputFocused) {
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 300); // Delay to allow keyboard animation
+        }
+    }, [isInputFocused, isMobile]);
 
     useEffect(() => {
         // Check if agent has changed
@@ -99,9 +111,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                     p: 2,
                     mb: 2,
                     mt: 2,
-                    width: '75%', // 3/4 width
-                    maxWidth: '500px',
+                    width: isMobile ? '100%' : '75%', // Full width on mobile
+                    maxWidth: isMobile ? '100%' : '500px',
                     flexShrink: 0, // Prevent shrinking
+                    display: isMobile && isInputFocused ? 'none' : 'block', // Hide when keyboard is shown
+                    px: isMobile ? 1 : 2, // Minimal padding on mobile
                 }}
             >
                 <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
@@ -260,11 +274,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
             {/* Chat Messages Area - Scrollable */}
             <Box sx={{
                 flex: 1,
-                width: '75%', // 3/4 width
-                maxWidth: '500px',
+                width: isMobile ? '100%' : '75%', // Full width on mobile
+                maxWidth: isMobile ? '100%' : '500px',
                 display: 'flex',
                 flexDirection: 'column',
                 minHeight: 0, // Allow flex item to shrink
+                px: isMobile ? 1 : 0, // Minimal padding on mobile
             }}>
                 {/* Messages Area - Only this part scrolls */}
                 <Box
@@ -361,19 +376,22 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
 
             {/* Input Area - Fixed at bottom */}
             <Box sx={{
-                p: 2,
-                width: '75%', // 3/4 width
-                maxWidth: '500px',
+                p: isMobile ? 1 : 2, // Minimal padding on mobile
+                width: isMobile ? '100%' : '75%', // Full width on mobile
+                maxWidth: isMobile ? '100%' : '500px',
                 flexShrink: 0, // Prevent shrinking
             }}>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                     <TextField
+                        ref={inputRef}
                         fullWidth
                         multiline
                         maxRows={4}
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyPress={handleKeyPress}
+                        onFocus={() => setIsInputFocused(true)}
+                        onBlur={() => setIsInputFocused(false)}
                         placeholder="Type your message..."
                         disabled={isLoading}
                         variant="outlined"
