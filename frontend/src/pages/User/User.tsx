@@ -18,6 +18,7 @@ import {
   Assessment,
   RocketLaunch,
   ArrowForward,
+  Check,
   Image as ImageIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -104,69 +105,75 @@ const User: React.FC = () => {
       <Header title="Getting Started" />
       <CenteredFlexBox>
         <Grid container spacing={3} sx={{ maxWidth: 1200 }}>
-          {/* Combined Header and Progress Card */}
+          {/* Header Section directly on background */}
           <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Stack spacing={3}>
-                  {/* Header Section */}
-                  <Stack direction="row" spacing={3} alignItems="center">
-                    <Avatar
-                      src={avatarUrl}
-                      sx={{ width: 60, height: 60 }}
-                      alt={`${user?.givenName} ${user?.familyName}`}
-                    >
-                      {userInitials || user?.username?.charAt(0).toUpperCase()}
-                    </Avatar>
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="h5" fontWeight="700">
-                        {user?.givenName} {user?.familyName}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                        Welcome! Let's set up your innovation toolkit and get you started
-                      </Typography>
-                    </Box>
-                    <Chip
-                      label={`${completedSteps} of ${totalSteps} completed`}
-                      size="small"
-                      sx={{
-                        bgcolor: progressPercentage === 100 ? categoryColors.entrepreneur : 'default',
-                        color: progressPercentage === 100 ? 'white' : 'inherit'
-                      }}
-                    />
-                  </Stack>
+            <Stack spacing={3}>
+              {/* Header Section */}
+              <Stack direction="row" spacing={3} alignItems="center">
+                <Avatar
+                  src={avatarUrl}
+                  sx={{ width: 60, height: 60 }}
+                  alt={`${user?.givenName} ${user?.familyName}`}
+                >
+                  {userInitials || user?.username?.charAt(0).toUpperCase()}
+                </Avatar>
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant="h5" fontWeight="700">
+                    {user?.givenName} {user?.familyName}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    Welcome! Let's set up your innovation toolkit and get you started
+                  </Typography>
+                </Box>
+              </Stack>
 
-                  {/* Progress Section */}
-                  <Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={progressPercentage}
-                      sx={{
-                        height: 8,
-                        borderRadius: 4,
-                        bgcolor: 'grey.200',
-                        '& .MuiLinearProgress-bar': {
-                          borderRadius: 4,
-                          bgcolor: categoryColors.entrepreneur,
-                        },
-                      }}
-                    />
-                    {progressPercentage === 100 && (
-                      <Typography variant="body2" sx={{ mt: 1, color: categoryColors.entrepreneur }}>
-                        🎉 Congratulations! You've completed all onboarding steps.
-                      </Typography>
-                    )}
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
+              {/* Progress Section */}
+              <Box sx={{ position: 'relative' }}>
+                <Box sx={{ position: 'relative', height: 32, display: 'flex', alignItems: 'center' }}>
+                  <LinearProgress
+                    variant="determinate"
+                    value={progressPercentage}
+                    sx={{
+                      position: 'absolute',
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: 2,
+                      bgcolor: 'action.hover',
+                      '& .MuiLinearProgress-bar': {
+                        borderRadius: 2,
+                        bgcolor: categoryColors.entrepreneur,
+                      },
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      position: 'relative',
+                      width: '100%',
+                      textAlign: 'center',
+                      fontWeight: 600,
+                      color: progressPercentage > 50 ? 'white' : 'text.primary',
+                      textShadow: progressPercentage > 50 ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+                      zIndex: 1,
+                    }}
+                  >
+                    {completedSteps} of {totalSteps} steps completed
+                  </Typography>
+                </Box>
+                {progressPercentage === 100 && (
+                  <Typography variant="caption" sx={{ mt: 1, display: 'block', color: categoryColors.entrepreneur }}>
+                    🎉 Congratulations! You've completed all onboarding steps.
+                  </Typography>
+                )}
+              </Box>
+            </Stack>
           </Grid>
           {/* Onboarding Steps */}
           <Grid item xs={12} md={8}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Complete Your Onboarding
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, overflow: 'visible', mt: 1.5 }}>
               {onboardingSteps.map((step, index) => (
                 <Card
                   key={step.id}
@@ -176,6 +183,8 @@ const User: React.FC = () => {
                     border: step.completed ? '2px solid' : '1px solid',
                     borderColor: step.completed ? categoryColors.entrepreneur : 'divider',
                     bgcolor: 'background.paper',
+                    position: 'relative',
+                    overflow: 'visible',
                     '&:hover': {
                       transform: 'translateX(4px)',
                       boxShadow: 2,
@@ -193,28 +202,40 @@ const User: React.FC = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          bgcolor: `${categoryColors.entrepreneur}15`,
+                          bgcolor: `${categoryColors.entrepreneur}20`,
                           color: categoryColors.entrepreneur,
+                          position: 'relative',
                         }}
                       >
+                        {/* Corner number badge */}
+                        <Chip
+                          label={index + 1}
+                          size="small"
+                          sx={{
+                            position: 'absolute',
+                            top: -8,
+                            left: -8,
+                            width: 24,
+                            height: 24,
+                            bgcolor: step.completed ? categoryColors.entrepreneur : `color-mix(in srgb, ${categoryColors.entrepreneur} 12.5%, white)`,
+                            color: step.completed ? 'white' : 'text.primary',
+                            fontWeight: 700,
+                            border: '2px solid',
+                            borderColor: 'background.paper',
+                            zIndex: 1,
+                            '& .MuiChip-label': {
+                              px: 0,
+                              py: 0,
+                            }
+                          }}
+                        />
                         {step.icon}
                       </Box>
                       <Box sx={{ flex: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                           <Typography variant="subtitle1" fontWeight="600">
-                            Step {index + 1}: {step.title}
+                            {step.title}
                           </Typography>
-                          {step.completed && (
-                            <Chip
-                              label="Completed"
-                              size="small"
-                              sx={{
-                                height: 20,
-                                bgcolor: categoryColors.entrepreneur,
-                                color: 'white'
-                              }}
-                            />
-                          )}
                         </Box>
                         <Typography variant="body2" color="text.secondary">
                           {step.description}
@@ -223,11 +244,14 @@ const User: React.FC = () => {
                       <IconButton
                         size="small"
                         sx={{
-                          bgcolor: 'action.hover',
-                          '&:hover': { bgcolor: 'action.selected' },
+                          bgcolor: step.completed ? categoryColors.entrepreneur : 'action.hover',
+                          color: step.completed ? 'white' : 'inherit',
+                          '&:hover': {
+                            bgcolor: step.completed ? categoryColors.entrepreneur : 'action.selected'
+                          },
                         }}
                       >
-                        <ArrowForward fontSize="small" />
+                        {step.completed ? <Check fontSize="small" /> : <ArrowForward fontSize="small" />}
                       </IconButton>
                     </Box>
                   </CardContent>

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Fab, Slide, useMediaQuery, useTheme, Badge, IconButton } from '@mui/material';
-import ChatIcon from '@mui/icons-material/Chat';
+import React, { useState, useEffect, useRef } from 'react';
+import { Box, Fab, Slide, useMediaQuery, useTheme, Badge, IconButton, Typography, Fade } from '@mui/material';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ChatIcon from '@mui/icons-material/Chat';
 import { ChatInterface, Agent, agents, categoryToAgentMap, generalCoach } from '../Chat';
 import { useCurrentPattern } from '@/hooks/useCurrentPattern';
 
@@ -20,6 +21,8 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
     const [mobileView, setMobileView] = useState<'content' | 'chat'>('content');
     const [unreadMessages, setUnreadMessages] = useState(0);
     const [tabletChatOpen, setTabletChatOpen] = useState(true);
+    const [showAgentLabel, setShowAgentLabel] = useState(false);
+    const labelTimeoutRef = useRef<NodeJS.Timeout>();
 
     // Automatically select the matching agent based on prop or pattern category
     useEffect(() => {
@@ -45,6 +48,30 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
         // Default: General coach
         setSelectedAgent(generalCoach);
     }, [agent, currentPattern?.category]);
+
+    // Show agent label animation on agent change (mobile only)
+    useEffect(() => {
+        if (isMobile && mobileView === 'content') {
+            // Clear any existing timeout
+            if (labelTimeoutRef.current) {
+                clearTimeout(labelTimeoutRef.current);
+            }
+            
+            // Show label
+            setShowAgentLabel(true);
+            
+            // Hide label after 3 seconds
+            labelTimeoutRef.current = setTimeout(() => {
+                setShowAgentLabel(false);
+            }, 3000);
+        }
+        
+        return () => {
+            if (labelTimeoutRef.current) {
+                clearTimeout(labelTimeoutRef.current);
+            }
+        };
+    }, [selectedAgent, isMobile, mobileView]);
 
     // Mobile view: Toggle between content and chat
     if (isMobile) {
@@ -113,32 +140,115 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                     </Box>
                 </Slide>
 
-                {/* Floating Action Button */}
+                {/* Floating Action Button with animated label */}
                 {mobileView === 'content' && (
-                    <Fab
-                        color="primary"
-                        onClick={() => {
-                            setMobileView('chat');
-                            setUnreadMessages(0);
-                        }}
+                    <Box
                         sx={{
                             position: 'fixed',
                             top: 16,
                             right: 16,
-                            backgroundColor: selectedAgent.color,
-                            '&:hover': {
-                                backgroundColor: selectedAgent.color,
-                                filter: 'brightness(0.9)'
-                            },
-                            boxShadow: theme.shadows[8],
-                            transition: 'all 0.3s ease',
+                            display: 'flex',
+                            alignItems: 'center',
                             zIndex: 1200
                         }}
                     >
-                        <Badge badgeContent={unreadMessages} color="error">
-                            <ChatIcon />
-                        </Badge>
-                    </Fab>
+                        {/* Animated Agent Label */}
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                marginRight: 2,
+                                transform: showAgentLabel ? 'translateX(0)' : 'translateX(calc(100% + 64px))',
+                                opacity: showAgentLabel ? 1 : 0,
+                                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                pointerEvents: showAgentLabel ? 'auto' : 'none'
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                    backdropFilter: 'blur(10px)',
+                                    borderRadius: 2,
+                                    px: 2,
+                                    py: 1,
+                                    boxShadow: theme.shadows[4],
+                                    border: `2px solid ${selectedAgent.color}`,
+                                    position: 'relative',
+                                    '&::after': {
+                                        content: '""',
+                                        position: 'absolute',
+                                        right: -8,
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        width: 0,
+                                        height: 0,
+                                        borderLeft: '8px solid',
+                                        borderLeftColor: selectedAgent.color,
+                                        borderTop: '6px solid transparent',
+                                        borderBottom: '6px solid transparent'
+                                    }
+                                }}
+                            >
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        fontWeight: 600,
+                                        color: selectedAgent.color,
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {selectedAgent.name} is here to help!
+                                </Typography>
+                            </Box>
+                        </Box>
+                        
+                        {/* Agent FAB Button */}
+                        <Fab
+                            color="primary"
+                            onClick={() => {
+                                setMobileView('chat');
+                                setUnreadMessages(0);
+                                setShowAgentLabel(false);
+                            }}
+                            onMouseEnter={() => {
+                                if (labelTimeoutRef.current) {
+                                    clearTimeout(labelTimeoutRef.current);
+                                }
+                                setShowAgentLabel(true);
+                            }}
+                            onMouseLeave={() => {
+                                labelTimeoutRef.current = setTimeout(() => {
+                                    setShowAgentLabel(false);
+                                }, 2000);
+                            }}
+                            sx={{
+                                backgroundColor: selectedAgent.color,
+                                '&:hover': {
+                                    backgroundColor: selectedAgent.color,
+                                    filter: 'brightness(0.9)',
+                                    transform: 'scale(1.05)'
+                                },
+                                boxShadow: theme.shadows[8],
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                animation: unreadMessages > 0 ? 'pulse 2s infinite' : 'none',
+                                '@keyframes pulse': {
+                                    '0%': {
+                                        boxShadow: `0 0 0 0 ${selectedAgent.color}40`
+                                    },
+                                    '70%': {
+                                        boxShadow: `0 0 0 10px ${selectedAgent.color}00`
+                                    },
+                                    '100%': {
+                                        boxShadow: `0 0 0 0 ${selectedAgent.color}00`
+                                    }
+                                }
+                            }}
+                        >
+                            <Badge badgeContent={unreadMessages} color="error">
+                                <SmartToyIcon sx={{ fontSize: 28, color: 'white' }} />
+                            </Badge>
+                        </Fab>
+                    </Box>
                 )}
             </Box>
         );

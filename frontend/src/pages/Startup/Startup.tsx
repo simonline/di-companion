@@ -10,7 +10,7 @@ import {
   Avatar,
   LinearProgress,
   Chip,
-  IconButton
+  IconButton,
 } from '@mui/material';
 import {
   RocketLaunch,
@@ -21,6 +21,7 @@ import {
   RecordVoiceOver,
   Slideshow,
   AttachMoney,
+  Check,
   CheckCircle,
   ArrowForward
 } from '@mui/icons-material';
@@ -153,64 +154,70 @@ function Startup() {
       <Header title="Startup Journey" />
       <CenteredFlexBox>
         <Grid container spacing={3} sx={{ maxWidth: 1200 }}>
-          {/* Combined Header and Progress Card */}
+          {/* Header Section directly on background */}
           <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Stack spacing={3}>
-                  {/* Header Section */}
-                  <Stack direction="row" spacing={3} alignItems="center">
-                    <Avatar
-                      sx={{
-                        width: 60,
-                        height: 60,
-                        bgcolor: 'primary.main'
-                      }}
-                    >
-                      <RocketLaunch />
-                    </Avatar>
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="h5" fontWeight="700">
-                        {startup.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                        Complete your startup journey step by step
-                      </Typography>
-                    </Box>
-                    <Chip
-                      label={`${completedSteps} of ${steps.length} completed`}
-                      size="small"
-                      sx={{
-                        bgcolor: progress === 100 ? categoryColors.team : 'default',
-                        color: progress === 100 ? 'white' : 'inherit'
-                      }}
-                    />
-                  </Stack>
+            <Stack spacing={3}>
+              {/* Header Section */}
+              <Stack direction="row" spacing={3} alignItems="center">
+                <Avatar
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    bgcolor: 'primary.main'
+                  }}
+                >
+                  <RocketLaunch />
+                </Avatar>
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant="h5" fontWeight="700">
+                    {startup.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    Complete your startup journey step by step
+                  </Typography>
+                </Box>
+              </Stack>
 
-                  {/* Progress Section */}
-                  <Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={progress}
-                      sx={{
-                        height: 8,
-                        borderRadius: 4,
-                        bgcolor: 'action.hover',
-                        '& .MuiLinearProgress-bar': {
-                          borderRadius: 4,
-                          bgcolor: categoryColors.team
-                        }
-                      }}
-                    />
-                    {progress === 100 && (
-                      <Typography variant="body2" sx={{ mt: 1, color: categoryColors.team }}>
-                        🎉 Congratulations! You've completed all setup steps.
-                      </Typography>
-                    )}
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
+              {/* Progress Section */}
+              <Box sx={{ position: 'relative' }}>
+                <Box sx={{ position: 'relative', height: 32, display: 'flex', alignItems: 'center' }}>
+                  <LinearProgress
+                    variant="determinate"
+                    value={progress}
+                    sx={{
+                      position: 'absolute',
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: 2,
+                      bgcolor: 'action.hover',
+                      '& .MuiLinearProgress-bar': {
+                        borderRadius: 2,
+                        bgcolor: categoryColors.team
+                      }
+                    }}
+                  />
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      position: 'relative',
+                      width: '100%',
+                      textAlign: 'center',
+                      fontWeight: 600,
+                      color: progress > 50 ? 'white' : 'text.primary',
+                      textShadow: progress > 50 ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+                      zIndex: 1,
+                    }}
+                  >
+                    {completedSteps} of {steps.length} steps completed
+                  </Typography>
+                </Box>
+                {progress === 100 && (
+                  <Typography variant="caption" sx={{ mt: 1, display: 'block', color: categoryColors.team }}>
+                    🎉 Congratulations! You've completed all setup steps.
+                  </Typography>
+                )}
+              </Box>
+            </Stack>
           </Grid>
 
           {/* Steps Grid */}
@@ -230,6 +237,7 @@ function Startup() {
                       border: '2px solid',
                       borderColor: step.completed ? step.color : 'divider',
                       position: 'relative',
+                      overflow: 'visible',
                       transition: 'all 0.3s',
                       '&:hover': {
                         boxShadow: 3,
@@ -237,53 +245,82 @@ function Startup() {
                       }
                     }}
                   >
-                    {/* Step Number Badge */}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 12,
-                        right: 12,
-                        width: 28,
-                        height: 28,
-                        borderRadius: '50%',
-                        bgcolor: step.completed ? step.color : 'grey.200',
-                        color: step.completed ? 'white' : 'text.secondary',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.875rem',
-                        fontWeight: 600
-                      }}
-                    >
-                      {index + 1}
-                    </Box>
-
-                    <CardContent sx={{ flexGrow: 1, pb: 1 }}>
-                      <Box sx={{ mb: 2 }}>
+                    <CardContent sx={{ flexGrow: 1, pb: { xs: 2, sm: 1 } }}>
+                      <Box 
+                        sx={{ 
+                          display: 'flex',
+                          gap: 2,
+                          mb: { xs: 0, sm: 2 },
+                          flexDirection: { xs: 'row', sm: 'column' },
+                          alignItems: { xs: 'flex-start', sm: 'stretch' }
+                        }}
+                      >
                         <Box
                           sx={{
-                            width: 48,
-                            height: 48,
+                            width: { xs: 56, sm: 48 },
+                            height: { xs: 56, sm: 48 },
+                            minWidth: { xs: 56, sm: 48 },
                             borderRadius: 2,
                             bgcolor: `${step.color}15`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            mb: 2
+                            position: 'relative',
                           }}
                         >
-                          <step.icon sx={{ color: step.color, fontSize: 24 }} />
+                          {/* Step Number Badge - Positioned on icon box like User page */}
+                          <Chip
+                            label={index + 1}
+                            size="small"
+                            sx={{
+                              position: 'absolute',
+                              top: -8,
+                              left: -8,
+                              width: 24,
+                              height: 24,
+                              bgcolor: step.completed ? step.color : `color-mix(in srgb, ${step.color} 12.5%, white)`,
+                              color: step.completed ? 'white' : 'text.primary',
+                              fontWeight: 700,
+                              border: '2px solid',
+                              borderColor: 'background.paper',
+                              zIndex: 1,
+                              '& .MuiChip-label': {
+                                px: 0,
+                                py: 0,
+                              }
+                            }}
+                          />
+                          <step.icon sx={{ color: step.color, fontSize: { xs: 32, sm: 24 } }} />
                         </Box>
-                        <Typography variant="subtitle1" fontWeight="600" gutterBottom>
-                          {step.title}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {step.description}
-                        </Typography>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="subtitle1" fontWeight="600" gutterBottom>
+                            {step.title}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {step.description}
+                          </Typography>
+                        </Box>
+                        {/* Arrow/Check button for mobile */}
+                        <IconButton
+                          onClick={() => navigate(step.path)}
+                          size="small"
+                          sx={{
+                            display: { xs: 'flex', sm: 'none' },
+                            bgcolor: step.completed ? step.color : 'action.hover',
+                            color: step.completed ? 'white' : 'inherit',
+                            '&:hover': { 
+                              bgcolor: step.completed ? step.color : 'action.selected',
+                              opacity: step.completed ? 0.9 : 1,
+                            },
+                          }}
+                        >
+                          {step.completed ? <Check fontSize="small" /> : <ArrowForward fontSize="small" />}
+                        </IconButton>
                       </Box>
                     </CardContent>
 
-                    <Box sx={{ p: 2, pt: 0 }}>
+                    {/* Full-width button for larger screens */}
+                    <Box sx={{ p: 2, pt: 0, display: { xs: 'none', sm: 'block' } }}>
                       <Button
                         onClick={() => navigate(step.path)}
                         variant={step.completed ? 'outlined' : 'contained'}

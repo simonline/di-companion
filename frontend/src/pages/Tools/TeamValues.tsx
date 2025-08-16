@@ -190,86 +190,84 @@ const TeamValues: React.FC = () => {
         <>
             <Header title="Team Values" />
             <CenteredFlexBox>
-                <Container maxWidth="lg">
-                    <Card>
-                        <CardContent>
-                            <Box sx={{ textAlign: 'center', mb: 4 }}>
-                                <Psychology sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
-                                <Typography variant="h4" gutterBottom fontWeight="bold">
-                                    Team Values Workshop
-                                </Typography>
-                                <Typography variant="body1" color="text.secondary">
-                                    Define your corporate value set through a collaborative three-step process
-                                </Typography>
-                            </Box>
+                <Card>
+                    <CardContent>
+                        <Box sx={{ textAlign: 'center', mb: 4 }}>
+                            <Psychology sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+                            <Typography variant="h4" gutterBottom fontWeight="bold">
+                                Team Values Workshop
+                            </Typography>
+                            <Typography variant="body1" color="text.secondary">
+                                Define your corporate value set through a collaborative three-step process
+                            </Typography>
+                        </Box>
 
-                            <Stepper 
-                                activeStep={activeStep} 
-                                sx={{ 
-                                    mb: 4,
-                                    '& .MuiStepLabel-label': {
-                                        display: { xs: 'none', sm: 'block' }
-                                    },
-                                    '& .MuiStepLabel-iconContainer': {
-                                        paddingRight: { xs: 0, sm: 2 }
-                                    }
-                                }}
+                        <Stepper
+                            activeStep={activeStep}
+                            sx={{
+                                mb: 4,
+                                '& .MuiStepLabel-label': {
+                                    display: { xs: 'none', sm: 'block' }
+                                },
+                                '& .MuiStepLabel-iconContainer': {
+                                    paddingRight: { xs: 0, sm: 2 }
+                                }
+                            }}
+                        >
+                            {steps.map((label) => (
+                                <Step key={label}>
+                                    <StepLabel>
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                fontWeight: activeStep === steps.indexOf(label) ? 'bold' : 'normal',
+                                                display: { xs: 'none', sm: 'block' }
+                                            }}
+                                        >
+                                            {label}
+                                        </Typography>
+                                    </StepLabel>
+                                </Step>
+                            ))}
+                        </Stepper>
+
+                        {/* Mobile Step Indicator */}
+                        <Box
+                            sx={{
+                                display: { xs: 'flex', sm: 'none' },
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                mb: 4,
+                                gap: 1
+                            }}
+                        >
+                            <Typography variant="body2" color="text.secondary">
+                                Step {activeStep + 1} of {steps.length}:
+                            </Typography>
+                            <Typography variant="body2" fontWeight="bold">
+                                {steps[activeStep]}
+                            </Typography>
+                        </Box>
+
+                        {renderStepContent()}
+
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+                            <Button
+                                disabled={activeStep === 0}
+                                onClick={handleBack}
                             >
-                                {steps.map((label) => (
-                                    <Step key={label}>
-                                        <StepLabel>
-                                            <Typography
-                                                variant="body2"
-                                                sx={{
-                                                    fontWeight: activeStep === steps.indexOf(label) ? 'bold' : 'normal',
-                                                    display: { xs: 'none', sm: 'block' }
-                                                }}
-                                            >
-                                                {label}
-                                            </Typography>
-                                        </StepLabel>
-                                    </Step>
-                                ))}
-                            </Stepper>
-
-                            {/* Mobile Step Indicator */}
-                            <Box
-                                sx={{
-                                    display: { xs: 'flex', sm: 'none' },
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    mb: 4,
-                                    gap: 1
-                                }}
+                                Back
+                            </Button>
+                            <Button
+                                variant="contained"
+                                onClick={handleNext}
+                                disabled={activeStep === steps.length - 1}
                             >
-                                <Typography variant="body2" color="text.secondary">
-                                    Step {activeStep + 1} of {steps.length}:
-                                </Typography>
-                                <Typography variant="body2" fontWeight="bold">
-                                    {steps[activeStep]}
-                                </Typography>
-                            </Box>
-
-                            {renderStepContent()}
-
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-                                <Button
-                                    disabled={activeStep === 0}
-                                    onClick={handleBack}
-                                >
-                                    Back
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    onClick={handleNext}
-                                    disabled={activeStep === steps.length - 1}
-                                >
-                                    {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-                                </Button>
-                            </Box>
-                        </CardContent>
-                    </Card>
-                </Container>
+                                {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+                            </Button>
+                        </Box>
+                    </CardContent>
+                </Card>
             </CenteredFlexBox>
         </>
     );

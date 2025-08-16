@@ -115,7 +115,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                     maxWidth: isMobile ? '100%' : '500px',
                     flexShrink: 0, // Prevent shrinking
                     display: isMobile && isInputFocused ? 'none' : 'block', // Hide when keyboard is shown
-                    px: isMobile ? 1 : 2, // Minimal padding on mobile
+                    px: 3,
                 }}
             >
                 <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
