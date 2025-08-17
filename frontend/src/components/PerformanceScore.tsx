@@ -168,213 +168,199 @@ const PerformanceScore: React.FC = () => {
   };
 
   return (
-    <Card>
-      <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h6" fontWeight="700" gutterBottom>
-            Your Performance Score
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            {editingCategories ? (
-              <Button
-                startIcon={<Check />}
-                variant="contained"
-                size="small"
-                onClick={saveCategories}
-              >
-                Save
-              </Button>
-            ) : (
-              <Tooltip title="Filter perspectives to focus on">
-                <Button
-                  startIcon={<FilterList />}
-                  variant="outlined"
-                  size="small"
-                  onClick={() => setEditingCategories(true)}
-                >
-                  Filter
-                </Button>
-              </Tooltip>
-            )}
-            <Tooltip title="Your performance score is calculated based on the patterns you've applied and your self-assessment results. It represents your startup's progress across different perspectives.">
-              <InfoIcon color="action" fontSize="small" />
-            </Tooltip>
-          </Box>
-        </Box>
-
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
-            {/* Overall Score Display */}
-            <Paper
-              elevation={0}
-              sx={{
-                p: 3,
-                bgcolor: 'background.default',
-                borderRadius: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
+    <>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Your Performance Score
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {editingCategories ? (
+            <Button
+              startIcon={<Check />}
+              variant="contained"
+              size="small"
+              onClick={saveCategories}
             >
-              <Typography variant="h5" fontWeight="bold" gutterBottom>
-                Overall Score
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Your startup&apos;s overall maturity across all perspectives
-              </Typography>
-              <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Box
+              Save
+            </Button>
+          ) : (
+            <Tooltip title="Filter perspectives to focus on">
+              <Button
+                startIcon={<FilterList />}
+                variant="outlined"
+                size="small"
+                onClick={() => setEditingCategories(true)}
+              >
+                Filter
+              </Button>
+            </Tooltip>
+          )}
+          <Tooltip title="Your performance score is calculated based on the patterns you've applied and your self-assessment results. It represents your startup's progress across different perspectives.">
+            <InfoIcon color="action" fontSize="small" />
+          </Tooltip>
+        </Box>
+      </Box>
+
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={4}>
+          {/* Overall Score Display */}
+          <Box>
+            <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
+              Overall Score
+            </Typography>
+            <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: 120,
+                  height: 120,
+                  borderRadius: '50%',
+                  background: `conic-gradient(#4CAF50 ${startup.score || 0}%, #e0e0e0 0)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    width: 100,
+                    height: 100,
+                    borderRadius: '50%',
+                    background: 'white',
+                  },
+                  '&:hover .refresh-icon': {
+                    opacity: 1,
+                  },
+                }}
+              >
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
                   sx={{
                     position: 'relative',
-                    width: 120,
-                    height: 120,
-                    borderRadius: '50%',
-                    background: `conic-gradient(#4CAF50 ${startup.score || 0}%, #e0e0e0 0)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      width: 100,
-                      height: 100,
-                      borderRadius: '50%',
-                      background: 'white',
-                    },
-                    '&:hover .refresh-icon': {
-                      opacity: 1,
-                    },
+                    zIndex: 1,
                   }}
                 >
-                  <Typography
-                    variant="h4"
-                    fontWeight="bold"
+                  {startup.score || 0}%
+                </Typography>
+                <Tooltip title="Recalculate score">
+                  <IconButton
+                    size="small"
+                    onClick={updateScores}
+                    className="refresh-icon"
                     sx={{
-                      position: 'relative',
-                      zIndex: 1,
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      bgcolor: 'background.paper',
+                      boxShadow: 1,
+                      opacity: 0,
+                      transition: 'opacity 0.2s',
+                      '&:hover': {
+                        bgcolor: 'background.paper',
+                      },
                     }}
                   >
-                    {startup.score || 0}%
-                  </Typography>
-                  <Tooltip title="Recalculate score">
-                    <IconButton
-                      size="small"
-                      onClick={updateScores}
-                      className="refresh-icon"
-                      sx={{
-                        position: 'absolute',
-                        bottom: 0,
-                        right: 0,
-                        bgcolor: 'background.paper',
-                        boxShadow: 1,
-                        opacity: 0,
-                        transition: 'opacity 0.2s',
-                        '&:hover': {
-                          bgcolor: 'background.paper',
-                        },
-                      }}
-                    >
-                      <Refresh fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
+                    <Refresh fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Box>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={8}>
-            {/* Progress Bars */}
-            <Stack spacing={1}>
-              {editingCategories ? (
-                // Show all categories when editing
-                allCategories.map(renderCategoryItem)
-              ) : (
-                // Show only selected categories when not editing
-                Object.entries(sortedScores).map(([category, score]) => (
-                  <Box key={category} sx={{ position: 'relative', height: 60 }}>
-                    {/* Progress Bar */}
-                    <LinearProgress
-                      variant="determinate"
-                      value={score}
-                      sx={{
-                        height: 40,
-                        borderRadius: 8,
-                        bgcolor: `${categoryColors[category as CategoryEnum]}66`,
-                        '& .MuiLinearProgress-bar': {
-                          bgcolor: categoryColors[category as CategoryEnum],
-                          borderRadius: 8,
-                        },
-                      }}
-                    />
-                    {/* Ticks */}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '40px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        pointerEvents: 'none',
-                      }}
-                    >
-                      {[0, 20, 40, 60, 80, 100].map((tick) => (
-                        <Box
-                          key={tick}
-                          sx={{
-                            width: '1px',
-                            height: '40px',
-                            bgcolor: 'rgba(255, 255, 255, 0.1)',
-                            visibility: [0, 100].includes(tick) ? 'hidden' : 'visible',
-                          }}
-                        />
-                      ))}
-                    </Box>
-                    {/* Category Info within the Progress Bar */}
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        width: '100%',
-                        height: '40px',
-                        padding: '0 16px',
-                      }}
-                    >
-                      {/* Icon */}
-                      <img src={categoryIcons[category as CategoryEnum]} alt={''} height={24} />
-                      {/* Category Name */}
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          color: 'white',
-                          flexGrow: 1,
-                          marginLeft: 1,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                      >
-                        {categoryDisplayNames[category as CategoryEnum]}
-                      </Typography>
-                      {/* Percentage */}
-                      <Typography variant="body1" sx={{ color: 'white', ml: 'auto' }}>
-                        {score}%
-                      </Typography>
-                    </Box>
-                  </Box>
-                ))
-              )}
-            </Stack>
-          </Grid>
+            </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
+              This score reflects your startup&apos;s progress and maturity across all key perspectives. It combines your self-assessment and applied patterns to help you identify strengths and areas for improvement. Use this score to track your growth and set priorities as you build your business.
+            </Typography>
+          </Box>
         </Grid>
-      </CardContent>
-    </Card>
+        <Grid item xs={12} sm={8}>
+          {/* Progress Bars */}
+          <Stack spacing={1}>
+            {editingCategories ? (
+              // Show all categories when editing
+              allCategories.map(renderCategoryItem)
+            ) : (
+              // Show only selected categories when not editing
+              Object.entries(sortedScores).map(([category, score]) => (
+                <Box key={category} sx={{ position: 'relative', height: 60 }}>
+                  {/* Progress Bar */}
+                  <LinearProgress
+                    variant="determinate"
+                    value={score}
+                    sx={{
+                      height: 40,
+                      borderRadius: 8,
+                      bgcolor: `${categoryColors[category as CategoryEnum]}66`,
+                      '& .MuiLinearProgress-bar': {
+                        bgcolor: categoryColors[category as CategoryEnum],
+                        borderRadius: 8,
+                      },
+                    }}
+                  />
+                  {/* Ticks */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '40px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {[0, 20, 40, 60, 80, 100].map((tick) => (
+                      <Box
+                        key={tick}
+                        sx={{
+                          width: '1px',
+                          height: '40px',
+                          bgcolor: 'rgba(255, 255, 255, 0.1)',
+                          visibility: [0, 100].includes(tick) ? 'hidden' : 'visible',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                  {/* Category Info within the Progress Bar */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      width: '100%',
+                      height: '40px',
+                      padding: '0 16px',
+                    }}
+                  >
+                    {/* Icon */}
+                    <img src={categoryIcons[category as CategoryEnum]} alt={''} height={24} />
+                    {/* Category Name */}
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        color: 'white',
+                        flexGrow: 1,
+                        marginLeft: 1,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {categoryDisplayNames[category as CategoryEnum]}
+                    </Typography>
+                    {/* Percentage */}
+                    <Typography variant="body1" sx={{ color: 'white', ml: 'auto' }}>
+                      {score}%
+                    </Typography>
+                  </Box>
+                </Box>
+              ))
+            )}
+          </Stack>
+        </Grid>
+      </Grid>
+    </>
   );
 };
 
