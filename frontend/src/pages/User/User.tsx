@@ -180,7 +180,7 @@ const User: React.FC = () => {
                   sx={{
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    border: step.completed ? '2px solid' : '1px solid',
+                    border: step.completed ? '2px solid' : 'none',
                     borderColor: step.completed ? categoryColors.entrepreneur : 'divider',
                     bgcolor: 'background.paper',
                     position: 'relative',

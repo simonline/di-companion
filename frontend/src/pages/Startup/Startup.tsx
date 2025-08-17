@@ -236,7 +236,7 @@ function Startup() {
                       display: 'flex',
                       flexDirection: 'column',
                       borderRadius: 2,
-                      border: '2px solid',
+                      border: step.completed ? '2px solid' : 'none',
                       borderColor: step.completed ? step.color : 'divider',
                       position: 'relative',
                       overflow: 'visible',
