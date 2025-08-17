@@ -113,7 +113,7 @@ function CreateStartup() {
                     ...values,
                     users: { set: [user.id] },
                   });
-                  navigate('/dashboard');
+                  navigate('/startup');
                 } catch (err: unknown) {
                   console.error('API Error:', err);
 

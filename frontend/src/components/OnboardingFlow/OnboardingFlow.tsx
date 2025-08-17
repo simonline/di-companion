@@ -55,8 +55,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
     } else if (onComplete) {
       onComplete();
     } else {
-      // Default completion behavior - redirect to dashboard
-      navigate('/dashboard');
+      // Default completion behavior - redirect to start
+      navigate('/user');
     }
   }, [activeStep, steps.length, onComplete, navigate]);
 

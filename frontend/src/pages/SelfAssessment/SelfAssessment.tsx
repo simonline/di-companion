@@ -139,7 +139,7 @@ const SelfAssessment: React.FC = () => {
         });
         // Clear the saved step from localStorage
         localStorage.removeItem('selfAssessmentActiveStep');
-        navigate('/dashboard');
+        navigate('/startup');
       }
     } catch (error) {
       notificationsActions.push({
