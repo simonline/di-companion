@@ -2,6 +2,7 @@
   "name": "Dynamic Innovation Companion",
   "short_name": "DI Companion",
   "description": "AI-powered platform to support startups and entrepreneurs",
+  "version": "1.0.1",
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
   "display": "standalone",

@@ -34,17 +34,16 @@ di-companion/
 ├── docker-compose.dev.yml    # Development overrides
 ├── docker-compose.prod.yml   # Production overrides
 ├── package.json              # Monorepo configuration
-└── .env.example              # Environment template
 ```
 
 ## 🛠️ Services
 
-| Service | Port | Description |
-|---------|------|-------------|
-| Frontend | 5173 | React application with Material-UI |
-| Backend | 8000 | FastAPI with Google Gemini AI |
-| Strapi | 1337 | Headless CMS for content |
-| PostgreSQL | 5432 | Database |
+| Service    | Port | Description                        |
+| ---------- | ---- | ---------------------------------- |
+| Frontend   | 5173 | React application with Material-UI |
+| Backend    | 8000 | FastAPI with Google Gemini AI      |
+| Strapi     | 1337 | Headless CMS for content           |
+| PostgreSQL | 5432 | Database                           |
 
 ## 💻 Development
 

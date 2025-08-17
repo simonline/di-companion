@@ -204,13 +204,6 @@ di-companion/
 │   ├── package.json          # Strapi dependencies
 │   └── Dockerfile            # Docker build
 ├── docker-compose.yml        # Docker orchestration
-├── package.json              # Monorepo configuration
-├── .env.example              # Environment template
-├── .gitignore                # Git ignore rules
-├── .editorconfig             # Editor configuration
-├── .prettierrc               # Code formatting rules
-├── .eslintrc.js              # Linting rules
-├── .nvmrc                    # Node version specification
 └── CLAUDE.md                 # This documentation
 ```
 
