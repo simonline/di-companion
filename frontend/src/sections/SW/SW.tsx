@@ -1,5 +1,7 @@
+import PWAUpdater from '@/components/PWAUpdater';
+
 function SW() {
-  return null;
+  return <PWAUpdater />;
 }
 
 export default SW;
