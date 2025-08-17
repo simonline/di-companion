@@ -75,10 +75,10 @@ const AcceptInvitation: React.FC = () => {
                 You have successfully joined the startup!
               </Alert>
               <Typography variant="body1" paragraph>
-                You now have access to the startup&apos;s dashboard and resources.
+                You now have access to the startup&apos;s resources.
               </Typography>
-              <Button variant="contained" fullWidth onClick={() => navigate('/dashboard')}>
-                Go to Dashboard
+              <Button variant="contained" fullWidth onClick={() => navigate('/startup')}>
+                Go to Startup
               </Button>
             </>
           ) : token ? (
@@ -87,7 +87,7 @@ const AcceptInvitation: React.FC = () => {
                 You have been invited to join a startup
               </Typography>
               <Typography variant="body1" paragraph>
-                Click the button below to accept the invitation and gain access to the startup&apos;s dashboard.
+                Click the button below to accept the invitation and gain access to the startup.
               </Typography>
               <Button variant="contained" fullWidth onClick={acceptInvitation}>
                 Accept Invitation

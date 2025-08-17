@@ -30,6 +30,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/sections/Header';
 import { categoryColors } from '@/utils/constants';
+import PerformanceScore from '@/components/PerformanceScore';
 
 interface Step {
   id: string;
@@ -352,6 +353,11 @@ function Startup() {
                 </Grid>
               ))}
             </Grid>
+          </Grid>
+
+          {/* Performance Score Section */}
+          <Grid item xs={12}>
+            <PerformanceScore />
           </Grid>
         </Grid>
       </CenteredFlexBox>

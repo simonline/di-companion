@@ -104,14 +104,6 @@ export const useAppRoutes = (): Partial<AppRoutes> => {
 const useRoutes = (): Partial<Routes> => {
   return {
     ...useAppRoutes(),
-    [Pages.Dashboard]: {
-      component: asyncComponentLoader(() => import('@/pages/Dashboard')),
-      path: '/dashboard',
-      title: 'Dashboard',
-      requiresAuth: true,
-      visibleTo: ['startup'],
-      requiresStartup: true,
-    },
     [Pages.Progress]: {
       component: asyncComponentLoader(() => import('@/pages/Progress')),
       path: '/progress',

@@ -13,7 +13,6 @@ export enum Pages {
   ExplorePattern,
   Progress,
   ProgressPattern,
-  Dashboard,
   Startup,
   CoachStartup,
   Coach,

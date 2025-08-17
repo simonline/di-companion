@@ -95,10 +95,10 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
           </Typography>
           <Button
             variant="contained"
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/startup')}
             sx={{ mt: 2 }}
           >
-            Go to Dashboard
+            Go to Startup
           </Button>
         </Box>
       </Container>
