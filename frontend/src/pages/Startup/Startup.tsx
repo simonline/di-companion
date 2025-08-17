@@ -229,6 +229,7 @@ function Startup() {
               {steps.map((step, index) => (
                 <Grid item xs={12} sm={6} md={4} lg={3} key={step.id}>
                   <Card
+                    onClick={() => navigate(step.path)}
                     sx={{
                       height: '100%',
                       display: 'flex',
@@ -239,6 +240,7 @@ function Startup() {
                       position: 'relative',
                       overflow: 'visible',
                       transition: 'all 0.3s',
+                      cursor: 'pointer',
                       '&:hover': {
                         boxShadow: 3,
                         transform: 'translateY(-2px)'
@@ -302,7 +304,10 @@ function Startup() {
                         </Box>
                         {/* Arrow/Check button for mobile */}
                         <IconButton
-                          onClick={() => navigate(step.path)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(step.path);
+                          }}
                           size="small"
                           sx={{
                             display: { xs: 'flex', sm: 'none' },
@@ -322,7 +327,10 @@ function Startup() {
                     {/* Full-width button for larger screens */}
                     <Box sx={{ p: 2, pt: 0, display: { xs: 'none', sm: 'block' } }}>
                       <Button
-                        onClick={() => navigate(step.path)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(step.path);
+                        }}
                         variant={step.completed ? 'outlined' : 'contained'}
                         fullWidth
                         size="small"

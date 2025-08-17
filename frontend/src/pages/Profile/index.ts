@@ -1,4 +1,4 @@
-import Profile from './Profile';
+import UserProfile from './UserProfile';
 
 export { default as StartupTeam } from './StartupTeam';
-export default Profile;
+export default UserProfile;

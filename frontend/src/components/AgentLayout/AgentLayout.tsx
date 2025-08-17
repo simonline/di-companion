@@ -206,9 +206,13 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                         <Fab
                             color="primary"
                             onClick={() => {
+                                // Clear any existing timeout when clicked
+                                if (labelTimeoutRef.current) {
+                                    clearTimeout(labelTimeoutRef.current);
+                                }
+                                setShowAgentLabel(false);
                                 setMobileView('chat');
                                 setUnreadMessages(0);
-                                setShowAgentLabel(false);
                             }}
                             onMouseEnter={() => {
                                 if (labelTimeoutRef.current) {
@@ -222,10 +226,11 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                                 }, 2000);
                             }}
                             sx={{
-                                backgroundColor: selectedAgent.color,
+                                backgroundColor: 'white',
+                                border: `2px solid ${selectedAgent.color}`,
                                 '&:hover': {
-                                    backgroundColor: selectedAgent.color,
-                                    filter: 'brightness(0.9)',
+                                    backgroundColor: 'white',
+                                    filter: 'brightness(0.95)',
                                     transform: 'scale(1.05)'
                                 },
                                 boxShadow: theme.shadows[8],
@@ -245,7 +250,16 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                             }}
                         >
                             <Badge badgeContent={unreadMessages} color="error">
-                                <SmartToyIcon sx={{ fontSize: 28, color: 'white' }} />
+                                <Box
+                                    component="img"
+                                    src={selectedAgent.avatarUrl}
+                                    alt={selectedAgent.name}
+                                    sx={{
+                                        width: 36,
+                                        height: 36,
+                                        borderRadius: '50%'
+                                    }}
+                                />
                             </Badge>
                         </Fab>
                     </Box>

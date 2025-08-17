@@ -121,7 +121,7 @@ const useRoutes = (): Partial<Routes> => {
       requiresStartup: true,
     },
     [Pages.Profile]: {
-      component: asyncComponentLoader(() => import('@/pages/Profile')),
+      component: asyncComponentLoader(() => import('@/pages/Profile/UserProfile')),
       path: '/profile',
       title: 'Profile',
       requiresAuth: true,
@@ -184,15 +184,6 @@ const useRoutes = (): Partial<Routes> => {
       visibleTo: ['startup', 'coach'],
       requiresAuth: true,
       requiresStartup: false,
-    },
-    [Pages.UserProfile]: {
-      component: asyncComponentLoader(() => import('@/pages/Profile/UserProfile')),
-      path: '/profile/user',
-      title: 'User Profile',
-      visibleTo: ['startup', 'coach'],
-      requiresAuth: true,
-      requiresStartup: false,
-      agent: 'entrepreneur',
     },
     [Pages.UpdateProfile]: {
       component: asyncComponentLoader(() => import('@/pages/Profile/UpdateProfile')),

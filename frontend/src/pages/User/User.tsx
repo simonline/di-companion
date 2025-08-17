@@ -87,7 +87,7 @@ const User: React.FC = () => {
         title: 'Create Your Startup',
         description: 'Set up your startup profile to access personalized patterns and recommendations.',
         icon: <RocketLaunch sx={{ fontSize: 32 }} />,
-        route: startup?.documentId ? `/startups/${startup.documentId}` : '/register/create-startup',
+        route: startup?.documentId ? `/profile/startup/${startup.documentId}/edit` : '/create-startup',
         completed: startupCompleted,
       },
     ]);
