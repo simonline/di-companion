@@ -2,7 +2,6 @@ services:
   frontend:
     container_name: frontend
     build: ./frontend
-    image: di-companion:latest
     restart: unless-stopped
     ports:
       - "5173:5173"
@@ -13,13 +12,13 @@ services:
       - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
+      - strapi
     networks:
       - web
 
   backend:
     container_name: backend
     build: ./backend
-    image: di-companion-backend:latest
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -42,13 +41,14 @@ services:
       POSTGRES_DB: di
       POSTGRES_USER: di
       POSTGRES_PASSWORD: aRGeK3d!EZocmhB
+    ports:
+      - "5432:5432"
     networks:
       - backend
 
   strapi:
     container_name: strapi
     build: ./strapi
-    image: strapi:latest
     restart: unless-stopped
     env_file: ./strapi/.env
     environment:
@@ -69,8 +69,7 @@ services:
       - ./strapi/yarn.lock:/opt/yarn.lock
       - ./strapi/.env:/opt/app/.env
       - ./strapi/public/uploads:/opt/app/public/uploads
-    user:
-      "1000:1000"
+    user: "1000:1000"
     ports:
       - "1337:1337"
     depends_on:
