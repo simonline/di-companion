@@ -18,7 +18,8 @@ function Welcome() {
         sx={{
           backgroundColor: '#07bce5',
           color: 'white',
-          minHeight: '100%',
+          minHeight: '100vh',
+          overflowY: 'auto',
         }}
       >
         <Container sx={{ mb: 4 }}>
@@ -86,7 +87,7 @@ function Welcome() {
           </div>
 
           {/* Feature Cards */}
-          <Grid container spacing={4} justifyContent="center" sx={{ mt: 4 }}>
+          <Grid container spacing={4} justifyContent="center" sx={{ mt: 2 }}>
             {/* Explore Feature */}
             <Grid item xs={12} sm={6} md={3}>
               <Card
