@@ -202,74 +202,6 @@ const PerformanceScore: React.FC = () => {
       </Box>
 
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={4}>
-          {/* Overall Score Display */}
-          <Box>
-            <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
-              Overall Score
-            </Typography>
-            <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Box
-                sx={{
-                  position: 'relative',
-                  width: 120,
-                  height: 120,
-                  borderRadius: '50%',
-                  background: `conic-gradient(#4CAF50 ${startup.score || 0}%, #e0e0e0 0)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    width: 100,
-                    height: 100,
-                    borderRadius: '50%',
-                    background: 'white',
-                  },
-                  '&:hover .refresh-icon': {
-                    opacity: 1,
-                  },
-                }}
-              >
-                <Typography
-                  variant="h4"
-                  fontWeight="bold"
-                  sx={{
-                    position: 'relative',
-                    zIndex: 1,
-                  }}
-                >
-                  {startup.score || 0}%
-                </Typography>
-                <Tooltip title="Recalculate score">
-                  <IconButton
-                    size="small"
-                    onClick={updateScores}
-                    className="refresh-icon"
-                    sx={{
-                      position: 'absolute',
-                      bottom: 0,
-                      right: 0,
-                      bgcolor: 'background.paper',
-                      boxShadow: 1,
-                      opacity: 0,
-                      transition: 'opacity 0.2s',
-                      '&:hover': {
-                        bgcolor: 'background.paper',
-                      },
-                    }}
-                  >
-                    <Refresh fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
-              This score reflects your startup&apos;s progress and maturity across all key perspectives. It combines your self-assessment and applied patterns to help you identify strengths and areas for improvement. Use this score to track your growth and set priorities as you build your business.
-            </Typography>
-          </Box>
-        </Grid>
         <Grid item xs={12} sm={8}>
           {/* Progress Bars */}
           <Stack spacing={1}>
@@ -358,6 +290,75 @@ const PerformanceScore: React.FC = () => {
               ))
             )}
           </Stack>
+        </Grid>
+
+        <Grid item xs={12} sm={4}>
+          {/* Overall Score Display */}
+          <Box>
+            <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
+              Overall Score
+            </Typography>
+            <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: 120,
+                  height: 120,
+                  borderRadius: '50%',
+                  background: `conic-gradient(#4CAF50 ${startup.score || 0}%, #e0e0e0 0)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    width: 100,
+                    height: 100,
+                    borderRadius: '50%',
+                    background: 'white',
+                  },
+                  '&:hover .refresh-icon': {
+                    opacity: 1,
+                  },
+                }}
+              >
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
+                  sx={{
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
+                >
+                  {startup.score || 0}%
+                </Typography>
+                <Tooltip title="Recalculate score">
+                  <IconButton
+                    size="small"
+                    onClick={updateScores}
+                    className="refresh-icon"
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      bgcolor: 'background.paper',
+                      boxShadow: 1,
+                      opacity: 0,
+                      transition: 'opacity 0.2s',
+                      '&:hover': {
+                        bgcolor: 'background.paper',
+                      },
+                    }}
+                  >
+                    <Refresh fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
+              This score reflects your startup&apos;s progress and maturity across all key perspectives. It combines your self-assessment and applied patterns to help you identify strengths and areas for improvement. Use this score to track your growth and set priorities as you build your business.
+            </Typography>
+          </Box>
         </Grid>
       </Grid>
     </>
