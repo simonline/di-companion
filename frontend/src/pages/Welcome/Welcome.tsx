@@ -18,7 +18,7 @@ function Welcome() {
         sx={{
           backgroundColor: '#07bce5',
           color: 'white',
-          minHeight: '100vh',
+          height: '100%',
           overflowY: 'auto',
         }}
       >
@@ -205,8 +205,16 @@ function Welcome() {
           {/* Logo */}
           <Grid container justifyContent="flex-end" alignItems="flex-end">
             <Grid item xs={12} sm={3}>
-              <Box position="relative" bottom="-40px" right="0">
-                <img src={logoImage} alt="SCE logo" width="100%" />
+              <Box>
+                <img
+                  src={logoImage}
+                  alt="SCE logo"
+                  width="100%"
+                  style={{
+                    position: 'relative',
+                    bottom: '-40px',
+                  }}
+                />
               </Box>
             </Grid>
           </Grid>
