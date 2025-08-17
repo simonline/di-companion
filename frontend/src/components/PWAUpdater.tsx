@@ -7,12 +7,17 @@ function PWAUpdater() {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
+    immediate: true,
     onRegisteredSW(swUrl, r) {
       console.log('Service Worker registered:', swUrl);
       if (r) {
+        // Check for updates immediately on registration
+        r.update();
+        // Check for updates every 5 minutes
         setInterval(() => {
+          console.log('Checking for SW updates...');
           r.update();
-        }, 60 * 60 * 1000); // Check for updates every hour
+        }, 5 * 60 * 1000);
       }
     },
     onRegisterError(error) {
