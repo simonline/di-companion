@@ -75,6 +75,14 @@ const User: React.FC = () => {
         completed: profileCompleted,
       },
       {
+        id: 'values',
+        title: 'Your Values',
+        description: 'Define your personal values through our guided workshop process.',
+        icon: <Assessment sx={{ fontSize: 32 }} />,
+        route: '/tools/user-values',
+        completed: false, // TODO: Add completion logic
+      },
+      {
         id: 'assessment',
         title: 'Self Assessment',
         description: 'Take the entrepreneurship assessment to understand your strengths and areas for growth.',

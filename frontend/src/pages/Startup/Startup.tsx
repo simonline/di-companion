@@ -135,7 +135,7 @@ function Startup() {
       description: 'Conduct and analyze customer interviews',
       icon: RecordVoiceOver,
       color: categoryColors.stakeholders,
-      path: '/tools/interview-analyzer',
+      path: '/tools/interviews',
       completed: false
     },
     {
@@ -153,7 +153,7 @@ function Startup() {
       description: 'Upload and analyze your pitch deck',
       icon: Slideshow,
       color: categoryColors.product,
-      path: '/tools/pitch-deck-analyzer',
+      path: '/tools/pitch-deck',
       completed: false
     },
     {

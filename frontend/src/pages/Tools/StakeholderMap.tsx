@@ -1,448 +1,299 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Container,
-  Paper,
-  Grid,
-  Button,
-  TextField,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Chip,
-  Stack,
-  Alert,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Tooltip,
+    Box,
+    Card,
+    CardContent,
+    Typography,
+    Button,
+    Stack,
+    Paper,
+    Alert,
+    Chip,
+    List,
+    ListItem,
+    ListItemText,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    CircularProgress,
+    Divider,
 } from '@mui/material';
 import {
-  Add,
-  Delete,
-  Edit,
-  Save,
-  Cancel,
-  Download,
-  AccountTree,
-  Person,
-  Business,
-  Groups,
-  Public,
+    AccountTree,
+    CloudUpload,
+    Description,
+    Delete,
+    Info,
+    ArrowBack
 } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
+import { useDocumentUpload } from '@/hooks/useDocumentUpload';
+import { useNavigate } from 'react-router-dom';
 import { categoryColors } from '@/utils/constants';
 
-interface Stakeholder {
-  id: string;
-  name: string;
-  type: 'internal' | 'external' | 'partner' | 'customer';
-  influence: 'high' | 'medium' | 'low';
-  interest: 'high' | 'medium' | 'low';
-  description?: string;
-  relationship?: string;
-}
-
-const STAKEHOLDER_ICONS = {
-  internal: Person,
-  external: Public,
-  partner: Business,
-  customer: Groups,
-};
-
-const INFLUENCE_COLORS = {
-  high: '#d32f2f',
-  medium: '#ff9800',
-  low: '#4caf50',
-};
-
 const StakeholderMap: React.FC = () => {
-  const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [formData, setFormData] = useState<Partial<Stakeholder>>({
-    type: 'internal',
-    influence: 'medium',
-    interest: 'medium',
-  });
+    const navigate = useNavigate();
+    const [file, setFile] = useState<File | null>(null);
+    const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+    const [uploadTitle, setUploadTitle] = useState('');
+    const [uploadDescription, setUploadDescription] = useState('');
 
-  const handleAddStakeholder = () => {
-    setFormData({
-      type: 'internal',
-      influence: 'medium',
-      interest: 'medium',
+    const { documents, loading, uploading, fetchDocuments, uploadDocument, deleteDocument } = useDocumentUpload({
+        type: 'other',
+        onUploadSuccess: () => {
+            setUploadDialogOpen(false);
+            setFile(null);
+            setUploadTitle('');
+            setUploadDescription('');
+        }
     });
-    setEditingId(null);
-    setDialogOpen(true);
-  };
 
-  const handleEditStakeholder = (stakeholder: Stakeholder) => {
-    setFormData(stakeholder);
-    setEditingId(stakeholder.id);
-    setDialogOpen(true);
-  };
+    useEffect(() => {
+        fetchDocuments();
+    }, []);
 
-  const handleSaveStakeholder = () => {
-    if (!formData.name) return;
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files[0]) {
+            const selectedFile = event.target.files[0];
+            setFile(selectedFile);
+            setUploadTitle(selectedFile.name.replace(/\.[^/.]+$/, '')); // Remove extension for title
+            setUploadDialogOpen(true);
+        }
+    };
 
-    if (editingId) {
-      setStakeholders(prev =>
-        prev.map(s =>
-          s.id === editingId
-            ? { ...s, ...formData, id: editingId }
-            : s
-        )
-      );
-    } else {
-      const newStakeholder: Stakeholder = {
-        id: Date.now().toString(),
-        name: formData.name,
-        type: formData.type || 'internal',
-        influence: formData.influence || 'medium',
-        interest: formData.interest || 'medium',
-        description: formData.description,
-        relationship: formData.relationship,
-      };
-      setStakeholders(prev => [...prev, newStakeholder]);
-    }
+    const handleUpload = async () => {
+        if (file && uploadTitle) {
+            await uploadDocument(file, uploadTitle, uploadDescription);
+        }
+    };
 
-    setDialogOpen(false);
-    setFormData({
-      type: 'internal',
-      influence: 'medium',
-      interest: 'medium',
-    });
-  };
-
-  const handleDeleteStakeholder = (id: string) => {
-    setStakeholders(prev => prev.filter(s => s.id !== id));
-  };
-
-  const getQuadrant = (influence: string, interest: string) => {
-    if (influence === 'high' && interest === 'high') return 'Manage Closely';
-    if (influence === 'high' && interest !== 'high') return 'Keep Satisfied';
-    if (influence !== 'high' && interest === 'high') return 'Keep Informed';
-    return 'Monitor';
-  };
-
-  const getQuadrantColor = (quadrant: string) => {
-    switch (quadrant) {
-      case 'Manage Closely':
-        return '#ff6b6b';
-      case 'Keep Satisfied':
-        return '#4dabf7';
-      case 'Keep Informed':
-        return '#51cf66';
-      case 'Monitor':
-        return '#ffd43b';
-      default:
-        return '#868e96';
-    }
-  };
-
-  const exportMap = () => {
-    const data = JSON.stringify(stakeholders, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'stakeholder-map.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  return (
-    <>
-      <Header title="Stakeholder Map" />
-      <CenteredFlexBox>
-        <Container maxWidth="lg">
-          <Grid container spacing={3}>
-            {/* Header */}
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Box display="flex" alignItems="center" justifyContent="space-between">
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <AccountTree sx={{ fontSize: 40, color: categoryColors.stakeholders }} />
-                      <Box>
-                        <Typography variant="h5" fontWeight="600">
-                          Stakeholder Mapping
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Identify and analyze your key stakeholders
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Stack direction="row" spacing={1}>
-                      <Button
-                        variant="outlined"
-                        startIcon={<Download />}
-                        onClick={exportMap}
-                        disabled={stakeholders.length === 0}
-                      >
-                        Export
-                      </Button>
-                      <Button
-                        variant="contained"
-                        startIcon={<Add />}
-                        onClick={handleAddStakeholder}
-                        sx={{ bgcolor: categoryColors.stakeholders }}
-                      >
-                        Add Stakeholder
-                      </Button>
-                    </Stack>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Influence/Interest Matrix */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Influence/Interest Matrix
-                  </Typography>
-                  <Box sx={{ position: 'relative', height: 400, border: '2px solid', borderColor: 'divider', borderRadius: 1 }}>
-                    {/* Quadrant Labels */}
-                    <Box sx={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '50%', p: 2, bgcolor: '#4dabf740' }}>
-                      <Typography variant="caption" fontWeight="600">Keep Satisfied</Typography>
-                      <Typography variant="caption" display="block" color="text.secondary">High Influence, Low Interest</Typography>
-                    </Box>
-                    <Box sx={{ position: 'absolute', top: 0, right: 0, width: '50%', height: '50%', p: 2, bgcolor: '#ff6b6b40' }}>
-                      <Typography variant="caption" fontWeight="600">Manage Closely</Typography>
-                      <Typography variant="caption" display="block" color="text.secondary">High Influence, High Interest</Typography>
-                    </Box>
-                    <Box sx={{ position: 'absolute', bottom: 0, left: 0, width: '50%', height: '50%', p: 2, bgcolor: '#ffd43b40' }}>
-                      <Typography variant="caption" fontWeight="600">Monitor</Typography>
-                      <Typography variant="caption" display="block" color="text.secondary">Low Influence, Low Interest</Typography>
-                    </Box>
-                    <Box sx={{ position: 'absolute', bottom: 0, right: 0, width: '50%', height: '50%', p: 2, bgcolor: '#51cf6640' }}>
-                      <Typography variant="caption" fontWeight="600">Keep Informed</Typography>
-                      <Typography variant="caption" display="block" color="text.secondary">Low Influence, High Interest</Typography>
+    return (
+        <>
+            <Header title="Stakeholder Map" />
+            <CenteredFlexBox>
+                <Box sx={{ maxWidth: 1200, width: '100%', mt: 4 }}>
+                    <Box sx={{ mb: 1 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/startup')}
+                            sx={{ color: 'text.secondary' }}
+                        >
+                            Back to Startup
+                        </Button>
                     </Box>
 
-                    {/* Plot stakeholders */}
-                    {stakeholders.map(stakeholder => {
-                      const Icon = STAKEHOLDER_ICONS[stakeholder.type];
-                      const x = stakeholder.interest === 'high' ? 75 : stakeholder.interest === 'medium' ? 50 : 25;
-                      const y = stakeholder.influence === 'high' ? 25 : stakeholder.influence === 'medium' ? 50 : 75;
-                      
-                      return (
-                        <Tooltip key={stakeholder.id} title={stakeholder.name}>
-                          <Box
-                            sx={{
-                              position: 'absolute',
-                              left: `${x}%`,
-                              top: `${y}%`,
-                              transform: 'translate(-50%, -50%)',
-                              cursor: 'pointer',
-                            }}
-                            onClick={() => handleEditStakeholder(stakeholder)}
-                          >
-                            <Icon sx={{ fontSize: 32, color: categoryColors.stakeholders }} />
-                          </Box>
-                        </Tooltip>
-                      );
-                    })}
-
-                    {/* Axis Labels */}
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        position: 'absolute',
-                        bottom: -20,
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                      }}
-                    >
-                      Interest →
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        position: 'absolute',
-                        left: -50,
-                        top: '50%',
-                        transform: 'rotate(-90deg)',
-                      }}
-                    >
-                      Influence →
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Stakeholder List */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Stakeholder List
-                  </Typography>
-                  {stakeholders.length === 0 ? (
-                    <Alert severity="info">
-                      No stakeholders added yet. Click "Add Stakeholder" to begin mapping.
-                    </Alert>
-                  ) : (
-                    <Stack spacing={2} sx={{ maxHeight: 400, overflow: 'auto' }}>
-                      {stakeholders.map(stakeholder => {
-                        const Icon = STAKEHOLDER_ICONS[stakeholder.type];
-                        const quadrant = getQuadrant(stakeholder.influence, stakeholder.interest);
-                        
-                        return (
-                          <Paper key={stakeholder.id} sx={{ p: 2 }}>
-                            <Box display="flex" alignItems="center" justifyContent="space-between">
-                              <Box display="flex" alignItems="center" gap={2}>
-                                <Icon sx={{ color: categoryColors.stakeholders }} />
-                                <Box>
-                                  <Typography variant="subtitle1" fontWeight="600">
-                                    {stakeholder.name}
-                                  </Typography>
-                                  <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                                    <Chip
-                                      label={stakeholder.type}
-                                      size="small"
-                                      variant="outlined"
-                                    />
-                                    <Chip
-                                      label={quadrant}
-                                      size="small"
-                                      sx={{
-                                        bgcolor: getQuadrantColor(quadrant) + '20',
-                                        color: getQuadrantColor(quadrant),
-                                        fontWeight: 600,
-                                      }}
-                                    />
-                                  </Stack>
-                                  {stakeholder.description && (
-                                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                      {stakeholder.description}
-                                    </Typography>
-                                  )}
+                    <Card sx={{ mb: 3 }}>
+                        <CardContent>
+                            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                                <Box
+                                    sx={{
+                                        width: 56,
+                                        height: 56,
+                                        borderRadius: 2,
+                                        bgcolor: `${categoryColors.stakeholders}20`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    <AccountTree sx={{ color: categoryColors.stakeholders, fontSize: 28 }} />
                                 </Box>
-                              </Box>
-                              <Stack direction="row" spacing={1}>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleEditStakeholder(stakeholder)}
-                                >
-                                  <Edit />
-                                </IconButton>
-                                <IconButton
-                                  size="small"
-                                  color="error"
-                                  onClick={() => handleDeleteStakeholder(stakeholder.id)}
-                                >
-                                  <Delete />
-                                </IconButton>
-                              </Stack>
-                            </Box>
-                          </Paper>
-                        );
-                      })}
-                    </Stack>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Container>
-      </CenteredFlexBox>
+                                <Box sx={{ flexGrow: 1 }}>
+                                    <Typography variant="h5" fontWeight="700">
+                                        Stakeholder Map
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Upload your stakeholder map for future analysis
+                                    </Typography>
+                                </Box>
+                            </Stack>
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {editingId ? 'Edit Stakeholder' : 'Add Stakeholder'}
-        </DialogTitle>
-        <DialogContent>
-          <Stack spacing={3} sx={{ mt: 1 }}>
-            <TextField
-              label="Name"
-              fullWidth
-              value={formData.name || ''}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-            <FormControl fullWidth>
-              <InputLabel>Type</InputLabel>
-              <Select
-                value={formData.type || 'internal'}
-                label="Type"
-                onChange={(e) => setFormData({ ...formData, type: e.target.value as Stakeholder['type'] })}
-              >
-                <MenuItem value="internal">Internal</MenuItem>
-                <MenuItem value="external">External</MenuItem>
-                <MenuItem value="partner">Partner</MenuItem>
-                <MenuItem value="customer">Customer</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>Influence</InputLabel>
-              <Select
-                value={formData.influence || 'medium'}
-                label="Influence"
-                onChange={(e) => setFormData({ ...formData, influence: e.target.value as Stakeholder['influence'] })}
-              >
-                <MenuItem value="high">High</MenuItem>
-                <MenuItem value="medium">Medium</MenuItem>
-                <MenuItem value="low">Low</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel>Interest</InputLabel>
-              <Select
-                value={formData.interest || 'medium'}
-                label="Interest"
-                onChange={(e) => setFormData({ ...formData, interest: e.target.value as Stakeholder['interest'] })}
-              >
-                <MenuItem value="high">High</MenuItem>
-                <MenuItem value="medium">Medium</MenuItem>
-                <MenuItem value="low">Low</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              label="Description"
-              fullWidth
-              multiline
-              rows={2}
-              value={formData.description || ''}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            />
-            <TextField
-              label="Relationship"
-              fullWidth
-              value={formData.relationship || ''}
-              onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)} startIcon={<Cancel />}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSaveStakeholder}
-            variant="contained"
-            startIcon={<Save />}
-            disabled={!formData.name}
-            sx={{ bgcolor: categoryColors.stakeholders }}
-          >
-            {editingId ? 'Update' : 'Add'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
-  );
+                            <Box sx={{ mb: 3 }}>
+                                <Typography variant="body2" fontWeight="600" gutterBottom>
+                                    Helpful Tips for Creating Your Stakeholder Map:
+                                </Typography>
+                                <Box component="ul" sx={{ mt: 1, mb: 0, pl: 3 }}>
+                                    <Typography variant="body2" component="li">
+                                        Use <a href="https://kumu.io" target="_blank" rel="noopener noreferrer">Kumu.io</a> for interactive stakeholder mapping and visualization
+                                    </Typography>
+                                    <Typography variant="body2" component="li">
+                                        Try <a href="https://miro.com" target="_blank" rel="noopener noreferrer">Miro</a> or <a href="https://mural.co" target="_blank" rel="noopener noreferrer">Mural</a> for collaborative workshops
+                                    </Typography>
+                                    <Typography variant="body2" component="li">
+                                        Apply the Power-Interest Grid to categorize stakeholders
+                                    </Typography>
+                                    <Typography variant="body2" component="li">
+                                        Include both internal and external stakeholders
+                                    </Typography>
+                                    <Typography variant="body2" component="li">
+                                        Update your map regularly as relationships evolve
+                                    </Typography>
+                                </Box>
+                            </Box>
+
+                            <Paper
+                                sx={{
+                                    p: 4,
+                                    width: '100%',
+                                    display: 'block',
+                                    border: '2px dashed',
+                                    borderColor: file ? categoryColors.stakeholders : 'divider',
+                                    bgcolor: file ? `${categoryColors.stakeholders}08` : 'background.default',
+                                    textAlign: 'center',
+                                    transition: 'all 0.3s',
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                        borderColor: categoryColors.stakeholders,
+                                        bgcolor: 'action.hover'
+                                    }
+                                }}
+                                component="label"
+                            >
+                                <input
+                                    type="file"
+                                    hidden
+                                    accept=".pdf,.png,.jpg,.jpeg,.svg"
+                                    onChange={handleFileChange}
+                                />
+                                <CloudUpload sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                                <Typography variant="h6" gutterBottom>
+                                    {file ? 'File Selected' : 'Click to Upload Stakeholder Map'}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                    {file ? file.name : 'Supported formats: PDF, PNG, JPG, SVG'}
+                                </Typography>
+                                {file && (
+                                    <Chip
+                                        icon={<Description />}
+                                        label={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                                        sx={{
+                                            mt: 1,
+                                            bgcolor: `${categoryColors.stakeholders}20`,
+                                            color: categoryColors.stakeholders
+                                        }}
+                                    />
+                                )}
+                            </Paper>
+
+                            <Alert
+                                severity="info"
+                                sx={{
+                                    mt: 3,
+                                    bgcolor: `${categoryColors.stakeholders}20`,
+                                    color: categoryColors.stakeholders,
+                                    '& .MuiAlert-icon': {
+                                        color: categoryColors.stakeholders
+                                    }
+                                }}
+                                icon={<Info />}
+                            >
+                                <Typography variant="body2">
+                                    <strong>AI Analysis Coming Soon!</strong> Our analyzer will help you identify key relationships,
+                                    assess stakeholder influence and interest levels, and provide strategic engagement recommendations.
+                                </Typography>
+                            </Alert>
+
+                            {/* Uploaded Stakeholder Maps List */}
+                            {documents.length > 0 && (
+                                <Box sx={{ mt: 3 }}>
+                                    <Typography variant="h6" sx={{ mb: 2 }}>Your Stakeholder Maps</Typography>
+                                    {loading ? (
+                                        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                                            <CircularProgress />
+                                        </Box>
+                                    ) : (
+                                        <List>
+                                            {documents.map((doc, index) => {
+                                                const date = new Date(doc.attributes.createdAt).toLocaleDateString();
+                                                return (
+                                                    <React.Fragment key={doc.id}>
+                                                        <ListItem>
+                                                            <ListItemText
+                                                                primary={doc.attributes.title}
+                                                                secondary={`Uploaded on ${date} • Status: ${doc.attributes.status}`}
+                                                            />
+                                                            <IconButton
+                                                                onClick={() => deleteDocument(doc.id)}
+                                                                color="error"
+                                                                size="small"
+                                                            >
+                                                                <Delete />
+                                                            </IconButton>
+                                                        </ListItem>
+                                                        {index < documents.length - 1 && <Divider />}
+                                                    </React.Fragment>
+                                                );
+                                            })}
+                                        </List>
+                                    )}
+                                </Box>
+                            )}
+                        </CardContent>
+                    </Card>
+                </Box>
+            </CenteredFlexBox>
+
+            {/* Upload Dialog */}
+            <Dialog open={uploadDialogOpen} onClose={() => setUploadDialogOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>Upload Stakeholder Map</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth
+                        label="Map Title"
+                        value={uploadTitle}
+                        onChange={(e) => setUploadTitle(e.target.value)}
+                        sx={{ mb: 2, mt: 1 }}
+                        required
+                    />
+                    <TextField
+                        fullWidth
+                        label="Description (optional)"
+                        value={uploadDescription}
+                        onChange={(e) => setUploadDescription(e.target.value)}
+                        multiline
+                        rows={3}
+                        sx={{ mb: 2 }}
+                        placeholder="e.g., Q1 2024 stakeholder analysis, Initial mapping, Updated after pivot..."
+                    />
+                    {file && (
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                            <Typography variant="body2">
+                                <strong>Selected file:</strong> {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                            </Typography>
+                        </Alert>
+                    )}
+                    <Alert severity="info">
+                        <Typography variant="caption">
+                            Note: Your stakeholder map will be stored for future analysis. The AI analysis features are coming soon!
+                        </Typography>
+                    </Alert>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => {
+                        setUploadDialogOpen(false);
+                        setFile(null);
+                        setUploadTitle('');
+                        setUploadDescription('');
+                    }} disabled={uploading}>
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleUpload}
+                        variant="contained"
+                        disabled={!file || !uploadTitle || uploading}
+                        startIcon={uploading ? <CircularProgress size={20} /> : <CloudUpload />}
+                        sx={{ bgcolor: categoryColors.stakeholders }}
+                    >
+                        {uploading ? 'Uploading...' : 'Upload Map'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
+    );
 };
 
 export default StakeholderMap;

@@ -19,26 +19,29 @@ import {
   DialogActions,
   TextField,
   CircularProgress,
-  Divider
+  Divider,
 } from '@mui/material';
 import {
   CloudUpload,
   AttachMoney,
   Description,
-  TrendingUp,
   Delete,
-  Info
+  Info,
+  ArrowBack
 } from '@mui/icons-material';
 import { CenteredFlexBox } from '@/components/styled';
 import Header from '@/sections/Header';
 import { useDocumentUpload } from '@/hooks/useDocumentUpload';
+import { useNavigate } from 'react-router-dom';
+import { categoryColors } from '@/utils/constants';
 
 function FinancialPlan() {
+  const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [uploadTitle, setUploadTitle] = useState('');
   const [uploadDescription, setUploadDescription] = useState('');
-  
+
   const { documents, loading, uploading, fetchDocuments, uploadDocument, deleteDocument } = useDocumentUpload({
     type: 'financial_plan',
     onUploadSuccess: () => {
@@ -72,7 +75,16 @@ function FinancialPlan() {
     <>
       <Header title="Financial Plan" />
       <CenteredFlexBox>
-        <Box sx={{ maxWidth: 800, width: '100%' }}>
+        <Box sx={{ maxWidth: 1200, width: '100%', mt: 4 }}>
+          <Box sx={{ mb: 1 }}>
+            <Button
+              startIcon={<ArrowBack />}
+              onClick={() => navigate('/startup')}
+              sx={{ color: 'text.secondary' }}
+            >
+              Back to Startup
+            </Button>
+          </Box>
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
@@ -81,17 +93,17 @@ function FinancialPlan() {
                     width: 56,
                     height: 56,
                     borderRadius: 2,
-                    bgcolor: 'success.light',
+                    bgcolor: `${categoryColors.sustainability}20`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}
                 >
-                  <AttachMoney sx={{ color: 'success.main', fontSize: 28 }} />
+                  <AttachMoney sx={{ color: categoryColors.sustainability, fontSize: 28 }} />
                 </Box>
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="h5" fontWeight="700">
-                    Financial Plan Upload
+                    Financial Plan
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Upload your financial plan for future analysis
@@ -99,12 +111,28 @@ function FinancialPlan() {
                 </Box>
               </Stack>
 
-              <Alert severity="info" sx={{ mb: 3 }} icon={<Info />}>
-                <Typography variant="body2">
-                  <strong>Analyzer Coming Soon!</strong> Currently, you can upload and store your financial plans. 
-                  The AI-powered analysis features will be available soon.
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="body2" fontWeight="600" gutterBottom>
+                  Helpful Tips for Creating Your Financial Plan:
                 </Typography>
-              </Alert>
+                <Box component="ul" sx={{ mt: 1, mb: 0, pl: 3 }}>
+                  <Typography variant="body2" component="li">
+                    Use <a href="https://www.liveplan.com" target="_blank" rel="noopener noreferrer">LivePlan</a> or <a href="https://finmodelslab.com" target="_blank" rel="noopener noreferrer">FinModelsLab</a> for templates
+                  </Typography>
+                  <Typography variant="body2" component="li">
+                    Try <a href="https://www.projectionhub.com" target="_blank" rel="noopener noreferrer">ProjectionHub</a> for automated financial projections
+                  </Typography>
+                  <Typography variant="body2" component="li">
+                    Include 3-year revenue projections minimum
+                  </Typography>
+                  <Typography variant="body2" component="li">
+                    Detail your unit economics and assumptions
+                  </Typography>
+                  <Typography variant="body2" component="li">
+                    Show monthly burn rate and runway
+                  </Typography>
+                </Box>
+              </Box>
 
               <Paper
                 sx={{
@@ -112,13 +140,13 @@ function FinancialPlan() {
                   width: '100%',
                   display: 'block',
                   border: '2px dashed',
-                  borderColor: file ? 'success.main' : 'divider',
-                  bgcolor: file ? 'success.lighter' : 'background.default',
+                  borderColor: file ? categoryColors.sustainability : 'divider',
+                  bgcolor: file ? `${categoryColors.sustainability}08` : 'background.default',
                   textAlign: 'center',
                   transition: 'all 0.3s',
                   cursor: 'pointer',
                   '&:hover': {
-                    borderColor: 'primary.main',
+                    borderColor: categoryColors.sustainability,
                     bgcolor: 'action.hover'
                   }
                 }}
@@ -141,11 +169,33 @@ function FinancialPlan() {
                   <Chip
                     icon={<Description />}
                     label={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
-                    color="primary"
-                    sx={{ mt: 1 }}
+                    sx={{
+                      mt: 1,
+                      bgcolor: `${categoryColors.sustainability}20`,
+                      color: categoryColors.sustainability
+                    }}
                   />
                 )}
               </Paper>
+
+              <Alert
+                severity="info"
+                sx={{
+                  mt: 3,
+                  bgcolor: `${categoryColors.sustainability}20`,
+                  color: categoryColors.sustainability,
+                  '& .MuiAlert-icon': {
+                    color: categoryColors.sustainability
+                  }
+                }}
+                icon={<Info />}
+              >
+                <Typography variant="body2">
+                  <strong>AI Analysis Coming Soon!</strong> Our analyzer will validate projections,
+                  identify risks and opportunities, compare against benchmarks, and provide actionable
+                  recommendations to strengthen your financial strategy.
+                </Typography>
+              </Alert>
 
               {/* Uploaded Financial Plans List */}
               {documents.length > 0 && (
@@ -182,32 +232,6 @@ function FinancialPlan() {
                   )}
                 </Box>
               )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight="600" gutterBottom>
-                Coming Soon: Financial Plan Analyzer
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Our AI-powered financial analyzer will help you:
-              </Typography>
-              
-              <Stack spacing={2}>
-                {[
-                  'Validate financial projections and assumptions',
-                  'Identify potential risks and opportunities',
-                  'Compare against industry benchmarks',
-                  'Generate investor-ready financial summaries',
-                  'Provide actionable recommendations for improvement'
-                ].map((feature, index) => (
-                  <Stack key={index} direction="row" spacing={2} alignItems="center">
-                    <TrendingUp sx={{ color: 'primary.main', fontSize: 20 }} />
-                    <Typography variant="body2">{feature}</Typography>
-                  </Stack>
-                ))}
-              </Stack>
             </CardContent>
           </Card>
         </Box>
@@ -262,6 +286,7 @@ function FinancialPlan() {
             variant="contained"
             disabled={!file || !uploadTitle || uploading}
             startIcon={uploading ? <CircularProgress size={20} /> : <CloudUpload />}
+            sx={{ bgcolor: categoryColors.sustainability }}
           >
             {uploading ? 'Uploading...' : 'Upload Financial Plan'}
           </Button>

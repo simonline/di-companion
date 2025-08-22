@@ -22,7 +22,7 @@ import {
     Divider,
 } from '@mui/material';
 import {
-    Person,
+    Slideshow,
     CloudUpload,
     Description,
     Delete,
@@ -35,7 +35,7 @@ import { useDocumentUpload } from '@/hooks/useDocumentUpload';
 import { useNavigate } from 'react-router-dom';
 import { categoryColors } from '@/utils/constants';
 
-const Persona: React.FC = () => {
+const PitchDeck: React.FC = () => {
     const navigate = useNavigate();
     const [file, setFile] = useState<File | null>(null);
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -43,7 +43,7 @@ const Persona: React.FC = () => {
     const [uploadDescription, setUploadDescription] = useState('');
 
     const { documents, loading, uploading, fetchDocuments, uploadDocument, deleteDocument } = useDocumentUpload({
-        type: 'other',
+        type: 'pitch_deck',
         onUploadSuccess: () => {
             setUploadDialogOpen(false);
             setFile(null);
@@ -73,7 +73,7 @@ const Persona: React.FC = () => {
 
     return (
         <>
-            <Header title="User Personas" />
+            <Header title="Pitch Deck" />
             <CenteredFlexBox>
                 <Box sx={{ maxWidth: 1200, width: '100%', mt: 4 }}>
                     <Box sx={{ mb: 1 }}>
@@ -93,43 +93,43 @@ const Persona: React.FC = () => {
                                         width: 56,
                                         height: 56,
                                         borderRadius: 2,
-                                        bgcolor: `${categoryColors.stakeholders}20`,
+                                        bgcolor: `${categoryColors.product}20`,
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center'
                                     }}
                                 >
-                                    <Person sx={{ color: categoryColors.stakeholders, fontSize: 28 }} />
+                                    <Slideshow sx={{ color: categoryColors.product, fontSize: 28 }} />
                                 </Box>
                                 <Box sx={{ flexGrow: 1 }}>
                                     <Typography variant="h5" fontWeight="700">
-                                        Persona
+                                        Pitch Deck
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        Upload your personas for future analysis
+                                        Upload your pitch deck for future analysis
                                     </Typography>
                                 </Box>
                             </Stack>
 
                             <Box sx={{ mb: 3 }}>
                                 <Typography variant="body2" fontWeight="600" gutterBottom>
-                                    Helpful Tips for Creating Your User Personas:
+                                    Helpful Tips for Creating Your Pitch Deck:
                                 </Typography>
                                 <Box component="ul" sx={{ mt: 1, mb: 0, pl: 3 }}>
                                     <Typography variant="body2" component="li">
-                                        Use <a href="https://xtensio.com" target="_blank" rel="noopener noreferrer">Xtensio</a> or <a href="https://www.hubspot.com/make-my-persona" target="_blank" rel="noopener noreferrer">HubSpot's Make My Persona</a> for templates
+                                        Use <a href="https://canva.com" target="_blank" rel="noopener noreferrer">Canva</a> or <a href="https://pitch.com" target="_blank" rel="noopener noreferrer">Pitch</a> for professional templates
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Try <a href="https://smaply.com" target="_blank" rel="noopener noreferrer">Smaply</a> for journey mapping with personas
+                                        Keep it concise - aim for 10-15 slides maximum
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Base personas on real user research data
+                                        Include: Problem, Solution, Market, Business Model, Team
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Limit to 3-5 primary personas for focus
+                                        Use visuals and infographics for data
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Include goals, pain points, and behaviors
+                                        Practice your pitch timing - aim for 3-5 minutes
                                     </Typography>
                                 </Box>
                             </Box>
@@ -140,67 +140,67 @@ const Persona: React.FC = () => {
                                     width: '100%',
                                     display: 'block',
                                     border: '2px dashed',
-                                    borderColor: file ? categoryColors.stakeholders : 'divider',
-                                    bgcolor: file ? `${categoryColors.stakeholders}08` : 'background.default',
+                                    borderColor: file ? categoryColors.product : 'divider',
+                                    bgcolor: file ? `${categoryColors.product}08` : 'background.default',
                                     textAlign: 'center',
                                     transition: 'all 0.3s',
                                     cursor: 'pointer',
                                     '&:hover': {
-                                        borderColor: categoryColors.stakeholders,
+                                        borderColor: categoryColors.product,
                                         bgcolor: 'action.hover'
                                     }
                                 }}
                                 component="label"
                             >
-                                        <input
-                                            type="file"
-                                            hidden
-                                            accept=".pdf,.png,.jpg,.jpeg,.pptx,.docx"
-                                            onChange={handleFileChange}
-                                        />
-                                        <CloudUpload sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                                        <Typography variant="h6" gutterBottom>
-                                            {file ? 'File Selected' : 'Click to Upload User Persona'}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                            {file ? file.name : 'Supported formats: PDF, PNG, JPG, PowerPoint, Word'}
-                                        </Typography>
-                                        {file && (
-                                            <Chip
-                                                icon={<Description />}
-                                                label={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
-                                                sx={{
-                                                    mt: 1,
-                                                    bgcolor: `${categoryColors.stakeholders}20`,
-                                                    color: categoryColors.stakeholders
-                                                }}
-                                            />
-                                        )}
+                                <input
+                                    type="file"
+                                    hidden
+                                    accept=".pdf,.ppt,.pptx,.key"
+                                    onChange={handleFileChange}
+                                />
+                                <CloudUpload sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                                <Typography variant="h6" gutterBottom>
+                                    {file ? 'File Selected' : 'Click to Upload Pitch Deck'}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                    {file ? file.name : 'Supported formats: PDF, PowerPoint (.ppt, .pptx), Keynote (.key)'}
+                                </Typography>
+                                {file && (
+                                    <Chip
+                                        icon={<Description />}
+                                        label={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                                        sx={{
+                                            mt: 1,
+                                            bgcolor: `${categoryColors.product}20`,
+                                            color: categoryColors.product
+                                        }}
+                                    />
+                                )}
                             </Paper>
 
-                            <Alert 
-                                severity="info" 
-                                sx={{ 
+                            <Alert
+                                severity="info"
+                                sx={{
                                     mt: 3,
-                                    bgcolor: `${categoryColors.stakeholders}20`,
-                                    color: categoryColors.stakeholders,
+                                    bgcolor: `${categoryColors.product}20`,
+                                    color: categoryColors.product,
                                     '& .MuiAlert-icon': {
-                                        color: categoryColors.stakeholders
+                                        color: categoryColors.product
                                     }
-                                }} 
+                                }}
                                 icon={<Info />}
                             >
                                 <Typography variant="body2">
-                                    <strong>AI Analysis Coming Soon!</strong> Our analyzer will validate persona completeness,
-                                    identify gaps in user understanding, suggest additional research areas, and help align
-                                    your product features with user needs.
+                                    <strong>AI Analysis Coming Soon!</strong> Our analyzer will evaluate your deck's structure,
+                                    messaging clarity, visual design, investor readiness, and provide actionable feedback
+                                    to improve your pitch.
                                 </Typography>
                             </Alert>
 
-                            {/* Uploaded Personas List */}
+                            {/* Uploaded Pitch Decks List */}
                             {documents.length > 0 && (
                                 <Box sx={{ mt: 3 }}>
-                                    <Typography variant="h6" sx={{ mb: 2 }}>Your User Personas</Typography>
+                                    <Typography variant="h6" sx={{ mb: 2 }}>Your Pitch Decks</Typography>
                                     {loading ? (
                                         <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
                                             <CircularProgress />
@@ -239,11 +239,11 @@ const Persona: React.FC = () => {
 
             {/* Upload Dialog */}
             <Dialog open={uploadDialogOpen} onClose={() => setUploadDialogOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle>Upload User Persona</DialogTitle>
+                <DialogTitle>Upload Pitch Deck</DialogTitle>
                 <DialogContent>
                     <TextField
                         fullWidth
-                        label="Persona Title"
+                        label="Pitch Deck Title"
                         value={uploadTitle}
                         onChange={(e) => setUploadTitle(e.target.value)}
                         sx={{ mb: 2, mt: 1 }}
@@ -257,7 +257,7 @@ const Persona: React.FC = () => {
                         multiline
                         rows={3}
                         sx={{ mb: 2 }}
-                        placeholder="e.g., Primary user persona, Early adopter profile, Enterprise customer persona..."
+                        placeholder="e.g., Version 2.0, Investor meeting presentation, Q1 2024 update..."
                     />
                     {file && (
                         <Alert severity="info" sx={{ mb: 2 }}>
@@ -268,7 +268,7 @@ const Persona: React.FC = () => {
                     )}
                     <Alert severity="info">
                         <Typography variant="caption">
-                            Note: Your user persona will be stored for future analysis. The AI analysis features are coming soon!
+                            Note: Your pitch deck will be stored for future analysis. The AI analysis features are coming soon!
                         </Typography>
                     </Alert>
                 </DialogContent>
@@ -286,9 +286,9 @@ const Persona: React.FC = () => {
                         variant="contained"
                         disabled={!file || !uploadTitle || uploading}
                         startIcon={uploading ? <CircularProgress size={20} /> : <CloudUpload />}
-                        sx={{ bgcolor: categoryColors.stakeholders }}
+                        sx={{ bgcolor: categoryColors.product }}
                     >
-                        {uploading ? 'Uploading...' : 'Upload Persona'}
+                        {uploading ? 'Uploading...' : 'Upload Pitch Deck'}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -296,4 +296,4 @@ const Persona: React.FC = () => {
     );
 };
 
-export default Persona;
+export default PitchDeck;
