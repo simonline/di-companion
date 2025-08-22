@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Card,
@@ -13,7 +13,7 @@ import {
   IconButton,
   CardMedia,
 } from '@mui/material';
-import { Check, FilterList, Refresh, ArrowForward, Image as ImageIcon } from '@mui/icons-material';
+import { Refresh, ArrowForward, Image as ImageIcon } from '@mui/icons-material';
 import InfoIcon from '@mui/icons-material/Info';
 import {
   categoryDisplayNames,
@@ -26,11 +26,8 @@ import { useNavigate } from 'react-router-dom';
 import useRecommendedPatterns from '@/hooks/useRecommendedPatterns';
 
 const PerformanceScore: React.FC = () => {
-  const { startup, updateScores, updateStartup } = useAuthContext();
+  const { startup, updateScores } = useAuthContext();
   const navigate = useNavigate();
-  const [editingCategories, setEditingCategories] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<CategoryEnum[]>([]);
-  const allCategories = Object.values(CategoryEnum);
   const { getRecommendedPatterns, recommendedPatterns, loading } = useRecommendedPatterns('exclude-entrepreneur');
 
   useEffect(() => {
@@ -44,13 +41,6 @@ const PerformanceScore: React.FC = () => {
     getRecommendedPatterns(1);
   }, [getRecommendedPatterns]);
 
-  useEffect(() => {
-    if (startup?.categories?.length) {
-      setSelectedCategories(startup.categories);
-    } else {
-      setSelectedCategories(allCategories);
-    }
-  }, [startup]);
 
   if (!startup?.scores) return null;
 
@@ -58,122 +48,19 @@ const PerformanceScore: React.FC = () => {
     value < acc[1] ? [key, value] : acc,
   );
 
-  // Get all categories or filter by startup.categories if available
-  const availableCategories = startup?.categories?.length
-    ? allCategories.filter(cat => startup.categories!.includes(cat))
-    : allCategories;
+  // Get all categories
+  const allCategories = Object.values(CategoryEnum);
 
-  // Filter scores based on available categories
-  const filteredScores = Object.fromEntries(
-    Object.entries(startup.scores).filter(([key]) =>
-      availableCategories.includes(key as CategoryEnum)
-    )
-  );
-
-  // Sort the filtered scores based on category order
+  // Sort the scores based on category order
   const sortedScores = Object.fromEntries(
-    Object.entries(filteredScores)
+    Object.entries(startup.scores)
       .sort(([keyA], [keyB]) => {
-        const indexA = availableCategories.indexOf(keyA as CategoryEnum);
-        const indexB = availableCategories.indexOf(keyB as CategoryEnum);
+        const indexA = allCategories.indexOf(keyA as CategoryEnum);
+        const indexB = allCategories.indexOf(keyB as CategoryEnum);
         return indexA - indexB;
       }),
   );
 
-  const toggleCategory = (category: CategoryEnum) => {
-    if (!editingCategories) return;
-
-    setSelectedCategories(prev => {
-      if (prev.includes(category)) {
-        return prev.length > 1 ? prev.filter(c => c !== category) : prev; // Don't allow empty selection
-      } else {
-        return [...prev, category];
-      }
-    });
-  };
-
-  const saveCategories = async () => {
-    if (startup) {
-      try {
-        await updateStartup({
-          documentId: startup.documentId,
-          categories: selectedCategories
-        });
-        setEditingCategories(false);
-      } catch (error) {
-        console.error('Failed to update categories:', error);
-      }
-    }
-  };
-
-  // Show all categories when editing
-  const renderCategoryItem = (category: CategoryEnum) => {
-    const score = startup.scores?.[category] || 0;
-
-    return (
-      <Box
-        key={category}
-        sx={{
-          position: 'relative',
-          height: 56,
-          cursor: 'pointer',
-          opacity: selectedCategories.includes(category) ? 1 : 0.5,
-        }}
-        onClick={() => toggleCategory(category)}
-      >
-        {/* Progress Bar */}
-        <LinearProgress
-          variant="determinate"
-          value={score}
-          sx={{
-            height: 44,
-            borderRadius: 8,
-            bgcolor: `${categoryColors[category]}66`,
-            '& .MuiLinearProgress-bar': {
-              bgcolor: categoryColors[category],
-              borderRadius: 8,
-            },
-            border: selectedCategories.includes(category) ? '2px solid' : 'none',
-            borderColor: selectedCategories.includes(category) ? categoryColors[category] : 'transparent',
-          }}
-        />
-        {/* Category Info within the Progress Bar */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            display: 'flex',
-            alignItems: 'center',
-            width: '100%',
-            height: '44px',
-            padding: '0 16px',
-          }}
-        >
-          {/* Icon */}
-          <img src={categoryIcons[category]} alt={''} height={28} />
-          {/* Category Name */}
-          <Typography
-            variant="body1"
-            sx={{
-              color: 'white',
-              flexGrow: 1,
-              marginLeft: 1,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {categoryDisplayNames[category]}
-          </Typography>
-          {/* Percentage */}
-          <Typography variant="body1" sx={{ color: 'white', ml: 'auto' }}>
-            {score}%
-          </Typography>
-        </Box>
-      </Box>
-    );
-  };
 
   return (
     <>
@@ -181,32 +68,9 @@ const PerformanceScore: React.FC = () => {
         <Typography variant="h6" gutterBottom>
           Your Performance Score
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          {editingCategories ? (
-            <Button
-              startIcon={<Check />}
-              variant="contained"
-              size="small"
-              onClick={saveCategories}
-            >
-              Save
-            </Button>
-          ) : (
-            <Tooltip title="Filter perspectives to focus on">
-              <Button
-                startIcon={<FilterList />}
-                variant="outlined"
-                size="small"
-                onClick={() => setEditingCategories(true)}
-              >
-                Filter
-              </Button>
-            </Tooltip>
-          )}
-          <Tooltip title="Your performance score is calculated based on the patterns you've applied and your self-assessment results. It represents your startup's progress across different perspectives.">
-            <InfoIcon color="action" fontSize="small" />
-          </Tooltip>
-        </Box>
+        <Tooltip title="Your performance score is calculated based on the patterns you've applied and your self-assessment results. It represents your startup's progress across different perspectives.">
+          <InfoIcon color="action" fontSize="small" />
+        </Tooltip>
       </Box>
 
       {/* Overall Score Display - Now at the top */}
@@ -334,12 +198,7 @@ const PerformanceScore: React.FC = () => {
         <Grid item xs={12} md={8}>
           {/* Progress Bars */}
           <Stack spacing={0.5}>
-            {editingCategories ? (
-              // Show all categories when editing
-              allCategories.map(renderCategoryItem)
-            ) : (
-              // Show only selected categories when not editing
-              Object.entries(sortedScores).map(([category, score]) => (
+            {Object.entries(sortedScores).map(([category, score]) => (
                 <Box key={category} sx={{ position: 'relative', height: 56 }}>
                   {/* Progress Bar */}
                   <LinearProgress
@@ -416,8 +275,7 @@ const PerformanceScore: React.FC = () => {
                     </Typography>
                   </Box>
                 </Box>
-              ))
-            )}
+              ))}
           </Stack>
         </Grid>
 
