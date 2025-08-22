@@ -332,7 +332,7 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
         );
     }
 
-    // Desktop view: Split screen (50/50)
+    // Desktop view: Split screen (60/40)
     return (
         <Box sx={{
             display: 'flex',
@@ -343,9 +343,9 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
             left: 0,
             zIndex: 1000
         }}>
-            {/* Left side - Original content */}
+            {/* Left side - Original content (60%) */}
             <Box sx={{ 
-                flex: 1, 
+                flex: '0 0 60%', 
                 overflow: 'auto', 
                 backgroundColor: 'background.default',
                 transition: 'all 0.3s ease'
@@ -353,9 +353,9 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                 {children}
             </Box>
 
-            {/* Right side - Chat interface */}
+            {/* Right side - Chat interface (40%) */}
             <Box sx={{ 
-                flex: 1, 
+                flex: '0 0 40%', 
                 borderLeft: 1, 
                 borderColor: 'divider', 
                 backgroundColor: 'background.default',

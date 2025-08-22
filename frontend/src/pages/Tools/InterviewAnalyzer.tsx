@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Card,
@@ -25,6 +25,7 @@ import {
     Alert,
     Tabs,
     Tab,
+    CircularProgress,
 } from '@mui/material';
 import {
     RecordVoiceOver,
@@ -38,26 +39,45 @@ import {
     Download,
     Share,
     CloudUpload,
+    Info,
 } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
+import { useAuth } from '@/hooks/useAuth';
+import axiosInstance from '@/lib/axios';
 
 interface Interview {
     id: number;
-    title: string;
-    date: string;
-    duration: string;
-    status: 'processing' | 'completed' | 'analyzed';
-    file?: File;
-    transcription?: string;
-    summary?: string;
-    insights?: string[];
-    tags?: string[];
-    language?: string;
-    mode?: string;
+    attributes: {
+        title: string;
+        description?: string;
+        type: string;
+        status: 'uploaded' | 'processing' | 'completed' | 'analyzed' | 'failed';
+        file?: {
+            data?: {
+                id: number;
+                attributes: {
+                    url: string;
+                    name: string;
+                    size: number;
+                    ext: string;
+                };
+            };
+        };
+        transcription?: string;
+        summary?: string;
+        insights?: any;
+        tags?: any;
+        language?: string;
+        mode?: string;
+        duration?: string;
+        createdAt: string;
+        updatedAt: string;
+    };
 }
 
 const InterviewAnalyzer: React.FC = () => {
+    const { user } = useAuth();
     const [selectedTab, setSelectedTab] = useState(0);
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -65,34 +85,35 @@ const InterviewAnalyzer: React.FC = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [uploadFile, setUploadFile] = useState<File | null>(null);
     const [uploadTitle, setUploadTitle] = useState('');
-    const [interviews, setInterviews] = useState<Interview[]>([
-        {
-            id: 1,
-            title: 'Customer Interview #1',
-            date: '2024-01-15',
-            duration: '45 min',
-            status: 'analyzed',
-            transcription: 'Interviewer: Hello, thank you for joining us today. Could you tell us about your experience with our product?\n\nCustomer: Sure! I\'ve been using it for about 3 months now. Overall, I find it quite useful, especially the dashboard feature. However, I sometimes struggle with the mobile app interface...',
-            summary: 'Customer has been using the product for 3 months. Positive feedback on dashboard feature, but mobile app interface needs improvement. Overall satisfaction is good.',
-            insights: ['Dashboard feature is well-received', 'Mobile app interface needs improvement', 'Customer is generally satisfied'],
-            tags: ['customer-feedback', 'product-review', 'mobile-app'],
-            language: 'English',
-            mode: 'Meeting Minutes'
-        },
-        {
-            id: 2,
-            title: 'User Feedback Session',
-            date: '2024-01-10',
-            duration: '30 min',
-            status: 'completed',
-            transcription: 'Moderator: Welcome everyone to our feedback session. Let\'s start with the onboarding process. What was your first impression?\n\nUser 1: The onboarding was straightforward, but I wish there were more examples...',
-            summary: 'Users found onboarding straightforward but wanted more examples. Several suggestions for improving the tutorial flow.',
-            insights: ['Onboarding is clear but needs more examples', 'Tutorial flow could be improved', 'Users want more guidance'],
-            tags: ['onboarding', 'tutorial', 'user-feedback'],
-            language: 'English',
-            mode: 'Focus Group'
-        },
-    ]);
+    const [uploadDescription, setUploadDescription] = useState('');
+    const [interviews, setInterviews] = useState<Interview[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
+
+    // Fetch interviews on mount
+    useEffect(() => {
+        fetchInterviews();
+    }, []);
+
+    const fetchInterviews = async () => {
+        setLoading(true);
+        try {
+            const response = await axiosInstance.get('/api/document-uploads', {
+                params: {
+                    filters: {
+                        type: 'interview'
+                    },
+                    populate: 'file',
+                    sort: 'createdAt:desc'
+                }
+            });
+            setInterviews(response.data.data || []);
+        } catch (error) {
+            console.error('Error fetching interviews:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleUploadFile = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -101,31 +122,51 @@ const InterviewAnalyzer: React.FC = () => {
         }
     };
 
-    const handleUploadInterview = () => {
+    const handleUploadInterview = async () => {
         if (uploadFile && uploadTitle) {
-            const newInterview: Interview = {
-                id: Date.now(),
-                title: uploadTitle,
-                date: new Date().toISOString().split('T')[0],
-                duration: 'Unknown',
-                status: 'processing',
-                file: uploadFile,
-                language: 'Auto-detected',
-                mode: 'General'
-            };
-            setInterviews([newInterview, ...interviews]);
-            setUploadDialogOpen(false);
-            setUploadFile(null);
-            setUploadTitle('');
+            setUploading(true);
+            try {
+                // First upload the file
+                const formData = new FormData();
+                formData.append('files', uploadFile);
+                
+                const fileResponse = await axiosInstance.post('/api/upload', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
 
-            // Simulate processing
-            setTimeout(() => {
-                setInterviews(prev => prev.map(interview =>
-                    interview.id === newInterview.id
-                        ? { ...interview, status: 'completed' }
-                        : interview
-                ));
-            }, 3000);
+                const uploadedFile = fileResponse.data[0];
+
+                // Then create the document upload entry
+                const documentData = {
+                    data: {
+                        title: uploadTitle,
+                        description: uploadDescription,
+                        type: 'interview',
+                        status: 'uploaded',
+                        file: uploadedFile.id,
+                        language: 'auto-detected',
+                        mode: 'General',
+                    }
+                };
+
+                await axiosInstance.post('/api/document-uploads', documentData);
+
+                // Refresh the list
+                await fetchInterviews();
+
+                // Reset form
+                setUploadDialogOpen(false);
+                setUploadFile(null);
+                setUploadTitle('');
+                setUploadDescription('');
+            } catch (error) {
+                console.error('Error uploading interview:', error);
+                alert('Failed to upload interview. Please try again.');
+            } finally {
+                setUploading(false);
+            }
         }
     };
 
@@ -134,8 +175,14 @@ const InterviewAnalyzer: React.FC = () => {
         setEditDialogOpen(true);
     };
 
-    const handleDeleteInterview = (id: number) => {
-        setInterviews(interviews.filter(interview => interview.id !== id));
+    const handleDeleteInterview = async (id: number) => {
+        try {
+            await axiosInstance.delete(`/api/document-uploads/${id}`);
+            await fetchInterviews();
+        } catch (error) {
+            console.error('Error deleting interview:', error);
+            alert('Failed to delete interview. Please try again.');
+        }
         setAnchorEl(null);
     };
 
@@ -169,17 +216,18 @@ const InterviewAnalyzer: React.FC = () => {
                                 </Typography>
                             </Box>
 
-                            {/* Memoro.ai Integration Banner */}
-                            <Alert severity="info" sx={{ mb: 3 }}>
+                            {/* Coming Soon Banner */}
+                            <Alert severity="info" sx={{ mb: 3 }} icon={<Info />}>
                                 <Typography variant="body2">
-                                    This tool is powered by <strong>Memoro.ai</strong> - Intelligent conversation transcription and analysis.
+                                    <strong>Analyzer Coming Soon!</strong> Currently, you can upload and store your interview files. 
+                                    The AI-powered transcription and analysis features will be available soon, powered by <strong>Memoro.ai</strong>.
                                     <Button
                                         href="https://www.memoro.ai/en"
                                         target="_blank"
                                         size="small"
                                         sx={{ ml: 1 }}
                                     >
-                                        Learn More
+                                        Learn More about Memoro.ai
                                     </Button>
                                 </Typography>
                             </Alert>
@@ -226,10 +274,10 @@ const InterviewAnalyzer: React.FC = () => {
                                         </Box>
 
                                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                            Memoro.ai provides automatic transcription, summarization, and key insights extraction from your interview recordings.
+                                            Memoro.ai will provide automatic transcription, summarization, and key insights extraction from your interview recordings.
                                         </Typography>
                                         <Button variant="contained" disabled>
-                                            Analyze Interviews
+                                            Analyzer Coming Soon
                                         </Button>
                                     </Paper>
                                 </Grid>
@@ -246,36 +294,51 @@ const InterviewAnalyzer: React.FC = () => {
                                             </Button>
                                         </Box>
 
-                                        <List>
-                                            {interviews.map((interview, index) => (
-                                                <React.Fragment key={interview.id}>
-                                                    <ListItem>
-                                                        <ListItemText
-                                                            primary={interview.title}
-                                                            secondary={`${interview.date} • ${interview.duration} • ${interview.language} • ${interview.mode}`}
-                                                        />
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <Chip
-                                                                label={interview.status}
-                                                                color={
-                                                                    interview.status === 'analyzed' ? 'success' :
-                                                                        interview.status === 'completed' ? 'primary' :
-                                                                            interview.status === 'processing' ? 'warning' : 'default'
-                                                                }
-                                                                size="small"
-                                                            />
-                                                            <IconButton
-                                                                size="small"
-                                                                onClick={(e) => handleMenuClick(e, interview)}
-                                                            >
-                                                                <MoreVert />
-                                                            </IconButton>
-                                                        </Box>
-                                                    </ListItem>
-                                                    {index < interviews.length - 1 && <Divider />}
-                                                </React.Fragment>
-                                            ))}
-                                        </List>
+                                        {loading ? (
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                                                <CircularProgress />
+                                            </Box>
+                                        ) : interviews.length > 0 ? (
+                                            <List>
+                                                {interviews.map((interview, index) => {
+                                                    const attrs = interview.attributes;
+                                                    const date = new Date(attrs.createdAt).toLocaleDateString();
+                                                    return (
+                                                        <React.Fragment key={interview.id}>
+                                                            <ListItem>
+                                                                <ListItemText
+                                                                    primary={attrs.title}
+                                                                    secondary={`${date} • ${attrs.duration || 'Duration TBD'} • ${attrs.language || 'Auto-detected'} • ${attrs.mode || 'General'}`}
+                                                                />
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                    <Chip
+                                                                        label={attrs.status}
+                                                                        color={
+                                                                            attrs.status === 'analyzed' ? 'success' :
+                                                                                attrs.status === 'completed' ? 'primary' :
+                                                                                    attrs.status === 'processing' ? 'warning' : 
+                                                                                        attrs.status === 'uploaded' ? 'info' : 'default'
+                                                                        }
+                                                                        size="small"
+                                                                    />
+                                                                    <IconButton
+                                                                        size="small"
+                                                                        onClick={(e) => handleMenuClick(e, interview)}
+                                                                    >
+                                                                        <MoreVert />
+                                                                    </IconButton>
+                                                                </Box>
+                                                            </ListItem>
+                                                            {index < interviews.length - 1 && <Divider />}
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                            </List>
+                                        ) : (
+                                            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                                                No interviews uploaded yet. Click "New Interview" to get started.
+                                            </Typography>
+                                        )}
                                     </Paper>
                                 </Grid>
                             </Grid>
@@ -294,9 +357,19 @@ const InterviewAnalyzer: React.FC = () => {
                         value={uploadTitle}
                         onChange={(e) => setUploadTitle(e.target.value)}
                         sx={{ mb: 2, mt: 1 }}
+                        required
+                    />
+                    <TextField
+                        fullWidth
+                        label="Description (optional)"
+                        value={uploadDescription}
+                        onChange={(e) => setUploadDescription(e.target.value)}
+                        multiline
+                        rows={2}
+                        sx={{ mb: 2 }}
                     />
                     <input
-                        accept="audio/*"
+                        accept="audio/*,video/*"
                         style={{ display: 'none' }}
                         id="audio-file-upload"
                         type="file"
@@ -310,7 +383,7 @@ const InterviewAnalyzer: React.FC = () => {
                             fullWidth
                             sx={{ mb: 2 }}
                         >
-                            Choose Audio File
+                            Choose Audio/Video File
                         </Button>
                     </label>
                     {uploadFile && (
@@ -318,15 +391,28 @@ const InterviewAnalyzer: React.FC = () => {
                             Selected: {uploadFile.name}
                         </Typography>
                     )}
+                    <Alert severity="info" sx={{ mt: 2 }}>
+                        <Typography variant="caption">
+                            Note: Files will be stored for future analysis. The AI transcription and analysis features are coming soon!
+                        </Typography>
+                    </Alert>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={() => {
+                        setUploadDialogOpen(false);
+                        setUploadFile(null);
+                        setUploadTitle('');
+                        setUploadDescription('');
+                    }} disabled={uploading}>
+                        Cancel
+                    </Button>
                     <Button
                         onClick={handleUploadInterview}
                         variant="contained"
-                        disabled={!uploadFile || !uploadTitle}
+                        disabled={!uploadFile || !uploadTitle || uploading}
+                        startIcon={uploading ? <CircularProgress size={20} /> : <Upload />}
                     >
-                        Upload & Analyze
+                        {uploading ? 'Uploading...' : 'Upload Interview'}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -349,70 +435,110 @@ const InterviewAnalyzer: React.FC = () => {
                                     <TextField
                                         fullWidth
                                         label="Title"
-                                        value={selectedInterview.title}
+                                        value={selectedInterview.attributes.title}
                                         sx={{ mb: 2 }}
+                                        InputProps={{ readOnly: true }}
+                                    />
+                                    <TextField
+                                        fullWidth
+                                        label="Description"
+                                        value={selectedInterview.attributes.description || 'No description'}
+                                        sx={{ mb: 2 }}
+                                        multiline
+                                        rows={2}
+                                        InputProps={{ readOnly: true }}
                                     />
                                     <Grid container spacing={2}>
                                         <Grid item xs={6}>
                                             <TextField
                                                 fullWidth
                                                 label="Language"
-                                                value={selectedInterview.language}
+                                                value={selectedInterview.attributes.language || 'Auto-detected'}
+                                                InputProps={{ readOnly: true }}
                                             />
                                         </Grid>
                                         <Grid item xs={6}>
                                             <TextField
                                                 fullWidth
-                                                label="Mode"
-                                                value={selectedInterview.mode}
+                                                label="Status"
+                                                value={selectedInterview.attributes.status}
+                                                InputProps={{ readOnly: true }}
                                             />
                                         </Grid>
                                     </Grid>
+                                    {selectedInterview.attributes.file?.data && (
+                                        <Box sx={{ mt: 2 }}>
+                                            <Typography variant="subtitle2" gutterBottom>File Information</Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Name: {selectedInterview.attributes.file.data.attributes.name}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Size: {(selectedInterview.attributes.file.data.attributes.size / 1024 / 1024).toFixed(2)} MB
+                                            </Typography>
+                                        </Box>
+                                    )}
                                 </Box>
                             )}
 
                             {selectedTab === 1 && (
-                                <TextField
-                                    fullWidth
-                                    multiline
-                                    rows={10}
-                                    label="Transcription"
-                                    value={selectedInterview.transcription || 'No transcription available'}
-                                    InputProps={{ readOnly: true }}
-                                />
+                                <Box>
+                                    <Alert severity="info" sx={{ mb: 2 }}>
+                                        Transcription will be available once the analyzer feature is launched.
+                                    </Alert>
+                                    <TextField
+                                        fullWidth
+                                        multiline
+                                        rows={10}
+                                        label="Transcription"
+                                        value={selectedInterview.attributes.transcription || 'Transcription not yet available - analyzer coming soon!'}
+                                        InputProps={{ readOnly: true }}
+                                    />
+                                </Box>
                             )}
 
                             {selectedTab === 2 && (
-                                <TextField
-                                    fullWidth
-                                    multiline
-                                    rows={6}
-                                    label="Summary"
-                                    value={selectedInterview.summary || 'No summary available'}
-                                    InputProps={{ readOnly: true }}
-                                />
+                                <Box>
+                                    <Alert severity="info" sx={{ mb: 2 }}>
+                                        Summary will be generated once the analyzer feature is launched.
+                                    </Alert>
+                                    <TextField
+                                        fullWidth
+                                        multiline
+                                        rows={6}
+                                        label="Summary"
+                                        value={selectedInterview.attributes.summary || 'Summary not yet available - analyzer coming soon!'}
+                                        InputProps={{ readOnly: true }}
+                                    />
+                                </Box>
                             )}
 
                             {selectedTab === 3 && (
                                 <Box>
+                                    <Alert severity="info" sx={{ mb: 2 }}>
+                                        AI insights will be generated once the analyzer feature is launched.
+                                    </Alert>
                                     <Typography variant="h6" gutterBottom>Key Insights</Typography>
-                                    {selectedInterview.insights ? (
+                                    {selectedInterview.attributes.insights && Array.isArray(selectedInterview.attributes.insights) ? (
                                         <List>
-                                            {selectedInterview.insights.map((insight, index) => (
+                                            {selectedInterview.attributes.insights.map((insight: string, index: number) => (
                                                 <ListItem key={index}>
                                                     <ListItemText primary={insight} />
                                                 </ListItem>
                                             ))}
                                         </List>
                                     ) : (
-                                        <Typography color="text.secondary">No insights available</Typography>
+                                        <Typography color="text.secondary">Insights not yet available - analyzer coming soon!</Typography>
                                     )}
 
                                     <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Tags</Typography>
                                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                        {selectedInterview.tags?.map((tag, index) => (
-                                            <Chip key={index} label={tag} size="small" />
-                                        )) || <Typography color="text.secondary">No tags</Typography>}
+                                        {selectedInterview.attributes.tags && Array.isArray(selectedInterview.attributes.tags) ? (
+                                            selectedInterview.attributes.tags.map((tag: string, index: number) => (
+                                                <Chip key={index} label={tag} size="small" />
+                                            ))
+                                        ) : (
+                                            <Typography color="text.secondary">No tags yet</Typography>
+                                        )}
                                     </Box>
                                 </Box>
                             )}

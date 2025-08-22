@@ -41,6 +41,8 @@ export enum Pages {
   PitchDeckAnalyzer,
   FinancialPlan,
   Capture,
+  StakeholderMap,
+  Persona,
 }
 
 type PathRouteCustomProps = {

@@ -1,0 +1,97 @@
+{
+  "collectionName": "document_uploads",
+  "info": {
+    "singularName": "document-upload",
+    "pluralName": "document-uploads",
+    "displayName": "Document Upload",
+    "description": "Handles all types of document uploads including interviews, pitch decks, financial plans, and workshop captures"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "interview",
+        "pitch_deck",
+        "financial_plan",
+        "workshop_capture",
+        "other"
+      ],
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "uploaded",
+        "processing",
+        "completed",
+        "analyzed",
+        "failed"
+      ],
+      "default": "uploaded"
+    },
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "files",
+        "images",
+        "videos",
+        "audios"
+      ]
+    },
+    "transcription": {
+      "type": "richtext"
+    },
+    "summary": {
+      "type": "text"
+    },
+    "insights": {
+      "type": "json"
+    },
+    "tags": {
+      "type": "json"
+    },
+    "metadata": {
+      "type": "json"
+    },
+    "duration": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "default": "auto-detected"
+    },
+    "mode": {
+      "type": "string"
+    },
+    "startup": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::startup.startup"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "analyzedAt": {
+      "type": "datetime"
+    },
+    "aiAnalysis": {
+      "type": "json"
+    }
+  },
+  "kind": "collectionType"
+}

@@ -16,7 +16,17 @@ interface UsePatternsReturn extends Omit<UsePatterns, 'initialized'> {
   clearError: () => void;
 }
 
-export default function usePatterns(): UsePatternsReturn {
+type CategoryFilter = CategoryEnum | 'exclude-entrepreneur';
+
+function isExcludeEntrepreneur(filter: CategoryFilter | undefined): filter is 'exclude-entrepreneur' {
+  return filter === 'exclude-entrepreneur';
+}
+
+function isCategoryEnum(filter: CategoryFilter | undefined): filter is CategoryEnum {
+  return filter !== undefined && filter !== 'exclude-entrepreneur';
+}
+
+export default function usePatterns(categoryFilter?: CategoryFilter): UsePatternsReturn {
   const [state, setState] = useState<UsePatterns>({
     startup: null,
     recommendedPatterns: null,
@@ -53,7 +63,18 @@ export default function usePatterns(): UsePatternsReturn {
   };
 
   const getRecommendedCategory = useCallback((startup: Startup, excludedCategories: CategoryEnum[] = []): CategoryEnum | null => {
-    if (!startup?.scores) return CategoryEnum.entrepreneur;
+    if (!startup?.scores) {
+      // If filtering for non-entrepreneur, return a random non-entrepreneur category
+      if (isExcludeEntrepreneur(categoryFilter)) {
+        const nonEntrepreneurCategories = Object.values(CategoryEnum).filter(c => c !== CategoryEnum.entrepreneur);
+        return getRandomItem(nonEntrepreneurCategories);
+      }
+      // If filtering for specific category, return it
+      if (isCategoryEnum(categoryFilter)) {
+        return categoryFilter;
+      }
+      return CategoryEnum.entrepreneur;
+    }
 
     const scores = startup.scores;
 
@@ -61,6 +82,13 @@ export default function usePatterns(): UsePatternsReturn {
     let categories = Object.keys(scores).filter(
       category => !excludedCategories.includes(category as CategoryEnum)
     ) as CategoryEnum[];
+
+    // Apply category filter
+    if (isExcludeEntrepreneur(categoryFilter)) {
+      categories = categories.filter(category => category !== CategoryEnum.entrepreneur);
+    } else if (isCategoryEnum(categoryFilter)) {
+      categories = categories.filter(category => category === categoryFilter);
+    }
 
     // If startup.categories exists and is not empty, only consider categories from that list
     if (startup.categories && startup.categories.length > 0) {
@@ -80,7 +108,7 @@ export default function usePatterns(): UsePatternsReturn {
     );
 
     return getRandomItem(lowestCategories);
-  }, []);
+  }, [categoryFilter]);
 
   const getRecommendedPatterns = useCallback(
     async (count?: number) => {
@@ -122,6 +150,7 @@ export default function usePatterns(): UsePatternsReturn {
 
           // Fetch available patterns for that category
           console.log('category', category);
+          // Fetch patterns based on category filter
           availablePatterns = await strapiGetPatterns(category);
 
           // Remove patterns already started/applied by startup

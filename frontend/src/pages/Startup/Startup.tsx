@@ -23,7 +23,9 @@ import {
   AttachMoney,
   Check,
   CheckCircle,
-  ArrowForward
+  ArrowForward,
+  AccountTree,
+  Person
 } from '@mui/icons-material';
 import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
@@ -119,12 +121,30 @@ function Startup() {
       completed: false
     },
     {
+      id: 'stakeholder-map',
+      title: 'Stakeholder Map',
+      description: 'Identify and analyze your key stakeholders',
+      icon: AccountTree,
+      color: categoryColors.stakeholders,
+      path: '/tools/stakeholder-map',
+      completed: false
+    },
+    {
       id: 'interviews',
       title: 'Interviews',
       description: 'Conduct and analyze customer interviews',
       icon: RecordVoiceOver,
       color: categoryColors.stakeholders,
       path: '/tools/interview-analyzer',
+      completed: false
+    },
+    {
+      id: 'persona',
+      title: 'User Personas',
+      description: 'Create detailed personas from interviews',
+      icon: Person,
+      color: categoryColors.stakeholders,
+      path: '/tools/persona',
       completed: false
     },
     {
@@ -228,7 +248,7 @@ function Startup() {
             </Typography>
             <Grid container spacing={2}>
               {steps.map((step, index) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={step.id}>
+                <Grid item xs={12} sm={6} md={4} lg={2.4} key={step.id}>
                   <Card
                     onClick={() => navigate(step.path)}
                     sx={{

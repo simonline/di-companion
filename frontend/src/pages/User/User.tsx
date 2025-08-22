@@ -25,7 +25,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
 import useRecommendedPatterns from '@/hooks/useRecommendedPatterns';
 import Header from '@/sections/Header';
-import { categoryColors } from '@/utils/constants';
+import { categoryColors, CategoryEnum } from '@/utils/constants';
 import { getAvatarUrl } from '@/lib/strapi';
 import { CenteredFlexBox } from '@/components/styled';
 
@@ -41,7 +41,7 @@ interface OnboardingStep {
 const User: React.FC = () => {
   const navigate = useNavigate();
   const { user, startup } = useAuthContext();
-  const { getRecommendedPatterns, recommendedPatterns, loading } = useRecommendedPatterns();
+  const { getRecommendedPatterns, recommendedPatterns, loading } = useRecommendedPatterns(CategoryEnum.entrepreneur);
   const [onboardingSteps, setOnboardingSteps] = useState<OnboardingStep[]>([]);
 
   useEffect(() => {

@@ -11,8 +11,9 @@ import {
   Paper,
   Tooltip,
   IconButton,
+  CardMedia,
 } from '@mui/material';
-import { Check, FilterList, Refresh } from '@mui/icons-material';
+import { Check, FilterList, Refresh, ArrowForward, Image as ImageIcon } from '@mui/icons-material';
 import InfoIcon from '@mui/icons-material/Info';
 import {
   categoryDisplayNames,
@@ -22,6 +23,7 @@ import {
 } from '@/utils/constants';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import useRecommendedPatterns from '@/hooks/useRecommendedPatterns';
 
 const PerformanceScore: React.FC = () => {
   const { startup, updateScores, updateStartup } = useAuthContext();
@@ -29,12 +31,18 @@ const PerformanceScore: React.FC = () => {
   const [editingCategories, setEditingCategories] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<CategoryEnum[]>([]);
   const allCategories = Object.values(CategoryEnum);
+  const { getRecommendedPatterns, recommendedPatterns, loading } = useRecommendedPatterns('exclude-entrepreneur');
 
   useEffect(() => {
     if (startup && !startup.scores) {
       updateScores();
     }
   }, [startup, updateScores]);
+
+  useEffect(() => {
+    // Get one recommended pattern (excluding entrepreneur category)
+    getRecommendedPatterns(1);
+  }, [getRecommendedPatterns]);
 
   useEffect(() => {
     if (startup?.categories?.length) {
@@ -293,72 +301,195 @@ const PerformanceScore: React.FC = () => {
         </Grid>
 
         <Grid item xs={12} sm={4}>
-          {/* Overall Score Display */}
-          <Box>
-            <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
-              Overall Score
-            </Typography>
-            <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Box
-                sx={{
-                  position: 'relative',
-                  width: 120,
-                  height: 120,
-                  borderRadius: '50%',
-                  background: `conic-gradient(#4CAF50 ${startup.score || 0}%, #e0e0e0 0)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    width: 100,
-                    height: 100,
-                    borderRadius: '50%',
-                    background: 'white',
-                  },
-                  '&:hover .refresh-icon': {
-                    opacity: 1,
-                  },
-                }}
-              >
-                <Typography
-                  variant="h4"
-                  fontWeight="bold"
+          <Stack spacing={3}>
+            {/* Overall Score Display */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
+                Overall Score
+              </Typography>
+              <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box
                   sx={{
                     position: 'relative',
-                    zIndex: 1,
+                    width: 120,
+                    height: 120,
+                    borderRadius: '50%',
+                    background: `conic-gradient(#4CAF50 ${startup.score || 0}%, #e0e0e0 0)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      width: 100,
+                      height: 100,
+                      borderRadius: '50%',
+                      background: 'white',
+                    },
+                    '&:hover .refresh-icon': {
+                      opacity: 1,
+                    },
                   }}
                 >
-                  {startup.score || 0}%
-                </Typography>
-                <Tooltip title="Recalculate score">
-                  <IconButton
-                    size="small"
-                    onClick={updateScores}
-                    className="refresh-icon"
+                  <Typography
+                    variant="h4"
+                    fontWeight="bold"
                     sx={{
-                      position: 'absolute',
-                      bottom: 0,
-                      right: 0,
-                      bgcolor: 'background.paper',
-                      boxShadow: 1,
-                      opacity: 0,
-                      transition: 'opacity 0.2s',
-                      '&:hover': {
+                      position: 'relative',
+                      zIndex: 1,
+                    }}
+                  >
+                    {startup.score || 0}%
+                  </Typography>
+                  <Tooltip title="Recalculate score">
+                    <IconButton
+                      size="small"
+                      onClick={updateScores}
+                      className="refresh-icon"
+                      sx={{
+                        position: 'absolute',
+                        bottom: 0,
+                        right: 0,
                         bgcolor: 'background.paper',
+                        boxShadow: 1,
+                        opacity: 0,
+                        transition: 'opacity 0.2s',
+                        '&:hover': {
+                          bgcolor: 'background.paper',
+                        },
+                      }}
+                    >
+                      <Refresh fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Box>
+            </Box>
+
+            {/* Recommended Pattern Section */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
+                Recommended Pattern
+              </Typography>
+              {loading ? (
+                <Card>
+                  <CardContent>
+                    <Typography color="text.secondary" variant="body2" textAlign="center">Loading recommendations...</Typography>
+                  </CardContent>
+                </Card>
+              ) : recommendedPatterns && recommendedPatterns.length > 0 ? (
+                <Card
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      bgcolor: categoryColors[recommendedPatterns[0].category] || '#grey',
+                      height: 12,
+                      borderTopLeftRadius: 8,
+                      borderTopRightRadius: 8,
+                    }}
+                  />
+                  <CardMedia
+                    sx={{
+                      height: 100,
+                      bgcolor: 'grey.100',
+                      position: 'relative',
+                      '& img': {
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
                       },
                     }}
                   >
-                    <Refresh fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+                    {recommendedPatterns[0].image ? (
+                      <img
+                        src={`${import.meta.env.VITE_API_URL}${recommendedPatterns[0].image.url}`}
+                        alt={recommendedPatterns[0].name}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <ImageIcon sx={{ fontSize: 36, color: 'grey.300' }} />
+                      </Box>
+                    )}
+                  </CardMedia>
+                  <CardContent sx={{ p: 1.5 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: categoryColors[recommendedPatterns[0].category],
+                        fontWeight: 'bold',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        mb: 0.5,
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      {recommendedPatterns[0].name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Improve your {categoryDisplayNames[recommendedPatterns[0].category as CategoryEnum]?.toLowerCase()}
+                    </Typography>
+                  </CardContent>
+                  <Box sx={{ p: 1.5, pt: 0, mt: 'auto' }}>
+                    <Button
+                      onClick={() => navigate(`/explore/${recommendedPatterns[0].documentId}`)}
+                      variant="contained"
+                      size="small"
+                      endIcon={<ArrowForward fontSize="small" />}
+                      fullWidth
+                      sx={{
+                        bgcolor: categoryColors[recommendedPatterns[0].category],
+                        color: 'white',
+                        fontSize: '0.75rem',
+                        py: 0.5,
+                        '&:hover': {
+                          bgcolor: categoryColors[recommendedPatterns[0].category],
+                          filter: 'brightness(0.9)',
+                        },
+                      }}
+                    >
+                      Explore
+                    </Button>
+                  </Box>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent sx={{ p: 1.5 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Complete your assessment to get personalized recommendations.
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      sx={{ mt: 1, fontSize: '0.75rem', py: 0.5 }}
+                      onClick={() => navigate('/explore')}
+                    >
+                      Browse Patterns
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
-              This score reflects your startup&apos;s progress and maturity across all key perspectives. It combines your self-assessment and applied patterns to help you identify strengths and areas for improvement. Use this score to track your growth and set priorities as you build your business.
-            </Typography>
-          </Box>
+          </Stack>
         </Grid>
       </Grid>
     </>

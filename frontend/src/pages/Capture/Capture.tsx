@@ -172,7 +172,7 @@ const Capture: React.FC = () => {
 
   return (
     <>
-      <Header title="Capture" />
+      <Header title="Add your content" />
       <CenteredFlexBox>
         <Box sx={{ maxWidth: 1200, width: '100%', px: 2 }}>
           <Card sx={{ mb: 3 }}>
@@ -185,7 +185,7 @@ const Capture: React.FC = () => {
               >
                 <Box>
                   <Typography variant="h5" fontWeight="700" gutterBottom>
-                    Workshop Capture
+                    Add your content
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Save ideas, notes, links, and documents from your workshops and brainstorming sessions

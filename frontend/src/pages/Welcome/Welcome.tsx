@@ -1,9 +1,13 @@
-import React from 'react';
-import { Box, Typography, Button, Container, Grid, Card, CardContent, Avatar } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, Button, Container, Grid, Card, CardContent, Avatar, Chip, IconButton, Collapse, Paper } from '@mui/material';
 import StyleIcon from '@mui/icons-material/Style';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import SpeedIcon from '@mui/icons-material/Speed';
 import ForumIcon from '@mui/icons-material/Forum';
+import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
+import AndroidIcon from '@mui/icons-material/Android';
+import GetAppIcon from '@mui/icons-material/GetApp';
+import CloseIcon from '@mui/icons-material/Close';
 import Meta from '@/components/Meta';
 import { FlexBox } from '@/components/styled';
 import logoImage from '/logo.png';
@@ -11,6 +15,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 function Welcome() {
   const isMobile = window.innerWidth < 600;
   const { isAuthenticated } = useAuthContext();
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
   return (
     <>
       <Meta title="Dynamic Innovation Digital Companion - Welcome" />
@@ -20,8 +25,117 @@ function Welcome() {
           color: 'white',
           height: '100%',
           overflowY: 'auto',
+          position: 'relative',
         }}
       >
+        {/* Floating Install Button/Guide */}
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 20,
+            right: 20,
+            zIndex: 1000,
+          }}
+        >
+          {!showInstallGuide ? (
+            <IconButton
+              onClick={() => setShowInstallGuide(true)}
+              sx={{
+                backgroundColor: 'white',
+                color: 'primary.main',
+                boxShadow: 3,
+                '&:hover': {
+                  backgroundColor: 'white',
+                  transform: 'scale(1.1)',
+                },
+                transition: 'transform 0.2s',
+              }}
+            >
+              <GetAppIcon />
+            </IconButton>
+          ) : (
+            <Paper
+              elevation={4}
+              sx={{
+                backgroundColor: 'white',
+                borderRadius: 2,
+                width: 340,
+                animation: 'slideIn 0.2s ease-out',
+                '@keyframes slideIn': {
+                  from: {
+                    opacity: 0,
+                    transform: 'translateX(10px)',
+                  },
+                  to: {
+                    opacity: 1,
+                    transform: 'translateX(0)',
+                  },
+                },
+              }}
+            >
+              {/* Header */}
+              <Box 
+                sx={{ 
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                  p: 2,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography variant="h6" fontWeight="600" color="text.primary">
+                  Install as App
+                </Typography>
+                <IconButton 
+                  size="small" 
+                  onClick={() => setShowInstallGuide(false)}
+                  sx={{ color: 'text.secondary' }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+              
+              {/* Content */}
+              <Box sx={{ p: 2.5 }}>
+                {/* iOS Instructions */}
+                <Box sx={{ mb: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                    <PhoneIphoneIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 20 }} />
+                    <Typography variant="subtitle1" fontWeight="600" color="text.primary">
+                      iPhone / iPad
+                    </Typography>
+                  </Box>
+                  <Box sx={{ pl: 3.5 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.8 }}>
+                      1. Open in Safari browser<br />
+                      2. Tap the Share button<br />
+                      3. Select "Add to Home Screen"
+                    </Typography>
+                  </Box>
+                </Box>
+                
+                {/* Android Instructions */}
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                    <AndroidIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 20 }} />
+                    <Typography variant="subtitle1" fontWeight="600" color="text.primary">
+                      Android
+                    </Typography>
+                  </Box>
+                  <Box sx={{ pl: 3.5 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.8 }}>
+                      1. Open in Chrome browser<br />
+                      2. Tap the menu button (⋮)<br />
+                      3. Select "Install app"
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </Paper>
+          )}
+        </Box>
+
         <Container sx={{ mb: 4 }}>
           {/* Header */}
           <div

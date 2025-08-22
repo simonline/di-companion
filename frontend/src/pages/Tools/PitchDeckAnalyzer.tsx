@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Card,
@@ -8,32 +8,64 @@ import {
     Stack,
     Paper,
     Alert,
-    Chip
+    Chip,
+    List,
+    ListItem,
+    ListItemText,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    CircularProgress,
+    Divider
 } from '@mui/material';
 import {
     Slideshow,
     CloudUpload,
     Description,
-    TrendingUp
+    TrendingUp,
+    Delete,
+    Visibility,
+    Info
 } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
+import { useDocumentUpload } from '@/hooks/useDocumentUpload';
 
 const PitchDeckAnalyzer: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
-    const [isUploaded, setIsUploaded] = useState(false);
+    const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+    const [uploadTitle, setUploadTitle] = useState('');
+    const [uploadDescription, setUploadDescription] = useState('');
+    
+    const { documents, loading, uploading, fetchDocuments, uploadDocument, deleteDocument } = useDocumentUpload({
+        type: 'pitch_deck',
+        onUploadSuccess: () => {
+            setUploadDialogOpen(false);
+            setFile(null);
+            setUploadTitle('');
+            setUploadDescription('');
+        }
+    });
+
+    useEffect(() => {
+        fetchDocuments();
+    }, []);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
-            setFile(event.target.files[0]);
-            setIsUploaded(false);
+            const selectedFile = event.target.files[0];
+            setFile(selectedFile);
+            setUploadTitle(selectedFile.name.replace(/\.[^/.]+$/, '')); // Remove extension for title
+            setUploadDialogOpen(true);
         }
     };
 
-    const handleUpload = () => {
-        if (file) {
-            // Handle file upload logic here
-            setIsUploaded(true);
+    const handleUpload = async () => {
+        if (file && uploadTitle) {
+            await uploadDocument(file, uploadTitle, uploadDescription);
         }
     };
 
@@ -68,10 +100,10 @@ const PitchDeckAnalyzer: React.FC = () => {
                                 </Box>
                             </Stack>
 
-                            <Alert severity="info" sx={{ mb: 3 }}>
+                            <Alert severity="info" sx={{ mb: 3 }} icon={<Info />}>
                                 <Typography variant="body2">
-                                    The Pitch Deck Analyzer is coming soon. For now, you can upload your pitch deck 
-                                    to save it for future analysis.
+                                    <strong>Analyzer Coming Soon!</strong> Currently, you can upload and store your pitch decks. 
+                                    The AI-powered analysis features will be available soon.
                                 </Typography>
                             </Alert>
 
@@ -116,27 +148,40 @@ const PitchDeckAnalyzer: React.FC = () => {
                                 )}
                             </Paper>
 
-                            {file && !isUploaded && (
-                                <Box sx={{ mt: 3, textAlign: 'center' }}>
-                                    <Button
-                                        variant="contained"
-                                        size="large"
-                                        startIcon={<CloudUpload />}
-                                        onClick={handleUpload}
-                                        sx={{ minWidth: 200 }}
-                                    >
-                                        Upload Pitch Deck
-                                    </Button>
+                            {/* Uploaded Pitch Decks List */}
+                            {documents.length > 0 && (
+                                <Box sx={{ mt: 3 }}>
+                                    <Typography variant="h6" sx={{ mb: 2 }}>Your Pitch Decks</Typography>
+                                    {loading ? (
+                                        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                                            <CircularProgress />
+                                        </Box>
+                                    ) : (
+                                        <List>
+                                            {documents.map((doc, index) => {
+                                                const date = new Date(doc.attributes.createdAt).toLocaleDateString();
+                                                return (
+                                                    <React.Fragment key={doc.id}>
+                                                        <ListItem>
+                                                            <ListItemText
+                                                                primary={doc.attributes.title}
+                                                                secondary={`Uploaded on ${date} • Status: ${doc.attributes.status}`}
+                                                            />
+                                                            <IconButton
+                                                                onClick={() => deleteDocument(doc.id)}
+                                                                color="error"
+                                                                size="small"
+                                                            >
+                                                                <Delete />
+                                                            </IconButton>
+                                                        </ListItem>
+                                                        {index < documents.length - 1 && <Divider />}
+                                                    </React.Fragment>
+                                                );
+                                            })}
+                                        </List>
+                                    )}
                                 </Box>
-                            )}
-
-                            {isUploaded && (
-                                <Alert severity="success" sx={{ mt: 3 }}>
-                                    <Typography variant="body2">
-                                        Your pitch deck has been uploaded successfully! 
-                                        We'll notify you when the analyzer feature becomes available.
-                                    </Typography>
-                                </Alert>
                             )}
                         </CardContent>
                     </Card>
@@ -169,6 +214,61 @@ const PitchDeckAnalyzer: React.FC = () => {
                     </Card>
                 </Box>
             </CenteredFlexBox>
+
+            {/* Upload Dialog */}
+            <Dialog open={uploadDialogOpen} onClose={() => setUploadDialogOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>Upload Pitch Deck</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth
+                        label="Pitch Deck Title"
+                        value={uploadTitle}
+                        onChange={(e) => setUploadTitle(e.target.value)}
+                        sx={{ mb: 2, mt: 1 }}
+                        required
+                    />
+                    <TextField
+                        fullWidth
+                        label="Description (optional)"
+                        value={uploadDescription}
+                        onChange={(e) => setUploadDescription(e.target.value)}
+                        multiline
+                        rows={3}
+                        sx={{ mb: 2 }}
+                        placeholder="e.g., Version 2.0, Investor meeting presentation, Q1 2024 update..."
+                    />
+                    {file && (
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                            <Typography variant="body2">
+                                <strong>Selected file:</strong> {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                            </Typography>
+                        </Alert>
+                    )}
+                    <Alert severity="info">
+                        <Typography variant="caption">
+                            Note: Your pitch deck will be stored for future analysis. The AI analysis features are coming soon!
+                        </Typography>
+                    </Alert>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => {
+                        setUploadDialogOpen(false);
+                        setFile(null);
+                        setUploadTitle('');
+                        setUploadDescription('');
+                    }} disabled={uploading}>
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleUpload}
+                        variant="contained"
+                        disabled={!file || !uploadTitle || uploading}
+                        startIcon={uploading ? <CircularProgress size={20} /> : <CloudUpload />}
+                    >
+                        {uploading ? 'Uploading...' : 'Upload Pitch Deck'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 };
