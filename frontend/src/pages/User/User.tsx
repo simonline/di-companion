@@ -20,6 +20,7 @@ import {
   ArrowForward,
   Check,
   Image as ImageIcon,
+  Favorite,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
@@ -78,7 +79,7 @@ const User: React.FC = () => {
         id: 'values',
         title: 'Your Values',
         description: 'Define your personal values through our guided workshop process.',
-        icon: <Assessment sx={{ fontSize: 32 }} />,
+        icon: <Favorite sx={{ fontSize: 32 }} />,
         route: '/tools/user-values',
         completed: false, // TODO: Add completion logic
       },
@@ -282,7 +283,7 @@ const User: React.FC = () => {
             ) : recommendedPatterns && recommendedPatterns.length > 0 ? (
               <Card
                 sx={{
-                  height: '100%',
+                  aspectRatio: '2/3',
                   display: 'flex',
                   flexDirection: 'column',
                   borderRadius: 2,
@@ -291,15 +292,17 @@ const User: React.FC = () => {
                 <Box
                   sx={{
                     bgcolor: categoryColors[recommendedPatterns[0].category] || '#grey',
-                    height: 20,
-                    p: 1,
+                    height: 40,
+                    p: 2,
                     borderTopLeftRadius: 8,
                     borderTopRightRadius: 8,
+                    display: 'flex',
+                    alignItems: 'center',
                   }}
                 />
                 <CardMedia
                   sx={{
-                    height: 140,
+                    height: '35%',
                     bgcolor: 'grey.100',
                     position: 'relative',
                     '& img': {
@@ -333,7 +336,7 @@ const User: React.FC = () => {
                 </CardMedia>
                 <CardContent sx={{ flexGrow: 1, p: 2 }}>
                   <Typography
-                    variant="subtitle1"
+                    variant="body1"
                     sx={{
                       color: categoryColors[recommendedPatterns[0].category],
                       fontWeight: 'bold',
@@ -343,6 +346,7 @@ const User: React.FC = () => {
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       mb: 1,
+                      fontSize: '1rem',
                     }}
                   >
                     {recommendedPatterns[0].name}

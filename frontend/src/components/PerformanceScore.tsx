@@ -115,7 +115,7 @@ const PerformanceScore: React.FC = () => {
         key={category}
         sx={{
           position: 'relative',
-          height: 45,
+          height: 56,
           cursor: 'pointer',
           opacity: selectedCategories.includes(category) ? 1 : 0.5,
         }}
@@ -126,7 +126,7 @@ const PerformanceScore: React.FC = () => {
           variant="determinate"
           value={score}
           sx={{
-            height: 32,
+            height: 44,
             borderRadius: 8,
             bgcolor: `${categoryColors[category]}66`,
             '& .MuiLinearProgress-bar': {
@@ -146,12 +146,12 @@ const PerformanceScore: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             width: '100%',
-            height: '32px',
-            padding: '0 12px',
+            height: '44px',
+            padding: '0 16px',
           }}
         >
           {/* Icon */}
-          <img src={categoryIcons[category]} alt={''} height={24} />
+          <img src={categoryIcons[category]} alt={''} height={28} />
           {/* Category Name */}
           <Typography
             variant="body1"
@@ -181,7 +181,7 @@ const PerformanceScore: React.FC = () => {
         <Typography variant="h6" gutterBottom>
           Your Performance Score
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           {editingCategories ? (
             <Button
               startIcon={<Check />}
@@ -209,8 +209,129 @@ const PerformanceScore: React.FC = () => {
         </Box>
       </Box>
 
+      {/* Overall Score Display - Now at the top */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          mb: 3,
+          background: `linear-gradient(135deg, ${categoryColors[lowestCategory[0] as CategoryEnum]}15 0%, ${categoryColors[lowestCategory[0] as CategoryEnum]}05 100%)`,
+          border: `1px solid ${categoryColors[lowestCategory[0] as CategoryEnum]}20`,
+          borderRadius: 2,
+        }}
+      >
+        <Grid container spacing={3} alignItems="center">
+          <Grid item xs={12} sm={4} md={3}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: 120,
+                  height: 120,
+                  borderRadius: '50%',
+                  background: (theme) => `conic-gradient(from -90deg, ${theme.palette.primary.main} 0deg, ${theme.palette.primary.main} ${(startup.score || 0) * 3.6}deg, #e0e0e0 ${(startup.score || 0) * 3.6}deg, #e0e0e0 360deg)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    width: 100,
+                    height: 100,
+                    borderRadius: '50%',
+                    background: 'white',
+                    boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.05)',
+                  },
+                  '&:hover .refresh-icon': {
+                    opacity: 1,
+                  },
+                }}
+              >
+                <Box sx={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+                  <Typography
+                    variant="h3"
+                    fontWeight="bold"
+                    sx={{
+                      color: 'primary.main',
+                      lineHeight: 1,
+                    }}
+                  >
+                    {startup.score || 0}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" fontWeight="500">
+                    OVERALL
+                  </Typography>
+                </Box>
+                <Tooltip title="Recalculate score">
+                  <IconButton
+                    size="small"
+                    onClick={updateScores}
+                    className="refresh-icon"
+                    sx={{
+                      position: 'absolute',
+                      bottom: -5,
+                      right: -5,
+                      bgcolor: 'background.paper',
+                      boxShadow: 2,
+                      opacity: 0,
+                      transition: 'opacity 0.2s',
+                      '&:hover': {
+                        bgcolor: 'background.paper',
+                        transform: 'rotate(180deg)',
+                        transition: 'transform 0.3s',
+                      },
+                    }}
+                  >
+                    <Refresh fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
+          </Grid>
+          
+          <Grid item xs={12} sm={8} md={9}>
+            <Box>
+              <Typography variant="body1" fontWeight="600" gutterBottom>
+                Performance Summary
+              </Typography>
+              <Typography variant="body2" color="text.secondary" paragraph>
+                Your startup is performing at {startup.score}% overall. Focus on improving your{' '}
+                <Box component="span" sx={{ color: categoryColors[lowestCategory[0] as CategoryEnum], fontWeight: 600 }}>
+                  {categoryDisplayNames[lowestCategory[0] as CategoryEnum]}
+                </Box>{' '}
+                perspective (currently at {lowestCategory[1]}%) to boost your overall score.
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Button
+                  size="small"
+                  variant="contained"
+                  onClick={() => navigate('/explore')}
+                  sx={{
+                    bgcolor: categoryColors[lowestCategory[0] as CategoryEnum],
+                    '&:hover': {
+                      bgcolor: categoryColors[lowestCategory[0] as CategoryEnum],
+                      filter: 'brightness(0.9)',
+                    },
+                  }}
+                >
+                  Improve {categoryDisplayNames[lowestCategory[0] as CategoryEnum]}
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => navigate('/self-assessment')}
+                >
+                  Take Assessment
+                </Button>
+              </Box>
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={8}>
           {/* Progress Bars */}
           <Stack spacing={0.5}>
             {editingCategories ? (
@@ -219,13 +340,13 @@ const PerformanceScore: React.FC = () => {
             ) : (
               // Show only selected categories when not editing
               Object.entries(sortedScores).map(([category, score]) => (
-                <Box key={category} sx={{ position: 'relative', height: 45 }}>
+                <Box key={category} sx={{ position: 'relative', height: 56 }}>
                   {/* Progress Bar */}
                   <LinearProgress
                     variant="determinate"
                     value={score}
                     sx={{
-                      height: 32,
+                      height: 44,
                       borderRadius: 8,
                       bgcolor: `${categoryColors[category as CategoryEnum]}66`,
                       '& .MuiLinearProgress-bar': {
@@ -241,7 +362,7 @@ const PerformanceScore: React.FC = () => {
                       top: 0,
                       left: 0,
                       width: '100%',
-                      height: '32px',
+                      height: '44px',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
@@ -253,7 +374,7 @@ const PerformanceScore: React.FC = () => {
                         key={tick}
                         sx={{
                           width: '1px',
-                          height: '32px',
+                          height: '44px',
                           bgcolor: 'rgba(255, 255, 255, 0.1)',
                           visibility: [0, 100].includes(tick) ? 'hidden' : 'visible',
                         }}
@@ -269,12 +390,12 @@ const PerformanceScore: React.FC = () => {
                       display: 'flex',
                       alignItems: 'center',
                       width: '100%',
-                      height: '32px',
-                      padding: '0 12px',
+                      height: '44px',
+                      padding: '0 16px',
                     }}
                   >
                     {/* Icon */}
-                    <img src={categoryIcons[category as CategoryEnum]} alt={''} height={24} />
+                    <img src={categoryIcons[category as CategoryEnum]} alt={''} height={28} />
                     {/* Category Name */}
                     <Typography
                       variant="body1"
@@ -300,76 +421,8 @@ const PerformanceScore: React.FC = () => {
           </Stack>
         </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Grid container spacing={2}>
-            {/* Overall Score Display */}
-            <Grid item xs={6} md={5}>
-              <Box>
-                <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
-                  Overall Score
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Box
-                    sx={{
-                      position: 'relative',
-                      width: 100,
-                      height: 100,
-                    borderRadius: '50%',
-                    background: `conic-gradient(#4CAF50 ${startup.score || 0}%, #e0e0e0 0)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      width: 80,
-                      height: 80,
-                      borderRadius: '50%',
-                      background: 'white',
-                    },
-                    '&:hover .refresh-icon': {
-                      opacity: 1,
-                    },
-                  }}
-                >
-                  <Typography
-                    variant="h5"
-                    fontWeight="bold"
-                    sx={{
-                      position: 'relative',
-                      zIndex: 1,
-                    }}
-                  >
-                    {startup.score || 0}%
-                  </Typography>
-                  <Tooltip title="Recalculate score">
-                    <IconButton
-                      size="small"
-                      onClick={updateScores}
-                      className="refresh-icon"
-                      sx={{
-                        position: 'absolute',
-                        bottom: 0,
-                        right: 0,
-                        bgcolor: 'background.paper',
-                        boxShadow: 1,
-                        opacity: 0,
-                        transition: 'opacity 0.2s',
-                        '&:hover': {
-                          bgcolor: 'background.paper',
-                        },
-                      }}
-                    >
-                      <Refresh fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Box>
-              </Box>
-            </Grid>
-
-            {/* Recommended Pattern Section */}
-            <Grid item xs={6} md={7}>
+        <Grid item xs={12} md={4}>
+          {/* Recommended Pattern Section */}
               <Box>
                 <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
                   Recommended Pattern
@@ -383,6 +436,7 @@ const PerformanceScore: React.FC = () => {
               ) : recommendedPatterns && recommendedPatterns.length > 0 ? (
                 <Card
                   sx={{
+                    aspectRatio: '2/3',
                     display: 'flex',
                     flexDirection: 'column',
                     borderRadius: 2,
@@ -391,14 +445,17 @@ const PerformanceScore: React.FC = () => {
                   <Box
                     sx={{
                       bgcolor: categoryColors[recommendedPatterns[0].category] || '#grey',
-                      height: 12,
+                      height: 40,
+                      p: 2,
                       borderTopLeftRadius: 8,
                       borderTopRightRadius: 8,
+                      display: 'flex',
+                      alignItems: 'center',
                     }}
                   />
                   <CardMedia
                     sx={{
-                      height: 100,
+                      height: '35%',
                       bgcolor: 'grey.100',
                       position: 'relative',
                       '& img': {
@@ -426,13 +483,13 @@ const PerformanceScore: React.FC = () => {
                           justifyContent: 'center',
                         }}
                       >
-                        <ImageIcon sx={{ fontSize: 36, color: 'grey.300' }} />
+                        <ImageIcon sx={{ fontSize: 48, color: 'grey.300' }} />
                       </Box>
                     )}
                   </CardMedia>
-                  <CardContent sx={{ p: 1.5 }}>
+                  <CardContent sx={{ flexGrow: 1, p: 2 }}>
                     <Typography
-                      variant="body2"
+                      variant="body1"
                       sx={{
                         color: categoryColors[recommendedPatterns[0].category],
                         fontWeight: 'bold',
@@ -441,35 +498,32 @@ const PerformanceScore: React.FC = () => {
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        mb: 0.5,
-                        fontSize: '0.875rem',
+                        mb: 1,
+                        fontSize: '1rem',
                       }}
                     >
                       {recommendedPatterns[0].name}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary">
                       Improve your {categoryDisplayNames[recommendedPatterns[0].category as CategoryEnum]?.toLowerCase()}
                     </Typography>
                   </CardContent>
-                  <Box sx={{ p: 1.5, pt: 0, mt: 'auto' }}>
+                  <Box sx={{ p: 2, pt: 0, mt: 'auto' }}>
                     <Button
                       onClick={() => navigate(`/explore/${recommendedPatterns[0].documentId}`)}
                       variant="contained"
-                      size="small"
-                      endIcon={<ArrowForward fontSize="small" />}
+                      endIcon={<ArrowForward />}
                       fullWidth
                       sx={{
                         bgcolor: categoryColors[recommendedPatterns[0].category],
                         color: 'white',
-                        fontSize: '0.75rem',
-                        py: 0.5,
                         '&:hover': {
                           bgcolor: categoryColors[recommendedPatterns[0].category],
                           filter: 'brightness(0.9)',
                         },
                       }}
                     >
-                      Explore
+                      Explore Pattern
                     </Button>
                   </Box>
                 </Card>
@@ -492,8 +546,6 @@ const PerformanceScore: React.FC = () => {
                 </Card>
               )}
               </Box>
-            </Grid>
-          </Grid>
         </Grid>
       </Grid>
     </>
