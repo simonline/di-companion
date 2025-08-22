@@ -12,10 +12,13 @@ export default factories.createCoreController('api::document-upload.document-upl
       return ctx.unauthorized('You must be logged in to view documents');
     }
 
+    // Ensure filters is an object
+    const existingFilters = ctx.query?.filters || {};
+    
     ctx.query = {
       ...ctx.query,
       filters: {
-        ...(ctx.query.filters || {}),
+        ...(typeof existingFilters === 'object' && existingFilters !== null ? existingFilters : {}),
         user: user.id
       }
     };
