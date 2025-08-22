@@ -15,7 +15,7 @@ export default factories.createCoreController('api::document-upload.document-upl
     ctx.query = {
       ...ctx.query,
       filters: {
-        ...ctx.query.filters,
+        ...(ctx.query.filters || {}),
         user: user.id
       }
     };
