@@ -115,7 +115,7 @@ const PerformanceScore: React.FC = () => {
         key={category}
         sx={{
           position: 'relative',
-          height: 60,
+          height: 45,
           cursor: 'pointer',
           opacity: selectedCategories.includes(category) ? 1 : 0.5,
         }}
@@ -126,7 +126,7 @@ const PerformanceScore: React.FC = () => {
           variant="determinate"
           value={score}
           sx={{
-            height: 40,
+            height: 32,
             borderRadius: 8,
             bgcolor: `${categoryColors[category]}66`,
             '& .MuiLinearProgress-bar': {
@@ -146,8 +146,8 @@ const PerformanceScore: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             width: '100%',
-            height: '40px',
-            padding: '0 16px',
+            height: '32px',
+            padding: '0 12px',
           }}
         >
           {/* Icon */}
@@ -209,23 +209,23 @@ const PerformanceScore: React.FC = () => {
         </Box>
       </Box>
 
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={8}>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
           {/* Progress Bars */}
-          <Stack spacing={1}>
+          <Stack spacing={0.5}>
             {editingCategories ? (
               // Show all categories when editing
               allCategories.map(renderCategoryItem)
             ) : (
               // Show only selected categories when not editing
               Object.entries(sortedScores).map(([category, score]) => (
-                <Box key={category} sx={{ position: 'relative', height: 60 }}>
+                <Box key={category} sx={{ position: 'relative', height: 45 }}>
                   {/* Progress Bar */}
                   <LinearProgress
                     variant="determinate"
                     value={score}
                     sx={{
-                      height: 40,
+                      height: 32,
                       borderRadius: 8,
                       bgcolor: `${categoryColors[category as CategoryEnum]}66`,
                       '& .MuiLinearProgress-bar': {
@@ -241,7 +241,7 @@ const PerformanceScore: React.FC = () => {
                       top: 0,
                       left: 0,
                       width: '100%',
-                      height: '40px',
+                      height: '32px',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
@@ -253,7 +253,7 @@ const PerformanceScore: React.FC = () => {
                         key={tick}
                         sx={{
                           width: '1px',
-                          height: '40px',
+                          height: '32px',
                           bgcolor: 'rgba(255, 255, 255, 0.1)',
                           visibility: [0, 100].includes(tick) ? 'hidden' : 'visible',
                         }}
@@ -269,8 +269,8 @@ const PerformanceScore: React.FC = () => {
                       display: 'flex',
                       alignItems: 'center',
                       width: '100%',
-                      height: '40px',
-                      padding: '0 16px',
+                      height: '32px',
+                      padding: '0 12px',
                     }}
                   >
                     {/* Icon */}
@@ -300,19 +300,20 @@ const PerformanceScore: React.FC = () => {
           </Stack>
         </Grid>
 
-        <Grid item xs={12} sm={4}>
-          <Stack spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Grid container spacing={2}>
             {/* Overall Score Display */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
-                Overall Score
-              </Typography>
-              <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Box
-                  sx={{
-                    position: 'relative',
-                    width: 120,
-                    height: 120,
+            <Grid item xs={6} md={5}>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
+                  Overall Score
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      width: 100,
+                      height: 100,
                     borderRadius: '50%',
                     background: `conic-gradient(#4CAF50 ${startup.score || 0}%, #e0e0e0 0)`,
                     display: 'flex',
@@ -321,8 +322,8 @@ const PerformanceScore: React.FC = () => {
                     '&::before': {
                       content: '""',
                       position: 'absolute',
-                      width: 100,
-                      height: 100,
+                      width: 80,
+                      height: 80,
                       borderRadius: '50%',
                       background: 'white',
                     },
@@ -332,7 +333,7 @@ const PerformanceScore: React.FC = () => {
                   }}
                 >
                   <Typography
-                    variant="h4"
+                    variant="h5"
                     fontWeight="bold"
                     sx={{
                       position: 'relative',
@@ -364,13 +365,15 @@ const PerformanceScore: React.FC = () => {
                   </Tooltip>
                 </Box>
               </Box>
-            </Box>
+              </Box>
+            </Grid>
 
             {/* Recommended Pattern Section */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
-                Recommended Pattern
-              </Typography>
+            <Grid item xs={6} md={7}>
+              <Box>
+                <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
+                  Recommended Pattern
+                </Typography>
               {loading ? (
                 <Card>
                   <CardContent>
@@ -488,8 +491,9 @@ const PerformanceScore: React.FC = () => {
                   </CardContent>
                 </Card>
               )}
-            </Box>
-          </Stack>
+              </Box>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
     </>

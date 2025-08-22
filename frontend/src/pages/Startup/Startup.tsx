@@ -140,7 +140,7 @@ function Startup() {
     },
     {
       id: 'persona',
-      title: 'User Personas',
+      title: 'Persona',
       description: 'Create detailed personas from interviews',
       icon: Person,
       color: categoryColors.stakeholders,
@@ -217,9 +217,9 @@ function Startup() {
                       }
                     }}
                   />
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
+                  <Typography
+                    variant="body2"
+                    sx={{
                       position: 'relative',
                       width: '100%',
                       textAlign: 'center',
@@ -269,8 +269,8 @@ function Startup() {
                     }}
                   >
                     <CardContent sx={{ flexGrow: 1, pb: { xs: 2, sm: 1 } }}>
-                      <Box 
-                        sx={{ 
+                      <Box
+                        sx={{
                           display: 'flex',
                           gap: 2,
                           mb: { xs: 0, sm: 2 },
@@ -334,7 +334,7 @@ function Startup() {
                             display: { xs: 'flex', sm: 'none' },
                             bgcolor: step.completed ? step.color : 'action.hover',
                             color: step.completed ? 'white' : 'inherit',
-                            '&:hover': { 
+                            '&:hover': {
                               bgcolor: step.completed ? step.color : 'action.selected',
                               opacity: step.completed ? 0.9 : 1,
                             },
