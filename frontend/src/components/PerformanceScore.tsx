@@ -173,6 +173,7 @@ const PerformanceScore: React.FC = () => {
                   onClick={() => navigate('/explore')}
                   sx={{
                     bgcolor: categoryColors[lowestCategory[0] as CategoryEnum],
+                    color: 'white',
                     '&:hover': {
                       bgcolor: categoryColors[lowestCategory[0] as CategoryEnum],
                       filter: 'brightness(0.9)',
