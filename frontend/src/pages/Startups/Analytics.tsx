@@ -128,7 +128,7 @@ const PatternInteractionListItem: React.FC<PatternInteractionListItemProps> = ({
                         >
                             {interaction.imageUrl ? (
                                 <img
-                                    src={`${import.meta.env.VITE_API_URL}${interaction.imageUrl}`}
+                                    src={interaction.imageUrl}
                                     alt={interaction.patternName}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />

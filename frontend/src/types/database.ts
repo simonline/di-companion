@@ -189,81 +189,71 @@ export type Database = {
       }
       files: {
         Row: {
-          alternative_text: string | null
-          caption: string | null
-          created_at: string
-          created_by_id: string | null
-          document_id: string | null
-          ext: string | null
-          folder_path: string | null
-          formats: Json | null
-          hash: string | null
-          height: number | null
           id: string
-          locale: string | null
-          mime: string | null
-          name: string | null
-          preview_url: string | null
-          provider: string | null
-          provider_metadata: Json | null
-          published_at: string | null
-          size: number | null
+          filename: string
+          original_name: string
+          mime_type: string
+          size_bytes: number
+          bucket: string
+          storage_path: string
+          category: string | null
+          entity_type: string | null
+          entity_id: string | null
+          is_public: boolean
+          signed_url_expires_in: number
+          uploaded_by: string | null
+          metadata: Json
+          created_at: string
           updated_at: string
-          updated_by_id: string | null
-          url: string | null
-          width: number | null
+          deleted_at: string | null
         }
         Insert: {
-          alternative_text?: string | null
-          caption?: string | null
-          created_at?: string
-          created_by_id?: string | null
-          document_id?: string | null
-          ext?: string | null
-          folder_path?: string | null
-          formats?: Json | null
-          hash?: string | null
-          height?: number | null
           id?: string
-          locale?: string | null
-          mime?: string | null
-          name?: string | null
-          preview_url?: string | null
-          provider?: string | null
-          provider_metadata?: Json | null
-          published_at?: string | null
-          size?: number | null
+          filename: string
+          original_name: string
+          mime_type: string
+          size_bytes: number
+          bucket?: string
+          storage_path: string
+          category?: string | null
+          entity_type?: string | null
+          entity_id?: string | null
+          is_public?: boolean
+          signed_url_expires_in?: number
+          uploaded_by?: string | null
+          metadata?: Json
+          created_at?: string
           updated_at?: string
-          updated_by_id?: string | null
-          url?: string | null
-          width?: number | null
+          deleted_at?: string | null
         }
         Update: {
-          alternative_text?: string | null
-          caption?: string | null
-          created_at?: string
-          created_by_id?: string | null
-          document_id?: string | null
-          ext?: string | null
-          folder_path?: string | null
-          formats?: Json | null
-          hash?: string | null
-          height?: number | null
           id?: string
-          locale?: string | null
-          mime?: string | null
-          name?: string | null
-          preview_url?: string | null
-          provider?: string | null
-          provider_metadata?: Json | null
-          published_at?: string | null
-          size?: number | null
+          filename?: string
+          original_name?: string
+          mime_type?: string
+          size_bytes?: number
+          bucket?: string
+          storage_path?: string
+          category?: string | null
+          entity_type?: string | null
+          entity_id?: string | null
+          is_public?: boolean
+          signed_url_expires_in?: number
+          uploaded_by?: string | null
+          metadata?: Json
+          created_at?: string
           updated_at?: string
-          updated_by_id?: string | null
-          url?: string | null
-          width?: number | null
+          deleted_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "files_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       files_folder_lnk: {
         Row: {
@@ -442,6 +432,7 @@ export type Database = {
           created_by_id: string | null
           document_id: string | null
           id: string
+          image_id: string | null
           locale: string | null
           name: string | null
           phases: Json | null
@@ -457,6 +448,7 @@ export type Database = {
           created_by_id?: string | null
           document_id?: string | null
           id?: string
+          image_id?: string | null
           locale?: string | null
           name?: string | null
           phases?: Json | null
@@ -472,6 +464,7 @@ export type Database = {
           created_by_id?: string | null
           document_id?: string | null
           id?: string
+          image_id?: string | null
           locale?: string | null
           name?: string | null
           phases?: Json | null
@@ -529,6 +522,7 @@ export type Database = {
           description: string | null
           document_id: string | null
           id: string
+          image_id: string | null
           locale: string | null
           name: string | null
           pattern_id: string | null
@@ -545,6 +539,7 @@ export type Database = {
           description?: string | null
           document_id?: string | null
           id?: string
+          image_id?: string | null
           locale?: string | null
           name?: string | null
           pattern_id?: string | null
@@ -561,6 +556,7 @@ export type Database = {
           description?: string | null
           document_id?: string | null
           id?: string
+          image_id?: string | null
           locale?: string | null
           name?: string | null
           pattern_id?: string | null
@@ -676,6 +672,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_id: string | null
           bio: string | null
           created_at: string | null
           family_name: string | null
@@ -694,6 +691,7 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          avatar_id?: string | null
           bio?: string | null
           created_at?: string | null
           family_name?: string | null
@@ -712,6 +710,7 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          avatar_id?: string | null
           bio?: string | null
           created_at?: string | null
           family_name?: string | null
@@ -1322,6 +1321,7 @@ export type Database = {
           is_prototype_validated: boolean | null
           is_target_group_defined: boolean | null
           locale: string | null
+          logo_id: string | null
           name: string | null
           phase: string | null
           product_type: string | null
@@ -1351,6 +1351,7 @@ export type Database = {
           is_prototype_validated?: boolean | null
           is_target_group_defined?: boolean | null
           locale?: string | null
+          logo_id?: string | null
           name?: string | null
           phase?: string | null
           product_type?: string | null
@@ -1380,6 +1381,7 @@ export type Database = {
           is_prototype_validated?: boolean | null
           is_target_group_defined?: boolean | null
           locale?: string | null
+          logo_id?: string | null
           name?: string | null
           phase?: string | null
           product_type?: string | null
@@ -1987,8 +1989,112 @@ export type Database = {
           },
         ]
       }
+      file_migrations: {
+        Row: {
+          id: number
+          strapi_file_id: number
+          new_file_id: string | null
+          original_path: string
+          new_s3_key: string | null
+          migration_status: string
+          error_message: string | null
+          migrated_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          strapi_file_id: number
+          new_file_id?: string | null
+          original_path: string
+          new_s3_key?: string | null
+          migration_status?: string
+          error_message?: string | null
+          migrated_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          strapi_file_id?: number
+          new_file_id?: string | null
+          original_path?: string
+          new_s3_key?: string | null
+          migration_status?: string
+          error_message?: string | null
+          migrated_at?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_migrations_new_file_id_fkey"
+            columns: ["new_file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
+      active_files: {
+        Row: {
+          id: string
+          filename: string
+          original_name: string
+          mime_type: string
+          size_bytes: number
+          bucket: string
+          storage_path: string
+          category: string | null
+          entity_type: string | null
+          entity_id: string | null
+          is_public: boolean
+          signed_url_expires_in: number
+          uploaded_by: string | null
+          metadata: Json
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          filename?: string
+          original_name?: string
+          mime_type?: string
+          size_bytes?: number
+          bucket?: string
+          storage_path?: string
+          category?: string | null
+          entity_type?: string | null
+          entity_id?: string | null
+          is_public?: boolean
+          signed_url_expires_in?: number
+          uploaded_by?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          filename?: string
+          original_name?: string
+          mime_type?: string
+          size_bytes?: number
+          bucket?: string
+          storage_path?: string
+          category?: string | null
+          entity_type?: string | null
+          entity_id?: string | null
+          is_public?: boolean
+          signed_url_expires_in?: number
+          uploaded_by?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: []
+      }
       _up_users_staging: {
         Row: {
           bio: string | null

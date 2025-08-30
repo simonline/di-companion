@@ -312,9 +312,9 @@ const User: React.FC = () => {
                     },
                   }}
                 >
-                  {recommendedPatterns[0].image ? (
+                  {recommendedPatterns[0].image?.url ? (
                     <img
-                      src={`${import.meta.env.VITE_API_URL}${recommendedPatterns[0].image.url}`}
+                      src={recommendedPatterns[0].image.url}
                       alt={recommendedPatterns[0].name}
                     />
                   ) : (

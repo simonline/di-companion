@@ -7,7 +7,7 @@ load_dotenv()
 class Settings:
     PROJECT_NAME: str = "DI Companion Chat API"
     VERSION: str = "1.0.0"
-    API_V1_STR: str = "/api/v1"
+    API_V1_STR: str = "/api"
     
     # Server config
     HOST: str = os.getenv("HOST", "0.0.0.0")

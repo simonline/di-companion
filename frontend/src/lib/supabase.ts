@@ -48,6 +48,39 @@ export function handleSupabaseError(error: any): string {
   return 'An unexpected error occurred';
 }
 
+// Note: These functions are deprecated in favor of direct foreign key relationships
+// They are kept for backward compatibility with existing code that may still use them
+
+// Generic helper to fetch files for any entity (deprecated)
+export async function getEntityFiles(entityType: string, entityId: string | number) {
+  const { data, error } = await supabase
+    .from('files')
+    .select('*')
+    .eq('entity_type', entityType)
+    .eq('entity_id', String(entityId))
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true });
+  
+  if (error) {
+    console.error(`Error fetching ${entityType} files:`, error);
+    return [];
+  }
+  
+  // Transform to include full URL
+  return (data || []).map(file => ({
+    ...file,
+    url: file.is_public 
+      ? `https://u456678.your-storagebox.de/${file.bucket}/${file.storage_path}`
+      : `/api/files/${file.id}/signed-url` // Frontend will need to fetch this
+  }));
+}
+
+// Helper to get first image URL for an entity (deprecated)
+export async function getEntityImageUrl(entityType: string, entityId: string | number): Promise<string | null> {
+  const files = await getEntityFiles(entityType, entityId);
+  return files.length > 0 ? files[0].url : null;
+}
+
 import type {
   CreateStartup,
   CreateStartupPattern,
@@ -166,24 +199,43 @@ export async function supabaseRegister(userData: UserRegistration) {
 
   if (profileError) throw new Error(handleSupabaseError(profileError));
 
-  // Handle avatar upload if provided
+  // Handle avatar upload with new file system if provided
   if (userData.avatar && authData.user) {
     const fileExt = userData.avatar.name.split('.').pop();
-    const fileName = `${authData.user.id}/avatar.${fileExt}`;
+    const fileName = `avatar_${authData.user.id}.${fileExt}`;
+    const storagePath = `profiles/${authData.user.id}/${fileName}`;
 
+    // Upload to S3/storage
     const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(fileName, userData.avatar, { upsert: true });
+      .upload(storagePath, userData.avatar, { upsert: true });
 
     if (!uploadError) {
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
+      // Create file record
+      const { data: fileRecord, error: fileError } = await supabase
+        .from('files')
+        .insert({
+          filename: fileName,
+          original_name: userData.avatar.name,
+          mime_type: userData.avatar.type,
+          size_bytes: userData.avatar.size,
+          bucket: 'avatars',
+          storage_path: storagePath,
+          is_public: true,
+          entity_type: 'profile',
+          entity_id: authData.user.id,
+          uploaded_by: authData.user.id,
+        })
+        .select()
+        .single();
 
-      await supabase
-        .from('profiles')
-        .update({ avatar_url: urlData.publicUrl })
-        .eq('id', authData.user.id);
+      if (!fileError && fileRecord) {
+        // Update profile with avatar_id
+        await supabase
+          .from('profiles')
+          .update({ avatar_id: fileRecord.id })
+          .eq('id', authData.user.id);
+      }
     }
   }
 
@@ -212,11 +264,14 @@ export async function supabaseMe() {
       throw new Error('Not authenticated');
     }
 
-    // Try to get user profile, but handle case where profiles table doesn't exist
+    // Try to get user profile with avatar file joined
     console.log('[supabaseMe] Fetching profile for user:', authUser.id);
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('*')
+      .select(`
+        *,
+        avatar:files!profiles_avatar_id_fkey(*)
+      `)
       .eq('id', authUser.id)
       .single();
 
@@ -232,12 +287,16 @@ export async function supabaseMe() {
           given_name: authUser.user_metadata?.given_name || '',
           family_name: authUser.user_metadata?.family_name || '',
           startups: [],
+          avatar_url: undefined,
         };
       }
       throw new Error(handleSupabaseError(profileError));
     }
 
     console.log('[supabaseMe] Profile fetched successfully');
+
+    // Generate avatar URL from file record
+    const avatarUrl = profile.avatar ? getFileUrl(profile.avatar) : undefined;
 
     // Get user's startups
     console.log('[supabaseMe] Fetching startups for user:', authUser.id);
@@ -254,9 +313,10 @@ export async function supabaseMe() {
     const startups = startupLinks?.map((link: any) => link.startup).filter(Boolean) || [];
     console.log('[supabaseMe] Found', startups.length, 'startups');
 
-    // Return the profile directly with startups
+    // Return the profile with startups and avatar_url for backward compatibility
     return {
       ...profile,
+      avatar_url: avatarUrl, // Add for backward compatibility
       startups,
     };
   } catch (error) {
@@ -272,29 +332,49 @@ export async function supabaseLogout() {
 
 export async function supabaseUpdateUser(updateUser: UpdateUser) {
   const { id, avatar, ...updateData } = updateUser;
-  let avatarUrl;
+  let avatarId;
 
-  // Handle avatar upload if provided
+  // Handle avatar upload with new file system if provided
   if (avatar) {
     const fileExt = avatar.name.split('.').pop();
-    const fileName = `${id}/avatar.${fileExt}`;
+    const fileName = `avatar_${id}.${fileExt}`;
+    const storagePath = `profiles/${id}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(fileName, avatar, { upsert: true });
+      .upload(storagePath, avatar, { upsert: true });
 
     if (uploadError) throw new Error(handleSupabaseError(uploadError));
 
-    const { data: urlData } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(fileName);
+    // Create or update file record
+    const { data: fileRecord, error: fileError } = await supabase
+      .from('files')
+      .upsert({
+        filename: fileName,
+        original_name: avatar.name,
+        mime_type: avatar.type,
+        size_bytes: avatar.size,
+        bucket: 'avatars',
+        storage_path: storagePath,
+        is_public: true,
+        entity_type: 'profile',
+        entity_id: id,
+        uploaded_by: id,
+      }, {
+        onConflict: 'entity_type,entity_id',
+        ignoreDuplicates: false,
+      })
+      .select()
+      .single();
 
-    avatarUrl = urlData.publicUrl;
+    if (!fileError && fileRecord) {
+      avatarId = fileRecord.id;
+    }
   }
 
   // Prepare update data - fields already match database schema
   const dbUpdate: any = { ...updateData };
-  if (avatarUrl) dbUpdate.avatar_url = avatarUrl;
+  if (avatarId) dbUpdate.avatar_id = avatarId;
 
   const { data, error } = await supabase
     .from('profiles')
@@ -320,6 +400,7 @@ export async function supabaseGetPatterns(category?: CategoryEnum): Promise<Patt
     .from('patterns')
     .select(`
       *,
+      image:files!patterns_image_id_fkey(*),
       relatedPatterns:patterns_related_patterns_lnk!patterns_related_patterns_lnk_ifk(
         related:patterns!inv_pattern_id(*)
       ),
@@ -343,20 +424,25 @@ export async function supabaseGetPatterns(category?: CategoryEnum): Promise<Patt
   if (error) throw new Error(handleSupabaseError(error));
 
   // Transform the data to match the expected format
-  return (data || []).map(pattern => ({
-    id: pattern.id,
-    name: pattern.name,
-    description: pattern.description,
-    relatedPatterns: pattern.relatedPatterns?.map((r: any) => r.related) || [],
-    image: pattern.image_url ? { url: pattern.image_url } : { url: '' },
-    phases: pattern.phases || [],
-    category: pattern.category as CategoryEnum,
-    methods: pattern.methods?.map((m: any) => m.method) || [],
-    survey: pattern.survey?.[0]?.survey || null,
-    subcategory: pattern.subcategory || '',
-    patternId: pattern.pattern_id || '',
-    questions: pattern.questions?.map((q: any) => q.question) || [],
-  }));
+  return (data || []).map(pattern => {
+    // Get image URL from the joined file record using backend endpoint
+    const imageUrl = pattern.image ? getFileUrl(pattern.image) : '';
+
+    return {
+      id: pattern.id,
+      name: pattern.name,
+      description: pattern.description,
+      relatedPatterns: pattern.relatedPatterns?.map((r: any) => r.related) || [],
+      image: { url: imageUrl },
+      phases: pattern.phases || [],
+      category: pattern.category as CategoryEnum,
+      methods: pattern.methods?.map((m: any) => m.method) || [],
+      survey: pattern.survey?.[0]?.survey || null,
+      subcategory: pattern.subcategory || '',
+      patternId: pattern.pattern_id || '',
+      questions: pattern.questions?.map((q: any) => q.question) || [],
+    };
+  });
 }
 
 export async function supabaseGetPattern(id: string): Promise<Pattern> {
@@ -364,6 +450,7 @@ export async function supabaseGetPattern(id: string): Promise<Pattern> {
     .from('patterns')
     .select(`
       *,
+      image:files!patterns_image_id_fkey(*),
       relatedPatterns:patterns_related_patterns_lnk!patterns_related_patterns_lnk_ifk(
         related:patterns!inv_pattern_id(*)
       ),
@@ -382,12 +469,15 @@ export async function supabaseGetPattern(id: string): Promise<Pattern> {
 
   if (error) throw new Error(handleSupabaseError(error));
 
+  // Get image URL from the joined file record using backend endpoint
+  const imageUrl = data.image ? getFileUrl(data.image) : '';
+
   return {
     id: data.id,
     name: data.name,
     description: data.description,
     relatedPatterns: data.relatedPatterns?.map((r: any) => r.related) || [],
-    image: data.image_url ? { url: data.image_url } : { url: '' },
+    image: { url: imageUrl },
     phases: data.phases || [],
     category: data.category as CategoryEnum,
     methods: data.methods?.map((m: any) => m.method) || [],
@@ -554,7 +644,7 @@ export async function supabaseGetStartupPatterns(
     pattern: sp.pattern ? {
       ...sp.pattern,
       id: sp.pattern.id,
-      image: sp.pattern.image_url ? { url: sp.pattern.image_url } : { url: '' },
+      image: { url: '' }, // Image will be in the pattern.image field already
     } : null,
     startup: sp.startup || null,
     createdAt: sp.created_at,
@@ -591,7 +681,7 @@ export async function supabaseCreateStartupPattern(
     pattern: data.pattern ? {
       ...data.pattern,
       id: data.pattern.id,
-      image: data.pattern.image_url ? { url: data.pattern.image_url } : { url: '' },
+      image: { url: '' }, // Image will be in the pattern.image field already
     } : null,
     startup: data.startup || null,
     createdAt: data.created_at,
@@ -625,7 +715,7 @@ export async function supabaseUpdateStartupPattern(
     pattern: data.pattern ? {
       ...data.pattern,
       id: data.pattern.id,
-      image: data.pattern.image_url ? { url: data.pattern.image_url } : { url: '' },
+      image: { url: '' }, // Image will be in the pattern.image field already
     } : null,
     startup: data.startup || null,
     createdAt: data.created_at,
@@ -637,19 +727,213 @@ export async function supabaseUpdateStartupPattern(
 // Due to length constraints, I'll create the remaining functions in a follow-up
 
 
-// Additional helper functions for file/image handling
-export function getAvatarUrl(avatarUrl?: string): string | undefined {
-  if (!avatarUrl) return undefined;
+// File management functions for new S3-based storage
+export interface FileRecord {
+  id: string;
+  filename: string;
+  original_name: string;
+  mime_type: string;
+  size_bytes: number;
+  bucket: string;
+  s3_key: string;
+  s3_url: string;
+  cdn_url?: string;
+  etag?: string;
+  category?: string;
+  entity_type?: string;
+  entity_id?: string;
+  is_public: boolean;
+  signed_url_expires_in?: number;
+  uploaded_by?: string;
+  metadata?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+}
 
-  // If it's already a full URL, return as is
-  if (avatarUrl.startsWith('http')) return avatarUrl;
+export async function supabaseGetFiles(
+  entityType?: string,
+  entityId?: string,
+  category?: string
+): Promise<FileRecord[]> {
+  let query = supabase
+    .from('files')
+    .select('*')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
 
-  // Otherwise, get the public URL from Supabase storage
-  const { data } = supabase.storage
-    .from('avatars')
-    .getPublicUrl(avatarUrl);
+  if (entityType) {
+    query = query.eq('entity_type', entityType);
+  }
+  if (entityId) {
+    query = query.eq('entity_id', entityId);
+  }
+  if (category) {
+    query = query.eq('category', category);
+  }
 
-  return data.publicUrl;
+  const { data, error } = await query;
+  if (error) throw new Error(handleSupabaseError(error));
+
+  return data || [];
+}
+
+export async function supabaseGetFile(fileId: string): Promise<FileRecord | null> {
+  const { data, error } = await supabase
+    .from('files')
+    .select('*')
+    .eq('id', fileId)
+    .is('deleted_at', null)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw new Error(handleSupabaseError(error));
+  }
+
+  return data;
+}
+
+export async function supabaseCreateFileRecord(
+  file: Omit<FileRecord, 'id' | 'created_at' | 'updated_at'>
+): Promise<FileRecord> {
+  const { data: authData } = await supabase.auth.getUser();
+  if (!authData.user) throw new Error('Not authenticated');
+
+  const { data, error } = await supabase
+    .from('files')
+    .insert({
+      ...file,
+      uploaded_by: authData.user.id,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(handleSupabaseError(error));
+  return data;
+}
+
+export async function supabaseUpdateFileRecord(
+  fileId: string,
+  updates: Partial<FileRecord>
+): Promise<FileRecord> {
+  const { data, error } = await supabase
+    .from('files')
+    .update(updates)
+    .eq('id', fileId)
+    .select()
+    .single();
+
+  if (error) throw new Error(handleSupabaseError(error));
+  return data;
+}
+
+export async function supabaseDeleteFile(fileId: string): Promise<void> {
+  // Soft delete
+  const { error } = await supabase
+    .from('files')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', fileId);
+
+  if (error) throw new Error(handleSupabaseError(error));
+}
+
+// Helper function to get image URL from file record
+export function getFileUrl(file: any): string {
+  if (!file) return '';
+  
+  // Always use backend URL for file serving
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+  
+  // Simple direct file serving - backend handles WebDAV auth
+  return `${backendUrl}/api/files/${file.id}`;
+}
+
+// Helper function to get avatar URL - maintained for backward compatibility
+// This handles both old string URLs and new file objects
+export function getAvatarUrl(avatarUrlOrFile?: string | any): string | undefined {
+  if (!avatarUrlOrFile) return undefined;
+  
+  // If it's a string and already a full URL, return as is
+  if (typeof avatarUrlOrFile === 'string') {
+    if (avatarUrlOrFile.startsWith('http')) {
+      return avatarUrlOrFile;
+    }
+    // Legacy support: get from Supabase storage if needed
+    const { data } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(avatarUrlOrFile);
+    return data.publicUrl;
+  }
+  
+  // If it's a file object, use getFileUrl
+  return getFileUrl(avatarUrlOrFile);
+}
+
+// Helper function to update entity image
+export async function updateEntityImage(
+  entityType: 'pattern' | 'method' | 'startup' | 'profile',
+  entityId: string,
+  imageFile: File
+): Promise<string | null> {
+  const fileExt = imageFile.name.split('.').pop();
+  const fileName = `${entityType}_${entityId}.${fileExt}`;
+  const storagePath = `${entityType}s/${entityId}/${fileName}`;
+  const bucket = `${entityType}s`;
+
+  // Upload to storage
+  const { error: uploadError } = await supabase.storage
+    .from(bucket)
+    .upload(storagePath, imageFile, { upsert: true });
+
+  if (uploadError) {
+    console.error(`Error uploading ${entityType} image:`, uploadError);
+    return null;
+  }
+
+  // Create or update file record
+  const { data: fileRecord, error: fileError } = await supabase
+    .from('files')
+    .upsert({
+      filename: fileName,
+      original_name: imageFile.name,
+      mime_type: imageFile.type,
+      size_bytes: imageFile.size,
+      bucket,
+      storage_path: storagePath,
+      is_public: true,
+      entity_type: entityType,
+      entity_id: entityId,
+    }, {
+      onConflict: 'entity_type,entity_id',
+      ignoreDuplicates: false,
+    })
+    .select()
+    .single();
+
+  if (fileError) {
+    console.error(`Error creating file record for ${entityType}:`, fileError);
+    return null;
+  }
+
+  // Update the entity with the new image_id
+  const columnName = entityType === 'startup' ? 'logo_id' : 
+                     entityType === 'profile' ? 'avatar_id' : 
+                     'image_id';
+  
+  const tableName = entityType === 'profile' ? 'profiles' : `${entityType}s`;
+  
+  const { error: updateError } = await supabase
+    .from(tableName)
+    .update({ [columnName]: fileRecord.id })
+    .eq('id', entityId);
+
+  if (updateError) {
+    console.error(`Error updating ${entityType} with image_id:`, updateError);
+    return null;
+  }
+
+  return fileRecord.id;
 }
 
 // Surveys and Questions
@@ -861,7 +1145,8 @@ export async function supabaseCreateStartupMethod(data: CreateStartupMethod): Pr
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  // Handle file uploads
+  // Note: File uploads should now be handled via the new S3-based file system
+  // This is kept for backward compatibility but should be migrated to use the files table
   if (resultFiles && resultFiles.length > 0) {
     const fileUrls = await Promise.all(
       resultFiles.map(async (file) => {
@@ -921,7 +1206,8 @@ export async function supabaseUpdateStartupMethod(data: UpdateStartupMethod): Pr
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  // Handle new file uploads
+  // Note: File uploads should now be handled via the new S3-based file system
+  // This is kept for backward compatibility but should be migrated to use the files table
   if (resultFiles && resultFiles.length > 0) {
     const newFileUrls = await Promise.all(
       resultFiles.map(async (file) => {

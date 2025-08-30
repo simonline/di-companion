@@ -85,9 +85,9 @@ const PatternListItem: React.FC<{ startupPattern: StartupPattern }> = ({ startup
                   color: categoryColors[pattern.category],
                 }}
               >
-                {pattern.image ? (
+                {pattern.image?.url ? (
                   <img
-                    src={`${import.meta.env.VITE_API_URL}${pattern.image.url}`}
+                    src={pattern.image.url}
                     alt={pattern.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />

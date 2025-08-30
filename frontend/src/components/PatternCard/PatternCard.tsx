@@ -414,8 +414,8 @@ Make your response actionable and easy to follow.`;
           },
         }}
       >
-        {pattern.image ? (
-          <img src={`${import.meta.env.VITE_API_URL}${pattern.image.url}`} alt={''} />
+        {pattern.image?.url ? (
+          <img src={pattern.image.url} alt={''} />
         ) : (
           <Box
             sx={{
