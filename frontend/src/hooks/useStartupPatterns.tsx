@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { strapiGetStartupPatterns } from '@/lib/strapi';
-import type { StartupPattern } from '@/types/strapi';
+import { supabaseGetStartupPatterns } from '@/lib/supabase';
+import type { StartupPattern } from '@/types/supabase';
 
 interface UseStartupPatterns {
   startupPatterns: StartupPattern[] | null;
@@ -27,7 +27,7 @@ export default function useStartupPatterns(): UseStartupPatternsReturn {
   const fetchStartupPatterns = useCallback(
     async (startupDocumentId: string, patternDocumentId?: string) => {
       try {
-        const startupPatterns = await strapiGetStartupPatterns(
+        const startupPatterns = await supabaseGetStartupPatterns(
           startupDocumentId,
           patternDocumentId,
         );

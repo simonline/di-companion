@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Meta from '@/components/Meta';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import Header from '@/sections/Header';
-import { strapiForgotPassword, strapiResetPassword } from '@/lib/strapi';
+import { supabaseForgotPassword, supabaseResetPassword } from '@/lib/supabase';
 
 interface ResetPasswordFormValues {
   email: string;
@@ -64,7 +64,7 @@ const ResetPassword: React.FC = () => {
         }
 
         console.log('Attempting to reset password with code:', code);
-        await strapiResetPassword(
+        await supabaseResetPassword(
           code,
           values.password!,
           values.confirmPassword!
@@ -77,7 +77,7 @@ const ResetPassword: React.FC = () => {
       } else {
         // Request password reset
         console.log('Attempting to send reset email to:', values.email);
-        await strapiForgotPassword(values.email);
+        await supabaseForgotPassword(values.email);
 
         setSuccess('If an account exists with this email, you will receive a password reset link.');
       }

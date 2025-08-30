@@ -18,7 +18,7 @@ import { useDropzone } from 'react-dropzone';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useAuthContext } from '@/hooks/useAuth';
 import { OnboardingStepProps } from '../OnboardingFlow';
-import { getAvatarUrl } from '@/lib/strapi';
+import { getAvatarUrl } from '@/lib/supabase';
 
 interface ProfileFormValues {
   email: string;

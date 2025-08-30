@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { strapiGetUserQuestions } from '@/lib/strapi';
-import type { UserQuestion } from '@/types/strapi';
+import { supabaseGetUserQuestions } from '@/lib/supabase';
+import type { UserQuestion } from '@/types/supabase';
 
 interface UseUserQuestions {
     userQuestions: UserQuestion[] | null;
@@ -36,7 +36,7 @@ export default function useUserQuestions(): UseUserQuestionsReturn {
     const fetchUserQuestions = useCallback(
         async (startupDocumentId?: string, userDocumentId?: string, patternDocumentId?: string) => {
             try {
-                const userQuestions = await strapiGetUserQuestions(
+                const userQuestions = await supabaseGetUserQuestions(
                     startupDocumentId,
                     userDocumentId,
                     patternDocumentId,

@@ -14,7 +14,7 @@ import useUserQuestion from '@/hooks/useUserQuestion';
 import SurveyField from '@/components/SurveyField';
 import { generateValidationSchema, FormValues } from '@/utils/generateValidationSchema';
 import { generateInitialValues } from '@/utils/generateInitialValues';
-import { Question } from '@/types/strapi';
+import { Question } from '@/types/supabase';
 import { OnboardingStepProps } from '../OnboardingFlow';
 
 const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({

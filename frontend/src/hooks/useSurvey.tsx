@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { strapiGetPattern, strapiGetSurvey, strapiGetSurveyByName } from '@/lib/strapi';
-import type { Survey } from '@/types/strapi';
+import { supabaseGetPattern, supabaseGetSurvey, supabaseGetSurveyByName } from '@/lib/supabase';
+import type { Survey } from '@/types/supabase';
 
 interface UseSurvey {
   survey: Survey | null;
@@ -28,7 +28,7 @@ export default function useSurvey(): UseSurveyReturn {
 
   const fetchSurvey = useCallback(async (documentId: string) => {
     try {
-      const survey = await strapiGetSurvey(documentId);
+      const survey = await supabaseGetSurvey(documentId);
       setState({ survey, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;
@@ -38,11 +38,11 @@ export default function useSurvey(): UseSurveyReturn {
 
   const fetchSurveyByPattern = useCallback(async (patternId: string) => {
     try {
-      const pattern = await strapiGetPattern(patternId);
+      const pattern = await supabaseGetPattern(patternId);
       if (!pattern.survey) {
         throw new Error('Pattern does not have a survey');
       }
-      const survey = await strapiGetSurvey(pattern.survey.documentId);
+      const survey = await supabaseGetSurvey(pattern.survey.documentId);
       setState({ survey, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;
@@ -52,7 +52,7 @@ export default function useSurvey(): UseSurveyReturn {
 
   const fetchSurveyByName = useCallback(async (name: string) => {
     try {
-      const survey = await strapiGetSurveyByName(name);
+      const survey = await supabaseGetSurveyByName(name);
       setState({ survey, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

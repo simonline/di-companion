@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { Pattern, StrapiCollectionResponse, StrapiError } from '@/types/strapi';
+import { Pattern, SupabaseCollectionResponse, SupabaseError } from '@/types/supabase';
 
 interface UseSearchPatternsReturn {
   searchPatterns: (query: string) => Promise<void>;
@@ -79,10 +79,10 @@ export default function useSearchPatterns(): UseSearchPatternsReturn {
             message: errorData.error?.message || 'API request failed',
             ...errorData,
           },
-        } as StrapiError;
+        } as SupabaseError;
       }
 
-      const data = (await response.json()) as StrapiCollectionResponse<Pattern>;
+      const data = (await response.json()) as SupabaseCollectionResponse<Pattern>;
 
       // Only update state if this is still the active request
       if (activeRequestRef.current === abortController) {

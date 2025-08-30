@@ -48,7 +48,6 @@ docker-compose up -d
 # Access the application
 # Frontend: http://localhost:5173
 # Backend API: http://localhost:8000
-# Strapi CMS: http://localhost:1337
 ```
 
 ### Local Development

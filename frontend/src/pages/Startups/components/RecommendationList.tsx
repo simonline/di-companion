@@ -22,7 +22,7 @@ import {
   MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { getRecommendationIcon } from '@/pages/Coach/types';
-import { Recommendation } from '@/types/strapi';
+import { Recommendation } from '@/types/supabase';
 import { format } from 'date-fns';
 
 interface RecommendationListProps {

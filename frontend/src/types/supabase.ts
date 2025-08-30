@@ -63,17 +63,17 @@ export interface User {
   coachees?: Startup[];
 }
 
-export interface StrapiAuthResponse {
+export interface SupabaseAuthResponse {
   jwt: string;
   user: User;
 }
 
-export interface StrapiLoginCredentials {
+export interface SupabaseLoginCredentials {
   identifier: string;
   password: string;
 }
 
-export interface StrapiError {
+export interface SupabaseError {
   data: null;
   error: {
     status: number;
@@ -83,12 +83,12 @@ export interface StrapiError {
   };
 }
 
-export interface StrapiRelated {
+export interface SupabaseRelated {
   documentId: string;
 }
 
-export interface StrapiSetRelated {
-  set: StrapiRelated;
+export interface SupabaseSetRelated {
+  set: SupabaseRelated;
 }
 
 export interface Pattern {
@@ -265,24 +265,24 @@ export interface StartupPattern {
 }
 
 export interface CreateStartupPattern {
-  startup: StrapiSetRelated;
-  pattern: StrapiSetRelated;
+  startup: SupabaseSetRelated;
+  pattern: SupabaseSetRelated;
   responseType: ResponseTypeEnum;
   response: ResponseEnum;
   appliedAt?: string;
   points?: number;
-  user?: StrapiSetRelated;
+  user?: SupabaseSetRelated;
 }
 
 export interface UpdateStartupPattern {
   documentId: string;
-  startup?: StrapiSetRelated;
-  pattern?: StrapiSetRelated;
+  startup?: SupabaseSetRelated;
+  pattern?: SupabaseSetRelated;
   responseType?: ResponseTypeEnum;
   response?: ResponseEnum;
   appliedAt?: string;
   points?: number;
-  user?: StrapiSetRelated;
+  user?: SupabaseSetRelated;
 }
 
 export interface StartupMethod {
@@ -296,18 +296,18 @@ export interface StartupMethod {
 }
 
 export interface CreateStartupMethod {
-  startup: StrapiSetRelated;
-  pattern: StrapiSetRelated;
-  method: StrapiSetRelated;
+  startup: SupabaseSetRelated;
+  pattern: SupabaseSetRelated;
+  method: SupabaseSetRelated;
   resultFiles: File[];
   resultText: string;
 }
 
 export interface UpdateStartupMethod {
   documentId: string;
-  startup?: StrapiSetRelated;
-  pattern?: StrapiSetRelated;
-  method?: StrapiSetRelated;
+  startup?: SupabaseSetRelated;
+  pattern?: SupabaseSetRelated;
+  method?: SupabaseSetRelated;
   resultFiles?: File[];
   resultText?: string;
 }
@@ -350,8 +350,8 @@ export interface Invitation {
 }
 
 export interface CreateInvitation {
-  startup: StrapiSetRelated;
-  invitedBy: StrapiSetRelated;
+  startup: SupabaseSetRelated;
+  invitedBy: SupabaseSetRelated;
   email: string;
 }
 
@@ -360,11 +360,11 @@ export interface UpdateInvitation {
   invitationStatus?: InvitationStatusEnum;
 }
 
-export interface StrapiSingleResponse<T> {
+export interface SupabaseSingleResponse<T> {
   data: T;
 }
 
-export interface StrapiCollectionResponse<T> {
+export interface SupabaseCollectionResponse<T> {
   data: T[];
   meta?: {
     pagination?: {
@@ -385,16 +385,16 @@ export interface UserQuestion {
 }
 
 export interface CreateUserQuestion {
-  user: StrapiSetRelated;
-  pattern?: StrapiSetRelated;
-  question: StrapiSetRelated;
+  user: SupabaseSetRelated;
+  pattern?: SupabaseSetRelated;
+  question: SupabaseSetRelated;
   answer: string;
 }
 
 export interface UpdateUserQuestion {
   documentId: string;
-  user?: StrapiSetRelated;
-  pattern?: StrapiSetRelated;
-  question?: StrapiSetRelated;
+  user?: SupabaseSetRelated;
+  pattern?: SupabaseSetRelated;
+  question?: SupabaseSetRelated;
   answer?: string;
 }

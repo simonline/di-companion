@@ -1,0 +1,2191 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.4"
+  }
+  public: {
+    Tables: {
+      document_uploads: {
+        Row: {
+          ai_analysis: Json | null
+          analyzed_at: string | null
+          created_at: string
+          created_by_id: string | null
+          description: string | null
+          document_id: string | null
+          duration: string | null
+          id: string
+          insights: Json | null
+          language: string | null
+          locale: string | null
+          metadata: Json | null
+          mode: string | null
+          published_at: string | null
+          status: string | null
+          summary: string | null
+          tags: Json | null
+          title: string | null
+          transcription: string | null
+          type: string | null
+          updated_at: string
+          updated_by_id: string | null
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          analyzed_at?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          description?: string | null
+          document_id?: string | null
+          duration?: string | null
+          id?: string
+          insights?: Json | null
+          language?: string | null
+          locale?: string | null
+          metadata?: Json | null
+          mode?: string | null
+          published_at?: string | null
+          status?: string | null
+          summary?: string | null
+          tags?: Json | null
+          title?: string | null
+          transcription?: string | null
+          type?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Update: {
+          ai_analysis?: Json | null
+          analyzed_at?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          description?: string | null
+          document_id?: string | null
+          duration?: string | null
+          id?: string
+          insights?: Json | null
+          language?: string | null
+          locale?: string | null
+          metadata?: Json | null
+          mode?: string | null
+          published_at?: string | null
+          status?: string | null
+          summary?: string | null
+          tags?: Json | null
+          title?: string | null
+          transcription?: string | null
+          type?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Relationships: []
+      }
+      document_uploads_startup_lnk: {
+        Row: {
+          document_upload_id: string | null
+          id: string
+          startup_id: string | null
+        }
+        Insert: {
+          document_upload_id?: string | null
+          id?: string
+          startup_id?: string | null
+        }
+        Update: {
+          document_upload_id?: string | null
+          id?: string
+          startup_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_uploads_startup_lnk_fk"
+            columns: ["document_upload_id"]
+            isOneToOne: false
+            referencedRelation: "document_uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_uploads_startup_lnk_ifk"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_uploads_user_lnk: {
+        Row: {
+          document_upload_id: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          document_upload_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          document_upload_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_uploads_user_lnk_fk"
+            columns: ["document_upload_id"]
+            isOneToOne: false
+            referencedRelation: "document_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exercises: {
+        Row: {
+          created_at: string
+          created_by_id: string | null
+          description: string | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          name: string | null
+          published_at: string | null
+          updated_at: string
+          updated_by_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by_id?: string | null
+          description?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          name?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by_id?: string | null
+          description?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          name?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Relationships: []
+      }
+      files: {
+        Row: {
+          alternative_text: string | null
+          caption: string | null
+          created_at: string
+          created_by_id: string | null
+          document_id: string | null
+          ext: string | null
+          folder_path: string | null
+          formats: Json | null
+          hash: string | null
+          height: number | null
+          id: string
+          locale: string | null
+          mime: string | null
+          name: string | null
+          preview_url: string | null
+          provider: string | null
+          provider_metadata: Json | null
+          published_at: string | null
+          size: number | null
+          updated_at: string
+          updated_by_id: string | null
+          url: string | null
+          width: number | null
+        }
+        Insert: {
+          alternative_text?: string | null
+          caption?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          ext?: string | null
+          folder_path?: string | null
+          formats?: Json | null
+          hash?: string | null
+          height?: number | null
+          id?: string
+          locale?: string | null
+          mime?: string | null
+          name?: string | null
+          preview_url?: string | null
+          provider?: string | null
+          provider_metadata?: Json | null
+          published_at?: string | null
+          size?: number | null
+          updated_at?: string
+          updated_by_id?: string | null
+          url?: string | null
+          width?: number | null
+        }
+        Update: {
+          alternative_text?: string | null
+          caption?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          ext?: string | null
+          folder_path?: string | null
+          formats?: Json | null
+          hash?: string | null
+          height?: number | null
+          id?: string
+          locale?: string | null
+          mime?: string | null
+          name?: string | null
+          preview_url?: string | null
+          provider?: string | null
+          provider_metadata?: Json | null
+          published_at?: string | null
+          size?: number | null
+          updated_at?: string
+          updated_by_id?: string | null
+          url?: string | null
+          width?: number | null
+        }
+        Relationships: []
+      }
+      files_folder_lnk: {
+        Row: {
+          file_id: string | null
+          file_ord: number | null
+          folder_id: string | null
+          id: string
+        }
+        Insert: {
+          file_id?: string | null
+          file_ord?: number | null
+          folder_id?: string | null
+          id?: string
+        }
+        Update: {
+          file_id?: string | null
+          file_ord?: number | null
+          folder_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "files_folder_lnk_fk"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "files_folder_lnk_ifk"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "upload_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      files_related_mph: {
+        Row: {
+          field: string | null
+          file_id: string | null
+          id: string
+          order: number | null
+          related_id: string | null
+          related_type: string | null
+        }
+        Insert: {
+          field?: string | null
+          file_id?: string | null
+          id?: string
+          order?: number | null
+          related_id?: string | null
+          related_type?: string | null
+        }
+        Update: {
+          field?: string | null
+          file_id?: string | null
+          id?: string
+          order?: number | null
+          related_id?: string | null
+          related_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "files_related_mph_fk"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      i18n_locale: {
+        Row: {
+          code: string | null
+          created_at: string
+          created_by_id: string | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          name: string | null
+          published_at: string | null
+          updated_at: string
+          updated_by_id: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          name?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          name?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Relationships: []
+      }
+      invitations: {
+        Row: {
+          created_at: string
+          created_by_id: string | null
+          document_id: string | null
+          email: string | null
+          expires_at: string | null
+          id: string
+          invitation_status: string | null
+          locale: string | null
+          published_at: string | null
+          token: string | null
+          updated_at: string
+          updated_by_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          invitation_status?: string | null
+          locale?: string | null
+          published_at?: string | null
+          token?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          invitation_status?: string | null
+          locale?: string | null
+          published_at?: string | null
+          token?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Relationships: []
+      }
+      invitations_invited_by_lnk: {
+        Row: {
+          id: string
+          invitation_id: string | null
+          invitation_ord: number | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          invitation_id?: string | null
+          invitation_ord?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          invitation_id?: string | null
+          invitation_ord?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_invited_by_lnk_fk"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitations_startup_lnk: {
+        Row: {
+          id: string
+          invitation_id: string | null
+          invitation_ord: number | null
+          startup_id: string | null
+        }
+        Insert: {
+          id?: string
+          invitation_id?: string | null
+          invitation_ord?: number | null
+          startup_id?: string | null
+        }
+        Update: {
+          id?: string
+          invitation_id?: string | null
+          invitation_ord?: number | null
+          startup_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_startup_lnk_fk"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_startup_lnk_ifk"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      methods: {
+        Row: {
+          categories: Json | null
+          content: string | null
+          created_at: string
+          created_by_id: string | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          name: string | null
+          phases: Json | null
+          published_at: string | null
+          updated_at: string
+          updated_by_id: string | null
+          url: string | null
+        }
+        Insert: {
+          categories?: Json | null
+          content?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          name?: string | null
+          phases?: Json | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+          url?: string | null
+        }
+        Update: {
+          categories?: Json | null
+          content?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          name?: string | null
+          phases?: Json | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
+      methods_patterns_lnk: {
+        Row: {
+          id: string
+          method_id: string | null
+          method_ord: number | null
+          pattern_id: string | null
+          pattern_ord: number | null
+        }
+        Insert: {
+          id?: string
+          method_id?: string | null
+          method_ord?: number | null
+          pattern_id?: string | null
+          pattern_ord?: number | null
+        }
+        Update: {
+          id?: string
+          method_id?: string | null
+          method_ord?: number | null
+          pattern_id?: string | null
+          pattern_ord?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "methods_patterns_lnk_fk"
+            columns: ["method_id"]
+            isOneToOne: false
+            referencedRelation: "methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "methods_patterns_lnk_ifk"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patterns: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by_id: string | null
+          description: string | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          name: string | null
+          pattern_id: string | null
+          phases: Json | null
+          published_at: string | null
+          subcategory: string | null
+          updated_at: string
+          updated_by_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          description?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          name?: string | null
+          pattern_id?: string | null
+          phases?: Json | null
+          published_at?: string | null
+          subcategory?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          description?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          name?: string | null
+          pattern_id?: string | null
+          phases?: Json | null
+          published_at?: string | null
+          subcategory?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Relationships: []
+      }
+      patterns_exercise_lnk: {
+        Row: {
+          exercise_id: string | null
+          id: string
+          pattern_id: string | null
+        }
+        Insert: {
+          exercise_id?: string | null
+          id?: string
+          pattern_id?: string | null
+        }
+        Update: {
+          exercise_id?: string | null
+          id?: string
+          pattern_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patterns_exercise_lnk_fk"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patterns_exercise_lnk_ifk"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patterns_related_patterns_lnk: {
+        Row: {
+          id: string
+          inv_pattern_id: string | null
+          pattern_id: string | null
+          pattern_ord: number | null
+        }
+        Insert: {
+          id?: string
+          inv_pattern_id?: string | null
+          pattern_id?: string | null
+          pattern_ord?: number | null
+        }
+        Update: {
+          id?: string
+          inv_pattern_id?: string | null
+          pattern_id?: string | null
+          pattern_ord?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patterns_related_patterns_lnk_fk"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patterns_related_patterns_lnk_ifk"
+            columns: ["inv_pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patterns_survey_lnk: {
+        Row: {
+          id: string
+          pattern_id: string | null
+          survey_id: string | null
+        }
+        Insert: {
+          id?: string
+          pattern_id?: string | null
+          survey_id?: string | null
+        }
+        Update: {
+          id?: string
+          pattern_id?: string | null
+          survey_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patterns_survey_lnk_fk"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patterns_survey_lnk_ifk"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          family_name: string | null
+          firstname: string | null
+          gender: string | null
+          given_name: string | null
+          id: string
+          is_coach: boolean | null
+          is_phone_visible: boolean | null
+          lastname: string | null
+          linkedin_profile: string | null
+          locale: string | null
+          phone: string | null
+          position: string | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          family_name?: string | null
+          firstname?: string | null
+          gender?: string | null
+          given_name?: string | null
+          id: string
+          is_coach?: boolean | null
+          is_phone_visible?: boolean | null
+          lastname?: string | null
+          linkedin_profile?: string | null
+          locale?: string | null
+          phone?: string | null
+          position?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          family_name?: string | null
+          firstname?: string | null
+          gender?: string | null
+          given_name?: string | null
+          id?: string
+          is_coach?: boolean | null
+          is_phone_visible?: boolean | null
+          lastname?: string | null
+          linkedin_profile?: string | null
+          locale?: string | null
+          phone?: string | null
+          position?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          categories: Json | null
+          created_at: string
+          created_by_id: string | null
+          document_id: string | null
+          help_text: string | null
+          id: string
+          is_hidden: boolean | null
+          is_required: boolean | null
+          locale: string | null
+          max_length: string | null
+          options: Json | null
+          order: number | null
+          phases: Json | null
+          published_at: string | null
+          question: string | null
+          show_request_coach: boolean | null
+          type: string | null
+          updated_at: string
+          updated_by_id: string | null
+          weight: number | null
+        }
+        Insert: {
+          categories?: Json | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          help_text?: string | null
+          id?: string
+          is_hidden?: boolean | null
+          is_required?: boolean | null
+          locale?: string | null
+          max_length?: string | null
+          options?: Json | null
+          order?: number | null
+          phases?: Json | null
+          published_at?: string | null
+          question?: string | null
+          show_request_coach?: boolean | null
+          type?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+          weight?: number | null
+        }
+        Update: {
+          categories?: Json | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          help_text?: string | null
+          id?: string
+          is_hidden?: boolean | null
+          is_required?: boolean | null
+          locale?: string | null
+          max_length?: string | null
+          options?: Json | null
+          order?: number | null
+          phases?: Json | null
+          published_at?: string | null
+          question?: string | null
+          show_request_coach?: boolean | null
+          type?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      questions_patterns_lnk: {
+        Row: {
+          id: string
+          pattern_id: string | null
+          pattern_ord: number | null
+          question_id: string | null
+          question_ord: number | null
+        }
+        Insert: {
+          id?: string
+          pattern_id?: string | null
+          pattern_ord?: number | null
+          question_id?: string | null
+          question_ord?: number | null
+        }
+        Update: {
+          id?: string
+          pattern_id?: string | null
+          pattern_ord?: number | null
+          question_id?: string | null
+          question_ord?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_patterns_lnk_fk"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_patterns_lnk_ifk"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questions_survey_lnk: {
+        Row: {
+          id: string
+          question_id: string | null
+          question_ord: number | null
+          survey_id: string | null
+        }
+        Insert: {
+          id?: string
+          question_id?: string | null
+          question_ord?: number | null
+          survey_id?: string | null
+        }
+        Update: {
+          id?: string
+          question_id?: string | null
+          question_ord?: number | null
+          survey_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_survey_lnk_fk"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_survey_lnk_ifk"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recommendations: {
+        Row: {
+          comment: string | null
+          created_at: string
+          created_by_id: string | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          published_at: string | null
+          read_at: string | null
+          type: string | null
+          updated_at: string
+          updated_by_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          published_at?: string | null
+          read_at?: string | null
+          type?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          published_at?: string | null
+          read_at?: string | null
+          type?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Relationships: []
+      }
+      recommendations_coach_lnk: {
+        Row: {
+          id: string
+          recommendation_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          recommendation_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          recommendation_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_coach_lnk_fk"
+            columns: ["recommendation_id"]
+            isOneToOne: false
+            referencedRelation: "recommendations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recommendations_patterns_lnk: {
+        Row: {
+          id: string
+          pattern_id: string | null
+          pattern_ord: number | null
+          recommendation_id: string | null
+        }
+        Insert: {
+          id?: string
+          pattern_id?: string | null
+          pattern_ord?: number | null
+          recommendation_id?: string | null
+        }
+        Update: {
+          id?: string
+          pattern_id?: string | null
+          pattern_ord?: number | null
+          recommendation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_patterns_lnk_fk"
+            columns: ["recommendation_id"]
+            isOneToOne: false
+            referencedRelation: "recommendations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendations_patterns_lnk_ifk"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recommendations_startup_lnk: {
+        Row: {
+          id: string
+          recommendation_id: string | null
+          recommendation_ord: number | null
+          startup_id: string | null
+        }
+        Insert: {
+          id?: string
+          recommendation_id?: string | null
+          recommendation_ord?: number | null
+          startup_id?: string | null
+        }
+        Update: {
+          id?: string
+          recommendation_id?: string | null
+          recommendation_ord?: number | null
+          startup_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_startup_lnk_fk"
+            columns: ["recommendation_id"]
+            isOneToOne: false
+            referencedRelation: "recommendations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendations_startup_lnk_ifk"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requests: {
+        Row: {
+          comment: string | null
+          created_at: string
+          created_by_id: string | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          published_at: string | null
+          read_at: string | null
+          updated_at: string
+          updated_by_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          published_at?: string | null
+          read_at?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          published_at?: string | null
+          read_at?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Relationships: []
+      }
+      requests_startup_lnk: {
+        Row: {
+          id: string
+          request_id: string | null
+          request_ord: number | null
+          startup_id: string | null
+        }
+        Insert: {
+          id?: string
+          request_id?: string | null
+          request_ord?: number | null
+          startup_id?: string | null
+        }
+        Update: {
+          id?: string
+          request_id?: string | null
+          request_ord?: number | null
+          startup_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requests_startup_lnk_fk"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requests_startup_lnk_ifk"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_methods: {
+        Row: {
+          created_at: string
+          created_by_id: number | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          published_at: string | null
+          result_text: string | null
+          updated_at: string
+          updated_by_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by_id?: number | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          published_at?: string | null
+          result_text?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by_id?: number | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          published_at?: string | null
+          result_text?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_methods_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_methods_updated_by_id_fk"
+            columns: ["updated_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_methods_method_lnk: {
+        Row: {
+          id: string
+          method_id: string | null
+          startup_method_id: string | null
+        }
+        Insert: {
+          id?: string
+          method_id?: string | null
+          startup_method_id?: string | null
+        }
+        Update: {
+          id?: string
+          method_id?: string | null
+          startup_method_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_methods_method_lnk_fk"
+            columns: ["startup_method_id"]
+            isOneToOne: false
+            referencedRelation: "startup_methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_methods_method_lnk_ifk"
+            columns: ["method_id"]
+            isOneToOne: false
+            referencedRelation: "methods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_methods_pattern_lnk: {
+        Row: {
+          id: string
+          pattern_id: string | null
+          startup_method_id: string | null
+        }
+        Insert: {
+          id?: string
+          pattern_id?: string | null
+          startup_method_id?: string | null
+        }
+        Update: {
+          id?: string
+          pattern_id?: string | null
+          startup_method_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_methods_pattern_lnk_fk"
+            columns: ["startup_method_id"]
+            isOneToOne: false
+            referencedRelation: "startup_methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_methods_pattern_lnk_ifk"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_methods_startup_lnk: {
+        Row: {
+          id: string
+          startup_id: string | null
+          startup_method_id: string | null
+        }
+        Insert: {
+          id?: string
+          startup_id?: string | null
+          startup_method_id?: string | null
+        }
+        Update: {
+          id?: string
+          startup_id?: string | null
+          startup_method_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_methods_startup_lnk_fk"
+            columns: ["startup_method_id"]
+            isOneToOne: false
+            referencedRelation: "startup_methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_methods_startup_lnk_ifk"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_patterns: {
+        Row: {
+          applied_at: string | null
+          created_at: string
+          created_by_id: number | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          points: number | null
+          published_at: string | null
+          response: string | null
+          response_type: string | null
+          updated_at: string
+          updated_by_id: number | null
+        }
+        Insert: {
+          applied_at?: string | null
+          created_at?: string
+          created_by_id?: number | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          points?: number | null
+          published_at?: string | null
+          response?: string | null
+          response_type?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+        }
+        Update: {
+          applied_at?: string | null
+          created_at?: string
+          created_by_id?: number | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          points?: number | null
+          published_at?: string | null
+          response?: string | null
+          response_type?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_patterns_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_patterns_updated_by_id_fk"
+            columns: ["updated_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_patterns_pattern_lnk: {
+        Row: {
+          id: string
+          pattern_id: string | null
+          startup_pattern_id: string | null
+        }
+        Insert: {
+          id?: string
+          pattern_id?: string | null
+          startup_pattern_id?: string | null
+        }
+        Update: {
+          id?: string
+          pattern_id?: string | null
+          startup_pattern_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_patterns_pattern_lnk_fk"
+            columns: ["startup_pattern_id"]
+            isOneToOne: false
+            referencedRelation: "startup_patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_patterns_pattern_lnk_ifk"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_patterns_startup_lnk: {
+        Row: {
+          id: string
+          startup_id: string | null
+          startup_pattern_id: string | null
+        }
+        Insert: {
+          id?: string
+          startup_id?: string | null
+          startup_pattern_id?: string | null
+        }
+        Update: {
+          id?: string
+          startup_id?: string | null
+          startup_pattern_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_patterns_startup_lnk_fk"
+            columns: ["startup_pattern_id"]
+            isOneToOne: false
+            referencedRelation: "startup_patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_patterns_startup_lnk_ifk"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_patterns_user_lnk: {
+        Row: {
+          id: string
+          startup_pattern_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          startup_pattern_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          startup_pattern_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_patterns_user_lnk_fk"
+            columns: ["startup_pattern_id"]
+            isOneToOne: false
+            referencedRelation: "startup_patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_questions: {
+        Row: {
+          answer: Json | null
+          created_at: string
+          created_by_id: number | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          published_at: string | null
+          updated_at: string
+          updated_by_id: number | null
+        }
+        Insert: {
+          answer?: Json | null
+          created_at?: string
+          created_by_id?: number | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+        }
+        Update: {
+          answer?: Json | null
+          created_at?: string
+          created_by_id?: number | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_questions_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_questions_updated_by_id_fk"
+            columns: ["updated_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_questions_pattern_lnk: {
+        Row: {
+          id: string
+          pattern_id: string | null
+          startup_question_id: string | null
+        }
+        Insert: {
+          id?: string
+          pattern_id?: string | null
+          startup_question_id?: string | null
+        }
+        Update: {
+          id?: string
+          pattern_id?: string | null
+          startup_question_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_questions_pattern_lnk_fk"
+            columns: ["startup_question_id"]
+            isOneToOne: false
+            referencedRelation: "startup_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_questions_pattern_lnk_ifk"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_questions_question_lnk: {
+        Row: {
+          id: string
+          question_id: string | null
+          startup_question_id: string | null
+        }
+        Insert: {
+          id?: string
+          question_id?: string | null
+          startup_question_id?: string | null
+        }
+        Update: {
+          id?: string
+          question_id?: string | null
+          startup_question_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_questions_question_lnk_fk"
+            columns: ["startup_question_id"]
+            isOneToOne: false
+            referencedRelation: "startup_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_questions_question_lnk_ifk"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startup_questions_startup_lnk: {
+        Row: {
+          id: string
+          startup_id: string | null
+          startup_question_id: string | null
+        }
+        Insert: {
+          id?: string
+          startup_id?: string | null
+          startup_question_id?: string | null
+        }
+        Update: {
+          id?: string
+          startup_id?: string | null
+          startup_question_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_questions_startup_lnk_fk"
+            columns: ["startup_question_id"]
+            isOneToOne: false
+            referencedRelation: "startup_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_questions_startup_lnk_ifk"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startups: {
+        Row: {
+          background: string | null
+          categories: Json | null
+          created_at: string
+          created_by_id: string | null
+          document_id: string | null
+          founders_count: number | null
+          id: string
+          idea: string | null
+          industry: string | null
+          industry_other: string | null
+          is_mvp_tested: boolean | null
+          is_problem_validated: boolean | null
+          is_prototype_validated: boolean | null
+          is_target_group_defined: boolean | null
+          locale: string | null
+          name: string | null
+          phase: string | null
+          product_type: string | null
+          published_at: string | null
+          qualified_conversations_count: number | null
+          score: number | null
+          scores: Json | null
+          start_date: string | null
+          target_market: string | null
+          updated_at: string
+          updated_by_id: string | null
+        }
+        Insert: {
+          background?: string | null
+          categories?: Json | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          founders_count?: number | null
+          id?: string
+          idea?: string | null
+          industry?: string | null
+          industry_other?: string | null
+          is_mvp_tested?: boolean | null
+          is_problem_validated?: boolean | null
+          is_prototype_validated?: boolean | null
+          is_target_group_defined?: boolean | null
+          locale?: string | null
+          name?: string | null
+          phase?: string | null
+          product_type?: string | null
+          published_at?: string | null
+          qualified_conversations_count?: number | null
+          score?: number | null
+          scores?: Json | null
+          start_date?: string | null
+          target_market?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Update: {
+          background?: string | null
+          categories?: Json | null
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          founders_count?: number | null
+          id?: string
+          idea?: string | null
+          industry?: string | null
+          industry_other?: string | null
+          is_mvp_tested?: boolean | null
+          is_problem_validated?: boolean | null
+          is_prototype_validated?: boolean | null
+          is_target_group_defined?: boolean | null
+          locale?: string | null
+          name?: string | null
+          phase?: string | null
+          product_type?: string | null
+          published_at?: string | null
+          qualified_conversations_count?: number | null
+          score?: number | null
+          scores?: Json | null
+          start_date?: string | null
+          target_market?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Relationships: []
+      }
+      startups_coach_lnk: {
+        Row: {
+          id: string
+          startup_id: string | null
+          startup_ord: number | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          startup_id?: string | null
+          startup_ord?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          startup_id?: string | null
+          startup_ord?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startups_coach_lnk_fk"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      startups_users_lnk: {
+        Row: {
+          id: string
+          startup_id: string | null
+          startup_ord: number | null
+          user_id: string | null
+          user_ord: number | null
+        }
+        Insert: {
+          id?: string
+          startup_id?: string | null
+          startup_ord?: number | null
+          user_id?: string | null
+          user_ord?: number | null
+        }
+        Update: {
+          id?: string
+          startup_id?: string | null
+          startup_ord?: number | null
+          user_id?: string | null
+          user_ord?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startups_users_lnk_fk"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surveys: {
+        Row: {
+          created_at: string
+          created_by_id: string | null
+          description: string | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          name: string | null
+          published_at: string | null
+          updated_at: string
+          updated_by_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by_id?: string | null
+          description?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          name?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by_id?: string | null
+          description?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          name?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Relationships: []
+      }
+      upload_folders: {
+        Row: {
+          created_at: string
+          created_by_id: string | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          name: string | null
+          path: string | null
+          path_id: string | null
+          published_at: string | null
+          updated_at: string
+          updated_by_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          name?: string | null
+          path?: string | null
+          path_id?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          name?: string | null
+          path?: string | null
+          path_id?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Relationships: []
+      }
+      upload_folders_parent_lnk: {
+        Row: {
+          folder_id: string | null
+          folder_ord: number | null
+          id: string
+          inv_folder_id: string | null
+        }
+        Insert: {
+          folder_id?: string | null
+          folder_ord?: number | null
+          id?: string
+          inv_folder_id?: string | null
+        }
+        Update: {
+          folder_id?: string | null
+          folder_ord?: number | null
+          id?: string
+          inv_folder_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upload_folders_parent_lnk_fk"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "upload_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upload_folders_parent_lnk_ifk"
+            columns: ["inv_folder_id"]
+            isOneToOne: false
+            referencedRelation: "upload_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_migrations: {
+        Row: {
+          auth_user_id: string
+          created_at: string | null
+          legacy_up_user_id: number
+        }
+        Insert: {
+          auth_user_id: string
+          created_at?: string | null
+          legacy_up_user_id: number
+        }
+        Update: {
+          auth_user_id?: string
+          created_at?: string | null
+          legacy_up_user_id?: number
+        }
+        Relationships: []
+      }
+      user_questions: {
+        Row: {
+          answer: Json | null
+          created_at: string
+          created_by_id: number | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          published_at: string | null
+          updated_at: string
+          updated_by_id: number | null
+        }
+        Insert: {
+          answer?: Json | null
+          created_at?: string
+          created_by_id?: number | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+        }
+        Update: {
+          answer?: Json | null
+          created_at?: string
+          created_by_id?: number | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_questions_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_questions_updated_by_id_fk"
+            columns: ["updated_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_questions_pattern_lnk: {
+        Row: {
+          id: string
+          pattern_id: string | null
+          user_question_id: string | null
+        }
+        Insert: {
+          id?: string
+          pattern_id?: string | null
+          user_question_id?: string | null
+        }
+        Update: {
+          id?: string
+          pattern_id?: string | null
+          user_question_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_questions_pattern_lnk_fk"
+            columns: ["user_question_id"]
+            isOneToOne: false
+            referencedRelation: "user_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_questions_pattern_lnk_ifk"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_questions_question_lnk: {
+        Row: {
+          id: string
+          question_id: string | null
+          user_question_id: string | null
+        }
+        Insert: {
+          id?: string
+          question_id?: string | null
+          user_question_id?: string | null
+        }
+        Update: {
+          id?: string
+          question_id?: string | null
+          user_question_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_questions_question_lnk_fk"
+            columns: ["user_question_id"]
+            isOneToOne: false
+            referencedRelation: "user_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_questions_question_lnk_ifk"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_questions_startup_lnk: {
+        Row: {
+          id: string
+          startup_id: string | null
+          user_question_id: string | null
+        }
+        Insert: {
+          id?: string
+          startup_id?: string | null
+          user_question_id?: string | null
+        }
+        Update: {
+          id?: string
+          startup_id?: string | null
+          user_question_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_questions_startup_lnk_fk"
+            columns: ["user_question_id"]
+            isOneToOne: false
+            referencedRelation: "user_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_questions_startup_lnk_ifk"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_questions_user_lnk: {
+        Row: {
+          id: string
+          user_id: string | null
+          user_question_id: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          user_question_id?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          user_question_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_questions_user_lnk_fk"
+            columns: ["user_question_id"]
+            isOneToOne: false
+            referencedRelation: "user_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const

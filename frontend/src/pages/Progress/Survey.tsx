@@ -14,7 +14,7 @@ import { CenteredFlexBox } from '@/components/styled';
 import usePattern from '@/hooks/usePattern';
 import useSurvey from '@/hooks/useSurvey';
 import useUserQuestions from '@/hooks/useUserQuestions';
-import { Question, UserQuestion, ResponseTypeEnum, ResponseEnum } from '@/types/strapi';
+import { Question, UserQuestion, ResponseTypeEnum, ResponseEnum } from '@/types/supabase';
 import useUserQuestion from '@/hooks/useUserQuestion';
 import useStartupPattern from '@/hooks/useStartupPattern';
 import useStartupPatterns from '@/hooks/useStartupPatterns';

@@ -18,7 +18,7 @@ import {
 import ImageIcon from '@mui/icons-material/Image';
 import { Close, Refresh, Check, Help } from '@mui/icons-material';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { type Pattern, ResponseTypeEnum, ResponseEnum } from '@/types/strapi';
+import { type Pattern, ResponseTypeEnum, ResponseEnum } from '@/types/supabase';
 import {
   categoryDisplayNames,
   categoryColors,

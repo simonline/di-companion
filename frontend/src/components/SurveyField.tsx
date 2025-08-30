@@ -18,7 +18,7 @@ import {
   Typography,
 } from '@mui/material';
 import { DragDropContext, Droppable, DroppableProps, Draggable } from 'react-beautiful-dnd';
-import { Question, QuestionType, ScaleOptions, QuestionOption } from '@/types/strapi';
+import { Question, QuestionType, ScaleOptions, QuestionOption } from '@/types/supabase';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import { useAuthContext } from '@/hooks/useAuth';

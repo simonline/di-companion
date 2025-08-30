@@ -1,5 +1,5 @@
-declare module '@strapi/strapi' {
-  namespace Strapi {
+declare module '@supabase/supabase' {
+  namespace Supabase {
     interface Factories {
       createCoreController(uid: string, config?: any): any;
       createCoreRouter(uid: string, config?: any): any;
@@ -46,7 +46,7 @@ declare module '@strapi/strapi' {
       };
     }
 
-    interface StrapiContext {
+    interface SupabaseContext {
       state: {
         user?: any;
       };
@@ -65,22 +65,22 @@ declare module '@strapi/strapi' {
     type EnvFunction = (key: string, defaultValue?: any) => any;
   }
 
-  interface Strapi {
-    factories: Strapi.Factories;
-    plugins: Strapi.Plugins;
-    services: Strapi.Services;
-    entityService: Strapi.EntityService;
-    db: Strapi.Database;
-    env: Strapi.EnvFunction;
+  interface Supabase {
+    factories: Supabase.Factories;
+    plugins: Supabase.Plugins;
+    services: Supabase.Services;
+    entityService: Supabase.EntityService;
+    db: Supabase.Database;
+    env: Supabase.EnvFunction;
   }
 
-  export const factories: Strapi.Factories;
+  export const factories: Supabase.Factories;
 }
 
-// Declare the global strapi variable
+// Declare the global supabase variable
 declare global {
   // eslint-disable-next-line no-var
-  var strapi: import('@strapi/strapi').Strapi;
+  var supabase: import('@supabase/supabase').Supabase;
 }
 
 export {};

@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
 import {
-    strapiGetUserQuestion,
-    strapiFindUserQuestion,
-    strapiCreateUserQuestion,
-    strapiUpdateUserQuestion,
-} from '@/lib/strapi';
-import type { UserQuestion, CreateUserQuestion, UpdateUserQuestion } from '@/types/strapi';
+    supabaseGetUserQuestion,
+    supabaseFindUserQuestion,
+    supabaseCreateUserQuestion,
+    supabaseUpdateUserQuestion,
+} from '@/lib/supabase';
+import type { UserQuestion, CreateUserQuestion, UpdateUserQuestion } from '@/types/supabase';
 
 interface UseUserQuestion {
     userQuestion: UserQuestion | null;
@@ -32,7 +32,7 @@ export default function useUserQuestion(): UseUserQuestionReturn {
     const fetchUserQuestion = useCallback(async (documentId: string) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const userQuestion = await strapiGetUserQuestion(documentId);
+            const userQuestion = await supabaseGetUserQuestion(documentId);
             setState({ userQuestion, loading: false });
         } catch (err: unknown) {
             setState(prev => ({ ...prev, loading: false }));
@@ -44,7 +44,7 @@ export default function useUserQuestion(): UseUserQuestionReturn {
         async (userDocumentId: string, patternDocumentId: string, methodDocumentId: string) => {
             try {
                 setState(prev => ({ ...prev, loading: true }));
-                const userQuestion = await strapiFindUserQuestion(
+                const userQuestion = await supabaseFindUserQuestion(
                     userDocumentId,
                     patternDocumentId,
                     methodDocumentId,
@@ -62,7 +62,7 @@ export default function useUserQuestion(): UseUserQuestionReturn {
         async (createUserQuestion: CreateUserQuestion) => {
             try {
                 setState(prev => ({ ...prev, loading: true }));
-                const userQuestion = await strapiCreateUserQuestion(createUserQuestion);
+                const userQuestion = await supabaseCreateUserQuestion(createUserQuestion);
                 setState({ userQuestion, loading: false });
                 return userQuestion;
             } catch (err: unknown) {
@@ -77,7 +77,7 @@ export default function useUserQuestion(): UseUserQuestionReturn {
         async (updateUserQuestion: UpdateUserQuestion) => {
             try {
                 setState(prev => ({ ...prev, loading: true }));
-                const userQuestion = await strapiUpdateUserQuestion(updateUserQuestion);
+                const userQuestion = await supabaseUpdateUserQuestion(updateUserQuestion);
                 setState({ userQuestion, loading: false });
                 return userQuestion;
             } catch (err: unknown) {

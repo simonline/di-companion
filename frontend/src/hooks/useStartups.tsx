@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { strapiGetStartups } from '@/lib/strapi';
-import type { Startup } from '@/types/strapi';
+import { supabaseGetStartups } from '@/lib/supabase';
+import type { Startup } from '@/types/supabase';
 
 interface UseStartups {
   startups: Startup[] | null;
@@ -27,7 +27,7 @@ export default function useStartups(): UseStartupsReturn {
   const fetchStartups = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, loading: true }));
-      const startups = await strapiGetStartups();
+      const startups = await supabaseGetStartups();
       setState({ startups, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

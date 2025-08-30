@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { strapiGetMethod } from '@/lib/strapi';
-import type { Method } from '@/types/strapi';
+import { supabaseGetMethod } from '@/lib/supabase';
+import type { Method } from '@/types/supabase';
 
 interface UseMethod {
     method: Method | null;
@@ -26,7 +26,7 @@ export default function useMethod(): UseMethodReturn {
 
     const fetchMethod = useCallback(async (documentId: string) => {
         try {
-            const method = await strapiGetMethod(documentId);
+            const method = await supabaseGetMethod(documentId);
             setState({ method, loading: false, error: null });
         } catch (err: unknown) {
             const error = err as Error;

@@ -23,8 +23,8 @@ import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import useRecommendations from '@/hooks/useRecommendations';
 import useRequests from '@/hooks/useRequests';
-import { Recommendation, Startup, Request } from '@/types/strapi';
-import { CreateRecommendation, UpdateRecommendation, strapiGetStartup } from '@/lib/strapi';
+import { Recommendation, Startup, Request } from '@/types/supabase';
+import { CreateRecommendation, UpdateRecommendation, supabaseGetStartup } from '@/lib/supabase';
 import RecommendationForm from './components/RecommendationForm';
 import RecommendationList from './components/RecommendationList';
 import RequestList from './components/RequestList';
@@ -94,7 +94,7 @@ export default function StartupView() {
     if (!startupId) return;
     const fetchStartupDetails = async () => {
       try {
-        const startup = await strapiGetStartup(startupId);
+        const startup = await supabaseGetStartup(startupId);
         setCurrentStartup(startup);
       } catch (err) {
         setNotification({

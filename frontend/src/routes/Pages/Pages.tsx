@@ -23,7 +23,7 @@ function Pages() {
           .filter((route) => route.visibleTo.includes(isCoach ? 'coach' : 'startup'))
           .map(({ path, component: Component, requiresAuth, requiresStartup, agent }) => {
             // Disable AgentLayout for Welcome page and all auth-related pages
-            const authPaths = ['/', '/login', '/logout', '/signup', '/reset-password', '/no-startup'];
+            const authPaths = ['/', '/login', '/logout', '/signup', '/reset-password', '/no-startup', '/auth/callback'];
             const shouldUseAgentLayout = path ? !authPaths.includes(path) : true;
             
             return (

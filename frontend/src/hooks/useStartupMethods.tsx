@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { strapiGetStartupMethods } from '@/lib/strapi';
-import type { StartupMethod } from '@/types/strapi';
+import { supabaseGetStartupMethods } from '@/lib/supabase';
+import type { StartupMethod } from '@/types/supabase';
 
 interface UseStartupMethods {
   startupMethods: StartupMethod[] | null;
@@ -26,7 +26,7 @@ export default function useStartupMethods(): UseStartupMethodsReturn {
 
   const fetchStartupMethods = useCallback(async () => {
     try {
-      const startupMethods = await strapiGetStartupMethods();
+      const startupMethods = await supabaseGetStartupMethods();
       setState({ startupMethods, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

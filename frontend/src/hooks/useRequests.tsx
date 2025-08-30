@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
 import {
-  strapiGetRequests,
-  strapiCreateRequest,
-  strapiUpdateRequest,
-  strapiDeleteRequest,
+  supabaseGetRequests,
+  supabaseCreateRequest,
+  supabaseUpdateRequest,
+  supabaseDeleteRequest,
   CreateRequest,
   UpdateRequest,
-} from '@/lib/strapi';
-import type { Request } from '@/types/strapi';
+} from '@/lib/supabase';
+import type { Request } from '@/types/supabase';
 
 interface UseRequests {
   requests: Request[] | null;
@@ -37,7 +37,7 @@ export default function useRequests(): UseRequestsReturn {
   const fetchRequests = useCallback(async (startupId: string) => {
     try {
       setState((prev) => ({ ...prev, loading: true }));
-      const requests = await strapiGetRequests([startupId]);
+      const requests = await supabaseGetRequests([startupId]);
       setState({ requests, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;
@@ -47,7 +47,7 @@ export default function useRequests(): UseRequestsReturn {
 
   const createRequest = useCallback(async (data: CreateRequest) => {
     try {
-      const newRequest = await strapiCreateRequest(data);
+      const newRequest = await supabaseCreateRequest(data);
       setState((prev) => ({
         ...prev,
         requests: prev.requests ? [...prev.requests, newRequest] : [newRequest],
@@ -62,7 +62,7 @@ export default function useRequests(): UseRequestsReturn {
 
   const updateRequest = useCallback(async (data: UpdateRequest) => {
     try {
-      const updatedRequest = await strapiUpdateRequest(data);
+      const updatedRequest = await supabaseUpdateRequest(data);
       setState((prev) => ({
         ...prev,
         requests:
@@ -80,7 +80,7 @@ export default function useRequests(): UseRequestsReturn {
 
   const deleteRequest = useCallback(async (documentId: string) => {
     try {
-      await strapiDeleteRequest(documentId);
+      await supabaseDeleteRequest(documentId);
       setState((prev) => ({
         ...prev,
         requests: prev.requests?.filter((item) => item.documentId !== documentId) || null,

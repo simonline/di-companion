@@ -22,7 +22,7 @@ import {
   MarkEmailRead as MarkEmailReadIcon,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import { Request } from '@/types/strapi';
+import { Request } from '@/types/supabase';
 
 interface RequestListProps {
   requests: Request[];

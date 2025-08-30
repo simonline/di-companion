@@ -24,7 +24,7 @@ import {
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { CenteredFlexBox } from '@/components/styled';
-import { StartupPattern, ResponseTypeEnum } from '@/types/strapi';
+import { StartupPattern, ResponseTypeEnum } from '@/types/supabase';
 import { categoryColors, categoryDisplayNames, phaseNumbers, PhaseEnum } from '@/utils/constants';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { useNavigate, useLocation } from 'react-router-dom';

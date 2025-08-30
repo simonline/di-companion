@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { strapiGetPatterns } from '@/lib/strapi';
-import type { Pattern } from '@/types/strapi';
+import { supabaseGetPatterns } from '@/lib/supabase';
+import type { Pattern } from '@/types/supabase';
 
 interface UsePatterns {
   patterns: Pattern[] | null;
@@ -26,7 +26,7 @@ export default function usePatterns(): UsePatternsReturn {
 
   const fetchPatterns = useCallback(async () => {
     try {
-      const patterns = await strapiGetPatterns();
+      const patterns = await supabaseGetPatterns();
       setState({ patterns, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

@@ -27,7 +27,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 import useRecommendedPatterns from '@/hooks/useRecommendedPatterns';
 import Header from '@/sections/Header';
 import { categoryColors, CategoryEnum } from '@/utils/constants';
-import { getAvatarUrl } from '@/lib/strapi';
+import { getAvatarUrl } from '@/lib/supabase';
 import { CenteredFlexBox } from '@/components/styled';
 
 interface OnboardingStep {

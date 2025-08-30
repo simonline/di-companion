@@ -1,4 +1,4 @@
-import { Question, QuestionType, UserQuestion } from '@/types/strapi';
+import { Question, QuestionType, UserQuestion } from '@/types/supabase';
 import { FormValues } from './generateValidationSchema';
 
 export const generateInitialValues = (

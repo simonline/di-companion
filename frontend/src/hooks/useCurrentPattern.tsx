@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { type Pattern } from '@/types/strapi';
+import { type Pattern } from '@/types/supabase';
 
 interface CurrentPatternContextType {
     currentPattern: Pattern | null;

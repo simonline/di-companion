@@ -12,7 +12,6 @@ services:
       - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
-      - strapi
     networks:
       - web
 
@@ -30,53 +29,6 @@ services:
     networks:
       - web
       - backend
-
-  postgres:
-    container_name: postgres
-    image: postgres:17
-    restart: always
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: di
-      POSTGRES_USER: di
-      POSTGRES_PASSWORD: aRGeK3d!EZocmhB
-    ports:
-      - "5432:5432"
-    networks:
-      - backend
-
-  strapi:
-    container_name: strapi
-    build: ./strapi
-    restart: unless-stopped
-    env_file: ./strapi/.env
-    environment:
-      DATABASE_CLIENT: postgres
-      DATABASE_HOST: postgres
-      DATABASE_PORT: 5432
-      DATABASE_NAME: di
-      DATABASE_USERNAME: di
-      DATABASE_PASSWORD: aRGeK3d!EZocmhB
-      JWT_SECRET: 53db2b2a8735d19819553d==
-      ADMIN_JWT_SECRET: lfyRXw6SNkjKlbC7VWFGYA==
-      APP_KEYS: UqqG6QtSbhwwdqnimycGPQ==,/BYgWGAtZDuA1qGd/bbK6g==,XaFnxazSHGy+NGeaiWc/7A==,NMJF018HM6Er+UB+PwPw2Q==
-      NODE_ENV: development
-    volumes:
-      - ./strapi/config:/opt/app/config
-      - ./strapi/src:/opt/app/src
-      - ./strapi/package.json:/opt/package.json
-      - ./strapi/yarn.lock:/opt/yarn.lock
-      - ./strapi/.env:/opt/app/.env
-      - ./strapi/public/uploads:/opt/app/public/uploads
-    user: "1000:1000"
-    ports:
-      - "1337:1337"
-    depends_on:
-      - postgres
-    networks:
-      - backend
-      - web
 
 networks:
   web:

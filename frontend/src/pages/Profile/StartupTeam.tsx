@@ -26,13 +26,13 @@ import { CenteredFlexBox } from '@/components/styled';
 import Header from '@/sections/Header';
 import { useAuthContext } from '@/hooks/useAuth';
 import {
-  strapiGetInvitations,
-  strapiCreateInvitation,
-  strapiDeleteInvitation,
-  strapiResendInvitation,
-  strapiGetStartupMembers,
-} from '@/lib/strapi';
-import { Invitation, InvitationStatusEnum, User } from '@/types/strapi';
+  supabaseGetInvitations,
+  supabaseCreateInvitation,
+  supabaseDeleteInvitation,
+  supabaseResendInvitation,
+  supabaseGetStartupMembers,
+} from '@/lib/supabase';
+import { Invitation, InvitationStatusEnum, User } from '@/types/supabase';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -104,8 +104,8 @@ const StartupTeam: React.FC = () => {
     setLoading(true);
     try {
       const [membersData, invitationsData] = await Promise.all([
-        strapiGetStartupMembers(startupId),
-        strapiGetInvitations(startupId),
+        supabaseGetStartupMembers(startupId),
+        supabaseGetInvitations(startupId),
       ]);
 
       setMembers(membersData);
@@ -140,7 +140,7 @@ const StartupTeam: React.FC = () => {
 
     setInvitationLoading(true);
     try {
-      await strapiCreateInvitation({
+      await supabaseCreateInvitation({
         startup: { set: { documentId: startupId } },
         invitedBy: { set: { documentId: user.documentId.toString() } },
         email,
@@ -167,7 +167,7 @@ const StartupTeam: React.FC = () => {
 
   const handleDeleteInvitation = async (documentId: string) => {
     try {
-      await strapiDeleteInvitation(documentId);
+      await supabaseDeleteInvitation(documentId);
       await loadData();
 
       setSnackbar({
@@ -186,7 +186,7 @@ const StartupTeam: React.FC = () => {
 
   const handleResendInvitation = async (documentId: string) => {
     try {
-      await strapiResendInvitation(documentId);
+      await supabaseResendInvitation(documentId);
 
       setSnackbar({
         open: true,

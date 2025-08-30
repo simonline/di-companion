@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { strapiGetQuestions } from '@/lib/strapi';
-import type { Question } from '@/types/strapi';
+import { supabaseGetQuestions } from '@/lib/supabase';
+import type { Question } from '@/types/supabase';
 
 interface UseQuestions {
   questions: Question[] | null;
@@ -26,7 +26,7 @@ export default function useQuestions(): UseQuestionsReturn {
 
   const fetchQuestions = useCallback(async () => {
     try {
-      const questions = await strapiGetQuestions();
+      const questions = await supabaseGetQuestions();
       setState({ questions, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

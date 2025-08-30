@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { CreateRequest } from '@/lib/strapi';
+import { CreateRequest } from '@/lib/supabase';
 
 interface RequestFormProps {
   open: boolean;

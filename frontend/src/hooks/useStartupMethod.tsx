@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import {
-  strapiFindStartupMethod,
-  strapiCreateStartupMethod,
-  strapiUpdateStartupMethod,
-} from '@/lib/strapi';
-import type { StartupMethod, CreateStartupMethod, UpdateStartupMethod } from '@/types/strapi';
+  supabaseFindStartupMethod,
+  supabaseCreateStartupMethod,
+  supabaseUpdateStartupMethod,
+} from '@/lib/supabase';
+import type { StartupMethod, CreateStartupMethod, UpdateStartupMethod } from '@/types/supabase';
 
 interface UseStartupMethod {
   startupMethod: StartupMethod | null;
@@ -32,7 +32,7 @@ export default function useStartupMethod(): UseStartupMethodReturn {
 
   const findPatternMethod = useCallback(async (startupId: string, patternId: string, methodId: string) => {
     try {
-      const startupMethod = await strapiFindStartupMethod(startupId, patternId, methodId);
+      const startupMethod = await supabaseFindStartupMethod(startupId, patternId, methodId);
       setState({ startupMethod, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;
@@ -42,7 +42,7 @@ export default function useStartupMethod(): UseStartupMethodReturn {
 
   const createStartupMethod = useCallback(async (data: CreateStartupMethod) => {
     try {
-      const startupMethod = await strapiCreateStartupMethod(data);
+      const startupMethod = await supabaseCreateStartupMethod(data);
       setState({ startupMethod, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;
@@ -52,7 +52,7 @@ export default function useStartupMethod(): UseStartupMethodReturn {
 
   const updateStartupMethod = useCallback(async (data: UpdateStartupMethod) => {
     try {
-      const startupMethod = await strapiUpdateStartupMethod(data);
+      const startupMethod = await supabaseUpdateStartupMethod(data);
       setState({ startupMethod, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

@@ -26,7 +26,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 import Header from '@/sections/Header';
 import { useDropzone } from 'react-dropzone';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { getAvatarUrl } from '@/lib/strapi';
+import { getAvatarUrl } from '@/lib/supabase';
 
 interface UpdateProfileFormValues {
   email: string;

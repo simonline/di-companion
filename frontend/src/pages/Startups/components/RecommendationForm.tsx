@@ -17,8 +17,8 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { Pattern, Recommendation } from '@/types/strapi';
-import { CreateRecommendation, UpdateRecommendation } from '@/lib/strapi';
+import { Pattern, Recommendation } from '@/types/supabase';
+import { CreateRecommendation, UpdateRecommendation } from '@/lib/supabase';
 import useSearch from '@/hooks/useSearch';
 import { useAuthContext } from '@/hooks/useAuth';
 interface RecommendationFormProps {

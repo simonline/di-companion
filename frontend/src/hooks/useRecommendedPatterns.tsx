@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { strapiGetPatterns, strapiGetStartupPatterns } from '@/lib/strapi';
-import type { Pattern, Startup, StartupPattern } from '@/types/strapi';
+import { supabaseGetPatterns, supabaseGetStartupPatterns } from '@/lib/supabase';
+import type { Pattern, Startup, StartupPattern } from '@/types/supabase';
 import { CategoryEnum } from '@/utils/constants';
 
 interface UsePatterns {
@@ -123,7 +123,7 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
         // Fetch patterns already started/applied by startup
         let usedPatterns: StartupPattern[] = [];
         if (state.startup) {
-          usedPatterns = await strapiGetStartupPatterns(state.startup.documentId);
+          usedPatterns = await supabaseGetStartupPatterns(state.startup.documentId);
         }
 
         // Get used pattern documentIds
@@ -151,7 +151,7 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
           // Fetch available patterns for that category
           console.log('category', category);
           // Fetch patterns based on category filter
-          availablePatterns = await strapiGetPatterns(category);
+          availablePatterns = await supabaseGetPatterns(category);
 
           // Remove patterns already started/applied by startup
           filteredPatterns = availablePatterns.filter(

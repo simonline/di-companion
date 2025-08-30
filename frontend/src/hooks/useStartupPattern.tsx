@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import {
-  strapiGetStartupPattern,
-  strapiCreateStartupPattern,
-  strapiUpdateStartupPattern,
-} from '@/lib/strapi';
-import type { StartupPattern, CreateStartupPattern, UpdateStartupPattern } from '@/types/strapi';
+  supabaseGetStartupPattern,
+  supabaseCreateStartupPattern,
+  supabaseUpdateStartupPattern,
+} from '@/lib/supabase';
+import type { StartupPattern, CreateStartupPattern, UpdateStartupPattern } from '@/types/supabase';
 
 interface UseStartupPattern {
   startupPattern: StartupPattern | null;
@@ -32,7 +32,7 @@ export default function useStartupPattern(): UseStartupPatternReturn {
 
   const fetchStartupPattern = useCallback(async (documentId: string) => {
     try {
-      const startupPattern = await strapiGetStartupPattern(documentId);
+      const startupPattern = await supabaseGetStartupPattern(documentId);
       setState({ startupPattern, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;
@@ -42,7 +42,7 @@ export default function useStartupPattern(): UseStartupPatternReturn {
 
   const createStartupPattern = useCallback(async (createStartupPattern: CreateStartupPattern) => {
     try {
-      const startupPattern = await strapiCreateStartupPattern(createStartupPattern);
+      const startupPattern = await supabaseCreateStartupPattern(createStartupPattern);
       setState({ startupPattern, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;
@@ -52,7 +52,7 @@ export default function useStartupPattern(): UseStartupPatternReturn {
 
   const updateStartupPattern = useCallback(async (updateStartupPattern: UpdateStartupPattern) => {
     try {
-      const startupPattern = await strapiUpdateStartupPattern(updateStartupPattern);
+      const startupPattern = await supabaseUpdateStartupPattern(updateStartupPattern);
       setState({ startupPattern, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
 import {
-  strapiGetRecommendations,
-  strapiCreateRecommendation,
-  strapiUpdateRecommendation,
-  strapiDeleteRecommendation,
+  supabaseGetRecommendations,
+  supabaseCreateRecommendation,
+  supabaseUpdateRecommendation,
+  supabaseDeleteRecommendation,
   CreateRecommendation,
   UpdateRecommendation,
-} from '@/lib/strapi';
-import type { Recommendation } from '@/types/strapi';
+} from '@/lib/supabase';
+import type { Recommendation } from '@/types/supabase';
 
 interface UseRecommendations {
   recommendations: Recommendation[] | null;
@@ -37,7 +37,7 @@ export default function useRecommendations(): UseRecommendationsReturn {
   const fetchRecommendations = useCallback(async (startupId?: string) => {
     try {
       setState((prev) => ({ ...prev, loading: true }));
-      const recommendations = await strapiGetRecommendations(startupId);
+      const recommendations = await supabaseGetRecommendations(startupId);
       setState({ recommendations, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;
@@ -47,7 +47,7 @@ export default function useRecommendations(): UseRecommendationsReturn {
 
   const createRecommendation = useCallback(async (data: CreateRecommendation) => {
     try {
-      const newRecommendation = await strapiCreateRecommendation(data);
+      const newRecommendation = await supabaseCreateRecommendation(data);
       setState((prev) => ({
         ...prev,
         recommendations: prev.recommendations
@@ -64,7 +64,7 @@ export default function useRecommendations(): UseRecommendationsReturn {
 
   const updateRecommendation = useCallback(async (data: UpdateRecommendation) => {
     try {
-      const updatedRecommendation = await strapiUpdateRecommendation(data);
+      const updatedRecommendation = await supabaseUpdateRecommendation(data);
       setState((prev) => ({
         ...prev,
         recommendations:
@@ -82,7 +82,7 @@ export default function useRecommendations(): UseRecommendationsReturn {
 
   const deleteRecommendation = useCallback(async (documentId: string) => {
     try {
-      await strapiDeleteRecommendation(documentId);
+      await supabaseDeleteRecommendation(documentId);
       setState((prev) => ({
         ...prev,
         recommendations:

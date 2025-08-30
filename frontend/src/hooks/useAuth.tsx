@@ -1,16 +1,19 @@
 import { useState, useCallback, useEffect, createContext, useContext, ReactNode } from 'react';
 import {
-  strapiGetStartupPatterns,
-  strapiGetPatterns,
-  strapiGetStartup,
-  strapiMe,
-  strapiLogin,
-  strapiLogout,
-  strapiRegister,
-  strapiCreateStartup,
-  strapiUpdateStartup,
-  strapiUpdateUser,
-} from '@/lib/strapi';
+  supabaseGetStartupPatterns,
+  supabaseGetPatterns,
+  supabaseGetStartup,
+  supabaseMe,
+  supabaseLogin,
+  supabaseLogout,
+  supabaseRegister,
+  supabaseCreateStartup,
+  supabaseUpdateStartup,
+  supabaseUpdateUser,
+  supabaseSendOtp,
+  supabaseVerifyOtp,
+  getSession,
+} from '@/lib/supabase';
 import type {
   CreateStartup,
   Startup,
@@ -20,9 +23,9 @@ import type {
   Pattern,
   UpdateStartup,
   UpdateUser,
-} from '@/types/strapi';
+} from '@/types/supabase';
 import type { CategoryEnum } from '@/utils/constants';
-import { authEvents, isTokenExpired } from '@/lib/axios';
+import { supabase } from '@/lib/supabase';
 import { identifyUser } from '@/analytics/track';
 
 interface AuthState {
@@ -34,6 +37,8 @@ interface AuthState {
 
 interface UseAuthReturn extends AuthState {
   login: (identifier: string, password: string) => Promise<User>;
+  sendOtp: (email: string) => Promise<{ success: boolean; message: string }>;
+  verifyOtp: (email: string, token: string) => Promise<void>;
   register: (data: UserRegistration) => Promise<User>;
   createStartup: (data: CreateStartup) => Promise<Startup>;
   updateStartup: (data: UpdateStartup) => Promise<Startup>;
@@ -42,7 +47,7 @@ interface UseAuthReturn extends AuthState {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   clearError: () => void;
-  checkTokenExpiration: () => boolean;
+  checkTokenExpiration: () => Promise<boolean>;
   refreshData: () => void;
 }
 
@@ -54,70 +59,108 @@ export function useAuth(): UseAuthReturn {
     error: null,
   });
 
-  // Function to check if the JWT token is expired - using the exported function
-  const checkTokenExpiration = useCallback((): boolean => {
-    return isTokenExpired();
+  // Function to check if the Supabase session is expired
+  const checkTokenExpiration = useCallback(async (): Promise<boolean> => {
+    const session = await getSession();
+    if (!session) return true;
+
+    const now = Math.floor(Date.now() / 1000);
+    return session.expires_at ? session.expires_at < now : true;
   }, []);
 
-  // Setup event listener for logout events
+  // Setup event listener for auth state changes
   useEffect(() => {
-    // Listen for logout events
-    const handleLogout = () => {
-      logout().catch(console.error);
-    };
-
-    authEvents.on('logout', handleLogout);
+    // Listen for Supabase auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setStartup(null);
+        }
+      }
+      if (event === 'SIGNED_IN' && session) {
+        console.log('Auth hook: SIGNED_IN event, fetching user data...');
+        // Refresh user data when signed in
+        try {
+          const userData = await supabaseMe();
+          console.log('Auth hook: User data fetched:', userData.email);
+          setUser(userData);
+          if (userData.startups?.length > 0) {
+            const startup = await supabaseGetStartup(userData.startups[0].documentId);
+            setStartup(startup);
+          }
+          setState((prev) => ({ ...prev, loading: false }));
+        } catch (error) {
+          setState((prev) => ({ ...prev, loading: false, error: 'Failed to load user data' }));
+        }
+      }
+    });
 
     // Periodically check token expiration (every minute)
-    const tokenCheckInterval = setInterval(() => {
-      if (checkTokenExpiration() && state.user) {
+    const tokenCheckInterval = setInterval(async () => {
+      const isExpired = await checkTokenExpiration();
+      if (isExpired && state.user) {
         console.log('Token expired, logging out...');
-        authEvents.dispatch('logout');
+        await logout();
       }
     }, 60000);
 
     return () => {
-      // Clean up
-      authEvents.remove('logout', handleLogout);
+      subscription.unsubscribe();
       clearInterval(tokenCheckInterval);
     };
-  });
+  }, [checkTokenExpiration, state.user]);
 
-  // Initialize user/startup from localStorage
+  // Initialize user/startup from Supabase session
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('user');
-      const storedStartup = localStorage.getItem('startup');
+    const initAuth = async () => {
+      setState((prev) => ({ ...prev, loading: true }));
 
-      // Check if token is expired on initial load
-      if (storedUser && checkTokenExpiration()) {
-        console.log('Token expired on initial load, clearing auth state');
-        localStorage.removeItem('user');
-        localStorage.removeItem('startup');
-        localStorage.removeItem('strapi_jwt');
+      try {
+        // Use getSession() first - it's faster and doesn't make a network request
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError || !session) {
+          // No authenticated user, clear state and set loading to false
+          setState((prev) => ({
+            ...prev,
+            user: null,
+            startup: null,
+            loading: false,
+            error: null,
+          }));
+          localStorage.removeItem('user');
+          localStorage.removeItem('startup');
+          return;
+        }
+
+        // User is authenticated, get full user data
+        const userData = await supabaseMe();
+        setUser(userData);
+
+        let startup: Startup | null = null;
+        if (userData.startups?.length > 0) {
+          startup = await supabaseGetStartup(userData.startups[0].documentId);
+        }
+        setStartup(startup);
+        setState((prev) => ({ ...prev, loading: false }));
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        // On error, clear auth state and set loading to false
         setState((prev) => ({
           ...prev,
           user: null,
           startup: null,
           loading: false,
+          error: null, // Don't show error for initial load failures
         }));
-        return;
+        localStorage.removeItem('user');
+        localStorage.removeItem('startup');
       }
+    };
 
-      setState((prev) => ({
-        ...prev,
-        user: storedUser ? JSON.parse(storedUser) : null,
-        startup: storedStartup ? JSON.parse(storedStartup) : null,
-        loading: false,
-      }));
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: 'Failed to restore authentication state',
-      }));
-    }
-  }, [checkTokenExpiration]);
+    initAuth();
+  }, []);
 
   const setUser = useCallback((userData: User | null) => {
     setState((prev) => ({ ...prev, user: userData, error: null }));
@@ -126,7 +169,6 @@ export function useAuth(): UseAuthReturn {
       identifyUser(userData.id.toString());
     } else {
       localStorage.removeItem('user');
-      localStorage.removeItem('strapi_jwt'); // Also remove JWT when clearing user
       identifyUser("");
     }
   }, []);
@@ -148,16 +190,61 @@ export function useAuth(): UseAuthReturn {
     async (identifier: string, password: string): Promise<User> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        await strapiLogin(identifier, password);
-        // JWT token is stored by strapiLogin function
-        const userData = await strapiMe();
+        const { user: userData } = await supabaseLogin(identifier, password);
+        // Session is now handled by Supabase
         setUser(userData);
         let startup: Startup | null = null;
         if (userData.startups?.length > 0) {
-          startup = await strapiGetStartup(userData.startups[0].documentId);
+          startup = await supabaseGetStartup(userData.startups[0].documentId);
         }
         setStartup(startup);
         return userData;
+      } catch (error) {
+        const err = error as Error;
+        setState((prev) => ({
+          ...prev,
+          error: err.message,
+          loading: false,
+        }));
+        throw error;
+      } finally {
+        setState((prev) => ({ ...prev, loading: false }));
+      }
+    },
+    [setUser, setStartup],
+  );
+
+  const sendOtp = useCallback(
+    async (email: string): Promise<{ success: boolean; message: string }> => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+      try {
+        const result = await supabaseSendOtp(email);
+        return result;
+      } catch (error) {
+        const err = error as Error;
+        setState((prev) => ({
+          ...prev,
+          error: err.message,
+          loading: false,
+        }));
+        throw error;
+      } finally {
+        setState((prev) => ({ ...prev, loading: false }));
+      }
+    },
+    [],
+  );
+
+  const verifyOtp = useCallback(
+    async (email: string, token: string): Promise<void> => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+      try {
+        const { user: userData } = await supabaseVerifyOtp(email, token);
+        setUser(userData);
+        if (userData.startups?.length > 0) {
+          const startup = await supabaseGetStartup(userData.startups[0].documentId);
+          setStartup(startup);
+        }
       } catch (error) {
         const err = error as Error;
         setState((prev) => ({
@@ -177,8 +264,8 @@ export function useAuth(): UseAuthReturn {
     async (data: UserRegistration): Promise<User> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const result = await strapiRegister(data);
-        // JWT token is stored by strapiRegister function
+        const result = await supabaseRegister(data);
+        // JWT token is stored by supabaseRegister function
         const userData: User = result.user;
         // setUser(userData);
         return userData;
@@ -201,7 +288,7 @@ export function useAuth(): UseAuthReturn {
     async (data: CreateStartup): Promise<Startup> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const startup = await strapiCreateStartup(data);
+        const startup = await supabaseCreateStartup(data);
         setStartup(startup);
         return startup;
       } catch (error) {
@@ -223,7 +310,7 @@ export function useAuth(): UseAuthReturn {
     async (data: UpdateStartup): Promise<Startup> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const startup = await strapiUpdateStartup(data);
+        const startup = await supabaseUpdateStartup(data);
         setStartup(startup);
         return startup;
       } catch (error) {
@@ -245,7 +332,7 @@ export function useAuth(): UseAuthReturn {
     async (data: UpdateUser): Promise<User> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const updatedUser = await strapiUpdateUser(data);
+        const updatedUser = await supabaseUpdateUser(data);
         console.log('Updated user:', updatedUser);
 
         // Merge the updated user data with existing user data to preserve all properties
@@ -281,7 +368,7 @@ export function useAuth(): UseAuthReturn {
   const logout = useCallback(async (): Promise<void> => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      await strapiLogout();
+      await supabaseLogout();
       setUser(null);
       setStartup(null);
     } catch (error) {
@@ -309,8 +396,8 @@ export function useAuth(): UseAuthReturn {
     let startupPatterns: StartupPattern[] = [];
     let patterns: Pattern[] = [];
     try {
-      startupPatterns = await strapiGetStartupPatterns(currentStartup.documentId);
-      patterns = await strapiGetPatterns();
+      startupPatterns = await supabaseGetStartupPatterns(currentStartup.documentId);
+      patterns = await supabaseGetPatterns();
     } catch (error) {
       setState((prev) => ({
         ...prev,
@@ -389,10 +476,10 @@ export function useAuth(): UseAuthReturn {
   const refreshData = useCallback(async () => {
     console.log('Refreshing data');
     try {
-      const user = await strapiMe();
+      const user = await supabaseMe();
       let startup: Startup | null = null;
       if (user.startups?.length > 0) {
-        startup = await strapiGetStartup(user.startups[0].documentId);
+        startup = await supabaseGetStartup(user.startups[0].documentId);
       }
       console.log(startup);
       setState((prev) => ({ ...prev, user, startup, loading: false }));
@@ -404,6 +491,8 @@ export function useAuth(): UseAuthReturn {
   return {
     ...state,
     login,
+    sendOtp,
+    verifyOtp,
     register,
     createStartup,
     updateStartup,
@@ -426,13 +515,8 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const auth = useAuth();
 
-  useEffect(() => {
-    const token = localStorage.getItem('strapi_jwt');
-    if (token && !isTokenExpired()) {
-      auth.refreshData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Remove auth from dependencies to prevent infinite loop
+  // Remove the extra session check - the useAuth hook already handles this
+  // in its initialization useEffect
 
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 }

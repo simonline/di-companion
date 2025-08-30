@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography, List, ListItem, ListItemText, Paper, Fade, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import type { Pattern } from '@/types/strapi';
+import type { Pattern } from '@/types/supabase';
 import { categoryColors, CategoryEnum } from '@/utils/constants';
 
 interface SearchResultsProps {

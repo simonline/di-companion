@@ -4,7 +4,7 @@ import { Typography, Button, Paper, Box, CircularProgress, Alert } from '@mui/ma
 import { CenteredFlexBox } from '@/components/styled';
 import Header from '@/sections/Header';
 import { useAuthContext } from '@/hooks/useAuth';
-import { strapiAcceptInvitation } from '@/lib/strapi';
+import { supabaseAcceptInvitation } from '@/lib/supabase';
 
 const AcceptInvitation: React.FC = () => {
   const navigate = useNavigate();
@@ -41,8 +41,7 @@ const AcceptInvitation: React.FC = () => {
 
     setLoading(true);
     try {
-      // Call Strapi API to accept invitation
-      await strapiAcceptInvitation(token);
+      await supabaseAcceptInvitation(token);
       setSuccess(true);
     } catch (error) {
       setError((error as Error).message);

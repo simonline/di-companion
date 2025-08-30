@@ -10,7 +10,7 @@ import {
   Alert,
 } from '@mui/material';
 import { getRecommendationIcon } from './types';
-import { Recommendation } from '@/types/strapi';
+import { Recommendation } from '@/types/supabase';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import useRecommendations from '@/hooks/useRecommendations';
@@ -20,7 +20,7 @@ import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import RequestForm from './components/RequestForm';
-import { CreateRequest } from '@/lib/strapi';
+import { CreateRequest } from '@/lib/supabase';
 
 export const Coach: React.FC = () => {
   const navigate = useNavigate();

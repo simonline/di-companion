@@ -1,0 +1,4 @@
+
+# MCP Configuration (contains sensitive data)
+.claude/mcp_config.json
+migration

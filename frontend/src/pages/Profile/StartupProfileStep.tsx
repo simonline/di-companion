@@ -5,7 +5,7 @@ import { Form, Formik } from 'formik';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import { steps, renderStepContent } from '@/pages/Startups/types';
 import { useAuthContext } from '@/hooks/useAuth';
-import { Startup } from '@/types/strapi';
+import { Startup } from '@/types/supabase';
 
 const StartupProfileStep: React.FC = () => {
   const { startupId, stepId } = useParams<{ startupId: string; stepId: string }>();

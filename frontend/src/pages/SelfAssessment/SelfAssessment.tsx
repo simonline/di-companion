@@ -22,7 +22,7 @@ import useNotifications from '@/store/notifications';
 import SurveyField from '@/components/SurveyField';
 import { generateValidationSchema, FormValues } from '@/utils/generateValidationSchema';
 import { generateInitialValues } from '@/utils/generateInitialValues';
-import { Question } from '@/types/strapi';
+import { Question } from '@/types/supabase';
 import { CategoryEnum, categoryDisplayNames } from '@/utils/constants';
 
 const SelfAssessment: React.FC = () => {

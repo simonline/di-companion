@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import useSearchPatterns from './useSearchPatterns';
-import { Pattern } from '@/types/strapi';
+import { Pattern } from '@/types/supabase';
 import SearchBar from '@/components/SearchBar';
 import SearchResults from '@/components/SearchResults';
 

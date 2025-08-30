@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { Question, QuestionType } from '@/types/strapi';
+import { Question, QuestionType } from '@/types/supabase';
 
 export interface FormValues {
   [key: string]: string | string[] | number | boolean;

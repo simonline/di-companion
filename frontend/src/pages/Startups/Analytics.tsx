@@ -38,10 +38,10 @@ import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
-import { Startup } from '@/types/strapi';
+import { Startup } from '@/types/supabase';
 import { formatDistanceToNow, subWeeks, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { strapiGetStartupPatterns, strapiGetStartups } from '@/lib/strapi';
+import { supabaseGetStartupPatterns, supabaseGetStartups } from '@/lib/supabase';
 import { categoryColors, categoryDisplayNames, phaseNumbers, PhaseEnum, CategoryEnum } from '@/utils/constants';
 
 type TimeFilter = 'thisWeek' | 'lastWeek' | 'thisMonth' | 'lastMonth' | 'thisYear' | 'custom';
@@ -230,7 +230,7 @@ export default function AnalyticsView() {
                     startups = user?.coachees || [];
                 } else {
                     // Fetch all startups, not just available ones
-                    const allStartups = await strapiGetStartups();
+                    const allStartups = await supabaseGetStartups();
                     startups = allStartups || [];
                 }
 
@@ -250,7 +250,7 @@ export default function AnalyticsView() {
                     });
 
                     // Fetch all patterns for this startup with date range filter
-                    const startupPatterns = await strapiGetStartupPatterns(
+                    const startupPatterns = await supabaseGetStartupPatterns(
                         startup.documentId,
                         undefined,
                         dateRange

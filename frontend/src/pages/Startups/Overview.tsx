@@ -37,8 +37,8 @@ import { CenteredFlexBox } from '@/components/styled';
 import { Link } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
-import { Startup } from '@/types/strapi';
-import { strapiGetRequests, strapiGetAvailableStartups, strapiUpdateUser, strapiUpdateStartup } from '@/lib/strapi';
+import { Startup } from '@/types/supabase';
+import { supabaseGetRequests, supabaseGetAvailableStartups, supabaseUpdateUser, supabaseUpdateStartup } from '@/lib/supabase';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { formatDistanceToNow } from 'date-fns';
 import React from 'react';
@@ -99,8 +99,8 @@ export default function OverviewView() {
         // Get startup IDs from user's coachees
         const startupIds = user?.coachees?.map((startup) => startup.documentId) || [];
         const [requestsData, startupsData] = await Promise.all([
-          strapiGetRequests(startupIds),
-          strapiGetAvailableStartups(),
+          supabaseGetRequests(startupIds),
+          supabaseGetAvailableStartups(),
         ]);
         console.log('requestsData', requestsData);
         setRequests(requestsData || []);
@@ -163,7 +163,7 @@ export default function OverviewView() {
       const updatedCoachees = [...(user.coachees || []), startupToAssign];
 
       // Update the user with the new coachees list
-      await strapiUpdateUser({
+      await supabaseUpdateUser({
         id: user.id,
         documentId: user.documentId,
         coachees: updatedCoachees,
@@ -188,7 +188,7 @@ export default function OverviewView() {
         user.coachees?.filter((startup) => startup.documentId !== startupId) || [];
 
       // Update the user with the new coachees list
-      await strapiUpdateUser({
+      await supabaseUpdateUser({
         id: user.id,
         documentId: user.documentId,
         coachees: updatedCoachees,
@@ -248,7 +248,7 @@ export default function OverviewView() {
     if (!selectedStartupForMenu) return;
 
     try {
-      await strapiUpdateStartup({
+      await supabaseUpdateStartup({
         documentId: selectedStartupForMenu.documentId,
         categories: selectedCategories,
       });
@@ -264,7 +264,7 @@ export default function OverviewView() {
 
         // Update user with updated coachees
         if (user.id) {
-          await strapiUpdateUser({
+          await supabaseUpdateUser({
             id: user.id,
             documentId: user.documentId,
             coachees: updatedCoachees,
@@ -328,7 +328,7 @@ export default function OverviewView() {
     try {
       // Update each selected startup
       const updatePromises = selectedStartups.map(startup =>
-        strapiUpdateStartup({
+        supabaseUpdateStartup({
           documentId: startup.documentId,
           categories: selectedCategories,
         })
@@ -347,7 +347,7 @@ export default function OverviewView() {
 
         // Update user with updated coachees
         if (user.id) {
-          await strapiUpdateUser({
+          await supabaseUpdateUser({
             id: user.id,
             documentId: user.documentId,
             coachees: updatedCoachees,
