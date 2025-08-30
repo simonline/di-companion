@@ -19,7 +19,7 @@ interface UseRecommendationsReturn extends UseRecommendations {
   fetchRecommendations: (startupId?: string) => void;
   createRecommendation: (data: CreateRecommendation) => Promise<Recommendation>;
   updateRecommendation: (data: UpdateRecommendation) => Promise<Recommendation>;
-  deleteRecommendation: (documentId: string) => Promise<void>;
+  deleteRecommendation: (id: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -69,7 +69,7 @@ export default function useRecommendations(): UseRecommendationsReturn {
         ...prev,
         recommendations:
           prev.recommendations?.map((item) =>
-            item.documentId === data.documentId ? updatedRecommendation : item,
+            item.id === data.id ? updatedRecommendation : item,
           ) || null,
       }));
       return updatedRecommendation;
@@ -80,13 +80,13 @@ export default function useRecommendations(): UseRecommendationsReturn {
     }
   }, []);
 
-  const deleteRecommendation = useCallback(async (documentId: string) => {
+  const deleteRecommendation = useCallback(async (id: string) => {
     try {
-      await supabaseDeleteRecommendation(documentId);
+      await supabaseDeleteRecommendation(id);
       setState((prev) => ({
         ...prev,
         recommendations:
-          prev.recommendations?.filter((item) => item.documentId !== documentId) || null,
+          prev.recommendations?.filter((item) => item.id !== id) || null,
       }));
     } catch (err: unknown) {
       const error = err as Error;

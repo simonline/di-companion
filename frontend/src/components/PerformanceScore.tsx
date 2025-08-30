@@ -153,7 +153,7 @@ const PerformanceScore: React.FC = () => {
               </Box>
             </Box>
           </Grid>
-          
+
           <Grid item xs={12} sm={8} md={9}>
             <Box>
               <Typography variant="body1" fontWeight="600" gutterBottom>
@@ -200,211 +200,211 @@ const PerformanceScore: React.FC = () => {
           {/* Progress Bars */}
           <Stack spacing={0.5}>
             {Object.entries(sortedScores).map(([category, score]) => (
-                <Box key={category} sx={{ position: 'relative', height: 56 }}>
-                  {/* Progress Bar */}
-                  <LinearProgress
-                    variant="determinate"
-                    value={score}
-                    sx={{
-                      height: 44,
+              <Box key={category} sx={{ position: 'relative', height: 56 }}>
+                {/* Progress Bar */}
+                <LinearProgress
+                  variant="determinate"
+                  value={score}
+                  sx={{
+                    height: 44,
+                    borderRadius: 8,
+                    bgcolor: `${categoryColors[category as CategoryEnum]}66`,
+                    '& .MuiLinearProgress-bar': {
+                      bgcolor: categoryColors[category as CategoryEnum],
                       borderRadius: 8,
-                      bgcolor: `${categoryColors[category as CategoryEnum]}66`,
-                      '& .MuiLinearProgress-bar': {
-                        bgcolor: categoryColors[category as CategoryEnum],
-                        borderRadius: 8,
-                      },
-                    }}
-                  />
-                  {/* Ticks */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '44px',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      pointerEvents: 'none',
-                    }}
-                  >
-                    {[0, 20, 40, 60, 80, 100].map((tick) => (
-                      <Box
-                        key={tick}
-                        sx={{
-                          width: '1px',
-                          height: '44px',
-                          bgcolor: 'rgba(255, 255, 255, 0.1)',
-                          visibility: [0, 100].includes(tick) ? 'hidden' : 'visible',
-                        }}
-                      />
-                    ))}
-                  </Box>
-                  {/* Category Info within the Progress Bar */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      width: '100%',
-                      height: '44px',
-                      padding: '0 16px',
-                    }}
-                  >
-                    {/* Icon */}
-                    <img src={categoryIcons[category as CategoryEnum]} alt={''} height={28} />
-                    {/* Category Name */}
-                    <Typography
-                      variant="body1"
+                    },
+                  }}
+                />
+                {/* Ticks */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '44px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {[0, 20, 40, 60, 80, 100].map((tick) => (
+                    <Box
+                      key={tick}
                       sx={{
-                        color: 'white',
-                        flexGrow: 1,
-                        marginLeft: 1,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        width: '1px',
+                        height: '44px',
+                        bgcolor: 'rgba(255, 255, 255, 0.1)',
+                        visibility: [0, 100].includes(tick) ? 'hidden' : 'visible',
                       }}
-                    >
-                      {categoryDisplayNames[category as CategoryEnum]}
-                    </Typography>
-                    {/* Percentage */}
-                    <Typography variant="body1" sx={{ color: 'white', ml: 'auto' }}>
-                      {score}%
-                    </Typography>
-                  </Box>
+                    />
+                  ))}
                 </Box>
-              ))}
+                {/* Category Info within the Progress Bar */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    width: '100%',
+                    height: '44px',
+                    padding: '0 16px',
+                  }}
+                >
+                  {/* Icon */}
+                  <img src={categoryIcons[category as CategoryEnum]} alt={''} height={28} />
+                  {/* Category Name */}
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: 'white',
+                      flexGrow: 1,
+                      marginLeft: 1,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {categoryDisplayNames[category as CategoryEnum]}
+                  </Typography>
+                  {/* Percentage */}
+                  <Typography variant="body1" sx={{ color: 'white', ml: 'auto' }}>
+                    {score}%
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
           </Stack>
         </Grid>
 
         <Grid item xs={12} md={4}>
           {/* Recommended Pattern Section */}
-              <Box>
-                <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
-                  Recommended Pattern
-                </Typography>
-              {loading ? (
-                <Card>
-                  <CardContent>
-                    <Typography color="text.secondary" variant="body2" textAlign="center">Loading recommendations...</Typography>
-                  </CardContent>
-                </Card>
-              ) : recommendedPatterns && recommendedPatterns.length > 0 ? (
-                <Card
+          <Box>
+            <Typography variant="subtitle1" fontWeight="600" textAlign="center" gutterBottom>
+              Recommended Pattern
+            </Typography>
+            {loading ? (
+              <Card>
+                <CardContent>
+                  <Typography color="text.secondary" variant="body2" textAlign="center">Loading recommendations...</Typography>
+                </CardContent>
+              </Card>
+            ) : recommendedPatterns && recommendedPatterns.length > 0 ? (
+              <Card
+                sx={{
+                  aspectRatio: '2/3',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderRadius: 2,
+                }}
+              >
+                <Box
                   sx={{
-                    aspectRatio: '2/3',
+                    bgcolor: categoryColors[recommendedPatterns[0].category] || '#grey',
+                    height: 40,
+                    p: 2,
+                    borderTopLeftRadius: 8,
+                    borderTopRightRadius: 8,
                     display: 'flex',
-                    flexDirection: 'column',
-                    borderRadius: 2,
+                    alignItems: 'center',
+                  }}
+                />
+                <CardMedia
+                  sx={{
+                    height: '35%',
+                    bgcolor: 'grey.100',
+                    position: 'relative',
+                    '& img': {
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    },
                   }}
                 >
-                  <Box
+                  {recommendedPatterns[0].image ? (
+                    <img
+                      src={`${import.meta.env.VITE_API_URL}${recommendedPatterns[0].image.url}`}
+                      alt={recommendedPatterns[0].name}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <ImageIcon sx={{ fontSize: 48, color: 'grey.300' }} />
+                    </Box>
+                  )}
+                </CardMedia>
+                <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                  <Typography
+                    variant="body1"
                     sx={{
-                      bgcolor: categoryColors[recommendedPatterns[0].category] || '#grey',
-                      height: 40,
-                      p: 2,
-                      borderTopLeftRadius: 8,
-                      borderTopRightRadius: 8,
-                      display: 'flex',
-                      alignItems: 'center',
+                      color: categoryColors[recommendedPatterns[0].category],
+                      fontWeight: 'bold',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      mb: 1,
+                      fontSize: '1rem',
                     }}
-                  />
-                  <CardMedia
+                  >
+                    {recommendedPatterns[0].name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Improve your {categoryDisplayNames[recommendedPatterns[0].category as CategoryEnum]?.toLowerCase()}
+                  </Typography>
+                </CardContent>
+                <Box sx={{ p: 2, pt: 0, mt: 'auto' }}>
+                  <Button
+                    onClick={() => navigate(`/explore/${recommendedPatterns[0].id}`)}
+                    variant="contained"
+                    endIcon={<ArrowForward />}
+                    fullWidth
                     sx={{
-                      height: '35%',
-                      bgcolor: 'grey.100',
-                      position: 'relative',
-                      '& img': {
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
+                      bgcolor: categoryColors[recommendedPatterns[0].category],
+                      color: 'white',
+                      '&:hover': {
+                        bgcolor: categoryColors[recommendedPatterns[0].category],
+                        filter: 'brightness(0.9)',
                       },
                     }}
                   >
-                    {recommendedPatterns[0].image ? (
-                      <img
-                        src={`${import.meta.env.VITE_API_URL}${recommendedPatterns[0].image.url}`}
-                        alt={recommendedPatterns[0].name}
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <ImageIcon sx={{ fontSize: 48, color: 'grey.300' }} />
-                      </Box>
-                    )}
-                  </CardMedia>
-                  <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        color: categoryColors[recommendedPatterns[0].category],
-                        fontWeight: 'bold',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        mb: 1,
-                        fontSize: '1rem',
-                      }}
-                    >
-                      {recommendedPatterns[0].name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Improve your {categoryDisplayNames[recommendedPatterns[0].category as CategoryEnum]?.toLowerCase()}
-                    </Typography>
-                  </CardContent>
-                  <Box sx={{ p: 2, pt: 0, mt: 'auto' }}>
-                    <Button
-                      onClick={() => navigate(`/explore/${recommendedPatterns[0].documentId}`)}
-                      variant="contained"
-                      endIcon={<ArrowForward />}
-                      fullWidth
-                      sx={{
-                        bgcolor: categoryColors[recommendedPatterns[0].category],
-                        color: 'white',
-                        '&:hover': {
-                          bgcolor: categoryColors[recommendedPatterns[0].category],
-                          filter: 'brightness(0.9)',
-                        },
-                      }}
-                    >
-                      Explore Pattern
-                    </Button>
-                  </Box>
-                </Card>
-              ) : (
-                <Card>
-                  <CardContent sx={{ p: 1.5 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Complete your assessment to get personalized recommendations.
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      fullWidth
-                      sx={{ mt: 1, fontSize: '0.75rem', py: 0.5 }}
-                      onClick={() => navigate('/explore')}
-                    >
-                      Browse Patterns
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
-              </Box>
+                    Explore Pattern
+                  </Button>
+                </Box>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent sx={{ p: 1.5 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Complete your assessment to get personalized recommendations.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    sx={{ mt: 1, fontSize: '0.75rem', py: 0.5 }}
+                    onClick={() => navigate('/explore')}
+                  >
+                    Browse Patterns
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </Box>
         </Grid>
       </Grid>
     </>

@@ -11,6 +11,7 @@ import {
   StepLabel,
   CircularProgress,
 } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -28,6 +29,19 @@ import { CategoryEnum, categoryDisplayNames } from '@/utils/constants';
 const SelfAssessment: React.FC = () => {
   const navigate = useNavigate();
   const { user, startup, updateScores } = useAuthContext();
+
+  // Determine which page to return to based on referrer or default to user
+  const [returnPath, setReturnPath] = useState('/user');
+  const [returnLabel, setReturnLabel] = useState('User');
+
+  useEffect(() => {
+    // Check if we came from startup page
+    const referrer = document.referrer;
+    if (referrer.includes('/startup')) {
+      setReturnPath('/startup');
+      setReturnLabel('Startup');
+    }
+  }, []);
   const { fetchSurveyByName, survey, loading: surveyLoading, error: surveyError } = useSurvey();
   const {
     fetchUserQuestions,
@@ -72,8 +86,8 @@ const SelfAssessment: React.FC = () => {
   }, [fetchSurveyByName]);
 
   useEffect(() => {
-    if (startup?.documentId && user?.documentId) {
-      fetchUserQuestions(startup.documentId, user.documentId);
+    if (startup?.id && user?.id) {
+      fetchUserQuestions(startup.id, user.id);
     }
   }, [fetchUserQuestions, startup, user]);
 
@@ -85,9 +99,9 @@ const SelfAssessment: React.FC = () => {
 
       // Process each question's answer
       for (const question of currentQuestions) {
-        const answer = values[question.documentId];
+        const answer = values[question.id];
         const existingResponse = userQuestions?.find(
-          (uq) => uq.question.documentId === question.documentId,
+          (uq) => uq.question.id === question.id,
         );
 
         // Skip if answer is empty and question is not required
@@ -100,16 +114,16 @@ const SelfAssessment: React.FC = () => {
         }
 
         const payload = {
-          user: { set: { documentId: user.documentId } },
-          question: { set: { documentId: question.documentId } },
-          startup: { set: { documentId: startup.documentId } },
+          user: { set: { id: user.id } },
+          question: { set: { id: question.id } },
+          startup: { set: { id: startup.id } },
           answer: JSON.stringify(answer),
         };
 
         try {
           if (existingResponse) {
             await updateUserQuestion({
-              documentId: existingResponse.documentId,
+              id: existingResponse.id,
               ...payload,
             });
           } else {
@@ -122,7 +136,7 @@ const SelfAssessment: React.FC = () => {
 
       // Refetch to get the created/updated user questions
       clearUserQuestions();
-      await fetchUserQuestions(startup.documentId, user.documentId);
+      await fetchUserQuestions(startup.id, user.id);
 
       if (activeStep < categories.length - 1) {
         setActiveStep(prev => prev + 1);
@@ -205,6 +219,15 @@ const SelfAssessment: React.FC = () => {
     <>
       <Header title="Self Assessment" />
       <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
+        <Box sx={{ mb: 1 }}>
+          <Button
+            startIcon={<ArrowBack />}
+            onClick={() => navigate(returnPath)}
+            sx={{ color: 'text.secondary' }}
+          >
+            Back to {returnLabel}
+          </Button>
+        </Box>
         <Card>
           <CardContent>
             <Box sx={{ mb: 4 }}>
@@ -283,7 +306,7 @@ const SelfAssessment: React.FC = () => {
                     {currentQuestions
                       .sort((a: Question, b: Question) => (a.order || 0) - (b.order || 0))
                       .map((question: Question) => (
-                        <Field key={question.documentId} name={question.documentId}>
+                        <Field key={question.id} name={question.id}>
                           {(fieldProps: any) => (
                             <SurveyField
                               question={question}

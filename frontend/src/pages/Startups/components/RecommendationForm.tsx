@@ -52,7 +52,7 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
 }) => {
   const { user } = useAuthContext();
   const { SearchComponent, searchResults } = useSearch();
-  const isEditMode = Boolean(initialValues?.documentId);
+  const isEditMode = Boolean(initialValues?.id);
   const [selectedPatterns, setSelectedPatterns] = useState<Pattern[]>([]);
   // Synchronize selectedPatterns when initialValues changes
   useEffect(() => {
@@ -61,13 +61,13 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
 
   const formik = useFormik({
     initialValues: {
-      documentId: initialValues?.documentId || '',
+      id: initialValues?.id || '',
       comment: initialValues?.comment || '',
       type: initialValues?.type || 'pattern',
       patterns: initialValues?.patterns
-        ? initialValues.patterns.map((pattern: any) => pattern.documentId)
+        ? initialValues.patterns.map((pattern: any) => pattern.id)
         : [],
-      coach: user?.documentId,
+      coach: user?.id,
       startup: startupId,
       readAt: initialValues?.readAt,
     },
@@ -87,10 +87,10 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
 
         let formattedValues: CreateRecommendation | UpdateRecommendation;
 
-        if (values.documentId) {
+        if (values.id) {
           // For update
           formattedValues = {
-            documentId: values.documentId,
+            id: values.id,
             ...baseData,
           } as UpdateRecommendation;
         } else {
@@ -107,19 +107,19 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
   });
 
   const handlePatternSelect = (pattern: any) => {
-    if (!pattern || !pattern.documentId) {
+    if (!pattern || !pattern.id) {
       console.error('Invalid pattern selected:', pattern);
       return;
     }
 
     const currentPatterns = [...formik.values.patterns];
-    const patternIdExists = currentPatterns.some((p) => p === pattern.documentId);
+    const patternIdExists = currentPatterns.some((p) => p === pattern.id);
 
     if (!patternIdExists) {
-      formik.setFieldValue('patterns', [...currentPatterns, pattern.documentId]);
+      formik.setFieldValue('patterns', [...currentPatterns, pattern.id]);
 
       // Check if the pattern is already in the selectedPatterns array to avoid duplicates
-      const patternExists = selectedPatterns.some((p) => p.documentId === pattern.documentId);
+      const patternExists = selectedPatterns.some((p) => p.id === pattern.id);
       if (!patternExists) {
         setSelectedPatterns((prev) => [...prev, pattern]);
       }
@@ -129,7 +129,7 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
   const handleRemovePattern = (patternId: string) => {
     const updatedPatterns = formik.values.patterns.filter((p) => p !== patternId);
     formik.setFieldValue('patterns', updatedPatterns);
-    setSelectedPatterns((prev) => prev.filter((pattern) => pattern.documentId !== patternId));
+    setSelectedPatterns((prev) => prev.filter((pattern) => pattern.id !== patternId));
   };
 
   return (
@@ -164,9 +164,9 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
                   <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {selectedPatterns.map((pattern) => (
                       <Chip
-                        key={pattern.documentId}
+                        key={pattern.id}
                         label={pattern.name}
-                        onDelete={() => handleRemovePattern(pattern.documentId)}
+                        onDelete={() => handleRemovePattern(pattern.id)}
                       />
                     ))}
                   </Box>
@@ -182,12 +182,12 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
                     <Box sx={{ mt: 1, maxHeight: 200, overflow: 'auto' }}>
                       {searchResults.map((pattern) => (
                         <Box
-                          key={pattern.documentId}
+                          key={pattern.id}
                           sx={{
                             p: 1,
                             cursor: 'pointer',
                             '&:hover': { bgcolor: 'action.hover' },
-                            bgcolor: formik.values.patterns.includes(pattern.documentId)
+                            bgcolor: formik.values.patterns.includes(pattern.id)
                               ? 'action.selected'
                               : 'transparent',
                           }}

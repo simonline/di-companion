@@ -46,12 +46,14 @@ import {
     Psychology,
     Download,
     Share,
+    ArrowBack,
 } from '@mui/icons-material';
 import { Formik, Form, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface TeamMember {
     name: string;
@@ -121,6 +123,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const TeamContract: React.FC = () => {
+    const navigate = useNavigate();
     const { startup, user } = useAuthContext();
     const isSolo = startup?.foundersCount === 1;
     const [activeStep, setActiveStep] = useState(0);
@@ -745,6 +748,15 @@ This contract represents our commitment to working together effectively and tran
             <Header title={isSolo ? "Solo Contract" : "Team Contract"} />
             <CenteredFlexBox>
                 <Container maxWidth="md">
+                    <Box sx={{ mb: 1, mt: 4 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/startup')}
+                            sx={{ color: 'text.secondary' }}
+                        >
+                            Back to Startup
+                        </Button>
+                    </Box>
                     <Card>
                         <CardContent>
                             <Box sx={{ textAlign: 'center', mb: 4 }}>

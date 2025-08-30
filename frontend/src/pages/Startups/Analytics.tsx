@@ -240,7 +240,7 @@ export default function AnalyticsView() {
                 // 3. Fetch startup patterns for each startup
                 for (const startup of startups) {
                     // Initialize entry for this startup
-                    analyticsMap.set(startup.documentId, {
+                    analyticsMap.set(startup.id, {
                         startup,
                         users: [],
                         patternInteractions: [],
@@ -251,20 +251,20 @@ export default function AnalyticsView() {
 
                     // Fetch all patterns for this startup with date range filter
                     const startupPatterns = await supabaseGetStartupPatterns(
-                        startup.documentId,
+                        startup.id,
                         undefined,
                         dateRange
                     );
 
                     // Process each pattern (no need to filter here since it's done on the server)
                     for (const pattern of startupPatterns) {
-                        const analytics = analyticsMap.get(startup.documentId);
+                        const analytics = analyticsMap.get(startup.id);
                         if (!analytics) continue;
 
                         // Add pattern interaction
                         const interactionDate = new Date(pattern.createdAt);
                         analytics.patternInteractions.push({
-                            patternId: pattern.pattern?.documentId,
+                            patternId: pattern.pattern?.id,
                             patternName: pattern.pattern?.name || 'Unnamed Pattern',
                             lastInteraction: interactionDate,
                             category: pattern.pattern?.category as CategoryEnum,
@@ -273,7 +273,7 @@ export default function AnalyticsView() {
                         });
 
                         // Add unique pattern
-                        analytics.uniquePatterns.add(pattern.pattern?.documentId);
+                        analytics.uniquePatterns.add(pattern.pattern?.id);
 
                         // Increment interaction count
                         analytics.interactionCount++;
@@ -285,8 +285,8 @@ export default function AnalyticsView() {
 
                         // Get user info from the pattern's user attribute
                         if (pattern.user) {
-                            const userId = pattern.user.documentId;
-                            const userName = `${pattern.user.givenName || ''} ${pattern.user.familyName || ''}`.trim() || 'Unnamed User';
+                            const userId = pattern.user.id || pattern.user.id;
+                            const userName = `${pattern.user.given_name || pattern.user.givenName || ''} ${pattern.user.family_name || pattern.user.familyName || ''}`.trim() || 'Unnamed User';
 
                             // Check if user already exists in the list
                             if (!analytics.users.some(u => u.id === userId)) {
@@ -501,7 +501,7 @@ export default function AnalyticsView() {
                                         </TableHead>
                                         <TableBody>
                                             {sortedAnalytics.map((analyticsItem) => (
-                                                <TableRow key={analyticsItem.startup.documentId}>
+                                                <TableRow key={analyticsItem.startup.id}>
                                                     <TableCell component="th" scope="row">
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                             <Avatar

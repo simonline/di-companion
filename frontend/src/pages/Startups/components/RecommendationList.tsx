@@ -62,7 +62,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
 
   const handleDelete = () => {
     if (selectedRecommendation) {
-      onDelete(selectedRecommendation.documentId);
+      onDelete(selectedRecommendation.id);
       handleCloseMenu();
     }
   };
@@ -101,7 +101,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
           <TableBody>
             {recommendations.map((recommendation) => (
               <TableRow
-                key={recommendation.documentId}
+                key={recommendation.id}
                 sx={{
                   '&:last-child td, &:last-child th': { border: 0 },
                   backgroundColor: recommendation.readAt ? undefined : 'rgba(25, 118, 210, 0.04)',

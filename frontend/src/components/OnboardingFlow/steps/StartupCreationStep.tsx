@@ -98,10 +98,7 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
     setErrorMessage('');
 
     try {
-      await createStartup({
-        ...values,
-        users: { set: [user.id] },
-      });
+      await createStartup(values);
 
       // Move to completion
       onNext();

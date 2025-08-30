@@ -134,7 +134,7 @@ export default function StartupView() {
   const handleFormSubmit = async (values: CreateRecommendation | UpdateRecommendation) => {
     setIsSubmitting(true);
     try {
-      if ('documentId' in values && values.documentId) {
+      if ('id' in values && values.id) {
         // Update
         await updateRecommendation(values as UpdateRecommendation);
         setNotification({
@@ -178,7 +178,7 @@ export default function StartupView() {
   const handleMarkRequestAsRead = async (request: Request) => {
     try {
       await updateRequest({
-        documentId: request.documentId,
+        id: request.id,
         readAt: new Date().toISOString(),
       });
       setNotification({

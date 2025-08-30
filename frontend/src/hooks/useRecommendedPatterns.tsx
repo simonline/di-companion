@@ -123,11 +123,11 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
         // Fetch patterns already started/applied by startup
         let usedPatterns: StartupPattern[] = [];
         if (state.startup) {
-          usedPatterns = await supabaseGetStartupPatterns(state.startup.documentId);
+          usedPatterns = await supabaseGetStartupPatterns(state.startup.id);
         }
 
-        // Get used pattern documentIds
-        const usedPatternDocumentIds = usedPatterns.map((usedPattern) => usedPattern.pattern?.documentId);
+        // Get used pattern ids
+        const usedpatternIds = usedPatterns.map((usedPattern) => usedPattern.pattern?.id);
 
         // Try to find patterns from categories starting with the lowest score
         const excludedCategories: CategoryEnum[] = [];
@@ -135,7 +135,7 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
         let filteredPatterns: Pattern[] = [];
         let category: CategoryEnum | null;
 
-        console.log('usedPatternDocumentIds', usedPatternDocumentIds);
+        console.log('usedpatternIds', usedpatternIds);
         console.log('state.startup', state.startup);
         console.log('excludedCategories', excludedCategories);
         console.log('availablePatterns', availablePatterns);
@@ -155,7 +155,7 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
 
           // Remove patterns already started/applied by startup
           filteredPatterns = availablePatterns.filter(
-            (pattern) => !usedPatternDocumentIds.includes(pattern.documentId)
+            (pattern) => !usedpatternIds.includes(pattern.id)
           );
 
           // If no patterns available in this category, exclude it and try another

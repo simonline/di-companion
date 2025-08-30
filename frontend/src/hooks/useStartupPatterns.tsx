@@ -9,7 +9,7 @@ interface UseStartupPatterns {
 }
 
 interface UseStartupPatternsReturn extends UseStartupPatterns {
-  fetchStartupPatterns: (startupDocumentId: string, patternDocumentId?: string) => void;
+  fetchStartupPatterns: (startupId: string, patternId?: string) => void;
   clearError: () => void;
 }
 
@@ -25,14 +25,14 @@ export default function useStartupPatterns(): UseStartupPatternsReturn {
   }, []);
 
   const fetchStartupPatterns = useCallback(
-    async (startupDocumentId: string, patternDocumentId?: string) => {
+    async (startupId: string, patternId?: string) => {
       try {
         const startupPatterns = await supabaseGetStartupPatterns(
-          startupDocumentId,
-          patternDocumentId,
+          startupId,
+          patternId,
         );
 
-        // Get only latest (createdAt) patterns for each combination of startup/pattern (documentId)
+        // Get only latest (createdAt) patterns for each combination of startup/pattern (id)
         // FIXME: Create /latest endpoint for this (in progress)
         const latestPatterns = startupPatterns
           ? Object.values(
@@ -40,7 +40,7 @@ export default function useStartupPatterns(): UseStartupPatternsReturn {
               (acc, pattern) => {
                 // Ignore if no pattern given
                 if (!pattern.pattern) return acc;
-                const key = `${pattern.startup.documentId}-${pattern.pattern?.documentId}`;
+                const key = `${pattern.startup.id}-${pattern.pattern?.id}`;
                 if (!acc[key] || acc[key].createdAt > pattern.createdAt) {
                   acc[key] = pattern;
                 }

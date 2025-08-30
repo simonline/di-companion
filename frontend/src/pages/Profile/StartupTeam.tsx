@@ -141,8 +141,8 @@ const StartupTeam: React.FC = () => {
     setInvitationLoading(true);
     try {
       await supabaseCreateInvitation({
-        startup: { set: { documentId: startupId } },
-        invitedBy: { set: { documentId: user.documentId.toString() } },
+        startup: { set: { id: startupId } },
+        invitedBy: { set: { id: user.id } },
         email,
       });
 
@@ -165,9 +165,9 @@ const StartupTeam: React.FC = () => {
     }
   };
 
-  const handleDeleteInvitation = async (documentId: string) => {
+  const handleDeleteInvitation = async (id: string) => {
     try {
-      await supabaseDeleteInvitation(documentId);
+      await supabaseDeleteInvitation(id);
       await loadData();
 
       setSnackbar({
@@ -184,9 +184,9 @@ const StartupTeam: React.FC = () => {
     }
   };
 
-  const handleResendInvitation = async (documentId: string) => {
+  const handleResendInvitation = async (id: string) => {
     try {
-      await supabaseResendInvitation(documentId);
+      await supabaseResendInvitation(id);
 
       setSnackbar({
         open: true,
@@ -231,10 +231,10 @@ const StartupTeam: React.FC = () => {
         copyInvitationLink(selectedInvitation.token);
         break;
       case 'resend':
-        await handleResendInvitation(selectedInvitation.documentId);
+        await handleResendInvitation(selectedInvitation.id);
         break;
       case 'delete':
-        await handleDeleteInvitation(selectedInvitation.documentId);
+        await handleDeleteInvitation(selectedInvitation.id);
         break;
     }
     handleMenuClose();
@@ -260,7 +260,7 @@ const StartupTeam: React.FC = () => {
     return (
       <List>
         {members.map((member) => (
-          <React.Fragment key={member.documentId}>
+          <React.Fragment key={member.id}>
             <ListItem>
               <ListItemAvatar>
                 <Avatar>{member.username.charAt(0).toUpperCase()}</Avatar>
@@ -270,7 +270,7 @@ const StartupTeam: React.FC = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {`${member.givenName || ''} ${member.familyName || ''}`.trim() ||
                       member.username}
-                    {member.documentId === user?.documentId && (
+                    {member.id === user?.id && (
                       <Chip size="small" label="You" color="primary" />
                     )}
                   </Box>
@@ -316,7 +316,7 @@ const StartupTeam: React.FC = () => {
     return (
       <List>
         {pendingInvitations.map((invitation) => (
-          <React.Fragment key={invitation.documentId}>
+          <React.Fragment key={invitation.id}>
             <ListItem
               secondaryAction={
                 <IconButton

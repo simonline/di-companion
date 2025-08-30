@@ -19,7 +19,7 @@ interface UseRequestsReturn extends UseRequests {
   fetchRequests: (startupId: string) => void;
   createRequest: (data: CreateRequest) => Promise<Request>;
   updateRequest: (data: UpdateRequest) => Promise<Request>;
-  deleteRequest: (documentId: string) => Promise<void>;
+  deleteRequest: (id: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -67,7 +67,7 @@ export default function useRequests(): UseRequestsReturn {
         ...prev,
         requests:
           prev.requests?.map((item) =>
-            item.documentId === data.documentId ? updatedRequest : item,
+            item.id === data.id ? updatedRequest : item,
           ) || null,
       }));
       return updatedRequest;
@@ -78,12 +78,12 @@ export default function useRequests(): UseRequestsReturn {
     }
   }, []);
 
-  const deleteRequest = useCallback(async (documentId: string) => {
+  const deleteRequest = useCallback(async (id: string) => {
     try {
-      await supabaseDeleteRequest(documentId);
+      await supabaseDeleteRequest(id);
       setState((prev) => ({
         ...prev,
-        requests: prev.requests?.filter((item) => item.documentId !== documentId) || null,
+        requests: prev.requests?.filter((item) => item.id !== id) || null,
       }));
     } catch (err: unknown) {
       const error = err as Error;

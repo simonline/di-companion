@@ -9,7 +9,7 @@ export const generateValidationSchema = (questions: Question[]) => {
   const schema: { [key: string]: any } = {};
 
   questions.forEach((question) => {
-    const fieldName = question.documentId;
+    const fieldName = question.id;
     let validator;
 
     switch (question.type) {

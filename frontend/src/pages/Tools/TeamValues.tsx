@@ -5,16 +5,30 @@ import {
     CardContent,
     Typography,
     Container,
+    Button,
 } from '@mui/material';
-import { Groups } from '@mui/icons-material';
+import { Groups, ArrowBack } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
+import { useNavigate } from 'react-router-dom';
 
 const TeamValues: React.FC = () => {
+    const navigate = useNavigate();
+    
     return (
         <>
             <Header title="Team Values" />
             <CenteredFlexBox>
+                <Box sx={{ maxWidth: 1200, width: '100%', mt: 4 }}>
+                    <Box sx={{ mb: 1 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/startup')}
+                            sx={{ color: 'text.secondary' }}
+                        >
+                            Back to Startup
+                        </Button>
+                    </Box>
                 <Card>
                     <CardContent>
                         <Box sx={{ textAlign: 'center', mb: 4 }}>
@@ -42,6 +56,7 @@ const TeamValues: React.FC = () => {
                         </Box>
                     </CardContent>
                 </Card>
+                </Box>
             </CenteredFlexBox>
         </>
     );

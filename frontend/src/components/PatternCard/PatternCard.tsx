@@ -67,9 +67,9 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
   useEffect(() => {
     if (response) {
       createStartupPattern({
-        startup: { set: { documentId: startup?.documentId as string } },
-        pattern: { set: { documentId: pattern.documentId } },
-        user: { set: { documentId: user?.documentId as string } },
+        startup: { set: { id: startup?.id as string } },
+        pattern: { set: { id: pattern.id } },
+        user: { set: { id: user?.id as string } },
         responseType,
         response,
       });
@@ -81,11 +81,11 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
       if (responseType === ResponseTypeEnum.accept) {
         switch (response) {
           case ResponseEnum.share_reflection:
-            navigate(`/progress/${pattern.documentId}/survey`, { state: { nextUrl: nextUrl || '/explore' } });
+            navigate(`/progress/${pattern.id}/survey`, { state: { nextUrl: nextUrl || '/explore' } });
             return;
           case ResponseEnum.perform_exercise:
-            navigate(`/progress/${pattern.documentId}/methods`, {
-              state: { nextUrl: `/progress/${pattern.documentId}/survey?nextUrl=${nextUrl || '/explore'}` }
+            navigate(`/progress/${pattern.id}/methods`, {
+              state: { nextUrl: `/progress/${pattern.id}/survey?nextUrl=${nextUrl || '/explore'}` }
             });
             return;
           case ResponseEnum.think_later:
@@ -100,9 +100,9 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
           case ResponseEnum.maybe_later:
             break;
           case ResponseEnum.no_value:
-            if (startup?.documentId) {
+            if (startup?.id) {
               createRequest({
-                startup: { id: startup.documentId },
+                startup: { id: startup.id },
                 comment: `I don't see value in the pattern: ${pattern.name}`,
               });
               notificationsActions.push({
@@ -112,9 +112,9 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
             }
             break;
           case ResponseEnum.dont_understand:
-            if (startup?.documentId) {
+            if (startup?.id) {
               createRequest({
-                startup: { id: startup.documentId },
+                startup: { id: startup.id },
                 comment: `I don't understand the pattern: ${pattern.name}`,
               });
               notificationsActions.push({
@@ -480,7 +480,7 @@ Make your response actionable and easy to follow.`;
                   <Typography
                     component="a"
                     variant="body2"
-                    onClick={() => navigate(`/explore/${relPattern.documentId}`)}
+                    onClick={() => navigate(`/explore/${relPattern.id}`)}
                     color="black"
                     lineHeight="1.2em"
                     sx={{

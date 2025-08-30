@@ -86,7 +86,7 @@ export function useAuth(): UseAuthReturn {
           console.log('Auth hook: User data fetched:', userData.email);
           setUser(userData);
           if (userData.startups?.length > 0) {
-            const startup = await supabaseGetStartup(userData.startups[0].documentId);
+            const startup = await supabaseGetStartup(userData.startups[0].id || userData.startups[0].id);
             setStartup(startup);
           }
           setState((prev) => ({ ...prev, loading: false }));
@@ -111,48 +111,107 @@ export function useAuth(): UseAuthReturn {
     };
   }, [checkTokenExpiration, state.user]);
 
-  // Initialize user/startup from Supabase session
+  // Initialize user/startup from localStorage first, then validate with Supabase session
+  // Note: We intentionally omit setUser and setStartup from deps to avoid infinite loops
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const initAuth = async () => {
-      setState((prev) => ({ ...prev, loading: true }));
+      // First, check if we have a Supabase session (this reads from localStorage automatically)
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      try {
-        // Use getSession() first - it's faster and doesn't make a network request
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // If we have a valid session, try to load cached user data first for instant UI
+      if (session && !sessionError) {
+        // Try to load from localStorage for immediate hydration
+        const storedUser = localStorage.getItem('user');
+        const storedStartup = localStorage.getItem('startup');
 
-        if (sessionError || !session) {
-          // No authenticated user, clear state and set loading to false
-          setState((prev) => ({
-            ...prev,
-            user: null,
-            startup: null,
-            loading: false,
-            error: null,
-          }));
-          localStorage.removeItem('user');
-          localStorage.removeItem('startup');
-          return;
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            const parsedStartup = storedStartup ? JSON.parse(storedStartup) : null;
+
+            // Set the stored data immediately for faster UI
+            setState((prev) => ({
+              ...prev,
+              user: parsedUser,
+              startup: parsedStartup,
+              loading: false, // Don't block UI with cached data
+              error: null,
+            }));
+
+            // Now fetch fresh data in the background
+            try {
+              const userData = await supabaseMe();
+              setUser(userData);
+
+              let startup: Startup | null = null;
+              if (userData.startups?.length > 0) {
+                startup = await supabaseGetStartup(userData.startups[0].id || userData.startups[0].id);
+              }
+              setStartup(startup);
+            } catch (error) {
+              console.error('Failed to refresh user data:', error);
+              // Don't clear the cached data on refresh failure
+            }
+          } catch (e) {
+            // Invalid localStorage data, try to fetch fresh
+            console.error('Invalid cached data:', e);
+            localStorage.removeItem('user');
+            localStorage.removeItem('startup');
+
+            // Try to fetch fresh data
+            try {
+              const userData = await supabaseMe();
+              setUser(userData);
+
+              let startup: Startup | null = null;
+              if (userData.startups?.length > 0) {
+                startup = await supabaseGetStartup(userData.startups[0].id || userData.startups[0].id);
+              }
+              setStartup(startup);
+              setState((prev) => ({ ...prev, loading: false }));
+            } catch (error) {
+              console.error('Failed to fetch user data:', error);
+              setState((prev) => ({
+                ...prev,
+                user: null,
+                startup: null,
+                loading: false,
+                error: null,
+              }));
+            }
+          }
+        } else {
+          // No cached data but we have a session, fetch fresh data
+          try {
+            const userData = await supabaseMe();
+            setUser(userData);
+
+            let startup: Startup | null = null;
+            if (userData.startups?.length > 0) {
+              startup = await supabaseGetStartup(userData.startups[0].id);
+            }
+            setStartup(startup);
+            setState((prev) => ({ ...prev, loading: false }));
+          } catch (error) {
+            console.error('Failed to fetch user data:', error);
+            setState((prev) => ({
+              ...prev,
+              user: null,
+              startup: null,
+              loading: false,
+              error: null,
+            }));
+          }
         }
-
-        // User is authenticated, get full user data
-        const userData = await supabaseMe();
-        setUser(userData);
-
-        let startup: Startup | null = null;
-        if (userData.startups?.length > 0) {
-          startup = await supabaseGetStartup(userData.startups[0].documentId);
-        }
-        setStartup(startup);
-        setState((prev) => ({ ...prev, loading: false }));
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-        // On error, clear auth state and set loading to false
+      } else {
+        // No session, clear everything
         setState((prev) => ({
           ...prev,
           user: null,
           startup: null,
           loading: false,
-          error: null, // Don't show error for initial load failures
+          error: null,
         }));
         localStorage.removeItem('user');
         localStorage.removeItem('startup');
@@ -166,7 +225,7 @@ export function useAuth(): UseAuthReturn {
     setState((prev) => ({ ...prev, user: userData, error: null }));
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData));
-      identifyUser(userData.id.toString());
+      identifyUser(userData.id);
     } else {
       localStorage.removeItem('user');
       identifyUser("");
@@ -195,7 +254,7 @@ export function useAuth(): UseAuthReturn {
         setUser(userData);
         let startup: Startup | null = null;
         if (userData.startups?.length > 0) {
-          startup = await supabaseGetStartup(userData.startups[0].documentId);
+          startup = await supabaseGetStartup(userData.startups[0].id || userData.startups[0].id);
         }
         setStartup(startup);
         return userData;
@@ -242,7 +301,7 @@ export function useAuth(): UseAuthReturn {
         const { user: userData } = await supabaseVerifyOtp(email, token);
         setUser(userData);
         if (userData.startups?.length > 0) {
-          const startup = await supabaseGetStartup(userData.startups[0].documentId);
+          const startup = await supabaseGetStartup(userData.startups[0].id || userData.startups[0].id);
           setStartup(startup);
         }
       } catch (error) {
@@ -396,7 +455,7 @@ export function useAuth(): UseAuthReturn {
     let startupPatterns: StartupPattern[] = [];
     let patterns: Pattern[] = [];
     try {
-      startupPatterns = await supabaseGetStartupPatterns(currentStartup.documentId);
+      startupPatterns = await supabaseGetStartupPatterns(currentStartup.id || currentStartup.id);
       patterns = await supabaseGetPatterns();
     } catch (error) {
       setState((prev) => ({
@@ -465,7 +524,7 @@ export function useAuth(): UseAuthReturn {
 
     // Update the startup with the new scores
     updateStartup({
-      documentId: currentStartup.documentId,
+      id: currentStartup.id || currentStartup.id,
       scores: maturityScores,
       score: totalScore,
     });
@@ -479,7 +538,7 @@ export function useAuth(): UseAuthReturn {
       const user = await supabaseMe();
       let startup: Startup | null = null;
       if (user.startups?.length > 0) {
-        startup = await supabaseGetStartup(user.startups[0].documentId);
+        startup = await supabaseGetStartup(user.startups[0].id || user.startups[0].id);
       }
       console.log(startup);
       setState((prev) => ({ ...prev, user, startup, loading: false }));

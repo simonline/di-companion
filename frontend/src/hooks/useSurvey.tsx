@@ -9,7 +9,7 @@ interface UseSurvey {
 }
 
 interface UseSurveyReturn extends UseSurvey {
-  fetchSurvey: (documentId: string) => void;
+  fetchSurvey: (id: string) => void;
   fetchSurveyByPattern: (patternId: string) => void;
   fetchSurveyByName: (name: string) => void;
   clearError: () => void;
@@ -26,9 +26,9 @@ export default function useSurvey(): UseSurveyReturn {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const fetchSurvey = useCallback(async (documentId: string) => {
+  const fetchSurvey = useCallback(async (id: string) => {
     try {
-      const survey = await supabaseGetSurvey(documentId);
+      const survey = await supabaseGetSurvey(id);
       setState({ survey, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;
@@ -42,7 +42,7 @@ export default function useSurvey(): UseSurveyReturn {
       if (!pattern.survey) {
         throw new Error('Pattern does not have a survey');
       }
-      const survey = await supabaseGetSurvey(pattern.survey.documentId);
+      const survey = await supabaseGetSurvey(pattern.survey.id);
       setState({ survey, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

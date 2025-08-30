@@ -85,17 +85,17 @@ const HtmlTooltip = ({ title, children }: { title: string; children: React.React
 };
 
 const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
-  const error = form.touched[question.documentId] && form.errors[question.documentId];
+  const error = form.touched[question.id] && form.errors[question.id];
   const { startup } = useAuthContext();
   const { createRequest } = useRequests();
   const [, notificationsActions] = useNotifications();
 
   const handleRequestCoach = async () => {
-    if (!startup?.documentId) return;
+    if (!startup?.id) return;
 
     try {
       await createRequest({
-        startup: { id: startup.documentId },
+        startup: { id: startup.id },
         comment: `I need help with the question: ${question.question}`,
       });
 
@@ -118,7 +118,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    form.setFieldValue(question.documentId, items);
+    form.setFieldValue(question.id, items);
   };
 
   // Skip rendering if field is hidden
@@ -287,7 +287,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
                           const newValue = e.target.checked
                             ? [...(field.value || []), value]
                             : field.value?.filter((v: string) => v !== value);
-                          form.setFieldValue(question.documentId, newValue);
+                          form.setFieldValue(question.id, newValue);
                         }}
                       />
                     }
@@ -304,7 +304,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
       // Initialize the field value if it's not set
       if ((!field.value || field.value.length === 0) && question.options && Array.isArray(question.options)) {
         const initialValues = question.options.map((opt: QuestionOption) => opt.value);
-        form.setFieldValue(question.documentId, initialValues);
+        form.setFieldValue(question.id, initialValues);
       }
 
       return (
@@ -314,7 +314,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
           </FormLabel>
           {renderFieldWithHelp(
             <DragDropContext onDragEnd={handleDragEnd}>
-              <StrictDroppable droppableId={`rank-list-${question.documentId}`}>
+              <StrictDroppable droppableId={`rank-list-${question.id}`}>
                 {(provided) => (
                   <Box {...provided.droppableProps} ref={provided.innerRef} sx={{ width: '100%' }}>
                     {Array.isArray(field.value) && field.value.map((value: string, index: number) => {
@@ -328,8 +328,8 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
 
                       return (
                         <Draggable
-                          key={`${question.documentId}-${value}`}
-                          draggableId={`${question.documentId}-${value}`}
+                          key={`${question.id}-${value}`}
+                          draggableId={`${question.id}-${value}`}
                           index={index}
                         >
                           {(provided) => (
@@ -396,7 +396,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
               </Box>
               <Slider
                 value={field.value || options.min}
-                onChange={(_, value) => form.setFieldValue(question.documentId, value)}
+                onChange={(_, value) => form.setFieldValue(question.id, value)}
                 min={options.min}
                 max={options.max}
                 valueLabelDisplay="auto"

@@ -65,12 +65,12 @@ const ProfileStep: React.FC<OnboardingStepProps> = ({
   // Initialize form values from user data
   const initialValues: ProfileFormValues = {
     email: user.email || '',
-    givenName: user.givenName || '',
-    familyName: user.familyName || '',
+    givenName: user.given_name || '',
+    familyName: user.family_name || '',
     gender: user.gender || '',
     position: user.position || '',
     bio: user.bio || '',
-    linkedinProfile: user.linkedinProfile || '',
+    linkedinProfile: user.linkedin_profile || '',
     avatar: undefined,
   };
 
@@ -82,14 +82,13 @@ const ProfileStep: React.FC<OnboardingStepProps> = ({
       // Update the user profile
       await updateUser({
         id: user.id,
-        documentId: user.documentId,
         email: values.email,
-        givenName: values.givenName,
-        familyName: values.familyName,
+        given_name: values.givenName,
+        family_name: values.familyName,
         gender: values.gender,
         position: values.position,
         bio: values.bio,
-        linkedinProfile: values.linkedinProfile,
+        linkedin_profile: values.linkedinProfile,
         avatar: values.avatar,
       });
 
@@ -125,7 +124,7 @@ const ProfileStep: React.FC<OnboardingStepProps> = ({
     });
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(() => {
-      return getAvatarUrl(user.avatar?.formats?.thumbnail?.url) || null;
+      return getAvatarUrl(user.avatar_url) || null;
     });
 
     const avatarFile = form.values.avatar;
@@ -141,7 +140,7 @@ const ProfileStep: React.FC<OnboardingStepProps> = ({
     const handleRemoveAvatar = (e: React.MouseEvent) => {
       e.stopPropagation();
       form.setFieldValue('avatar', undefined);
-      setPreviewUrl(getAvatarUrl(user.avatar?.url) || null);
+      setPreviewUrl(getAvatarUrl(user.avatar_url) || null);
     };
 
     return (

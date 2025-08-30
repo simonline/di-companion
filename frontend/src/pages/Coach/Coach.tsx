@@ -39,7 +39,7 @@ export const Coach: React.FC = () => {
 
   useEffect(() => {
     if (startup) {
-      fetchRecommendations(startup.documentId);
+      fetchRecommendations(startup.id);
     }
   }, [fetchRecommendations, startup]);
 
@@ -84,13 +84,13 @@ export const Coach: React.FC = () => {
     // Mark recommendation as read
     if (!recommendation.readAt) {
       updateRecommendation({
-        documentId: recommendation.documentId,
+        id: recommendation.id,
         readAt: new Date().toISOString(),
       });
     }
 
     if (recommendation.patterns && recommendation.patterns.length > 0) {
-      navigate(`/explore/${recommendation.patterns[0].documentId}`);
+      navigate(`/explore/${recommendation.patterns[0].id}`);
     }
   };
 
@@ -309,7 +309,7 @@ export const Coach: React.FC = () => {
                 )
                 .map((recommendation) => (
                   <Box
-                    key={recommendation.documentId}
+                    key={recommendation.id}
                     onClick={() => handleRecommendationClick(recommendation)}
                     sx={{
                       cursor: 'pointer',
@@ -382,7 +382,7 @@ export const Coach: React.FC = () => {
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                               {recommendation.patterns.map((pattern) => (
                                 <Typography
-                                  key={pattern.documentId}
+                                  key={pattern.id}
                                   variant="body2"
                                   sx={{
                                     backgroundColor: 'action.hover',
@@ -413,7 +413,7 @@ export const Coach: React.FC = () => {
           onClose={handleCloseRequestForm}
           onSubmit={handleSubmitRequest}
           isSubmitting={isSubmittingRequest}
-          startupId={startup?.documentId}
+          startupId={startup?.id}
         />
 
         <Snackbar

@@ -17,9 +17,10 @@ import {
     FormGroup,
     Alert,
 } from '@mui/material';
-import { Psychology, Group, Share } from '@mui/icons-material';
+import { Psychology, Group, Share, ArrowBack } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
+import { useNavigate } from 'react-router-dom';
 
 const VALUES = [
     'Agility', 'Transparency', 'Modernity', 'Mindfulness', 'Caring', 'Dignity', 'Humility',
@@ -34,6 +35,7 @@ const VALUES = [
 ];
 
 const UserValues: React.FC = () => {
+    const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
     const [selectedValues, setSelectedValues] = useState<string[]>([]);
     const [top15Values, setTop15Values] = useState<string[]>([]);
@@ -190,6 +192,16 @@ const UserValues: React.FC = () => {
         <>
             <Header title="Your Values" />
             <CenteredFlexBox>
+                <Box sx={{ maxWidth: 1200, width: '100%', mt: 4 }}>
+                    <Box sx={{ mb: 1 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/user')}
+                            sx={{ color: 'text.secondary' }}
+                        >
+                            Back to User
+                        </Button>
+                    </Box>
                 <Card>
                     <CardContent>
                         <Box sx={{ textAlign: 'center', mb: 4 }}>
@@ -268,6 +280,7 @@ const UserValues: React.FC = () => {
                         </Box>
                     </CardContent>
                 </Card>
+                </Box>
             </CenteredFlexBox>
         </>
     );

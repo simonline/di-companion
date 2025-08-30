@@ -26,6 +26,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 import Header from '@/sections/Header';
 import { useDropzone } from 'react-dropzone';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import ArrowBack from '@mui/icons-material/ArrowBack';
 import { getAvatarUrl } from '@/lib/supabase';
 
 interface UpdateProfileFormValues {
@@ -80,12 +81,12 @@ function UpdateProfile() {
   // Initialize form values from user data
   const initialValues: UpdateProfileFormValues = {
     email: user.email || '',
-    givenName: user.givenName || '',
-    familyName: user.familyName || '',
+    givenName: user.given_name || '',
+    familyName: user.family_name || '',
     gender: user.gender || '',
     position: user.position || '',
     bio: user.bio || '',
-    linkedinProfile: user.linkedinProfile || '',
+    linkedinProfile: user.linkedin_profile || '',
     avatar: undefined,
   };
 
@@ -98,23 +99,27 @@ function UpdateProfile() {
 
     try {
       // If we're only updating a specific field, only include that field in the update
+      const fieldMap: Record<string, string> = {
+        givenName: 'given_name',
+        familyName: 'family_name',
+        linkedinProfile: 'linkedin_profile',
+      };
+      
       const updateData =
         isFieldSpecific && field
           ? {
               id: user.id,
-              documentId: user.documentId,
-              [field]: values[field as keyof UpdateProfileFormValues],
+              [fieldMap[field] || field]: values[field as keyof UpdateProfileFormValues],
             }
           : {
               id: user.id,
-              documentId: user.documentId,
               email: values.email,
-              givenName: values.givenName,
-              familyName: values.familyName,
+              given_name: values.givenName,
+              family_name: values.familyName,
               gender: values.gender,
               position: values.position,
               bio: values.bio,
-              linkedinProfile: values.linkedinProfile,
+              linkedin_profile: values.linkedinProfile,
               avatar: values.avatar,
             };
 
@@ -224,7 +229,7 @@ function UpdateProfile() {
 
     // Current avatar preview URL
     const [previewUrl, setPreviewUrl] = useState<string | null>(() => {
-      return getAvatarUrl(user.avatar?.formats?.thumbnail?.url) || null;
+      return getAvatarUrl(user.avatar_url) || null;
     });
 
     // Create a preview when a new file is selected
@@ -244,7 +249,7 @@ function UpdateProfile() {
       form.setFieldValue('avatar', undefined);
 
       // Reset to existing avatar if available
-      setPreviewUrl(getAvatarUrl(user.avatar?.url) || null);
+      setPreviewUrl(getAvatarUrl(user.avatar_url) || null);
     };
 
     return (
@@ -289,6 +294,15 @@ function UpdateProfile() {
     <>
       <Header title={isFieldSpecific ? `Edit ${field}` : 'Update Profile'} />
       <Container maxWidth="md" sx={{ my: 8 }}>
+        <Box sx={{ mb: 1 }}>
+          <Button
+            startIcon={<ArrowBack />}
+            onClick={() => navigate('/user')}
+            sx={{ color: 'text.secondary' }}
+          >
+            Back to User
+          </Button>
+        </Box>
         <Card elevation={3} sx={{ borderRadius: 2, overflow: 'visible' }}>
           <CardContent>
             <Formik

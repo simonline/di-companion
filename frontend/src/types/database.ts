@@ -384,8 +384,10 @@ export type Database = {
           expires_at: string | null
           id: string
           invitation_status: string | null
+          invited_by_id: string | null
           locale: string | null
           published_at: string | null
+          startup_id: string | null
           token: string | null
           updated_at: string
           updated_by_id: string | null
@@ -398,8 +400,10 @@ export type Database = {
           expires_at?: string | null
           id?: string
           invitation_status?: string | null
+          invited_by_id?: string | null
           locale?: string | null
           published_at?: string | null
+          startup_id?: string | null
           token?: string | null
           updated_at?: string
           updated_by_id?: string | null
@@ -412,72 +416,17 @@ export type Database = {
           expires_at?: string | null
           id?: string
           invitation_status?: string | null
+          invited_by_id?: string | null
           locale?: string | null
           published_at?: string | null
+          startup_id?: string | null
           token?: string | null
           updated_at?: string
           updated_by_id?: string | null
         }
-        Relationships: []
-      }
-      invitations_invited_by_lnk: {
-        Row: {
-          id: string
-          invitation_id: string | null
-          invitation_ord: number | null
-          user_id: string | null
-        }
-        Insert: {
-          id?: string
-          invitation_id?: string | null
-          invitation_ord?: number | null
-          user_id?: string | null
-        }
-        Update: {
-          id?: string
-          invitation_id?: string | null
-          invitation_ord?: number | null
-          user_id?: string | null
-        }
         Relationships: [
           {
-            foreignKeyName: "invitations_invited_by_lnk_fk"
-            columns: ["invitation_id"]
-            isOneToOne: false
-            referencedRelation: "invitations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      invitations_startup_lnk: {
-        Row: {
-          id: string
-          invitation_id: string | null
-          invitation_ord: number | null
-          startup_id: string | null
-        }
-        Insert: {
-          id?: string
-          invitation_id?: string | null
-          invitation_ord?: number | null
-          startup_id?: string | null
-        }
-        Update: {
-          id?: string
-          invitation_id?: string | null
-          invitation_ord?: number | null
-          startup_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invitations_startup_lnk_fk"
-            columns: ["invitation_id"]
-            isOneToOne: false
-            referencedRelation: "invitations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invitations_startup_lnk_ifk"
+            foreignKeyName: "invitations_startup_fk"
             columns: ["startup_id"]
             isOneToOne: false
             referencedRelation: "startups"
@@ -928,6 +877,7 @@ export type Database = {
       }
       recommendations: {
         Row: {
+          coach_id: string | null
           comment: string | null
           created_at: string
           created_by_id: string | null
@@ -936,11 +886,13 @@ export type Database = {
           locale: string | null
           published_at: string | null
           read_at: string | null
+          startup_id: string | null
           type: string | null
           updated_at: string
           updated_by_id: string | null
         }
         Insert: {
+          coach_id?: string | null
           comment?: string | null
           created_at?: string
           created_by_id?: string | null
@@ -949,11 +901,13 @@ export type Database = {
           locale?: string | null
           published_at?: string | null
           read_at?: string | null
+          startup_id?: string | null
           type?: string | null
           updated_at?: string
           updated_by_id?: string | null
         }
         Update: {
+          coach_id?: string | null
           comment?: string | null
           created_at?: string
           created_by_id?: string | null
@@ -962,34 +916,17 @@ export type Database = {
           locale?: string | null
           published_at?: string | null
           read_at?: string | null
+          startup_id?: string | null
           type?: string | null
           updated_at?: string
           updated_by_id?: string | null
-        }
-        Relationships: []
-      }
-      recommendations_coach_lnk: {
-        Row: {
-          id: string
-          recommendation_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          id?: string
-          recommendation_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          id?: string
-          recommendation_id?: string | null
-          user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "recommendations_coach_lnk_fk"
-            columns: ["recommendation_id"]
+            foreignKeyName: "recommendations_startup_fk"
+            columns: ["startup_id"]
             isOneToOne: false
-            referencedRelation: "recommendations"
+            referencedRelation: "startups"
             referencedColumns: ["id"]
           },
         ]
@@ -1030,42 +967,6 @@ export type Database = {
           },
         ]
       }
-      recommendations_startup_lnk: {
-        Row: {
-          id: string
-          recommendation_id: string | null
-          recommendation_ord: number | null
-          startup_id: string | null
-        }
-        Insert: {
-          id?: string
-          recommendation_id?: string | null
-          recommendation_ord?: number | null
-          startup_id?: string | null
-        }
-        Update: {
-          id?: string
-          recommendation_id?: string | null
-          recommendation_ord?: number | null
-          startup_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "recommendations_startup_lnk_fk"
-            columns: ["recommendation_id"]
-            isOneToOne: false
-            referencedRelation: "recommendations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "recommendations_startup_lnk_ifk"
-            columns: ["startup_id"]
-            isOneToOne: false
-            referencedRelation: "startups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       requests: {
         Row: {
           comment: string | null
@@ -1076,6 +977,7 @@ export type Database = {
           locale: string | null
           published_at: string | null
           read_at: string | null
+          startup_id: string | null
           updated_at: string
           updated_by_id: string | null
         }
@@ -1088,6 +990,7 @@ export type Database = {
           locale?: string | null
           published_at?: string | null
           read_at?: string | null
+          startup_id?: string | null
           updated_at?: string
           updated_by_id?: string | null
         }
@@ -1100,40 +1003,13 @@ export type Database = {
           locale?: string | null
           published_at?: string | null
           read_at?: string | null
+          startup_id?: string | null
           updated_at?: string
           updated_by_id?: string | null
         }
-        Relationships: []
-      }
-      requests_startup_lnk: {
-        Row: {
-          id: string
-          request_id: string | null
-          request_ord: number | null
-          startup_id: string | null
-        }
-        Insert: {
-          id?: string
-          request_id?: string | null
-          request_ord?: number | null
-          startup_id?: string | null
-        }
-        Update: {
-          id?: string
-          request_id?: string | null
-          request_ord?: number | null
-          startup_id?: string | null
-        }
         Relationships: [
           {
-            foreignKeyName: "requests_startup_lnk_fk"
-            columns: ["request_id"]
-            isOneToOne: false
-            referencedRelation: "requests"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "requests_startup_lnk_ifk"
+            foreignKeyName: "requests_startup_fk"
             columns: ["startup_id"]
             isOneToOne: false
             referencedRelation: "startups"
@@ -1148,8 +1024,11 @@ export type Database = {
           document_id: string | null
           id: string
           locale: string | null
+          method_id: string | null
+          pattern_id: string | null
           published_at: string | null
           result_text: string | null
+          startup_id: string | null
           updated_at: string
           updated_by_id: number | null
         }
@@ -1159,8 +1038,11 @@ export type Database = {
           document_id?: string | null
           id?: string
           locale?: string | null
+          method_id?: string | null
+          pattern_id?: string | null
           published_at?: string | null
           result_text?: string | null
+          startup_id?: string | null
           updated_at?: string
           updated_by_id?: number | null
         }
@@ -1170,8 +1052,11 @@ export type Database = {
           document_id?: string | null
           id?: string
           locale?: string | null
+          method_id?: string | null
+          pattern_id?: string | null
           published_at?: string | null
           result_text?: string | null
+          startup_id?: string | null
           updated_at?: string
           updated_by_id?: number | null
         }
@@ -1180,110 +1065,46 @@ export type Database = {
             foreignKeyName: "startup_methods_created_by_id_fk"
             columns: ["created_by_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "startup_methods_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "startup_methods_updated_by_id_fk"
             columns: ["updated_by_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
           },
-        ]
-      }
-      startup_methods_method_lnk: {
-        Row: {
-          id: string
-          method_id: string | null
-          startup_method_id: string | null
-        }
-        Insert: {
-          id?: string
-          method_id?: string | null
-          startup_method_id?: string | null
-        }
-        Update: {
-          id?: string
-          method_id?: string | null
-          startup_method_id?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "startup_methods_method_lnk_fk"
-            columns: ["startup_method_id"]
+            foreignKeyName: "startup_methods_updated_by_id_fk"
+            columns: ["updated_by_id"]
             isOneToOne: false
-            referencedRelation: "startup_methods"
+            referencedRelation: "up_users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "startup_methods_method_lnk_ifk"
+            foreignKeyName: "startup_methods_method_fk"
             columns: ["method_id"]
             isOneToOne: false
             referencedRelation: "methods"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      startup_methods_pattern_lnk: {
-        Row: {
-          id: string
-          pattern_id: string | null
-          startup_method_id: string | null
-        }
-        Insert: {
-          id?: string
-          pattern_id?: string | null
-          startup_method_id?: string | null
-        }
-        Update: {
-          id?: string
-          pattern_id?: string | null
-          startup_method_id?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "startup_methods_pattern_lnk_fk"
-            columns: ["startup_method_id"]
-            isOneToOne: false
-            referencedRelation: "startup_methods"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "startup_methods_pattern_lnk_ifk"
+            foreignKeyName: "startup_methods_pattern_fk"
             columns: ["pattern_id"]
             isOneToOne: false
             referencedRelation: "patterns"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      startup_methods_startup_lnk: {
-        Row: {
-          id: string
-          startup_id: string | null
-          startup_method_id: string | null
-        }
-        Insert: {
-          id?: string
-          startup_id?: string | null
-          startup_method_id?: string | null
-        }
-        Update: {
-          id?: string
-          startup_id?: string | null
-          startup_method_id?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "startup_methods_startup_lnk_fk"
-            columns: ["startup_method_id"]
-            isOneToOne: false
-            referencedRelation: "startup_methods"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "startup_methods_startup_lnk_ifk"
+            foreignKeyName: "startup_methods_startup_fk"
             columns: ["startup_id"]
             isOneToOne: false
             referencedRelation: "startups"
@@ -1299,12 +1120,15 @@ export type Database = {
           document_id: string | null
           id: string
           locale: string | null
+          pattern_id: string | null
           points: number | null
           published_at: string | null
           response: string | null
           response_type: string | null
+          startup_id: string | null
           updated_at: string
           updated_by_id: number | null
+          user_id: string | null
         }
         Insert: {
           applied_at?: string | null
@@ -1313,12 +1137,15 @@ export type Database = {
           document_id?: string | null
           id?: string
           locale?: string | null
+          pattern_id?: string | null
           points?: number | null
           published_at?: string | null
           response?: string | null
           response_type?: string | null
+          startup_id?: string | null
           updated_at?: string
           updated_by_id?: number | null
+          user_id?: string | null
         }
         Update: {
           applied_at?: string | null
@@ -1327,118 +1154,57 @@ export type Database = {
           document_id?: string | null
           id?: string
           locale?: string | null
+          pattern_id?: string | null
           points?: number | null
           published_at?: string | null
           response?: string | null
           response_type?: string | null
+          startup_id?: string | null
           updated_at?: string
           updated_by_id?: number | null
+          user_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "startup_patterns_created_by_id_fk"
             columns: ["created_by_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "startup_patterns_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "startup_patterns_updated_by_id_fk"
             columns: ["updated_by_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
           },
-        ]
-      }
-      startup_patterns_pattern_lnk: {
-        Row: {
-          id: string
-          pattern_id: string | null
-          startup_pattern_id: string | null
-        }
-        Insert: {
-          id?: string
-          pattern_id?: string | null
-          startup_pattern_id?: string | null
-        }
-        Update: {
-          id?: string
-          pattern_id?: string | null
-          startup_pattern_id?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "startup_patterns_pattern_lnk_fk"
-            columns: ["startup_pattern_id"]
+            foreignKeyName: "startup_patterns_updated_by_id_fk"
+            columns: ["updated_by_id"]
             isOneToOne: false
-            referencedRelation: "startup_patterns"
+            referencedRelation: "up_users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "startup_patterns_pattern_lnk_ifk"
+            foreignKeyName: "startup_patterns_pattern_fk"
             columns: ["pattern_id"]
             isOneToOne: false
             referencedRelation: "patterns"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      startup_patterns_startup_lnk: {
-        Row: {
-          id: string
-          startup_id: string | null
-          startup_pattern_id: string | null
-        }
-        Insert: {
-          id?: string
-          startup_id?: string | null
-          startup_pattern_id?: string | null
-        }
-        Update: {
-          id?: string
-          startup_id?: string | null
-          startup_pattern_id?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "startup_patterns_startup_lnk_fk"
-            columns: ["startup_pattern_id"]
-            isOneToOne: false
-            referencedRelation: "startup_patterns"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "startup_patterns_startup_lnk_ifk"
+            foreignKeyName: "startup_patterns_startup_fk"
             columns: ["startup_id"]
             isOneToOne: false
             referencedRelation: "startups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      startup_patterns_user_lnk: {
-        Row: {
-          id: string
-          startup_pattern_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          id?: string
-          startup_pattern_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          id?: string
-          startup_pattern_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "startup_patterns_user_lnk_fk"
-            columns: ["startup_pattern_id"]
-            isOneToOne: false
-            referencedRelation: "startup_patterns"
             referencedColumns: ["id"]
           },
         ]
@@ -1451,7 +1217,10 @@ export type Database = {
           document_id: string | null
           id: string
           locale: string | null
+          pattern_id: string | null
           published_at: string | null
+          question_id: string | null
+          startup_id: string | null
           updated_at: string
           updated_by_id: number | null
         }
@@ -1462,7 +1231,10 @@ export type Database = {
           document_id?: string | null
           id?: string
           locale?: string | null
+          pattern_id?: string | null
           published_at?: string | null
+          question_id?: string | null
+          startup_id?: string | null
           updated_at?: string
           updated_by_id?: number | null
         }
@@ -1473,7 +1245,10 @@ export type Database = {
           document_id?: string | null
           id?: string
           locale?: string | null
+          pattern_id?: string | null
           published_at?: string | null
+          question_id?: string | null
+          startup_id?: string | null
           updated_at?: string
           updated_by_id?: number | null
         }
@@ -1482,110 +1257,46 @@ export type Database = {
             foreignKeyName: "startup_questions_created_by_id_fk"
             columns: ["created_by_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "startup_questions_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "startup_questions_updated_by_id_fk"
             columns: ["updated_by_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
           },
-        ]
-      }
-      startup_questions_pattern_lnk: {
-        Row: {
-          id: string
-          pattern_id: string | null
-          startup_question_id: string | null
-        }
-        Insert: {
-          id?: string
-          pattern_id?: string | null
-          startup_question_id?: string | null
-        }
-        Update: {
-          id?: string
-          pattern_id?: string | null
-          startup_question_id?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "startup_questions_pattern_lnk_fk"
-            columns: ["startup_question_id"]
+            foreignKeyName: "startup_questions_updated_by_id_fk"
+            columns: ["updated_by_id"]
             isOneToOne: false
-            referencedRelation: "startup_questions"
+            referencedRelation: "up_users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "startup_questions_pattern_lnk_ifk"
+            foreignKeyName: "startup_questions_pattern_fk"
             columns: ["pattern_id"]
             isOneToOne: false
             referencedRelation: "patterns"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      startup_questions_question_lnk: {
-        Row: {
-          id: string
-          question_id: string | null
-          startup_question_id: string | null
-        }
-        Insert: {
-          id?: string
-          question_id?: string | null
-          startup_question_id?: string | null
-        }
-        Update: {
-          id?: string
-          question_id?: string | null
-          startup_question_id?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "startup_questions_question_lnk_fk"
-            columns: ["startup_question_id"]
-            isOneToOne: false
-            referencedRelation: "startup_questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "startup_questions_question_lnk_ifk"
+            foreignKeyName: "startup_questions_question_fk"
             columns: ["question_id"]
             isOneToOne: false
             referencedRelation: "questions"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      startup_questions_startup_lnk: {
-        Row: {
-          id: string
-          startup_id: string | null
-          startup_question_id: string | null
-        }
-        Insert: {
-          id?: string
-          startup_id?: string | null
-          startup_question_id?: string | null
-        }
-        Update: {
-          id?: string
-          startup_id?: string | null
-          startup_question_id?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "startup_questions_startup_lnk_fk"
-            columns: ["startup_question_id"]
-            isOneToOne: false
-            referencedRelation: "startup_questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "startup_questions_startup_lnk_ifk"
+            foreignKeyName: "startup_questions_startup_fk"
             columns: ["startup_id"]
             isOneToOne: false
             referencedRelation: "startups"
@@ -1597,6 +1308,7 @@ export type Database = {
         Row: {
           background: string | null
           categories: Json | null
+          coach_id: string | null
           created_at: string
           created_by_id: string | null
           document_id: string | null
@@ -1625,6 +1337,7 @@ export type Database = {
         Insert: {
           background?: string | null
           categories?: Json | null
+          coach_id?: string | null
           created_at?: string
           created_by_id?: string | null
           document_id?: string | null
@@ -1653,6 +1366,7 @@ export type Database = {
         Update: {
           background?: string | null
           categories?: Json | null
+          coach_id?: string | null
           created_at?: string
           created_by_id?: string | null
           document_id?: string | null
@@ -1679,35 +1393,6 @@ export type Database = {
           updated_by_id?: string | null
         }
         Relationships: []
-      }
-      startups_coach_lnk: {
-        Row: {
-          id: string
-          startup_id: string | null
-          startup_ord: number | null
-          user_id: string | null
-        }
-        Insert: {
-          id?: string
-          startup_id?: string | null
-          startup_ord?: number | null
-          user_id?: string | null
-        }
-        Update: {
-          id?: string
-          startup_id?: string | null
-          startup_ord?: number | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "startups_coach_lnk_fk"
-            columns: ["startup_id"]
-            isOneToOne: false
-            referencedRelation: "startups"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       startups_users_lnk: {
         Row: {
@@ -1779,6 +1464,334 @@ export type Database = {
           updated_by_id?: string | null
         }
         Relationships: []
+      }
+      up_permissions: {
+        Row: {
+          action: string | null
+          created_at: string
+          created_by_id: number | null
+          document_id: string | null
+          id: number
+          locale: string | null
+          published_at: string | null
+          updated_at: string
+          updated_by_id: number | null
+        }
+        Insert: {
+          action?: string | null
+          created_at?: string
+          created_by_id?: number | null
+          document_id?: string | null
+          id?: number
+          locale?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+        }
+        Update: {
+          action?: string | null
+          created_at?: string
+          created_by_id?: number | null
+          document_id?: string | null
+          id?: number
+          locale?: string | null
+          published_at?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "up_permissions_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "up_permissions_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "up_permissions_updated_by_id_fk"
+            columns: ["updated_by_id"]
+            isOneToOne: false
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "up_permissions_updated_by_id_fk"
+            columns: ["updated_by_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      up_permissions_role_lnk: {
+        Row: {
+          id: number
+          permission_id: number | null
+          permission_ord: number | null
+          role_id: number | null
+        }
+        Insert: {
+          id?: number
+          permission_id?: number | null
+          permission_ord?: number | null
+          role_id?: number | null
+        }
+        Update: {
+          id?: number
+          permission_id?: number | null
+          permission_ord?: number | null
+          role_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "up_permissions_role_lnk_fk"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "up_permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "up_permissions_role_lnk_ifk"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "up_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      up_roles: {
+        Row: {
+          created_at: string
+          created_by_id: number | null
+          description: string | null
+          document_id: string | null
+          id: number
+          locale: string | null
+          name: string | null
+          published_at: string | null
+          type: string | null
+          updated_at: string
+          updated_by_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by_id?: number | null
+          description?: string | null
+          document_id?: string | null
+          id?: number
+          locale?: string | null
+          name?: string | null
+          published_at?: string | null
+          type?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by_id?: number | null
+          description?: string | null
+          document_id?: string | null
+          id?: number
+          locale?: string | null
+          name?: string | null
+          published_at?: string | null
+          type?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "up_roles_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "up_roles_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "up_roles_updated_by_id_fk"
+            columns: ["updated_by_id"]
+            isOneToOne: false
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "up_roles_updated_by_id_fk"
+            columns: ["updated_by_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      up_users: {
+        Row: {
+          bio: string | null
+          blocked: boolean | null
+          confirmation_token: string | null
+          confirmed: boolean | null
+          created_at: string
+          created_by_id: number | null
+          document_id: string | null
+          email: string | null
+          family_name: string | null
+          gender: string | null
+          given_name: string | null
+          id: number
+          is_coach: boolean | null
+          is_phone_visible: boolean | null
+          linkedin_profile: string | null
+          locale: string | null
+          password: string | null
+          phone: string | null
+          position: string | null
+          provider: string | null
+          published_at: string | null
+          reset_password_token: string | null
+          updated_at: string
+          updated_by_id: number | null
+          username: string | null
+        }
+        Insert: {
+          bio?: string | null
+          blocked?: boolean | null
+          confirmation_token?: string | null
+          confirmed?: boolean | null
+          created_at?: string
+          created_by_id?: number | null
+          document_id?: string | null
+          email?: string | null
+          family_name?: string | null
+          gender?: string | null
+          given_name?: string | null
+          id?: number
+          is_coach?: boolean | null
+          is_phone_visible?: boolean | null
+          linkedin_profile?: string | null
+          locale?: string | null
+          password?: string | null
+          phone?: string | null
+          position?: string | null
+          provider?: string | null
+          published_at?: string | null
+          reset_password_token?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+          username?: string | null
+        }
+        Update: {
+          bio?: string | null
+          blocked?: boolean | null
+          confirmation_token?: string | null
+          confirmed?: boolean | null
+          created_at?: string
+          created_by_id?: number | null
+          document_id?: string | null
+          email?: string | null
+          family_name?: string | null
+          gender?: string | null
+          given_name?: string | null
+          id?: number
+          is_coach?: boolean | null
+          is_phone_visible?: boolean | null
+          linkedin_profile?: string | null
+          locale?: string | null
+          password?: string | null
+          phone?: string | null
+          position?: string | null
+          provider?: string | null
+          published_at?: string | null
+          reset_password_token?: string | null
+          updated_at?: string
+          updated_by_id?: number | null
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "up_users_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "up_users_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "up_users_updated_by_id_fk"
+            columns: ["updated_by_id"]
+            isOneToOne: false
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "up_users_updated_by_id_fk"
+            columns: ["updated_by_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      up_users_role_lnk: {
+        Row: {
+          id: number
+          role_id: number | null
+          user_id: number | null
+          user_ord: number | null
+        }
+        Insert: {
+          id?: number
+          role_id?: number | null
+          user_id?: number | null
+          user_ord?: number | null
+        }
+        Update: {
+          id?: number
+          role_id?: number | null
+          user_id?: number | null
+          user_ord?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "up_users_role_lnk_fk"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "up_users_role_lnk_fk"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "up_users_role_lnk_ifk"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "up_roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       upload_folders: {
         Row: {
@@ -1884,9 +1897,13 @@ export type Database = {
           document_id: string | null
           id: string
           locale: string | null
+          pattern_id: string | null
           published_at: string | null
+          question_id: string | null
+          startup_id: string | null
           updated_at: string
           updated_by_id: number | null
+          user_id: string | null
         }
         Insert: {
           answer?: Json | null
@@ -1895,9 +1912,13 @@ export type Database = {
           document_id?: string | null
           id?: string
           locale?: string | null
+          pattern_id?: string | null
           published_at?: string | null
+          question_id?: string | null
+          startup_id?: string | null
           updated_at?: string
           updated_by_id?: number | null
+          user_id?: string | null
         }
         Update: {
           answer?: Json | null
@@ -1906,119 +1927,59 @@ export type Database = {
           document_id?: string | null
           id?: string
           locale?: string | null
+          pattern_id?: string | null
           published_at?: string | null
+          question_id?: string | null
+          startup_id?: string | null
           updated_at?: string
           updated_by_id?: number | null
+          user_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "user_questions_created_by_id_fk"
             columns: ["created_by_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "user_questions_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "user_questions_updated_by_id_fk"
             columns: ["updated_by_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
           },
-        ]
-      }
-      user_questions_pattern_lnk: {
-        Row: {
-          id: string
-          pattern_id: string | null
-          user_question_id: string | null
-        }
-        Insert: {
-          id?: string
-          pattern_id?: string | null
-          user_question_id?: string | null
-        }
-        Update: {
-          id?: string
-          pattern_id?: string | null
-          user_question_id?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "user_questions_pattern_lnk_fk"
-            columns: ["user_question_id"]
+            foreignKeyName: "user_questions_updated_by_id_fk"
+            columns: ["updated_by_id"]
             isOneToOne: false
-            referencedRelation: "user_questions"
+            referencedRelation: "up_users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "user_questions_pattern_lnk_ifk"
+            foreignKeyName: "user_questions_pattern_fk"
             columns: ["pattern_id"]
             isOneToOne: false
             referencedRelation: "patterns"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      user_questions_question_lnk: {
-        Row: {
-          id: string
-          question_id: string | null
-          user_question_id: string | null
-        }
-        Insert: {
-          id?: string
-          question_id?: string | null
-          user_question_id?: string | null
-        }
-        Update: {
-          id?: string
-          question_id?: string | null
-          user_question_id?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "user_questions_question_lnk_fk"
-            columns: ["user_question_id"]
-            isOneToOne: false
-            referencedRelation: "user_questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_questions_question_lnk_ifk"
+            foreignKeyName: "user_questions_question_fk"
             columns: ["question_id"]
             isOneToOne: false
             referencedRelation: "questions"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      user_questions_startup_lnk: {
-        Row: {
-          id: string
-          startup_id: string | null
-          user_question_id: string | null
-        }
-        Insert: {
-          id?: string
-          startup_id?: string | null
-          user_question_id?: string | null
-        }
-        Update: {
-          id?: string
-          startup_id?: string | null
-          user_question_id?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "user_questions_startup_lnk_fk"
-            columns: ["user_question_id"]
-            isOneToOne: false
-            referencedRelation: "user_questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_questions_startup_lnk_ifk"
+            foreignKeyName: "user_questions_startup_fk"
             columns: ["startup_id"]
             isOneToOne: false
             referencedRelation: "startups"
@@ -2026,37 +1987,68 @@ export type Database = {
           },
         ]
       }
-      user_questions_user_lnk: {
-        Row: {
-          id: string
-          user_id: string | null
-          user_question_id: string | null
-        }
-        Insert: {
-          id?: string
-          user_id?: string | null
-          user_question_id?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string | null
-          user_question_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_questions_user_lnk_fk"
-            columns: ["user_question_id"]
-            isOneToOne: false
-            referencedRelation: "user_questions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
+      _up_users_staging: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          email: string | null
+          firstname: string | null
+          gender: string | null
+          is_coach: boolean | null
+          is_phone_visible: boolean | null
+          lastname: string | null
+          legacy_up_user_id: number | null
+          linkedin_profile: string | null
+          locale: string | null
+          phone: string | null
+          position: string | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          email?: string | null
+          firstname?: string | null
+          gender?: string | null
+          is_coach?: boolean | null
+          is_phone_visible?: boolean | null
+          lastname?: string | null
+          legacy_up_user_id?: number | null
+          linkedin_profile?: string | null
+          locale?: string | null
+          phone?: string | null
+          position?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          email?: string | null
+          firstname?: string | null
+          gender?: string | null
+          is_coach?: boolean | null
+          is_phone_visible?: boolean | null
+          lastname?: string | null
+          legacy_up_user_id?: number | null
+          linkedin_profile?: string | null
+          locale?: string | null
+          phone?: string | null
+          position?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      is_in_startup: {
+        Args: { sid: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

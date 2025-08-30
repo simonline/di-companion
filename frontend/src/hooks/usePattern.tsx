@@ -9,7 +9,7 @@ interface UsePattern {
 }
 
 interface UsePatternReturn extends UsePattern {
-  fetchPattern: (documentId: string) => void;
+  fetchPattern: (id: string) => void;
   clearError: () => void;
 }
 
@@ -24,9 +24,9 @@ export default function usePattern(): UsePatternReturn {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const fetchPattern = useCallback(async (documentId: string) => {
+  const fetchPattern = useCallback(async (id: string) => {
     try {
-      const pattern = await supabaseGetPattern(documentId);
+      const pattern = await supabaseGetPattern(id);
       setState({ pattern, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

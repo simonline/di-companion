@@ -97,7 +97,7 @@ export default function OverviewView() {
     const fetchData = async () => {
       try {
         // Get startup IDs from user's coachees
-        const startupIds = user?.coachees?.map((startup) => startup.documentId) || [];
+        const startupIds = user?.coachees?.map((startup) => startup.id) || [];
         const [requestsData, startupsData] = await Promise.all([
           supabaseGetRequests(startupIds),
           supabaseGetAvailableStartups(),
@@ -109,8 +109,8 @@ export default function OverviewView() {
         // Fetch patterns for each startup
         if (user?.coachees) {
           user.coachees.forEach((startup) => {
-            if (startup.documentId) {
-              fetchStartupPatterns(startup.documentId);
+            if (startup.id) {
+              fetchStartupPatterns(startup.id);
             }
           });
         }
@@ -137,7 +137,7 @@ export default function OverviewView() {
     if (!startupPatterns) return 'No activity yet';
 
     const startupPatternsForStartup = startupPatterns.filter(
-      (pattern) => pattern.startup.documentId === startup.documentId
+      (pattern) => pattern.startup.id === startup.id
     );
 
     if (startupPatternsForStartup.length === 0) return 'No activity yet';
@@ -155,7 +155,7 @@ export default function OverviewView() {
     try {
       // Get the startup to be assigned
       const startupToAssign = availableStartups.find(
-        (startup) => startup.documentId === selectedStartup,
+        (startup) => startup.id === selectedStartup,
       );
       if (!startupToAssign) return;
 
@@ -165,7 +165,7 @@ export default function OverviewView() {
       // Update the user with the new coachees list
       await supabaseUpdateUser({
         id: user.id,
-        documentId: user.documentId,
+        id: user.id,
         coachees: updatedCoachees,
       });
 
@@ -185,12 +185,12 @@ export default function OverviewView() {
 
       // Get the current coachees excluding the one to be unassigned
       const updatedCoachees =
-        user.coachees?.filter((startup) => startup.documentId !== startupId) || [];
+        user.coachees?.filter((startup) => startup.id !== startupId) || [];
 
       // Update the user with the new coachees list
       await supabaseUpdateUser({
         id: user.id,
-        documentId: user.documentId,
+        id: user.id,
         coachees: updatedCoachees,
       });
 
@@ -217,7 +217,7 @@ export default function OverviewView() {
 
   const handleUnassignFromMenu = () => {
     if (selectedStartupForMenu) {
-      handleUnassignStartup(selectedStartupForMenu.documentId);
+      handleUnassignStartup(selectedStartupForMenu.id);
       handleMenuClose();
     }
   };
@@ -249,14 +249,14 @@ export default function OverviewView() {
 
     try {
       await supabaseUpdateStartup({
-        documentId: selectedStartupForMenu.documentId,
+        id: selectedStartupForMenu.id,
         categories: selectedCategories,
       });
 
       // Update the local state to reflect changes
       if (user?.coachees) {
         const updatedCoachees = user.coachees.map(startup => {
-          if (startup.documentId === selectedStartupForMenu.documentId) {
+          if (startup.id === selectedStartupForMenu.id) {
             return { ...startup, categories: selectedCategories };
           }
           return startup;
@@ -266,7 +266,7 @@ export default function OverviewView() {
         if (user.id) {
           await supabaseUpdateUser({
             id: user.id,
-            documentId: user.documentId,
+            id: user.id,
             coachees: updatedCoachees,
           });
         }
@@ -290,9 +290,9 @@ export default function OverviewView() {
   // Toggle startup selection for bulk operations
   const handleStartupSelection = (startup: Startup) => {
     setSelectedStartups(prev => {
-      const isSelected = prev.some(s => s.documentId === startup.documentId);
+      const isSelected = prev.some(s => s.id === startup.id);
       if (isSelected) {
-        return prev.filter(s => s.documentId !== startup.documentId);
+        return prev.filter(s => s.id !== startup.id);
       } else {
         return [...prev, startup];
       }
@@ -329,7 +329,7 @@ export default function OverviewView() {
       // Update each selected startup
       const updatePromises = selectedStartups.map(startup =>
         supabaseUpdateStartup({
-          documentId: startup.documentId,
+          id: startup.id,
           categories: selectedCategories,
         })
       );
@@ -339,7 +339,7 @@ export default function OverviewView() {
       // Update the local state to reflect changes
       if (user?.coachees) {
         const updatedCoachees = user.coachees.map(startup => {
-          if (selectedStartups.some(s => s.documentId === startup.documentId)) {
+          if (selectedStartups.some(s => s.id === startup.id)) {
             return { ...startup, categories: selectedCategories };
           }
           return startup;
@@ -349,7 +349,7 @@ export default function OverviewView() {
         if (user.id) {
           await supabaseUpdateUser({
             id: user.id,
-            documentId: user.documentId,
+            id: user.id,
             coachees: updatedCoachees,
           });
         }
@@ -488,17 +488,17 @@ export default function OverviewView() {
                 user.coachees.map((startup, index, array) => {
                   // Count unread requests for this startup
                   const startupRequests = requests.filter(
-                    (r) => r.startup?.documentId === startup.documentId && !r.readAt,
+                    (r) => r.startup?.id === startup.id && !r.readAt,
                   ).length;
 
                   // Check if this startup is selected for bulk operations
-                  const isSelected = selectedStartups.some(s => s.documentId === startup.documentId);
+                  const isSelected = selectedStartups.some(s => s.id === startup.id);
 
                   return (
-                    <React.Fragment key={startup.documentId || index}>
+                    <React.Fragment key={startup.id || index}>
                       <ListItem
                         component={isSelectionMode ? 'div' : Link}
-                        to={isSelectionMode ? undefined : `/startups/${startup.documentId || startup.name?.toLowerCase()}`}
+                        to={isSelectionMode ? undefined : `/startups/${startup.id || startup.name?.toLowerCase()}`}
                         secondaryAction={
                           isSelectionMode ? undefined : (
                             <IconButton edge="end" onClick={(e) => handleMenuClick(e, startup)}>
@@ -638,7 +638,7 @@ export default function OverviewView() {
                 label="Select Startup"
               >
                 {availableStartups.map((startup) => (
-                  <MenuItem key={startup.documentId} value={startup.documentId}>
+                  <MenuItem key={startup.id} value={startup.id}>
                     {startup.name}
                   </MenuItem>
                 ))}

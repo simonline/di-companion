@@ -166,7 +166,7 @@ const Progress: React.FC = () => {
 
   useEffect(() => {
     if (startup) {
-      fetchStartupPatterns(startup.documentId);
+      fetchStartupPatterns(startup.id);
     }
   }, [fetchStartupPatterns, startup]);
 
@@ -348,8 +348,8 @@ const Progress: React.FC = () => {
         <List sx={{ width: '100%' }}>
           {filteredPatterns?.map((startupPattern) => (
             <ListItem
-              key={startupPattern.documentId}
-              onClick={() => navigate(state?.nextUrl || `/progress/${startupPattern.pattern?.documentId}`)}
+              key={startupPattern.id}
+              onClick={() => navigate(state?.nextUrl || `/progress/${startupPattern.pattern?.id}`)}
               sx={{ cursor: 'pointer', padding: 0 }}
             >
               <PatternListItem startupPattern={startupPattern} />

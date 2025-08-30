@@ -81,7 +81,7 @@ function Startup() {
       description: 'Complete your startup information and vision',
       icon: RocketLaunch,
       color: categoryColors.team,
-      path: `/profile/startup/${startup.documentId}/edit`,
+      path: `/profile/startup/${startup.id}/edit`,
       completed: true // You can track actual completion status
     },
     {
@@ -90,7 +90,7 @@ function Startup() {
       description: 'Add team members and define roles',
       icon: Group,
       color: categoryColors.team,
-      path: `/profile/startup/${startup.documentId}/team`,
+      path: `/profile/startup/${startup.id}/team`,
       completed: false
     },
     {

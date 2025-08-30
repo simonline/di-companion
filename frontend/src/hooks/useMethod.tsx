@@ -9,7 +9,7 @@ interface UseMethod {
 }
 
 interface UseMethodReturn extends UseMethod {
-    fetchMethod: (documentId: string) => void;
+    fetchMethod: (id: string) => void;
     clearError: () => void;
 }
 
@@ -24,9 +24,9 @@ export default function useMethod(): UseMethodReturn {
         setState((prev) => ({ ...prev, error: null }));
     }, []);
 
-    const fetchMethod = useCallback(async (documentId: string) => {
+    const fetchMethod = useCallback(async (id: string) => {
         try {
-            const method = await supabaseGetMethod(documentId);
+            const method = await supabaseGetMethod(id);
             setState({ method, loading: false, error: null });
         } catch (err: unknown) {
             const error = err as Error;

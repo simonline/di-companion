@@ -13,7 +13,7 @@ interface UseStartupPattern {
 }
 
 interface UseStartupPatternReturn extends UseStartupPattern {
-  fetchStartupPattern: (documentId: string) => void;
+  fetchStartupPattern: (id: string) => void;
   createStartupPattern: (createStartupPattern: CreateStartupPattern) => void;
   updateStartupPattern: (updateStartupPattern: UpdateStartupPattern) => void;
   clearError: () => void;
@@ -30,9 +30,9 @@ export default function useStartupPattern(): UseStartupPatternReturn {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const fetchStartupPattern = useCallback(async (documentId: string) => {
+  const fetchStartupPattern = useCallback(async (id: string) => {
     try {
-      const startupPattern = await supabaseGetStartupPattern(documentId);
+      const startupPattern = await supabaseGetStartupPattern(id);
       setState({ startupPattern, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

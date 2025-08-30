@@ -59,7 +59,7 @@ const RequestList: React.FC<RequestListProps> = ({
 
   const handleDelete = () => {
     if (selectedRequest) {
-      onDelete(selectedRequest.documentId);
+      onDelete(selectedRequest.id);
       handleCloseMenu();
     }
   };
@@ -105,7 +105,7 @@ const RequestList: React.FC<RequestListProps> = ({
           <TableBody>
             {sortedRequests.map((request) => (
               <TableRow
-                key={request.documentId}
+                key={request.id}
                 sx={{
                   '&:last-child td, &:last-child th': { border: 0 },
                   backgroundColor: request.readAt ? undefined : 'rgba(25, 118, 210, 0.04)',

@@ -46,7 +46,7 @@ const Survey: React.FC = () => {
     error: userQuestionsError,
   } = useUserQuestions();
   const { createUserQuestion, updateUserQuestion } = useUserQuestion();
-  const userDocumentId = user?.documentId;
+  const userId = user?.id;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
@@ -70,19 +70,19 @@ const Survey: React.FC = () => {
   }, [fetchSurveyByName, pattern]);
 
   useEffect(() => {
-    if (startup && userDocumentId && patternId) {
-      fetchUserQuestions(startup?.documentId, userDocumentId, patternId);
+    if (startup && userId && patternId) {
+      fetchUserQuestions(startup?.id, userId, patternId);
     }
-  }, [fetchUserQuestions, startup, userDocumentId, patternId]);
+  }, [fetchUserQuestions, startup, userId, patternId]);
 
   useEffect(() => {
     if (startup && patternId) {
-      fetchStartupPatterns(startup.documentId, patternId);
+      fetchStartupPatterns(startup.id, patternId);
     }
   }, [fetchStartupPatterns, startup, patternId]);
 
   useEffect(() => {
-    if (isApplied && pattern && survey && userQuestions && startupPatterns && startup?.documentId && patternId) {
+    if (isApplied && pattern && survey && userQuestions && startupPatterns && startup?.id && patternId) {
       const points = calculatePoints(
         [
           ...pattern.questions,
@@ -96,9 +96,9 @@ const Survey: React.FC = () => {
       // If no startup pattern exists, create one
       if (!startupPatterns || startupPatterns.length === 0) {
         createStartupPattern({
-          startup: { set: { documentId: startup.documentId } },
-          user: { set: { documentId: user?.documentId as string } },
-          pattern: { set: { documentId: patternId } },
+          startup: { set: { id: startup.id } },
+          user: { set: { id: user?.id as string } },
+          pattern: { set: { id: patternId } },
           responseType: ResponseTypeEnum.accept,
           response: ResponseEnum.share_reflection,
           appliedAt: new Date().toISOString(),
@@ -107,7 +107,7 @@ const Survey: React.FC = () => {
       } else {
         // Update the existing startup pattern with the points
         updateStartupPattern({
-          documentId: startupPatterns[0].documentId,
+          id: startupPatterns[0].id,
           appliedAt: new Date().toISOString(),
           points,
         });
@@ -145,9 +145,9 @@ const Survey: React.FC = () => {
 
       // Process each question's answer
       const questionPromises = pattern.questions.map(async (question) => {
-        const answer = values[question.documentId];
+        const answer = values[question.id];
         const existingResponse = userQuestions?.find(
-          (uq) => uq.question.documentId === question.documentId,
+          (uq) => uq.question.id === question.id,
         );
 
         // Skip if answer is empty and question is not required
@@ -160,16 +160,16 @@ const Survey: React.FC = () => {
         }
 
         const payload = {
-          user: { set: { documentId: user.documentId } },
-          pattern: { set: { documentId: patternId } },
-          question: { set: { documentId: question.documentId } },
-          startup: { set: { documentId: user.startups?.[0]?.documentId } },
+          user: { set: { id: user.id } },
+          pattern: { set: { id: patternId } },
+          question: { set: { id: question.id } },
+          startup: { set: { id: user.startups?.[0]?.id } },
           answer: JSON.stringify(answer),
         };
 
         if (existingResponse) {
           return updateUserQuestion({
-            documentId: existingResponse.documentId,
+            id: existingResponse.id,
             ...payload,
           });
         } else {
@@ -182,7 +182,7 @@ const Survey: React.FC = () => {
 
       // Refetch to get the created/updated user questions
       clearUserQuestions();
-      await fetchUserQuestions(startup?.documentId, user.documentId, patternId);
+      await fetchUserQuestions(startup?.id, user.id, patternId);
       setActiveStep(1);
     } catch (error) {
       notificationsActions.push({
@@ -201,9 +201,9 @@ const Survey: React.FC = () => {
 
       // Process each question's answer
       const questionPromises = survey.questions.map(async (question) => {
-        const answer = values[question.documentId];
+        const answer = values[question.id];
         const existingResponse = userQuestions?.find(
-          (uq) => uq.question.documentId === question.documentId,
+          (uq) => uq.question.id === question.id,
         );
 
         // Skip if answer is empty and question is not required
@@ -216,16 +216,16 @@ const Survey: React.FC = () => {
         }
 
         const payload = {
-          user: { set: { documentId: user.documentId } },
-          pattern: { set: { documentId: patternId } },
-          question: { set: { documentId: question.documentId } },
-          startup: { set: { documentId: user.startups?.[0]?.documentId } },
+          user: { set: { id: user.id } },
+          pattern: { set: { id: patternId } },
+          question: { set: { id: question.id } },
+          startup: { set: { id: user.startups?.[0]?.id } },
           answer: JSON.stringify(answer),
         };
 
         if (existingResponse) {
           return updateUserQuestion({
-            documentId: existingResponse.documentId,
+            id: existingResponse.id,
             ...payload,
           });
         } else {
@@ -238,7 +238,7 @@ const Survey: React.FC = () => {
 
       // Refetch to get the created/updated user questions (for points calculation)
       clearUserQuestions();
-      fetchUserQuestions(startup?.documentId, user.documentId, patternId);
+      fetchUserQuestions(startup?.id, user.id, patternId);
       setIsApplied(true);
     } catch (error) {
       notificationsActions.push({
@@ -257,7 +257,7 @@ const Survey: React.FC = () => {
 
       // Find the user's response to the question
       const userQuestion = userQuestions.find(
-        (uq) => uq.question.documentId === question.documentId,
+        (uq) => uq.question.id === question.id,
       );
 
       if (!userQuestion) return acc;
@@ -330,7 +330,7 @@ const Survey: React.FC = () => {
             <Paper sx={{ p: 3 }}>
               <Button
                 variant="outlined"
-                onClick={() => navigate(`/progress/${pattern.documentId}`)}
+                onClick={() => navigate(`/progress/${pattern.id}`)}
                 startIcon={<ArrowBackIcon />}
                 size="small"
                 sx={{ mb: 4 }}
@@ -379,10 +379,10 @@ const Survey: React.FC = () => {
                           <Typography variant="body2" color="error">
                             Some fields are not valid:
                             {pattern.questions
-                              .filter((question) => errors[question.documentId])
+                              .filter((question) => errors[question.id])
                               .map((question) => (
-                                <Typography key={question.documentId}>
-                                  {question.question}: {errors[question.documentId]}
+                                <Typography key={question.id}>
+                                  {question.question}: {errors[question.id]}
                                 </Typography>
                               ))}
                           </Typography>
@@ -405,7 +405,7 @@ const Survey: React.FC = () => {
                         {pattern.questions
                           .sort((a: Question, b: Question) => a.order - b.order)
                           .map((question: Question) => (
-                            <Field key={question.documentId} name={question.documentId}>
+                            <Field key={question.id} name={question.id}>
                               {(fieldProps: any) => (
                                 <SurveyField
                                   question={question}
@@ -453,7 +453,7 @@ const Survey: React.FC = () => {
                         {survey.questions
                           .sort((a: Question, b: Question) => a.order - b.order)
                           .map((question: Question) => (
-                            <Field key={question.documentId} name={question.documentId}>
+                            <Field key={question.id} name={question.id}>
                               {(fieldProps: any) => (
                                 <SurveyField
                                   question={question}

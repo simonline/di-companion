@@ -1,67 +1,31 @@
 import { CategoryEnum } from '@/utils/constants';
+import type { Database } from './database';
 
 export interface UserRegistration {
   username: string;
   email: string;
   password: string;
-  givenName: string;
-  familyName: string;
+  given_name: string;
+  family_name: string;
   gender?: string;
   position?: string;
   bio?: string;
-  linkedinProfile?: string;
+  linkedin_profile?: string;
   avatar?: File;
-  isCoach?: boolean;
+  is_coach?: boolean;
   phone?: string;
-  isPhoneVisible?: boolean;
+  is_phone_visible?: boolean;
 }
 
-export interface UpdateUser {
-  documentId: string;
-  id?: number;
-  email?: string;
-  givenName?: string;
-  familyName?: string;
-  gender?: string;
-  position?: string;
-  bio?: string;
-  linkedinProfile?: string;
+export type UpdateUser = Database['public']['Tables']['profiles']['Update'] & {
+  id: string;
   avatar?: File;
-  coachees?: Startup[];
   startups?: Startup[];
-}
+};
 
-export interface User {
-  documentId: string;
-  id: number;
-  username: string;
-  email: string;
-  phone?: string;
-  isPhoneVisible?: boolean;
-  password: string;
-  provider: string;
-  confirmed: boolean;
-  blocked: boolean;
-  givenName: string;
-  familyName: string;
-  gender?: string;
-  position?: string;
-  bio?: string;
-  linkedinProfile?: string;
-  avatar?: {
-    id: number;
-    url: string;
-    formats?: {
-      thumbnail?: { url: string };
-      small?: { url: string };
-      medium?: { url: string };
-      large?: { url: string };
-    };
-  };
-  startups: Startup[];
-  isCoach?: boolean;
-  coachees?: Startup[];
-}
+export type User = Database['public']['Tables']['profiles']['Row'] & {
+  startups?: Startup[];
+};
 
 export interface SupabaseAuthResponse {
   jwt: string;
@@ -84,7 +48,7 @@ export interface SupabaseError {
 }
 
 export interface SupabaseRelated {
-  documentId: string;
+  id: string;
 }
 
 export interface SupabaseSetRelated {
@@ -92,7 +56,7 @@ export interface SupabaseSetRelated {
 }
 
 export interface Pattern {
-  documentId: string;
+  id: string;
   name: string;
   description: string;
   relatedPatterns: Pattern[];
@@ -109,7 +73,7 @@ export interface Pattern {
 }
 
 export interface Method {
-  documentId: string;
+  id: string;
   name: string;
   description: string;
   phases: string[];
@@ -148,7 +112,7 @@ export interface ScaleOptions {
 }
 
 export interface Question {
-  documentId: string;
+  id: string;
   question: string;
   type: QuestionType;
   options: QuestionOption[] | ScaleOptions | null;
@@ -162,14 +126,14 @@ export interface Question {
 }
 
 export interface Survey {
-  documentId: string;
+  id: string;
   name: string;
   description: string;
   questions: Question[];
 }
 
 export interface Startup {
-  documentId: string;
+  id: string;
   name: string;
   startDate: string;
   foundersCount: number;
@@ -214,7 +178,7 @@ export interface CreateStartup {
 }
 
 export interface UpdateStartup {
-  documentId: string;
+  id: string;
   name?: string;
   startDate?: string;
   foundersCount?: number;
@@ -252,7 +216,7 @@ export enum ResponseEnum {
 }
 
 export interface StartupPattern {
-  documentId: string;
+  id: string;
   startup: Startup;
   pattern: Pattern;
   createdAt: string;
@@ -275,7 +239,7 @@ export interface CreateStartupPattern {
 }
 
 export interface UpdateStartupPattern {
-  documentId: string;
+  id: string;
   startup?: SupabaseSetRelated;
   pattern?: SupabaseSetRelated;
   responseType?: ResponseTypeEnum;
@@ -286,7 +250,7 @@ export interface UpdateStartupPattern {
 }
 
 export interface StartupMethod {
-  documentId: string;
+  id: string;
   id: string;
   startup: Startup;
   pattern: Pattern;
@@ -304,7 +268,7 @@ export interface CreateStartupMethod {
 }
 
 export interface UpdateStartupMethod {
-  documentId: string;
+  id: string;
   startup?: SupabaseSetRelated;
   pattern?: SupabaseSetRelated;
   method?: SupabaseSetRelated;
@@ -313,7 +277,7 @@ export interface UpdateStartupMethod {
 }
 
 export interface Recommendation {
-  documentId: string;
+  id: string;
   comment: string;
   type: 'pattern' | 'url' | 'file' | 'contact';
   patterns?: Pattern[];
@@ -324,7 +288,7 @@ export interface Recommendation {
 }
 
 export interface Request {
-  documentId: string;
+  id: string;
   comment: string;
   startup?: Startup;
   readAt?: string;
@@ -338,7 +302,7 @@ export enum InvitationStatusEnum {
 }
 
 export interface Invitation {
-  documentId: string;
+  id: string;
   startup: Startup;
   invitedBy: User;
   email: string;
@@ -356,7 +320,7 @@ export interface CreateInvitation {
 }
 
 export interface UpdateInvitation {
-  documentId: string;
+  id: string;
   invitationStatus?: InvitationStatusEnum;
 }
 
@@ -377,7 +341,7 @@ export interface SupabaseCollectionResponse<T> {
 }
 
 export interface UserQuestion {
-  documentId: string;
+  id: string;
   user: User;
   pattern: Pattern;
   question: Question;
@@ -392,7 +356,7 @@ export interface CreateUserQuestion {
 }
 
 export interface UpdateUserQuestion {
-  documentId: string;
+  id: string;
   user?: SupabaseSetRelated;
   pattern?: SupabaseSetRelated;
   question?: SupabaseSetRelated;

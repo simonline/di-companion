@@ -13,6 +13,7 @@ import {
   CardContent,
   Container,
 } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
 import {
@@ -70,7 +71,7 @@ function StartupEdit() {
     setIsSubmitting(true);
     try {
       await updateStartup({
-        documentId: id!,
+        id: id!,
         ...values,
       });
       // Success! Redirect back to profile
@@ -100,6 +101,15 @@ function StartupEdit() {
     <>
       <Header title="Edit Startup" />
       <Container maxWidth="md" sx={{ mb: 8 }}>
+        <Box sx={{ mb: 1, mt: 4 }}>
+          <Button
+            startIcon={<ArrowBack />}
+            onClick={() => navigate('/startup')}
+            sx={{ color: 'text.secondary' }}
+          >
+            Back to Startup
+          </Button>
+        </Box>
         <Card elevation={3} sx={{ borderRadius: 2, overflow: 'visible' }}>
           <CardContent sx={{ p: 0 }}>
             <Box sx={{ px: 3, pt: 3 }}>
@@ -110,10 +120,10 @@ function StartupEdit() {
                 Update your startup information to keep your profile current.
               </Typography>
 
-              <Stepper 
-                activeStep={activeStep} 
-                alternativeLabel 
-                sx={{ 
+              <Stepper
+                activeStep={activeStep}
+                alternativeLabel
+                sx={{
                   mb: 4,
                   '& .MuiStepLabel-label': {
                     display: { xs: 'none', sm: 'block' }

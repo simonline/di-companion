@@ -10,9 +10,9 @@ interface UseUserQuestions {
 
 interface UseUserQuestionsReturn extends UseUserQuestions {
     fetchUserQuestions: (
-        startupDocumentId?: string,
-        userDocumentId?: string,
-        patternDocumentId?: string,
+        startupId?: string,
+        userId?: string,
+        patternId?: string,
     ) => void;
     clearError: () => void;
     clearUserQuestions: () => void;
@@ -34,12 +34,12 @@ export default function useUserQuestions(): UseUserQuestionsReturn {
     }, []);
 
     const fetchUserQuestions = useCallback(
-        async (startupDocumentId?: string, userDocumentId?: string, patternDocumentId?: string) => {
+        async (startupId?: string, userId?: string, patternId?: string) => {
             try {
                 const userQuestions = await supabaseGetUserQuestions(
-                    startupDocumentId,
-                    userDocumentId,
-                    patternDocumentId,
+                    startupId,
+                    userId,
+                    patternId,
                 );
                 setState({ userQuestions, loading: false, error: null });
             } catch (err: unknown) {

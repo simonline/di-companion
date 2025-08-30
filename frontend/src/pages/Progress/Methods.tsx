@@ -53,13 +53,13 @@ const Methods: React.FC = () => {
 
   useEffect(() => {
     if (pattern && pattern.methods && pattern.methods.length > 0) {
-      fetchMethod(pattern.methods[0].documentId);
+      fetchMethod(pattern.methods[0].id);
     }
   }, [fetchMethod, pattern]);
 
   useEffect(() => {
     if (startup && pattern && method) {
-      findPatternMethod(startup.documentId, pattern.documentId, method.documentId);
+      findPatternMethod(startup.id, pattern.id, method.id);
     }
   }, [findPatternMethod, startup, pattern, method]);
 
@@ -74,15 +74,15 @@ const Methods: React.FC = () => {
       if (!pattern || !startup || !method) return;
       if (startupMethod) {
         updateStartupMethod({
-          documentId: startupMethod.documentId,
+          id: startupMethod.id,
           resultText: values.resultText,
           resultFiles: values.resultFiles,
         });
       } else {
         createStartupMethod({
-          startup: { set: { documentId: startup.documentId } },
-          method: { set: { documentId: method.documentId } },
-          pattern: { set: { documentId: pattern.documentId } },
+          startup: { set: { id: startup.id } },
+          method: { set: { id: method.id } },
+          pattern: { set: { id: pattern.id } },
           resultText: values.resultText,
           resultFiles: values.resultFiles,
         });
@@ -279,7 +279,7 @@ const Methods: React.FC = () => {
             <Paper sx={{ p: 3 }}>
               <Button
                 variant="outlined"
-                onClick={() => navigate(`/progress/${pattern.documentId}`)}
+                onClick={() => navigate(`/progress/${pattern.id}`)}
                 startIcon={<ArrowBackIcon />}
                 size="small"
                 sx={{ mb: 4 }}

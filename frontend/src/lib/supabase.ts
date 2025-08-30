@@ -17,7 +17,7 @@ if (!supabaseInstance) {
     console.error('[Supabase Init] VITE_SUPABASE_URL:', supabaseUrl || 'NOT SET');
     console.error('[Supabase Init] VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'SET' : 'NOT SET');
   }
-  
+
   supabaseInstance = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: true,
@@ -136,8 +136,8 @@ export async function supabaseRegister(userData: UserRegistration) {
     options: {
       data: {
         username: userData.username,
-        given_name: userData.givenName,
-        family_name: userData.familyName,
+        given_name: userData.given_name,
+        family_name: userData.family_name,
       },
     },
   });
@@ -151,15 +151,15 @@ export async function supabaseRegister(userData: UserRegistration) {
       id: authData.user!.id,
       email: userData.email,
       username: userData.username,
-      given_name: userData.givenName,
-      family_name: userData.familyName,
+      given_name: userData.given_name,
+      family_name: userData.family_name,
       gender: userData.gender,
       position: userData.position,
       bio: userData.bio,
-      linkedin_profile: userData.linkedinProfile,
-      is_coach: userData.isCoach || false,
+      linkedin_profile: userData.linkedin_profile,
+      is_coach: userData.is_coach || false,
       phone: userData.phone,
-      is_phone_visible: userData.isPhoneVisible || false,
+      is_phone_visible: userData.is_phone_visible || false,
     })
     .select()
     .single();
@@ -198,11 +198,11 @@ export async function supabaseRegister(userData: UserRegistration) {
 
 export async function supabaseMe() {
   console.log('[supabaseMe] Starting to fetch user data...');
-  
+
   try {
     const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
     console.log('[supabaseMe] Auth user fetched:', authUser?.email);
-    
+
     if (authError) {
       console.error('[supabaseMe] Auth error:', authError);
       throw new Error(handleSupabaseError(authError));
@@ -226,12 +226,11 @@ export async function supabaseMe() {
       if (profileError.code === 'PGRST116' || profileError.message?.includes('not found')) {
         console.log('[supabaseMe] Profile not found, using auth data only');
         return {
-          documentId: authUser.id,
           id: authUser.id,
           email: authUser.email || '',
           username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || '',
-          givenName: authUser.user_metadata?.given_name || '',
-          familyName: authUser.user_metadata?.family_name || '',
+          given_name: authUser.user_metadata?.given_name || '',
+          family_name: authUser.user_metadata?.family_name || '',
           startups: [],
         };
       }
@@ -246,31 +245,18 @@ export async function supabaseMe() {
       .from('startups_users_lnk')
       .select('startup:startups(*)')
       .eq('user_id', authUser.id);
-    
+
     if (startupsError) {
       console.error('[supabaseMe] Startups fetch error:', startupsError);
       // Continue without startups if table doesn't exist
     }
-    
+
     const startups = startupLinks?.map((link: any) => link.startup).filter(Boolean) || [];
     console.log('[supabaseMe] Found', startups.length, 'startups');
 
-    // Return the actual profile data from Supabase
+    // Return the profile directly with startups
     return {
-      documentId: profile.id,
-      id: profile.id,
-      email: authUser.email || '',
-      username: profile.username || authUser.email?.split('@')[0] || '',
-      givenName: profile.given_name || '',
-      familyName: profile.family_name || '',
-      gender: profile.gender,
-      position: profile.position,
-      bio: profile.bio,
-      linkedinProfile: profile.linkedin_profile,
-      phone: profile.phone,
-      isPhoneVisible: profile.is_phone_visible,
-      isCoach: profile.is_coach,
-      avatar: profile.avatar_url ? { id: 0, url: profile.avatar_url } : undefined,
+      ...profile,
       startups,
     };
   } catch (error) {
@@ -285,13 +271,13 @@ export async function supabaseLogout() {
 }
 
 export async function supabaseUpdateUser(updateUser: UpdateUser) {
-  const { documentId, avatar, ...updateData } = updateUser;
+  const { id, avatar, ...updateData } = updateUser;
   let avatarUrl;
 
   // Handle avatar upload if provided
   if (avatar) {
     const fileExt = avatar.name.split('.').pop();
-    const fileName = `${documentId}/avatar.${fileExt}`;
+    const fileName = `${id}/avatar.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
@@ -306,20 +292,14 @@ export async function supabaseUpdateUser(updateUser: UpdateUser) {
     avatarUrl = urlData.publicUrl;
   }
 
-  // Transform field names for database
-  const dbUpdate: any = {};
-  if (updateData.givenName) dbUpdate.given_name = updateData.givenName;
-  if (updateData.familyName) dbUpdate.family_name = updateData.familyName;
-  if (updateData.gender) dbUpdate.gender = updateData.gender;
-  if (updateData.position) dbUpdate.position = updateData.position;
-  if (updateData.bio) dbUpdate.bio = updateData.bio;
-  if (updateData.linkedinProfile) dbUpdate.linkedin_profile = updateData.linkedinProfile;
+  // Prepare update data - fields already match database schema
+  const dbUpdate: any = { ...updateData };
   if (avatarUrl) dbUpdate.avatar_url = avatarUrl;
 
   const { data, error } = await supabase
     .from('profiles')
     .update(dbUpdate)
-    .eq('id', documentId)
+    .eq('id', id)
     .select()
     .single();
 
@@ -340,7 +320,7 @@ export async function supabaseGetPatterns(category?: CategoryEnum): Promise<Patt
     .from('patterns')
     .select(`
       *,
-      relatedPatterns:patterns_related_patterns_lnk(
+      relatedPatterns:patterns_related_patterns_lnk!patterns_related_patterns_lnk_ifk(
         related:patterns!inv_pattern_id(*)
       ),
       methods:methods_patterns_lnk(
@@ -364,7 +344,7 @@ export async function supabaseGetPatterns(category?: CategoryEnum): Promise<Patt
 
   // Transform the data to match the expected format
   return (data || []).map(pattern => ({
-    documentId: pattern.id,
+    id: pattern.id,
     name: pattern.name,
     description: pattern.description,
     relatedPatterns: pattern.relatedPatterns?.map((r: any) => r.related) || [],
@@ -379,12 +359,12 @@ export async function supabaseGetPatterns(category?: CategoryEnum): Promise<Patt
   }));
 }
 
-export async function supabaseGetPattern(documentId: string): Promise<Pattern> {
+export async function supabaseGetPattern(id: string): Promise<Pattern> {
   const { data, error } = await supabase
     .from('patterns')
     .select(`
       *,
-      relatedPatterns:patterns_related_patterns_lnk(
+      relatedPatterns:patterns_related_patterns_lnk!patterns_related_patterns_lnk_ifk(
         related:patterns!inv_pattern_id(*)
       ),
       methods:methods_patterns_lnk(
@@ -397,13 +377,13 @@ export async function supabaseGetPattern(documentId: string): Promise<Pattern> {
         question:questions(*)
       )
     `)
-    .eq('id', documentId)
+    .eq('id', id)
     .single();
 
   if (error) throw new Error(handleSupabaseError(error));
 
   return {
-    documentId: data.id,
+    id: data.id,
     name: data.name,
     description: data.description,
     relatedPatterns: data.relatedPatterns?.map((r: any) => r.related) || [],
@@ -459,11 +439,11 @@ export async function supabaseCreateStartup(startup: CreateStartup): Promise<Sta
       startup_id: data.id,
     });
 
-  return transformStartup(data);
+  return data;
 }
 
 export async function supabaseUpdateStartup(updateStartup: UpdateStartup): Promise<Startup> {
-  const { documentId, ...updates } = updateStartup;
+  const { id, ...updates } = updateStartup;
 
   // Transform field names
   const dbUpdate: any = {};
@@ -489,84 +469,59 @@ export async function supabaseUpdateStartup(updateStartup: UpdateStartup): Promi
   const { data, error } = await supabase
     .from('startups')
     .update(dbUpdate)
-    .eq('id', documentId)
+    .eq('id', id)
     .select()
     .single();
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return transformStartup(data);
+  return data;
 }
 
-function transformStartup(data: any): Startup {
-  return {
-    documentId: data.id,
-    name: data.name,
-    startDate: data.start_date,
-    foundersCount: data.founders_count,
-    background: data.background,
-    productType: data.product_type,
-    idea: data.idea,
-    industry: data.industry,
-    industryOther: data.industry_other,
-    targetMarket: data.target_market,
-    phase: data.phase,
-    isProblemValidated: data.is_problem_validated,
-    qualifiedConversationsCount: data.qualified_conversations_count,
-    isTargetGroupDefined: data.is_target_group_defined,
-    isPrototypeValidated: data.is_prototype_validated,
-    isMvpTested: data.is_mvp_tested,
-    scores: data.scores as Record<CategoryEnum, number> | undefined,
-    score: data.score,
-    coach: data.coach,
-    users: data.users,
-    categories: data.categories,
-  };
-}
 
-export async function supabaseGetStartup(documentId: string): Promise<Startup> {
+export async function supabaseGetStartup(id: string): Promise<Startup> {
   const { data, error } = await supabase
     .from('startups')
-    .select(`
-      *,
-      users:startups_users_lnk(
-        user:profiles(*)
-      )
-    `)
-    .eq('id', documentId)
+    .select('*')
+    .eq('id', id)
     .single();
 
   if (error) throw new Error(handleSupabaseError(error));
 
+  // Get coach if coach_id exists
+  let coach = null;
+  if (data.coach_id) {
+    const { data: coachData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.coach_id)
+      .single();
+
+    if (coachData) {
+      coach = coachData;
+    }
+  }
+
   return {
-    ...transformStartup(data),
-    coach: data.coach || undefined,
-    users: data.users?.map((u: any) => u.user) || [],
+    ...data,
+    coach
   };
 }
 
 export async function supabaseGetStartups(): Promise<Startup[]> {
   const { data, error } = await supabase
     .from('startups')
-    .select(`
-      *,
-      users:startups_users_lnk(
-        user:profiles(*)
-      )
-    `);
+    .select('*');
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return (data || []).map(startup => ({
-    ...transformStartup(startup),
-    users: startup.users?.map((u: any) => u.user) || [],
-  }));
+  return data || [];
 }
 
 // Startup Patterns
 export async function supabaseGetStartupPatterns(
-  startupDocumentId: string,
-  patternDocumentId?: string,
+  startupId: string,
+  patternId?: string,
   dateRange?: { startDate: Date; endDate: Date }
 ): Promise<StartupPattern[]> {
   let query = supabase
@@ -574,14 +529,13 @@ export async function supabaseGetStartupPatterns(
     .select(`
       *,
       pattern:patterns(*),
-      startup:startups(*),
-      user:profiles(*)
+      startup:startups(*)
     `)
-    .eq('startup_id', startupDocumentId)
+    .eq('startup_id', startupId)
     .order('created_at', { ascending: true });
 
-  if (patternDocumentId) {
-    query = query.eq('pattern_id', patternDocumentId);
+  if (patternId) {
+    query = query.eq('pattern_id', patternId);
   }
 
   if (dateRange) {
@@ -595,15 +549,14 @@ export async function supabaseGetStartupPatterns(
   if (error) throw new Error(handleSupabaseError(error));
 
   return (data || []).map(sp => ({
-    documentId: sp.id,
+    id: sp.id,
     points: sp.points,
     pattern: sp.pattern ? {
       ...sp.pattern,
-      documentId: sp.pattern.id,
+      id: sp.pattern.id,
       image: sp.pattern.image_url ? { url: sp.pattern.image_url } : { url: '' },
     } : null,
-    startup: sp.startup ? transformStartup(sp.startup) : null,
-    user: sp.user || null,
+    startup: sp.startup || null,
     createdAt: sp.created_at,
     updatedAt: sp.updated_at,
   }));
@@ -626,23 +579,21 @@ export async function supabaseCreateStartupPattern(
     .select(`
       *,
       pattern:patterns(*),
-      startup:startups(*),
-      user:profiles(*)
+      startup:startups(*)
     `)
     .single();
 
   if (error) throw new Error(handleSupabaseError(error));
 
   return {
-    documentId: data.id,
+    id: data.id,
     points: data.points,
     pattern: data.pattern ? {
       ...data.pattern,
-      documentId: data.pattern.id,
+      id: data.pattern.id,
       image: data.pattern.image_url ? { url: data.pattern.image_url } : { url: '' },
     } : null,
-    startup: data.startup ? transformStartup(data.startup) : null,
-    user: data.user || null,
+    startup: data.startup || null,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
   };
@@ -651,34 +602,32 @@ export async function supabaseCreateStartupPattern(
 export async function supabaseUpdateStartupPattern(
   updateStartupPattern: UpdateStartupPattern
 ): Promise<StartupPattern> {
-  const { documentId, ...updates } = updateStartupPattern;
+  const { id, ...updates } = updateStartupPattern;
 
   const { data, error } = await supabase
     .from('startup_patterns')
     .update({
       points: updates.points,
     })
-    .eq('id', documentId)
+    .eq('id', id)
     .select(`
       *,
       pattern:patterns(*),
-      startup:startups(*),
-      user:profiles(*)
+      startup:startups(*)
     `)
     .single();
 
   if (error) throw new Error(handleSupabaseError(error));
 
   return {
-    documentId: data.id,
+    id: data.id,
     points: data.points,
     pattern: data.pattern ? {
       ...data.pattern,
-      documentId: data.pattern.id,
+      id: data.pattern.id,
       image: data.pattern.image_url ? { url: data.pattern.image_url } : { url: '' },
     } : null,
-    startup: data.startup ? transformStartup(data.startup) : null,
-    user: data.user || null,
+    startup: data.startup || null,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
   };
@@ -717,14 +666,14 @@ export async function supabaseGetSurveys(): Promise<Survey[]> {
   if (error) throw new Error(handleSupabaseError(error));
 
   return (data || []).map(survey => ({
-    documentId: survey.id,
+    id: survey.id,
     name: survey.name,
     description: survey.description || '',
     questions: survey.questions?.map((q: any) => q.question) || [],
   }));
 }
 
-export async function supabaseGetSurvey(documentId: string): Promise<Survey> {
+export async function supabaseGetSurvey(id: string): Promise<Survey> {
   const { data, error } = await supabase
     .from('surveys')
     .select(`
@@ -733,13 +682,13 @@ export async function supabaseGetSurvey(documentId: string): Promise<Survey> {
         question:questions(*)
       )
     `)
-    .eq('id', documentId)
+    .eq('id', id)
     .single();
 
   if (error) throw new Error(handleSupabaseError(error));
 
   return {
-    documentId: data.id,
+    id: data.id,
     name: data.name,
     description: data.description || '',
     questions: data.questions?.map((q: any) => q.question) || [],
@@ -761,7 +710,7 @@ export async function supabaseGetSurveyByName(name: string): Promise<Survey> {
   if (error) throw new Error(handleSupabaseError(error));
 
   return {
-    documentId: data.id,
+    id: data.id,
     name: data.name,
     description: data.description || '',
     questions: data.questions?.map((q: any) => q.question) || [],
@@ -777,7 +726,7 @@ export async function supabaseGetQuestions(): Promise<Question[]> {
   if (error) throw new Error(handleSupabaseError(error));
 
   return (data || []).map(q => ({
-    documentId: q.id,
+    id: q.id,
     question: q.question,
     type: q.type,
     options: q.options,
@@ -793,9 +742,9 @@ export async function supabaseGetQuestions(): Promise<Question[]> {
 
 // Startup Methods
 export async function supabaseGetStartupMethods(
-  startupDocumentId?: string,
-  patternDocumentId?: string,
-  methodDocumentId?: string
+  startupId?: string,
+  patternId?: string,
+  methodId?: string
 ): Promise<StartupMethod[]> {
   let query = supabase
     .from('startup_methods')
@@ -806,14 +755,14 @@ export async function supabaseGetStartupMethods(
       method:methods(*)
     `);
 
-  if (startupDocumentId) {
-    query = query.eq('startup_id', startupDocumentId);
+  if (startupId) {
+    query = query.eq('startup_id', startupId);
   }
-  if (patternDocumentId) {
-    query = query.eq('pattern_id', patternDocumentId);
+  if (patternId) {
+    query = query.eq('pattern_id', patternId);
   }
-  if (methodDocumentId) {
-    query = query.eq('method_id', methodDocumentId);
+  if (methodId) {
+    query = query.eq('method_id', methodId);
   }
 
   const { data, error } = await query;
@@ -821,7 +770,7 @@ export async function supabaseGetStartupMethods(
   if (error) throw new Error(handleSupabaseError(error));
 
   return (data || []).map(sm => ({
-    documentId: sm.id,
+    id: sm.id,
     id: sm.id,
     status: sm.status,
     resultFiles: sm.result_files || [],
@@ -831,7 +780,7 @@ export async function supabaseGetStartupMethods(
   }));
 }
 
-export async function supabaseGetStartupMethod(documentId: string): Promise<StartupMethod> {
+export async function supabaseGetStartupMethod(id: string): Promise<StartupMethod> {
   const { data, error } = await supabase
     .from('startup_methods')
     .select(`
@@ -840,13 +789,13 @@ export async function supabaseGetStartupMethod(documentId: string): Promise<Star
       pattern:patterns(*),
       method:methods(*)
     `)
-    .eq('id', documentId)
+    .eq('id', id)
     .single();
 
   if (error) throw new Error(handleSupabaseError(error));
 
   return {
-    documentId: data.id,
+    id: data.id,
     id: data.id,
     status: data.status,
     resultFiles: data.result_files || [],
@@ -880,7 +829,7 @@ export async function supabaseFindStartupMethod(
   }
 
   return {
-    documentId: data.id,
+    id: data.id,
     id: data.id,
     status: data.status,
     resultFiles: data.result_files || [],
@@ -941,7 +890,7 @@ export async function supabaseCreateStartupMethod(data: CreateStartupMethod): Pr
   }
 
   return {
-    documentId: startupMethod.id,
+    id: startupMethod.id,
     id: startupMethod.id,
     status: startupMethod.status,
     resultFiles: startupMethod.result_files || [],
@@ -952,7 +901,7 @@ export async function supabaseCreateStartupMethod(data: CreateStartupMethod): Pr
 }
 
 export async function supabaseUpdateStartupMethod(data: UpdateStartupMethod): Promise<StartupMethod> {
-  const { documentId, resultFiles, ...payload } = data;
+  const { id, resultFiles, ...payload } = data;
 
   // Update the startup method
   const updateData: any = {};
@@ -961,7 +910,7 @@ export async function supabaseUpdateStartupMethod(data: UpdateStartupMethod): Pr
   const { data: startupMethod, error } = await supabase
     .from('startup_methods')
     .update(updateData)
-    .eq('id', documentId)
+    .eq('id', id)
     .select(`
       *,
       startup:startups(*),
@@ -996,13 +945,13 @@ export async function supabaseUpdateStartupMethod(data: UpdateStartupMethod): Pr
     await supabase
       .from('startup_methods')
       .update({ result_files: allFiles })
-      .eq('id', documentId);
+      .eq('id', id);
 
     startupMethod.result_files = allFiles;
   }
 
   return {
-    documentId: startupMethod.id,
+    id: startupMethod.id,
     id: startupMethod.id,
     status: startupMethod.status,
     resultFiles: startupMethod.result_files || [],
@@ -1034,7 +983,7 @@ export async function supabaseGetRecommendations(startupId?: string): Promise<Re
   if (error) throw new Error(handleSupabaseError(error));
 
   return (data || []).map(rec => ({
-    documentId: rec.id,
+    id: rec.id,
     comment: rec.comment,
     type: rec.type,
     patterns: rec.patterns?.map((p: any) => p.pattern) || [],
@@ -1055,7 +1004,7 @@ export interface CreateRecommendation {
 }
 
 export interface UpdateRecommendation {
-  documentId: string;
+  id: string;
   comment?: string;
   readAt?: string;
 }
@@ -1111,7 +1060,7 @@ async function supabaseGetRecommendation(id: string): Promise<Recommendation> {
   if (error) throw new Error(handleSupabaseError(error));
 
   return {
-    documentId: data.id,
+    id: data.id,
     comment: data.comment,
     type: data.type,
     patterns: data.patterns?.map((p: any) => p.pattern) || [],
@@ -1123,29 +1072,21 @@ async function supabaseGetRecommendation(id: string): Promise<Recommendation> {
 }
 
 // Invitations
-export async function supabaseGetInvitations(startupDocumentId: string): Promise<Invitation[]> {
+export async function supabaseGetInvitations(startupId: string): Promise<Invitation[]> {
   const { data, error } = await supabase
     .from('invitations')
-    .select(`
-      *,
-      invitedBy:invitations_invited_by_lnk(
-        user:profiles(*)
-      ),
-      startup:invitations_startup_lnk(
-        startup:startups(*)
-      )
-    `)
-    .eq('startup_id', startupDocumentId);
+    .select('*')
+    .eq('startup_id', startupId);
 
   if (error) throw new Error(handleSupabaseError(error));
 
   return (data || []).map(inv => ({
-    documentId: inv.id,
+    id: inv.id,
     email: inv.email,
     token: inv.token,
     acceptedAt: inv.accepted_at,
-    startup: inv.startup?.[0]?.startup || null,
-    invitedBy: inv.invitedBy?.[0]?.user || null,
+    startup: null,
+    invitedBy: null,
     createdAt: inv.created_at,
   }));
 }
@@ -1178,7 +1119,7 @@ export async function supabaseCreateInvitation(invitation: CreateInvitation): Pr
   if (error) throw new Error(handleSupabaseError(error));
 
   return {
-    documentId: data.id,
+    id: data.id,
     email: data.email,
     token: data.token,
     acceptedAt: data.accepted_at,
@@ -1197,15 +1138,7 @@ export async function supabaseAcceptInvitation(token: string): Promise<Invitatio
     .from('invitations')
     .update({ accepted_at: new Date().toISOString() })
     .eq('token', token)
-    .select(`
-      *,
-      invitedBy:invitations_invited_by_lnk(
-        user:profiles(*)
-      ),
-      startup:invitations_startup_lnk(
-        startup:startups(*)
-      )
-    `)
+    .select('*')
     .single();
 
   if (error) throw new Error(handleSupabaseError(error));
@@ -1219,12 +1152,12 @@ export async function supabaseAcceptInvitation(token: string): Promise<Invitatio
     });
 
   return {
-    documentId: invitation.id,
+    id: invitation.id,
     email: invitation.email,
     token: invitation.token,
     acceptedAt: invitation.accepted_at,
-    startup: invitation.startup,
-    invitedBy: invitation.invitedBy,
+    startup: null,
+    invitedBy: null,
     createdAt: invitation.created_at,
   };
 }
@@ -1238,7 +1171,7 @@ export async function supabaseGetMethods(): Promise<Method[]> {
   if (error) throw new Error(handleSupabaseError(error));
 
   return (data || []).map(method => ({
-    documentId: method.id,
+    id: method.id,
     name: method.name,
     description: method.description,
     phases: method.phases || [],
@@ -1249,7 +1182,7 @@ export async function supabaseGetMethods(): Promise<Method[]> {
   }));
 }
 
-export async function supabaseGetMethod(documentId: string): Promise<Method> {
+export async function supabaseGetMethod(id: string): Promise<Method> {
   const { data, error } = await supabase
     .from('methods')
     .select(`
@@ -1258,13 +1191,13 @@ export async function supabaseGetMethod(documentId: string): Promise<Method> {
         pattern:patterns(*)
       )
     `)
-    .eq('id', documentId)
+    .eq('id', id)
     .single();
 
   if (error) throw new Error(handleSupabaseError(error));
 
   return {
-    documentId: data.id,
+    id: data.id,
     name: data.name,
     description: data.description,
     phases: data.phases || [],
@@ -1277,28 +1210,26 @@ export async function supabaseGetMethod(documentId: string): Promise<Method> {
 
 // User Questions
 export async function supabaseGetUserQuestions(
-  startupDocumentId?: string,
-  userDocumentId?: string,
-  patternDocumentId?: string
+  startupId?: string,
+  userId?: string,
+  patternId?: string
 ): Promise<UserQuestion[]> {
   let query = supabase
     .from('user_questions')
     .select(`
       *,
-      user:profiles(*),
       pattern:patterns(*),
-      question:questions(*),
-      startup:startups(*)
+      question:questions(*)
     `);
 
-  if (startupDocumentId) {
-    query = query.eq('startup_id', startupDocumentId);
+  if (startupId) {
+    query = query.eq('startup_id', startupId);
   }
-  if (userDocumentId) {
-    query = query.eq('user_id', userDocumentId);
+  if (userId) {
+    query = query.eq('user_id', userId);
   }
-  if (patternDocumentId) {
-    query = query.eq('pattern_id', patternDocumentId);
+  if (patternId) {
+    query = query.eq('pattern_id', patternId);
   }
 
   const { data, error } = await query;
@@ -1306,30 +1237,29 @@ export async function supabaseGetUserQuestions(
   if (error) throw new Error(handleSupabaseError(error));
 
   return (data || []).map(uq => ({
-    documentId: uq.id,
+    id: uq.id,
     answer: uq.answer,
-    user: uq.user,
+    user: null,
     pattern: uq.pattern,
     question: uq.question,
-    startup: uq.startup,
   }));
 }
 
 export async function supabaseUpdateUserQuestion(
   updateUserQuestion: UpdateUserQuestion
 ): Promise<UserQuestion> {
-  const { documentId, ...updates } = updateUserQuestion;
+  const { id, ...updates } = updateUserQuestion;
 
   const { error } = await supabase
     .from('user_questions')
     .update({
       answer: updates.answer,
     })
-    .eq('id', documentId);
+    .eq('id', id);
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return supabaseGetUserQuestion(documentId);
+  return supabaseGetUserQuestion(id);
 }
 
 export async function supabaseGetUserQuestion(id: string): Promise<UserQuestion> {
@@ -1343,38 +1273,52 @@ export async function supabaseGetUserQuestion(id: string): Promise<UserQuestion>
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  // Get related data
-  const { data: userLink } = await supabase
-    .from('user_questions_user_lnk')
-    .select('user:profiles(*)')
-    .eq('user_question_id', id)
-    .single();
+  // Get related data directly from foreign keys
+  let user = null;
+  if (data.user_id) {
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user_id)
+      .single();
 
-  const { data: patternLink } = await supabase
-    .from('user_questions_pattern_lnk')
-    .select('pattern:patterns(*)')
-    .eq('user_question_id', id)
-    .single();
+    if (profileData) {
+      user = profileData;
+    }
+  }
 
-  const { data: questionLink } = await supabase
-    .from('user_questions_question_lnk')
-    .select('question:questions(*)')
-    .eq('user_question_id', id)
-    .single();
+  let pattern = null;
+  if (data.pattern_id) {
+    const { data: patternData } = await supabase
+      .from('patterns')
+      .select('*')
+      .eq('id', data.pattern_id)
+      .single();
 
-  const { data: startupLink } = await supabase
-    .from('user_questions_startup_lnk')
-    .select('startup:startups(*)')
-    .eq('user_question_id', id)
-    .single();
+    if (patternData) {
+      pattern = patternData;
+    }
+  }
+
+  let question = null;
+  if (data.question_id) {
+    const { data: questionData } = await supabase
+      .from('questions')
+      .select('*')
+      .eq('id', data.question_id)
+      .single();
+
+    if (questionData) {
+      question = questionData;
+    }
+  }
 
   return {
-    documentId: data.id,
+    id: data.id,
     answer: data.answer,
-    user: userLink?.user || null,
-    pattern: patternLink?.pattern || null,
-    question: questionLink?.question || null,
-    startup: startupLink?.startup || null,
+    user,
+    pattern: pattern,
+    question: question,
   };
 }
 
@@ -1384,54 +1328,28 @@ export async function supabaseFindUserQuestion(
   questionId: string,
   startupId?: string
 ): Promise<UserQuestion | null> {
-  // Find the user question by matching relationships
-  const { data: userQuestions, error } = await supabase
+  // Find the user question by matching foreign keys directly
+  let query = supabase
     .from('user_questions')
-    .select('*');
+    .select('*')
+    .eq('user_id', userId)
+    .eq('pattern_id', patternId)
+    .eq('question_id', questionId);
 
-  if (error) throw new Error(handleSupabaseError(error));
-
-  // Check each question for matching relationships
-  for (const uq of userQuestions || []) {
-    const { data: userLink } = await supabase
-      .from('user_questions_user_lnk')
-      .select('user_id')
-      .eq('user_question_id', uq.id)
-      .eq('user_id', userId)
-      .single();
-
-    const { data: patternLink } = await supabase
-      .from('user_questions_pattern_lnk')
-      .select('pattern_id')
-      .eq('user_question_id', uq.id)
-      .eq('pattern_id', patternId)
-      .single();
-
-    const { data: questionLink } = await supabase
-      .from('user_questions_question_lnk')
-      .select('question_id')
-      .eq('user_question_id', uq.id)
-      .eq('question_id', questionId)
-      .single();
-
-    if (userLink && patternLink && questionLink) {
-      if (startupId) {
-        const { data: startupLink } = await supabase
-          .from('user_questions_startup_lnk')
-          .select('startup_id')
-          .eq('user_question_id', uq.id)
-          .eq('startup_id', startupId)
-          .single();
-        if (startupLink) {
-          return supabaseGetUserQuestion(uq.id);
-        }
-      } else {
-        return supabaseGetUserQuestion(uq.id);
-      }
-    }
+  if (startupId) {
+    query = query.eq('startup_id', startupId);
+  } else {
+    query = query.is('startup_id', null);
   }
 
-  return null;
+  const { data, error } = await query.single();
+
+  if (error) {
+    // No matching question found
+    return null;
+  }
+
+  return supabaseGetUserQuestion(data.id);
 }
 
 export async function supabaseCreateUserQuestion(
@@ -1480,7 +1398,7 @@ export interface CreateRequest {
 }
 
 export interface UpdateRequest {
-  documentId: string;
+  id: string;
   comment?: string;
   readAt?: string;
 }
@@ -1491,22 +1409,14 @@ export async function supabaseGetRequests(startupId?: string): Promise<Request[]
     .select('*');
 
   if (startupId) {
-    const { data: links } = await supabase
-      .from('requests_startup_lnk')
-      .select('request_id')
-      .eq('startup_id', startupId);
-    
-    const requestIds = links?.map(l => l.request_id) || [];
-    if (requestIds.length > 0) {
-      query = query.in('id', requestIds);
-    }
+    query = query.eq('startup_id', startupId);
   }
 
   const { data, error } = await query;
   if (error) throw new Error(handleSupabaseError(error));
 
   return (data || []).map(req => ({
-    documentId: req.id,
+    id: req.id,
     comment: req.comment,
     readAt: req.read_at,
     createdAt: req.created_at,
@@ -1532,7 +1442,7 @@ export async function supabaseCreateRequest(request: CreateRequest): Promise<Req
   }
 
   return {
-    documentId: data.id,
+    id: data.id,
     comment: data.comment,
     readAt: data.read_at,
     createdAt: data.created_at,
@@ -1540,81 +1450,81 @@ export async function supabaseCreateRequest(request: CreateRequest): Promise<Req
 }
 
 export async function supabaseUpdateRequest(update: UpdateRequest): Promise<Request> {
-  const { documentId, ...updates } = update;
-  
+  const { id, ...updates } = update;
+
   const { data, error } = await supabase
     .from('requests')
     .update({
       comment: updates.comment,
       read_at: updates.readAt,
     })
-    .eq('id', documentId)
+    .eq('id', id)
     .select()
     .single();
 
   if (error) throw new Error(handleSupabaseError(error));
 
   return {
-    documentId: data.id,
+    id: data.id,
     comment: data.comment,
     readAt: data.read_at,
     createdAt: data.created_at,
   };
 }
 
-export async function supabaseDeleteRequest(documentId: string): Promise<void> {
+export async function supabaseDeleteRequest(id: string): Promise<void> {
   const { error } = await supabase
     .from('requests')
     .delete()
-    .eq('id', documentId);
+    .eq('id', id);
 
   if (error) throw new Error(handleSupabaseError(error));
 }
 
 // Additional missing functions
 export async function supabaseUpdateRecommendation(update: UpdateRecommendation): Promise<Recommendation> {
-  const { documentId, ...updates } = update;
-  
+  const { id, ...updates } = update;
+
   const { error } = await supabase
     .from('recommendations')
     .update({
       comment: updates.comment,
       read_at: updates.readAt,
     })
-    .eq('id', documentId);
+    .eq('id', id);
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return supabaseGetRecommendation(documentId);
+  return supabaseGetRecommendation(id);
 }
 
-export async function supabaseDeleteRecommendation(documentId: string): Promise<void> {
+export async function supabaseDeleteRecommendation(id: string): Promise<void> {
   const { error } = await supabase
     .from('recommendations')
     .delete()
-    .eq('id', documentId);
+    .eq('id', id);
 
   if (error) throw new Error(handleSupabaseError(error));
 }
 
 export async function supabaseGetStartupPattern(startupPatternId: string): Promise<StartupPattern> {
   const patterns = await supabaseGetStartupPatterns('', '', undefined);
-  const pattern = patterns.find(p => p.documentId === startupPatternId);
+  const pattern = patterns.find(p => p.id === startupPatternId);
   if (!pattern) throw new Error('Startup pattern not found');
   return pattern;
 }
 
-export async function supabaseDeleteInvitation(documentId: string): Promise<void> {
+export async function supabaseDeleteInvitation(id: string): Promise<void> {
   const { error } = await supabase
     .from('invitations')
     .delete()
-    .eq('id', documentId);
+    .eq('id', id);
 
   if (error) throw new Error(handleSupabaseError(error));
 }
 
-export async function supabaseResendInvitation(documentId: string): Promise<Invitation> {
-  return supabaseGetInvitation(documentId);
+export async function supabaseResendInvitation(id: string): Promise<Invitation> {
+  return supabaseGetInvitation(id);
 }
 
 async function supabaseGetInvitation(id: string): Promise<Invitation> {
@@ -1626,38 +1536,81 @@ async function supabaseGetInvitation(id: string): Promise<Invitation> {
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  const { data: invitedByLink } = await supabase
-    .from('invitations_invited_by_lnk')
-    .select('user:profiles(*)')
-    .eq('invitation_id', id)
-    .single();
+  // Get the invitedBy user profile directly from the invitation
+  let invitedByUser = null;
+  if (data.invited_by_id) {
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.invited_by_id)
+      .single();
 
-  const { data: startupLink } = await supabase
-    .from('invitations_startup_lnk')
-    .select('startup:startups(*)')
-    .eq('invitation_id', id)
-    .single();
+    if (profileData) {
+      invitedByUser = profileData;
+    }
+  }
+
+  // Get the startup directly from the invitation
+  let startup = null;
+  if (data.startup_id) {
+    const { data: startupData } = await supabase
+      .from('startups')
+      .select('*')
+      .eq('id', data.startup_id)
+      .single();
+
+    if (startupData) {
+      startup = startupData;
+    }
+  }
 
   return {
-    documentId: data.id,
+    id: data.id,
     email: data.email,
     token: data.token,
     acceptedAt: data.accepted_at,
-    startup: startupLink?.startup || null,
-    invitedBy: invitedByLink?.user || null,
+    startup: startup,
+    invitedBy: invitedByUser,
     createdAt: data.created_at,
   };
 }
 
 export async function supabaseGetStartupMembers(startupId: string): Promise<User[]> {
-  const { data, error } = await supabase
+  // First get the user IDs from the link table
+  const { data: linkData, error: linkError } = await supabase
     .from('startups_users_lnk')
-    .select('user:profiles(*)')
+    .select('user_id')
     .eq('startup_id', startupId);
 
-  if (error) throw new Error(handleSupabaseError(error));
+  if (linkError) throw new Error(handleSupabaseError(linkError));
 
-  return (data || []).map((link: any) => link.user);
+  if (!linkData || linkData.length === 0) return [];
+
+  // Then get the profiles for those users
+  const userIds = linkData.filter(link => link.user_id).map(link => link.user_id);
+  if (userIds.length === 0) return [];
+
+  const { data: profilesData, error: profilesError } = await supabase
+    .from('profiles')
+    .select('*')
+    .in('id', userIds);
+
+  if (profilesError) throw new Error(handleSupabaseError(profilesError));
+
+  return (profilesData || []).map(profile => ({
+    id: profile.id,
+    username: profile.username || undefined,
+    given_name: profile.given_name || undefined,
+    family_name: profile.family_name || undefined,
+    gender: profile.gender || undefined,
+    position: profile.position || undefined,
+    bio: profile.bio || undefined,
+    linkedin_profile: profile.linkedin_profile || undefined,
+    phone: profile.phone || undefined,
+    is_phone_visible: profile.is_phone_visible || false,
+    is_coach: profile.is_coach || false,
+    created_at: profile.created_at || undefined,
+  }));
 }
 
 export async function supabaseGetAvailableStartups(): Promise<Startup[]> {

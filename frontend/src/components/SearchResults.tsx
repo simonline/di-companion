@@ -54,7 +54,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       onSelect?.(pattern);
       return;
     }
-    navigate(`/explore/${pattern.documentId}`);
+    navigate(`/explore/${pattern.id}`);
   };
 
   return (
@@ -76,7 +76,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
           {results.map((pattern) => (
             <ListItem
               button
-              key={pattern.documentId}
+              key={pattern.id}
               onClick={() => handlePatternClick(pattern)}
               sx={{
                 py: 1.5,
@@ -97,9 +97,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   width: '4px',
                   height: '100%',
                   backgroundColor: categoryColors[pattern.category as CategoryEnum] || '#ccc',
-                  borderTopLeftRadius: pattern.documentId === results[0].documentId ? 4 : 0,
+                  borderTopLeftRadius: pattern.id === results[0].id ? 4 : 0,
                   borderBottomLeftRadius:
-                    pattern.documentId === results[results.length - 1].documentId ? 4 : 0,
+                    pattern.id === results[results.length - 1].id ? 4 : 0,
                 },
               }}
             >

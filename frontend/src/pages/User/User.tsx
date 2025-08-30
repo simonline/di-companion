@@ -53,8 +53,8 @@ const User: React.FC = () => {
   useEffect(() => {
     // Determine completion status for each step
     const profileCompleted = !!(
-      user?.givenName &&
-      user?.familyName &&
+      user?.given_name &&
+      user?.family_name &&
       user?.email
     );
 
@@ -64,7 +64,7 @@ const User: React.FC = () => {
       user?.position
     );
 
-    const startupCompleted = !!(startup?.documentId);
+    const startupCompleted = !!(startup?.id);
 
     setOnboardingSteps([
       {
@@ -96,7 +96,7 @@ const User: React.FC = () => {
         title: 'Create Your Startup',
         description: 'Set up your startup profile to access personalized patterns and recommendations.',
         icon: <RocketLaunch sx={{ fontSize: 32 }} />,
-        route: startup?.documentId ? `/profile/startup/${startup.documentId}/edit` : '/create-startup',
+        route: startup?.id ? `/profile/startup/${startup.id}/edit` : '/create-startup',
         completed: startupCompleted,
       },
     ]);
@@ -106,8 +106,8 @@ const User: React.FC = () => {
   const totalSteps = onboardingSteps.length;
   const progressPercentage = (completedSteps / totalSteps) * 100;
 
-  const avatarUrl = getAvatarUrl(user?.avatar?.formats?.thumbnail?.url);
-  const userInitials = `${user?.givenName?.charAt(0) || ''}${user?.familyName?.charAt(0) || ''}`;
+  const avatarUrl = getAvatarUrl(user?.avatar_url);
+  const userInitials = `${user?.given_name?.charAt(0) || ''}${user?.family_name?.charAt(0) || ''}`;
 
   return (
     <>
@@ -122,13 +122,13 @@ const User: React.FC = () => {
                 <Avatar
                   src={avatarUrl}
                   sx={{ width: 60, height: 60 }}
-                  alt={`${user?.givenName} ${user?.familyName}`}
+                  alt={`${user?.given_name} ${user?.family_name}`}
                 >
                   {userInitials || user?.username?.charAt(0).toUpperCase()}
                 </Avatar>
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="h5" fontWeight="700">
-                    {user?.givenName} {user?.familyName}
+                    {user?.given_name} {user?.family_name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                     Welcome! Let's set up your innovation toolkit and get you started
@@ -357,7 +357,7 @@ const User: React.FC = () => {
                 </CardContent>
                 <Box sx={{ p: 2, pt: 0, mt: 'auto' }}>
                   <Button
-                    onClick={() => navigate(`/explore/${recommendedPatterns[0].documentId}`)}
+                    onClick={() => navigate(`/explore/${recommendedPatterns[0].id || recommendedPatterns[0].id}`)}
                     variant="contained"
                     endIcon={<ArrowForward />}
                     fullWidth

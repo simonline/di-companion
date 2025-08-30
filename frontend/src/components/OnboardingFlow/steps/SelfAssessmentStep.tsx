@@ -44,8 +44,8 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
   }, [fetchSurveyByName]);
 
   useEffect(() => {
-    if (startup?.documentId && user?.documentId) {
-      fetchUserQuestions(startup.documentId, user.documentId);
+    if (startup?.id && user?.id) {
+      fetchUserQuestions(startup.id, user.id);
     }
   }, [fetchUserQuestions, startup, user]);
 
@@ -58,9 +58,9 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
 
       // Process each question's answer
       for (const question of allQuestions) {
-        const answer = values[question.documentId];
+        const answer = values[question.id];
         const existingResponse = userQuestions?.find(
-          (uq) => uq.question.documentId === question.documentId,
+          (uq) => uq.question.id === question.id,
         );
 
         // Skip if answer is empty and question is not required
@@ -73,16 +73,16 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
         }
 
         const payload = {
-          user: { set: { documentId: user.documentId } },
-          question: { set: { documentId: question.documentId } },
-          startup: { set: { documentId: startup.documentId } },
+          user: { set: { id: user.id } },
+          question: { set: { id: question.id } },
+          startup: { set: { id: startup.id } },
           answer: JSON.stringify(answer),
         };
 
         try {
           if (existingResponse) {
             await updateUserQuestion({
-              documentId: existingResponse.documentId,
+              id: existingResponse.id,
               ...payload,
             });
           } else {
@@ -95,7 +95,7 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
 
       // Refetch to get the created/updated user questions
       clearUserQuestions();
-      await fetchUserQuestions(startup.documentId, user.documentId);
+      await fetchUserQuestions(startup.id, user.id);
 
       // Update scores for the startup
       await updateScores();
@@ -165,7 +165,7 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
   return (
     <Box>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        This assessment will help us understand your entrepreneurial background and provide 
+        This assessment will help us understand your entrepreneurial background and provide
         personalized recommendations. It takes about 10-15 minutes to complete.
       </Typography>
 
@@ -186,7 +186,7 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
               {allQuestions
                 .sort((a: Question, b: Question) => (a.order || 0) - (b.order || 0))
                 .map((question: Question) => (
-                  <Field key={question.documentId} name={question.documentId}>
+                  <Field key={question.id} name={question.id}>
                     {(fieldProps: any) => (
                       <SurveyField
                         question={question}
@@ -207,7 +207,7 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
                 >
                   Back
                 </Button>
-                
+
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <Button
                     variant="outlined"

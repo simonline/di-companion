@@ -13,11 +13,11 @@ interface UseUserQuestion {
 }
 
 interface UseUserQuestionReturn extends UseUserQuestion {
-    fetchUserQuestion: (documentId: string) => Promise<void>;
+    fetchUserQuestion: (id: string) => Promise<void>;
     findPatternMethod: (
-        userDocumentId: string,
-        patternDocumentId: string,
-        methodDocumentId: string,
+        userId: string,
+        patternId: string,
+        methodId: string,
     ) => Promise<void>;
     createUserQuestion: (createUserQuestion: CreateUserQuestion) => Promise<UserQuestion>;
     updateUserQuestion: (updateUserQuestion: UpdateUserQuestion) => Promise<UserQuestion>;
@@ -29,10 +29,10 @@ export default function useUserQuestion(): UseUserQuestionReturn {
         loading: true,
     });
 
-    const fetchUserQuestion = useCallback(async (documentId: string) => {
+    const fetchUserQuestion = useCallback(async (id: string) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const userQuestion = await supabaseGetUserQuestion(documentId);
+            const userQuestion = await supabaseGetUserQuestion(id);
             setState({ userQuestion, loading: false });
         } catch (err: unknown) {
             setState(prev => ({ ...prev, loading: false }));
@@ -41,13 +41,13 @@ export default function useUserQuestion(): UseUserQuestionReturn {
     }, []);
 
     const findPatternMethod = useCallback(
-        async (userDocumentId: string, patternDocumentId: string, methodDocumentId: string) => {
+        async (userId: string, patternId: string, methodId: string) => {
             try {
                 setState(prev => ({ ...prev, loading: true }));
                 const userQuestion = await supabaseFindUserQuestion(
-                    userDocumentId,
-                    patternDocumentId,
-                    methodDocumentId,
+                    userId,
+                    patternId,
+                    methodId,
                 );
                 setState({ userQuestion, loading: false });
             } catch (err: unknown) {

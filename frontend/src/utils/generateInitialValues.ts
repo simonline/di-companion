@@ -9,32 +9,32 @@ export const generateInitialValues = (
 
   questions.forEach((question) => {
     const existingAnswer = userQuestions?.find(
-      (uq) => uq.question.documentId === question.documentId,
+      (uq) => uq.question.id === question.id,
     );
 
     if (existingAnswer?.answer !== undefined) {
       try {
         // Parse the JSON string to get the actual value
-        values[question.documentId] = JSON.parse(existingAnswer.answer);
+        values[question.id] = JSON.parse(existingAnswer.answer);
       } catch (error) {
         // Fallback to the raw value if parsing fails
-        values[question.documentId] = existingAnswer.answer;
+        values[question.id] = existingAnswer.answer;
       }
     } else {
       switch (question.type) {
         case QuestionType.select_multiple:
         case QuestionType.checkbox_multiple:
         case QuestionType.rank:
-          values[question.documentId] = [];
+          values[question.id] = [];
           break;
         case QuestionType.checkbox:
-          values[question.documentId] = false;
+          values[question.id] = false;
           break;
         case QuestionType.number:
-          values[question.documentId] = '';
+          values[question.id] = '';
           break;
         default:
-          values[question.documentId] = '';
+          values[question.id] = '';
       }
     }
   });
