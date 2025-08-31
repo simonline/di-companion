@@ -18,7 +18,7 @@ interface RequestFormProps {
   onClose: () => void;
   onSubmit: (values: CreateRequest) => Promise<void>;
   isSubmitting: boolean;
-  startupId?: string | number;
+  startupId?: string;
 }
 
 const RequestSchema = Yup.object().shape({
@@ -41,7 +41,7 @@ const RequestForm: React.FC<RequestFormProps> = ({
       try {
         await onSubmit({
           ...values,
-          startup: startupId ? { id: startupId } : undefined,
+          startup: startupId,
         });
         formik.resetForm();
         onClose();

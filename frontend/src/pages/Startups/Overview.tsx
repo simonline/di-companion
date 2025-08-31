@@ -37,8 +37,8 @@ import { CenteredFlexBox } from '@/components/styled';
 import { Link } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
-import { Startup } from '@/types/supabase';
-import { supabaseGetRequests, supabaseGetAvailableStartups, supabaseUpdateUser, supabaseUpdateStartup } from '@/lib/supabase';
+import { Tables } from '@/types/database';
+import { supabaseGetRequests, supabaseGetAvailableStartups, supabaseUpdateUser, supabaseUpdateStartup, supabase } from '@/lib/supabase';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { formatDistanceToNow } from 'date-fns';
 import React from 'react';
@@ -48,6 +48,7 @@ export default function OverviewView() {
   const { user } = useAuthContext();
   const [requests, setRequests] = useState<any[]>([]);
   const [availableStartups, setAvailableStartups] = useState<Startup[]>([]);
+  const [coachees, setCoachees] = useState<Startup[]>([]);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedStartup, setSelectedStartup] = useState<string>('');
   const [notification, setNotification] = useState<{
@@ -68,47 +69,70 @@ export default function OverviewView() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // Get count of coachees
-  const coacheesCount = user?.coachees?.length || 0;
+  const coacheesCount = coachees.length;
 
   // Calculate average progress score from scores record
   const calculateAverageScore = () => {
-    if (!user?.coachees || user.coachees.length === 0) return 0;
+    if (coachees.length === 0) return 0;
 
-    const totalScore = user.coachees.reduce((sum, startup) => {
+    const totalScore = coachees.reduce((sum: number, startup: any) => {
       // Calculate an average from the scores object if it exists
       if (startup.scores) {
-        const scoresValues = Object.values(startup.scores);
+        const scoresValues = Object.values(startup.scores as any) as number[];
         const avgScore =
           scoresValues.length > 0
-            ? Math.round(scoresValues.reduce((a, b) => a + b, 0) / scoresValues.length)
+            ? Math.round(scoresValues.reduce((a: number, b: number) => a + b, 0) / scoresValues.length)
             : 0;
         return sum + avgScore;
       }
       return sum;
     }, 0);
 
-    return Math.round(totalScore / user.coachees.length);
+    return Math.round(totalScore / coachees.length);
   };
 
   const averageScore = calculateAverageScore();
+
+  // Fetch coachees when user is available
+  useEffect(() => {
+    const fetchCoachees = async () => {
+      if (user?.id && user?.is_coach) {
+        try {
+          const { data, error } = await supabase
+            .from('startups')
+            .select('*')
+            .eq('coach_id', user.id);
+
+          if (error) {
+            console.error('Error fetching coachees:', error);
+          } else {
+            setCoachees((data || []) as any);
+          }
+        } catch (error) {
+          console.error('Error fetching coachees:', error);
+        }
+      }
+    };
+
+    fetchCoachees();
+  }, [user?.id, user?.is_coach]);
 
   // Get requests and available startups
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get startup IDs from user's coachees
-        const startupIds = user?.coachees?.map((startup) => startup.id) || [];
+        // Get requests for all startups (we'll filter them in the UI)
         const [requestsData, startupsData] = await Promise.all([
-          supabaseGetRequests(startupIds),
+          supabaseGetRequests(), // Get all requests, will filter by startup in UI
           supabaseGetAvailableStartups(),
         ]);
         console.log('requestsData', requestsData);
         setRequests(requestsData || []);
         setAvailableStartups(startupsData || []);
 
-        // Fetch patterns for each startup
-        if (user?.coachees) {
-          user.coachees.forEach((startup) => {
+        // Fetch patterns for each startup  
+        if (coachees.length > 0) {
+          coachees.forEach((startup: any) => {
             if (startup.id) {
               fetchStartupPatterns(startup.id);
             }
@@ -120,20 +144,20 @@ export default function OverviewView() {
     };
 
     fetchData();
-  }, [user?.coachees, fetchStartupPatterns]);
+  }, [user?.id, fetchStartupPatterns]);
 
   // Reset selection mode when coachees list changes
   useEffect(() => {
     if (isSelectionMode) {
       setSelectedStartups([]);
     }
-  }, [user?.coachees, isSelectionMode]);
+  }, [coachees.length, isSelectionMode]);
 
   // Count unread requests
-  const unreadRequestsCount = requests.filter((req) => !req.readAt).length;
+  const unreadRequestsCount = requests.filter((req) => !req.read_at).length;
 
   // Helper function to get last activity date
-  const getLastActivityDate = (startup: Startup): string => {
+  const getLastActivityDate = (startup: Tables<'startups'>): string => {
     if (!startupPatterns) return 'No activity yet';
 
     const startupPatternsForStartup = startupPatterns.filter(
@@ -143,34 +167,34 @@ export default function OverviewView() {
     if (startupPatternsForStartup.length === 0) return 'No activity yet';
 
     const latestPattern = startupPatternsForStartup.reduce((latest, current) => {
-      return new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest;
+      return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
     });
 
-    return `${formatDistanceToNow(new Date(latestPattern.createdAt), { addSuffix: true })}`;
+    return `${formatDistanceToNow(new Date(latestPattern.created_at), { addSuffix: true })}`;
   };
 
   const handleAssignStartup = async () => {
     if (!selectedStartup || !user?.id) return;
 
     try {
-      // Get the startup to be assigned
+      // Update the startup with the coach_id
+      await supabaseUpdateStartup({
+        id: selectedStartup,
+        coach_id: user.id,
+      });
+
+      // Update local state
       const startupToAssign = availableStartups.find(
         (startup) => startup.id === selectedStartup,
       );
-      if (!startupToAssign) return;
+      if (startupToAssign) {
+        setCoachees([...coachees, startupToAssign]);
+        setAvailableStartups(availableStartups.filter(s => s.id !== selectedStartup));
+      }
 
-      // Get the current coachees plus the new startup
-      const updatedCoachees = [...(user.coachees || []), startupToAssign];
-
-      // Update the user with the new coachees list
-      await supabaseUpdateUser({
-        id: user.id,
-        id: user.id,
-        coachees: updatedCoachees,
-      });
-
-      // Refresh the page to update the list
-      window.location.reload();
+      setIsAssignDialogOpen(false);
+      setSelectedStartup('');
+      setNotification({ message: 'Startup assigned successfully', severity: 'success' });
     } catch (error) {
       setNotification({
         message: `Error: ${(error as Error).message}`,
@@ -181,21 +205,16 @@ export default function OverviewView() {
 
   const handleUnassignStartup = async (startupId: string) => {
     try {
-      if (!user?.id) return;
-
-      // Get the current coachees excluding the one to be unassigned
-      const updatedCoachees =
-        user.coachees?.filter((startup) => startup.id !== startupId) || [];
-
-      // Update the user with the new coachees list
-      await supabaseUpdateUser({
-        id: user.id,
-        id: user.id,
-        coachees: updatedCoachees,
+      // Remove the coach_id from the startup
+      await supabaseUpdateStartup({
+        id: startupId,
+        coach_id: undefined,
       });
 
-      // Refresh the page to update the list
-      window.location.reload();
+      // Update local state
+      setCoachees(coachees.filter((startup) => startup.id !== startupId));
+
+      setNotification({ message: 'Startup unassigned successfully', severity: 'success' });
     } catch (error) {
       setNotification({
         message: `Error: ${(error as Error).message}`,
@@ -204,7 +223,7 @@ export default function OverviewView() {
     }
   };
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, startup: Startup) => {
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, startup: Tables<'startups'>) => {
     event.preventDefault(); // Prevent navigation
     setMenuAnchorEl(event.currentTarget);
     setSelectedStartupForMenu(startup);
@@ -254,8 +273,8 @@ export default function OverviewView() {
       });
 
       // Update the local state to reflect changes
-      if (user?.coachees) {
-        const updatedCoachees = user.coachees.map(startup => {
+      if (coachees.length > 0) {
+        const updatedCoachees = coachees.map((startup: any) => {
           if (startup.id === selectedStartupForMenu.id) {
             return { ...startup, categories: selectedCategories };
           }
@@ -263,11 +282,9 @@ export default function OverviewView() {
         });
 
         // Update user with updated coachees
-        if (user.id) {
+        if (user?.id) {
           await supabaseUpdateUser({
             id: user.id,
-            id: user.id,
-            coachees: updatedCoachees,
           });
         }
       }
@@ -288,7 +305,7 @@ export default function OverviewView() {
   };
 
   // Toggle startup selection for bulk operations
-  const handleStartupSelection = (startup: Startup) => {
+  const handleStartupSelection = (startup: Tables<'startups'>) => {
     setSelectedStartups(prev => {
       const isSelected = prev.some(s => s.id === startup.id);
       if (isSelected) {
@@ -337,8 +354,8 @@ export default function OverviewView() {
       await Promise.all(updatePromises);
 
       // Update the local state to reflect changes
-      if (user?.coachees) {
-        const updatedCoachees = user.coachees.map(startup => {
+      if (coachees.length > 0) {
+        const updatedCoachees = coachees.map((startup: any) => {
           if (selectedStartups.some(s => s.id === startup.id)) {
             return { ...startup, categories: selectedCategories };
           }
@@ -346,11 +363,9 @@ export default function OverviewView() {
         });
 
         // Update user with updated coachees
-        if (user.id) {
+        if (user?.id) {
           await supabaseUpdateUser({
             id: user.id,
-            id: user.id,
-            coachees: updatedCoachees,
           });
         }
       }
@@ -484,11 +499,11 @@ export default function OverviewView() {
           />
           <CardContent>
             <List sx={{ width: '100%' }}>
-              {user?.coachees &&
-                user.coachees.map((startup, index, array) => {
+              {coachees.length > 0 &&
+                coachees.map((startup: any, index: number, array: any[]) => {
                   // Count unread requests for this startup
                   const startupRequests = requests.filter(
-                    (r) => r.startup?.id === startup.id && !r.readAt,
+                    (r) => r.startup?.id === startup.id && !r.read_at,
                   ).length;
 
                   // Check if this startup is selected for bulk operations
@@ -611,7 +626,7 @@ export default function OverviewView() {
                 })}
 
               {/* Show a message if no startups */}
-              {(!user?.coachees || user.coachees.length === 0) && (
+              {coachees.length === 0 && (
                 <ListItem>
                   <ListItemText
                     primary={

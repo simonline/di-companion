@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/types/database';
+import type { Database, TablesInsert, TablesUpdate } from '@/types/database';
+import { CategoryEnum } from '@/utils/constants';
 
 // Initialize Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -60,16 +61,16 @@ export async function getEntityFiles(entityType: string, entityId: string | numb
     .eq('entity_id', String(entityId))
     .is('deleted_at', null)
     .order('created_at', { ascending: true });
-  
+
   if (error) {
     console.error(`Error fetching ${entityType} files:`, error);
     return [];
   }
-  
+
   // Transform to include full URL
   return (data || []).map(file => ({
     ...file,
-    url: file.is_public 
+    url: file.is_public
       ? `https://u456678.your-storagebox.de/${file.bucket}/${file.storage_path}`
       : `/api/files/${file.id}/signed-url` // Frontend will need to fetch this
   }));
@@ -81,34 +82,7 @@ export async function getEntityImageUrl(entityType: string, entityId: string | n
   return files.length > 0 ? files[0].url : null;
 }
 
-import type {
-  CreateStartup,
-  CreateStartupPattern,
-  CreateStartupMethod,
-  Pattern,
-  Question,
-  Recommendation,
-  Startup,
-  StartupMethod,
-  StartupPattern,
-  Survey,
-  UserRegistration,
-  UpdateStartup,
-  UpdateStartupMethod,
-  UpdateStartupPattern,
-  Invitation,
-  CreateInvitation,
-  UpdateInvitation,
-  UpdateUser,
-  Request,
-  UserQuestion,
-  CreateUserQuestion,
-  UpdateUserQuestion,
-  Method,
-} from '@/types/supabase';
-import { CategoryEnum } from '@/utils/constants';
-
-type Tables = Database['public']['Tables'];
+// Type alias removed - using imported Tables type
 
 // Authentication functions
 export async function supabaseLogin(identifier: string, password: string) {
@@ -161,7 +135,21 @@ export async function supabaseVerifyOtp(email: string, token: string) {
   };
 }
 
-export async function supabaseRegister(userData: UserRegistration) {
+export async function supabaseRegister(userData: {
+  username: string;
+  email: string;
+  password: string;
+  given_name: string;
+  family_name: string;
+  gender?: string;
+  position?: string;
+  bio?: string;
+  linkedin_profile?: string;
+  avatar?: File;
+  is_coach?: boolean;
+  phone?: string;
+  is_phone_visible?: boolean;
+}) {
   // First, sign up the user with Supabase Auth
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: userData.email,
@@ -280,15 +268,30 @@ export async function supabaseMe() {
       // If profile doesn't exist, return basic auth data
       if (profileError.code === 'PGRST116' || profileError.message?.includes('not found')) {
         console.log('[supabaseMe] Profile not found, using auth data only');
+        // Return a User object with all required fields from profiles table
         return {
           id: authUser.id,
+          avatar_id: null,
+          bio: null,
+          created_at: null,
+          family_name: authUser.user_metadata?.family_name || null,
+          firstname: null,
+          gender: null,
+          given_name: authUser.user_metadata?.given_name || null,
+          is_coach: false,
+          is_phone_visible: false,
+          lastname: null,
+          linkedin_profile: null,
+          locale: null,
+          phone: null,
+          position: null,
+          updated_at: null,
+          username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || null,
+          // Extended fields for User type
           email: authUser.email || '',
-          username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || '',
-          given_name: authUser.user_metadata?.given_name || '',
-          family_name: authUser.user_metadata?.family_name || '',
-          startups: [],
           avatar_url: undefined,
-        };
+          startups: [],
+        } as User;
       }
       throw new Error(handleSupabaseError(profileError));
     }
@@ -331,7 +334,7 @@ export async function supabaseLogout() {
 }
 
 export async function supabaseUpdateUser(updateUser: UpdateUser) {
-  const { id, avatar, ...updateData } = updateUser;
+  const { id, avatar, ...updated_at } = updateUser;
   let avatarId;
 
   // Handle avatar upload with new file system if provided
@@ -373,7 +376,7 @@ export async function supabaseUpdateUser(updateUser: UpdateUser) {
   }
 
   // Prepare update data - fields already match database schema
-  const dbUpdate: any = { ...updateData };
+  const dbUpdate: any = { ...updated_at };
   if (avatarId) dbUpdate.avatar_id = avatarId;
 
   const { data, error } = await supabase
@@ -390,7 +393,7 @@ export async function supabaseUpdateUser(updateUser: UpdateUser) {
 
   return {
     ...data,
-    email: authUser?.email || updateData.email || '',
+    email: authUser?.email || '',
   };
 }
 
@@ -493,23 +496,23 @@ export async function supabaseCreateStartup(startup: CreateStartup): Promise<Sta
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) throw new Error('Not authenticated');
 
-  // Transform field names
+  // Field names already match database schema
   const dbStartup = {
     name: startup.name,
-    start_date: startup.startDate,
-    founders_count: startup.foundersCount,
+    start_date: startup.start_date,
+    founders_count: startup.founders_count,
     background: startup.background,
-    product_type: startup.productType,
+    product_type: startup.product_type,
     idea: startup.idea,
     industry: startup.industry,
-    industry_other: startup.industryOther,
-    target_market: startup.targetMarket,
+    industry_other: startup.industry_other,
+    target_market: startup.target_market,
     phase: startup.phase,
-    is_problem_validated: startup.isProblemValidated,
-    qualified_conversations_count: startup.qualifiedConversationsCount,
-    is_target_group_defined: startup.isTargetGroupDefined,
-    is_prototype_validated: startup.isPrototypeValidated,
-    is_mvp_tested: startup.isMvpTested,
+    is_problem_validated: startup.is_problem_validated,
+    qualified_conversations_count: startup.qualified_conversations_count,
+    is_target_group_defined: startup.is_target_group_defined,
+    is_prototype_validated: startup.is_prototype_validated,
+    is_mvp_tested: startup.is_mvp_tested,
     categories: startup.categories,
   };
 
@@ -535,23 +538,23 @@ export async function supabaseCreateStartup(startup: CreateStartup): Promise<Sta
 export async function supabaseUpdateStartup(updateStartup: UpdateStartup): Promise<Startup> {
   const { id, ...updates } = updateStartup;
 
-  // Transform field names
+  // Field names already match database schema
   const dbUpdate: any = {};
   if (updates.name) dbUpdate.name = updates.name;
-  if (updates.startDate) dbUpdate.start_date = updates.startDate;
-  if (updates.foundersCount) dbUpdate.founders_count = updates.foundersCount;
+  if (updates.start_date) dbUpdate.start_date = updates.start_date;
+  if (updates.founders_count) dbUpdate.founders_count = updates.founders_count;
   if (updates.background) dbUpdate.background = updates.background;
-  if (updates.productType) dbUpdate.product_type = updates.productType;
+  if (updates.product_type) dbUpdate.product_type = updates.product_type;
   if (updates.idea) dbUpdate.idea = updates.idea;
   if (updates.industry) dbUpdate.industry = updates.industry;
-  if (updates.industryOther) dbUpdate.industry_other = updates.industryOther;
-  if (updates.targetMarket) dbUpdate.target_market = updates.targetMarket;
+  if (updates.industry_other) dbUpdate.industry_other = updates.industry_other;
+  if (updates.target_market) dbUpdate.target_market = updates.target_market;
   if (updates.phase) dbUpdate.phase = updates.phase;
-  if (updates.isProblemValidated !== undefined) dbUpdate.is_problem_validated = updates.isProblemValidated;
-  if (updates.qualifiedConversationsCount) dbUpdate.qualified_conversations_count = updates.qualifiedConversationsCount;
-  if (updates.isTargetGroupDefined !== undefined) dbUpdate.is_target_group_defined = updates.isTargetGroupDefined;
-  if (updates.isPrototypeValidated !== undefined) dbUpdate.is_prototype_validated = updates.isPrototypeValidated;
-  if (updates.isMvpTested !== undefined) dbUpdate.is_mvp_tested = updates.isMvpTested;
+  if (updates.is_problem_validated !== undefined) dbUpdate.is_problem_validated = updates.is_problem_validated;
+  if (updates.qualified_conversations_count) dbUpdate.qualified_conversations_count = updates.qualified_conversations_count;
+  if (updates.is_target_group_defined !== undefined) dbUpdate.is_target_group_defined = updates.is_target_group_defined;
+  if (updates.is_prototype_validated !== undefined) dbUpdate.is_prototype_validated = updates.is_prototype_validated;
+  if (updates.is_mvp_tested !== undefined) dbUpdate.is_mvp_tested = updates.is_mvp_tested;
   if (updates.scores) dbUpdate.scores = updates.scores;
   if (updates.score) dbUpdate.score = updates.score;
   if (updates.categories) dbUpdate.categories = updates.categories;
@@ -565,7 +568,7 @@ export async function supabaseUpdateStartup(updateStartup: UpdateStartup): Promi
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as Startup;
 }
 
 
@@ -595,7 +598,7 @@ export async function supabaseGetStartup(id: string): Promise<Startup> {
   return {
     ...data,
     coach
-  };
+  } as Startup;
 }
 
 export async function supabaseGetStartups(): Promise<Startup[]> {
@@ -605,7 +608,7 @@ export async function supabaseGetStartups(): Promise<Startup[]> {
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data || [];
+  return (data || []) as Startup[];
 }
 
 // Startup Patterns
@@ -641,19 +644,21 @@ export async function supabaseGetStartupPatterns(
   return (data || []).map(sp => ({
     id: sp.id,
     points: sp.points,
-    pattern: sp.pattern ? {
-      ...sp.pattern,
-      id: sp.pattern.id,
-      image: { url: '' }, // Image will be in the pattern.image field already
-    } : null,
-    startup: sp.startup || null,
-    createdAt: sp.created_at,
-    updatedAt: sp.updated_at,
-  }));
+    pattern: sp.pattern,
+    startup: sp.startup,
+    created_at: sp.created_at,
+    updated_at: sp.updated_at,
+    applied_at: sp.applied_at,
+    response_type: sp.response_type,
+    response: sp.response,
+    startup_id: sp.startup_id,
+    pattern_id: sp.pattern_id,
+    user_id: sp.user_id,
+  } as StartupPattern));
 }
 
 export async function supabaseCreateStartupPattern(
-  startupPattern: CreateStartupPattern
+  startupPattern: TablesInsert<'startup_patterns'>
 ): Promise<StartupPattern> {
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) throw new Error('Not authenticated');
@@ -684,13 +689,13 @@ export async function supabaseCreateStartupPattern(
       image: { url: '' }, // Image will be in the pattern.image field already
     } : null,
     startup: data.startup || null,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
   };
 }
 
 export async function supabaseUpdateStartupPattern(
-  updateStartupPattern: UpdateStartupPattern
+  updateStartupPattern: TablesUpdate<'startup_patterns'>
 ): Promise<StartupPattern> {
   const { id, ...updates } = updateStartupPattern;
 
@@ -718,8 +723,8 @@ export async function supabaseUpdateStartupPattern(
       image: { url: '' }, // Image will be in the pattern.image field already
     } : null,
     startup: data.startup || null,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
   };
 }
 
@@ -728,28 +733,6 @@ export async function supabaseUpdateStartupPattern(
 
 
 // File management functions for new S3-based storage
-export interface FileRecord {
-  id: string;
-  filename: string;
-  original_name: string;
-  mime_type: string;
-  size_bytes: number;
-  bucket: string;
-  s3_key: string;
-  s3_url: string;
-  cdn_url?: string;
-  etag?: string;
-  category?: string;
-  entity_type?: string;
-  entity_id?: string;
-  is_public: boolean;
-  signed_url_expires_in?: number;
-  uploaded_by?: string;
-  metadata?: Record<string, any>;
-  created_at: string;
-  updated_at: string;
-  deleted_at?: string;
-}
 
 export async function supabaseGetFiles(
   entityType?: string,
@@ -841,10 +824,10 @@ export async function supabaseDeleteFile(fileId: string): Promise<void> {
 // Helper function to get image URL from file record
 export function getFileUrl(file: any): string {
   if (!file) return '';
-  
+
   // Always use backend URL for file serving
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-  
+
   // Simple direct file serving - backend handles WebDAV auth
   return `${backendUrl}/api/files/${file.id}`;
 }
@@ -853,7 +836,7 @@ export function getFileUrl(file: any): string {
 // This handles both old string URLs and new file objects
 export function getAvatarUrl(avatarUrlOrFile?: string | any): string | undefined {
   if (!avatarUrlOrFile) return undefined;
-  
+
   // If it's a string and already a full URL, return as is
   if (typeof avatarUrlOrFile === 'string') {
     if (avatarUrlOrFile.startsWith('http')) {
@@ -865,7 +848,7 @@ export function getAvatarUrl(avatarUrlOrFile?: string | any): string | undefined
       .getPublicUrl(avatarUrlOrFile);
     return data.publicUrl;
   }
-  
+
   // If it's a file object, use getFileUrl
   return getFileUrl(avatarUrlOrFile);
 }
@@ -917,12 +900,12 @@ export async function updateEntityImage(
   }
 
   // Update the entity with the new image_id
-  const columnName = entityType === 'startup' ? 'logo_id' : 
-                     entityType === 'profile' ? 'avatar_id' : 
-                     'image_id';
-  
+  const columnName = entityType === 'startup' ? 'logo_id' :
+    entityType === 'profile' ? 'avatar_id' :
+      'image_id';
+
   const tableName = entityType === 'profile' ? 'profiles' : `${entityType}s`;
-  
+
   const { error: updateError } = await supabase
     .from(tableName)
     .update({ [columnName]: fileRecord.id })
@@ -1189,12 +1172,12 @@ export async function supabaseUpdateStartupMethod(data: UpdateStartupMethod): Pr
   const { id, resultFiles, ...payload } = data;
 
   // Update the startup method
-  const updateData: any = {};
-  if (payload.status) updateData.status = payload.status;
+  const updatedData: any = {};
+  if (payload.status) updatedData.status = payload.status;
 
   const { data: startupMethod, error } = await supabase
     .from('startup_methods')
-    .update(updateData)
+    .update(updatedData)
     .eq('id', id)
     .select(`
       *,
@@ -1275,28 +1258,14 @@ export async function supabaseGetRecommendations(startupId?: string): Promise<Re
     patterns: rec.patterns?.map((p: any) => p.pattern) || [],
     coach: rec.coach,
     startup: rec.startup,
-    readAt: rec.read_at,
-    createdAt: rec.created_at,
+    read_at: rec.read_at,
+    created_at: rec.created_at,
   }));
 }
 
-export interface CreateRecommendation {
-  comment: string;
-  type: 'pattern' | 'url' | 'file' | 'contact';
-  patterns?: { set: string[] };
-  coach?: string;
-  startup?: string;
-  readAt?: string;
-}
-
-export interface UpdateRecommendation {
-  id: string;
-  comment?: string;
-  readAt?: string;
-}
 
 export async function supabaseCreateRecommendation(
-  recommendation: CreateRecommendation
+  recommendation: TablesInsert<'recommendations'>
 ): Promise<Recommendation> {
   const { patterns, ...data } = recommendation;
 
@@ -1307,7 +1276,7 @@ export async function supabaseCreateRecommendation(
       type: data.type,
       coach_id: data.coach,
       startup_id: data.startup,
-      read_at: data.readAt,
+      read_at: data.read_at,
     })
     .select()
     .single();
@@ -1352,8 +1321,8 @@ async function supabaseGetRecommendation(id: string): Promise<Recommendation> {
     patterns: data.patterns?.map((p: any) => p.pattern) || [],
     coach: data.coach,
     startup: data.startup,
-    readAt: data.read_at,
-    createdAt: data.created_at,
+    read_at: data.read_at,
+    created_at: data.created_at,
   };
 }
 
@@ -1372,8 +1341,8 @@ export async function supabaseGetInvitations(startupId: string): Promise<Invitat
     token: inv.token,
     acceptedAt: inv.accepted_at,
     startup: null,
-    invitedBy: null,
-    createdAt: inv.created_at,
+    invited_by: null,
+    created_at: inv.created_at,
   }));
 }
 
@@ -1393,7 +1362,7 @@ export async function supabaseCreateInvitation(invitation: CreateInvitation): Pr
     })
     .select(`
       *,
-      invitedBy:invitations_invited_by_lnk(
+      invited_by:invitations_invited_by_lnk(
         user:profiles(*)
       ),
       startup:invitations_startup_lnk(
@@ -1410,8 +1379,8 @@ export async function supabaseCreateInvitation(invitation: CreateInvitation): Pr
     token: data.token,
     acceptedAt: data.accepted_at,
     startup: data.startup,
-    invitedBy: data.invitedBy,
-    createdAt: data.created_at,
+    invited_by: data.invited_by,
+    created_at: data.created_at,
   };
 }
 
@@ -1443,8 +1412,8 @@ export async function supabaseAcceptInvitation(token: string): Promise<Invitatio
     token: invitation.token,
     acceptedAt: invitation.accepted_at,
     startup: null,
-    invitedBy: null,
-    createdAt: invitation.created_at,
+    invited_by: null,
+    created_at: invitation.created_at,
   };
 }
 
@@ -1532,7 +1501,7 @@ export async function supabaseGetUserQuestions(
 }
 
 export async function supabaseUpdateUserQuestion(
-  updateUserQuestion: UpdateUserQuestion
+  updateUserQuestion: TablesUpdate<'user_questions'>
 ): Promise<UserQuestion> {
   const { id, ...updates } = updateUserQuestion;
 
@@ -1639,7 +1608,7 @@ export async function supabaseFindUserQuestion(
 }
 
 export async function supabaseCreateUserQuestion(
-  createUserQuestion: CreateUserQuestion
+  createUserQuestion: TablesInsert<'user_questions'>
 ): Promise<UserQuestion> {
   const { data, error } = await supabase
     .from('user_questions')
@@ -1678,17 +1647,6 @@ export async function supabaseCreateUserQuestion(
 }
 
 // Requests
-export interface CreateRequest {
-  comment: string;
-  startup?: string;
-}
-
-export interface UpdateRequest {
-  id: string;
-  comment?: string;
-  readAt?: string;
-}
-
 export async function supabaseGetRequests(startupId?: string): Promise<Request[]> {
   let query = supabase
     .from('requests')
@@ -1704,8 +1662,8 @@ export async function supabaseGetRequests(startupId?: string): Promise<Request[]
   return (data || []).map(req => ({
     id: req.id,
     comment: req.comment,
-    readAt: req.read_at,
-    createdAt: req.created_at,
+    read_at: req.read_at,
+    created_at: req.created_at,
   }));
 }
 
@@ -1730,8 +1688,8 @@ export async function supabaseCreateRequest(request: CreateRequest): Promise<Req
   return {
     id: data.id,
     comment: data.comment,
-    readAt: data.read_at,
-    createdAt: data.created_at,
+    read_at: data.read_at,
+    created_at: data.created_at,
   };
 }
 
@@ -1742,7 +1700,7 @@ export async function supabaseUpdateRequest(update: UpdateRequest): Promise<Requ
     .from('requests')
     .update({
       comment: updates.comment,
-      read_at: updates.readAt,
+      read_at: updates.read_at,
     })
     .eq('id', id)
     .select()
@@ -1753,8 +1711,8 @@ export async function supabaseUpdateRequest(update: UpdateRequest): Promise<Requ
   return {
     id: data.id,
     comment: data.comment,
-    readAt: data.read_at,
-    createdAt: data.created_at,
+    read_at: data.read_at,
+    created_at: data.created_at,
   };
 }
 
@@ -1775,7 +1733,7 @@ export async function supabaseUpdateRecommendation(update: UpdateRecommendation)
     .from('recommendations')
     .update({
       comment: updates.comment,
-      read_at: updates.readAt,
+      read_at: updates.read_at,
     })
     .eq('id', id);
 
@@ -1822,8 +1780,8 @@ async function supabaseGetInvitation(id: string): Promise<Invitation> {
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  // Get the invitedBy user profile directly from the invitation
-  let invitedByUser = null;
+  // Get the invited_by user profile directly from the invitation
+  let invited_byUser = null;
   if (data.invited_by_id) {
     const { data: profileData } = await supabase
       .from('profiles')
@@ -1832,7 +1790,7 @@ async function supabaseGetInvitation(id: string): Promise<Invitation> {
       .single();
 
     if (profileData) {
-      invitedByUser = profileData;
+      invited_byUser = profileData;
     }
   }
 
@@ -1856,8 +1814,8 @@ async function supabaseGetInvitation(id: string): Promise<Invitation> {
     token: data.token,
     acceptedAt: data.accepted_at,
     startup: startup,
-    invitedBy: invitedByUser,
-    createdAt: data.created_at,
+    invited_by: invited_byUser,
+    created_at: data.created_at,
   };
 }
 

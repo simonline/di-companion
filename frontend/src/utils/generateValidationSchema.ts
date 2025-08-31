@@ -1,11 +1,12 @@
 import * as Yup from 'yup';
-import { Question, QuestionType } from '@/types/supabase';
+import { Tables } from '@/types/database';
+import { QuestionType } from '@/utils/constants';
 
 export interface FormValues {
   [key: string]: string | string[] | number | boolean;
 }
 
-export const generateValidationSchema = (questions: Question[]) => {
+export const generateValidationSchema = (questions: Tables<'questions'>[]) => {
   const schema: { [key: string]: any } = {};
 
   questions.forEach((question) => {

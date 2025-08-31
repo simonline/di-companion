@@ -10,7 +10,7 @@ import {
   Alert,
 } from '@mui/material';
 import { getRecommendationIcon } from './types';
-import { Recommendation } from '@/types/supabase';
+import { Tables, TablesInsert } from '@/types/database';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import useRecommendations from '@/hooks/useRecommendations';
@@ -20,7 +20,6 @@ import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import RequestForm from './components/RequestForm';
-import { CreateRequest } from '@/lib/supabase';
 
 export const Coach: React.FC = () => {
   const navigate = useNavigate();
@@ -44,7 +43,7 @@ export const Coach: React.FC = () => {
   }, [fetchRecommendations, startup]);
 
   // Redirect to Startups view if user is a coach
-  if (user?.isCoach) {
+  if (user?.is_coach) {
     return <Navigate to="/startups" replace />;
   }
 
@@ -56,7 +55,7 @@ export const Coach: React.FC = () => {
     setIsRequestFormOpen(false);
   };
 
-  const handleSubmitRequest = async (values: CreateRequest) => {
+  const handleSubmitRequest = async (values: TablesInsert<'requests'>) => {
     setIsSubmittingRequest(true);
 
     try {
@@ -80,12 +79,12 @@ export const Coach: React.FC = () => {
     setNotification(null);
   };
 
-  const handleRecommendationClick = (recommendation: Recommendation) => {
+  const handleRecommendationClick = (recommendation: Tables<'recommendations'>) => {
     // Mark recommendation as read
-    if (!recommendation.readAt) {
+    if (!recommendation.read_at) {
       updateRecommendation({
         id: recommendation.id,
-        readAt: new Date().toISOString(),
+        read_at: new Date().toISOString(),
       });
     }
 
@@ -172,15 +171,15 @@ export const Coach: React.FC = () => {
               }}
             >
               <Avatar
-                src={coach.avatar?.url}
+                src={coach.avatar_url || undefined}
                 sx={{
                   width: 60,
                   height: 60,
                   mr: 2,
                 }}
               >
-                {coach.givenName.charAt(0)}
-                {coach.familyName.charAt(0)}
+                {coach.given_name?.charAt(0)}
+                {coach.family_name?.charAt(0)}
               </Avatar>
               <Box>
                 <Typography
@@ -191,7 +190,7 @@ export const Coach: React.FC = () => {
                   YOUR COACH
                 </Typography>
                 <Typography variant="h5" sx={{ fontWeight: 500, mb: 0.5 }}>
-                  {coach.givenName} {coach.familyName}
+                  {coach.given_name} {coach.family_name}
                 </Typography>
 
                 {coach.position && (
@@ -237,7 +236,7 @@ export const Coach: React.FC = () => {
                 Email
               </Button>
 
-              {coach.isPhoneVisible && coach.phone && (
+              {coach.is_phone_visible && coach.phone && (
                 <Button
                   variant="contained"
                   size="small"
@@ -305,7 +304,7 @@ export const Coach: React.FC = () => {
               {recommendations
                 .slice()
                 .sort(
-                  (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+                  (a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime(),
                 )
                 .map((recommendation) => (
                   <Box
@@ -323,7 +322,7 @@ export const Coach: React.FC = () => {
                         transform: 'translateY(-2px)',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
                       },
-                      ...(recommendation.readAt ? {} : {
+                      ...(recommendation.read_at ? {} : {
                         '&::before': {
                           content: '""',
                           position: 'absolute',
@@ -339,7 +338,7 @@ export const Coach: React.FC = () => {
                     <Box
                       sx={{
                         p: 2.5,
-                        backgroundColor: recommendation.readAt ? 'background.paper' : 'action.hover',
+                        backgroundColor: recommendation.read_at ? 'background.paper' : 'action.hover',
                       }}
                     >
                       <Box sx={{ display: 'flex' }}>
@@ -357,7 +356,7 @@ export const Coach: React.FC = () => {
                             <Typography
                               variant="body1"
                               sx={{
-                                fontWeight: recommendation.readAt ? 'normal' : 'medium',
+                                fontWeight: recommendation.read_at ? 'normal' : 'medium',
                                 lineHeight: 1.4,
                                 flex: 1,
                                 pr: 2,
@@ -374,7 +373,7 @@ export const Coach: React.FC = () => {
                                 mt: 0.3,
                               }}
                             >
-                              {format(new Date(recommendation.publishedAt), 'MMM dd, yyyy')}
+                              {format(new Date(recommendation.published_at), 'MMM dd, yyyy')}
                             </Typography>
                           </Box>
 

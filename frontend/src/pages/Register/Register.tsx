@@ -103,15 +103,15 @@ function Register() {
         username: uuidv4(),
         email: values.email,
         password: values.password,
-        givenName: values.givenName,
-        familyName: values.familyName,
+        given_name: values.givenName,
+        family_name: values.familyName,
         gender: values.gender,
         position: isCoach ? undefined : values.position,
         bio: values.bio,
-        linkedinProfile: values.linkedinProfile,
+        linkedin_profile: values.linkedinProfile,
         avatar: values.avatar,
-        isCoach: isCoach,
-        ...(isCoach && { phone: values.phone, isPhoneVisible: values.isPhoneVisible }),
+        is_coach: isCoach,
+        ...(isCoach && { phone: values.phone, is_phone_visible: values.isPhoneVisible }),
       });
 
       // Show notification about email verification

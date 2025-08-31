@@ -24,8 +24,14 @@ import {
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { CenteredFlexBox } from '@/components/styled';
-import { StartupPattern, ResponseTypeEnum } from '@/types/supabase';
-import { categoryColors, categoryDisplayNames, phaseNumbers, PhaseEnum } from '@/utils/constants';
+import { Tables } from '@/types/database';
+import {
+  categoryColors,
+  categoryDisplayNames,
+  phaseNumbers,
+  PhaseEnum,
+  ResponseTypeEnum,
+} from '@/utils/constants';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/sections/Header';
@@ -33,8 +39,8 @@ import { useAuthContext } from '@/hooks/useAuth';
 
 type FilterStatus = 'in_progress' | 'applied' | 'not_applied';
 
-export const getPatternStatus = (pattern: StartupPattern): FilterStatus | null => {
-  if (pattern.appliedAt) {
+export const getPatternStatus = (pattern: Tables<'startup_patterns'>): FilterStatus | null => {
+  if (pattern.applied_at) {
     return 'applied';
   } else if (pattern.responseType === ResponseTypeEnum.accept) {
     return 'in_progress';
@@ -43,7 +49,7 @@ export const getPatternStatus = (pattern: StartupPattern): FilterStatus | null =
   }
 };
 
-const PatternListItem: React.FC<{ startupPattern: StartupPattern }> = ({ startupPattern }) => {
+const PatternListItem: React.FC<{ startupPattern: Tables<'startup_patterns'> }> = ({ startupPattern }) => {
   const { pattern } = startupPattern;
   const [isHovered, setIsHovered] = useState(false);
 
@@ -111,7 +117,7 @@ const PatternListItem: React.FC<{ startupPattern: StartupPattern }> = ({ startup
                   {pattern.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Updated {format(new Date(startupPattern.updatedAt), 'MMM dd, yyyy')}
+                  Updated {format(new Date(startupPattern.updated_at), 'MMM dd, yyyy')}
                 </Typography>
               </Box>
             </Stack>

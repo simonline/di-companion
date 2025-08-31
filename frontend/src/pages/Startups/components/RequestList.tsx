@@ -22,11 +22,11 @@ import {
   MarkEmailRead as MarkEmailReadIcon,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import { Request } from '@/types/supabase';
+import { Tables } from '@/types/database';
 
 interface RequestListProps {
-  requests: Request[];
-  onMarkAsRead: (request: Request) => void;
+  requests: Tables<'requests'>[];
+  onMarkAsRead: (request: Tables<'requests'>) => void;
   onDelete: (id: string) => void;
   loading?: boolean;
 }
@@ -38,9 +38,9 @@ const RequestList: React.FC<RequestListProps> = ({
   loading = false,
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedRequest, setSelectedRequest] = React.useState<Request | null>(null);
+  const [selectedRequest, setSelectedRequest] = React.useState<Tables<'requests'> | null>(null);
 
-  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, request: Request) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, request: Tables<'requests'>) => {
     setAnchorEl(event.currentTarget);
     setSelectedRequest(request);
   };
@@ -51,7 +51,7 @@ const RequestList: React.FC<RequestListProps> = ({
   };
 
   const handleMarkAsRead = () => {
-    if (selectedRequest && !selectedRequest.readAt) {
+    if (selectedRequest && !selectedRequest.read_at) {
       onMarkAsRead(selectedRequest);
       handleCloseMenu();
     }
@@ -86,7 +86,11 @@ const RequestList: React.FC<RequestListProps> = ({
 
   // Sort requests by date (newest first)
   const sortedRequests = [...requests].sort(
-    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+    (a, b) => {
+      const dateA = a.published_at ? new Date(a.published_at).getTime() : 0;
+      const dateB = b.published_at ? new Date(b.published_at).getTime() : 0;
+      return dateB - dateA;
+    },
   );
 
   return (
@@ -108,7 +112,7 @@ const RequestList: React.FC<RequestListProps> = ({
                 key={request.id}
                 sx={{
                   '&:last-child td, &:last-child th': { border: 0 },
-                  backgroundColor: request.readAt ? undefined : 'rgba(25, 118, 210, 0.04)',
+                  backgroundColor: request.read_at ? undefined : 'rgba(25, 118, 210, 0.04)',
                 }}
               >
                 <TableCell>
@@ -120,7 +124,7 @@ const RequestList: React.FC<RequestListProps> = ({
                   <Typography variant="body1">{request.comment}</Typography>
                 </TableCell>
                 <TableCell>
-                  {request.readAt ? (
+                  {request.read_at ? (
                     <Chip label="Read" size="small" sx={{ bgcolor: '#e8f5e9', color: '#2e7d32' }} />
                   ) : (
                     <Chip
@@ -130,7 +134,7 @@ const RequestList: React.FC<RequestListProps> = ({
                     />
                   )}
                 </TableCell>
-                <TableCell>{format(new Date(request.publishedAt), 'MMM dd, yyyy')}</TableCell>
+                <TableCell>{request.published_at ? format(new Date(request.published_at), 'MMM dd, yyyy') : '-'}</TableCell>
                 <TableCell align="right">
                   <IconButton size="small" onClick={(e) => handleOpenMenu(e, request)}>
                     <MoreVertIcon />
@@ -143,7 +147,7 @@ const RequestList: React.FC<RequestListProps> = ({
       </TableContainer>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
-        {selectedRequest && !selectedRequest.readAt && (
+        {selectedRequest && !selectedRequest.read_at && (
           <MenuItem onClick={handleMarkAsRead}>
             <MarkEmailReadIcon fontSize="small" sx={{ mr: 1 }} />
             Mark as Read

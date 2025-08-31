@@ -1,25 +1,10 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import axios from 'axios';
+import { Tables } from '@/types/database';
 
-export interface FileUpload {
-  id: string;
-  filename: string;
-  original_name: string;
-  mime_type: string;
-  size_bytes: number;
-  bucket: string;
-  s3_key: string;
-  s3_url: string;
-  cdn_url?: string;
-  category?: string;
-  entity_type?: string;
-  entity_id?: string;
-  is_public: boolean;
-  metadata?: Record<string, any>;
-  created_at: string;
-  updated_at: string;
-}
+// Use the database structure directly
+type FileUpload = Tables<'files'>;
 
 interface UploadOptions {
   category?: string;
@@ -94,14 +79,12 @@ export const useFileUpload = (): UseFileUploadReturn => {
           mime_type: file.type,
           size_bytes: file.size,
           bucket: presignData.bucket,
-          s3_key: presignData.s3_key,
-          s3_url: presignData.s3_url,
-          etag: presignData.etag,
+          storage_path: presignData.s3_key, // Using s3_key as storage_path
           category: options.category,
           entity_type: options.entityType,
           entity_id: options.entityId,
           is_public: options.isPublic ?? false,
-          metadata: options.metadata,
+          metadata: { ...options.metadata, s3_url: presignData.s3_url, etag: presignData.etag },
         })
         .select()
         .single();
@@ -125,12 +108,12 @@ export const useFileUpload = (): UseFileUploadReturn => {
     options: UploadOptions = {}
   ): Promise<FileUpload[]> => {
     const results: FileUpload[] = [];
-    
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const progressOffset = (i / files.length) * 100;
       const progressRange = 100 / files.length;
-      
+
       const result = await upload(file, {
         ...options,
         onProgress: (fileProgress) => {
@@ -139,12 +122,12 @@ export const useFileUpload = (): UseFileUploadReturn => {
           options.onProgress?.(totalProgress);
         },
       });
-      
+
       if (result) {
         results.push(result);
       }
     }
-    
+
     return results;
   }, [upload]);
 
@@ -153,7 +136,7 @@ export const useFileUpload = (): UseFileUploadReturn => {
       // Get file info first
       const { data: file } = await supabase
         .from('files')
-        .select('s3_key')
+        .select('storage_path')
         .eq('id', fileId)
         .single();
 

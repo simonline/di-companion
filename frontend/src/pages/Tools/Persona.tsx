@@ -152,42 +152,42 @@ const Persona: React.FC = () => {
                                 }}
                                 component="label"
                             >
-                                        <input
-                                            type="file"
-                                            hidden
-                                            accept=".pdf,.png,.jpg,.jpeg,.pptx,.docx"
-                                            onChange={handleFileChange}
-                                        />
-                                        <CloudUpload sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                                        <Typography variant="h6" gutterBottom>
-                                            {file ? 'File Selected' : 'Click to Upload User Persona'}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                            {file ? file.name : 'Supported formats: PDF, PNG, JPG, PowerPoint, Word'}
-                                        </Typography>
-                                        {file && (
-                                            <Chip
-                                                icon={<Description />}
-                                                label={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
-                                                sx={{
-                                                    mt: 1,
-                                                    bgcolor: `${categoryColors.stakeholders}20`,
-                                                    color: categoryColors.stakeholders
-                                                }}
-                                            />
-                                        )}
+                                <input
+                                    type="file"
+                                    hidden
+                                    accept=".pdf,.png,.jpg,.jpeg,.pptx,.docx"
+                                    onChange={handleFileChange}
+                                />
+                                <CloudUpload sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                                <Typography variant="h6" gutterBottom>
+                                    {file ? 'File Selected' : 'Click to Upload User Persona'}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                    {file ? file.name : 'Supported formats: PDF, PNG, JPG, PowerPoint, Word'}
+                                </Typography>
+                                {file && (
+                                    <Chip
+                                        icon={<Description />}
+                                        label={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                                        sx={{
+                                            mt: 1,
+                                            bgcolor: `${categoryColors.stakeholders}20`,
+                                            color: categoryColors.stakeholders
+                                        }}
+                                    />
+                                )}
                             </Paper>
 
-                            <Alert 
-                                severity="info" 
-                                sx={{ 
+                            <Alert
+                                severity="info"
+                                sx={{
                                     mt: 3,
                                     bgcolor: `${categoryColors.stakeholders}20`,
                                     color: categoryColors.stakeholders,
                                     '& .MuiAlert-icon': {
                                         color: categoryColors.stakeholders
                                     }
-                                }} 
+                                }}
                                 icon={<Info />}
                             >
                                 <Typography variant="body2">
@@ -208,7 +208,7 @@ const Persona: React.FC = () => {
                                     ) : (
                                         <List>
                                             {documents.map((doc, index) => {
-                                                const date = new Date(doc.attributes.createdAt).toLocaleDateString();
+                                                const date = new Date(doc.attributes.created_at).toLocaleDateString();
                                                 return (
                                                     <React.Fragment key={doc.id}>
                                                         <ListItem>

@@ -208,7 +208,7 @@ function FinancialPlan() {
                   ) : (
                     <List>
                       {documents.map((doc, index) => {
-                        const date = new Date(doc.attributes.createdAt).toLocaleDateString();
+                        const date = new Date(doc.attributes.created_at).toLocaleDateString();
                         return (
                           <React.Fragment key={doc.id}>
                             <ListItem>

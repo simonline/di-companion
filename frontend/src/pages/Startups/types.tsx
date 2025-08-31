@@ -18,7 +18,7 @@ export const steps = ['About Your Startup', 'Product & Market', 'Validation & Pr
 export interface StartupFormValues {
   name: string;
   startDate: string;
-  foundersCount: number;
+  founders_count: number;
   background: string;
   idea: string;
   productType: string;
@@ -40,7 +40,7 @@ export const stepValidationSchemas = [
   Yup.object().shape({
     name: Yup.string().required('Startup name is required'),
     startDate: Yup.date().required('Start date is required'),
-    foundersCount: Yup.number()
+    founders_count: Yup.number()
       .min(0, 'Must be 0 or greater')
       .required('Number of founders is required'),
     background: Yup.string().required('Founder background information is required'),
@@ -76,7 +76,7 @@ export const stepValidationSchemas = [
   }),
 ];
 
-const FieldWithTooltip = ({ tooltip, ...props }: { tooltip: string; [key: string]: any }) => (
+const FieldWithTooltip = ({ tooltip, ...props }: { tooltip: string;[key: string]: any }) => (
   <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
     <Field {...props} />
     <Tooltip title={tooltip} placement="right">
@@ -136,7 +136,7 @@ export const renderStepContent = (
             as={TextField}
             fullWidth
             margin="normal"
-            name="foundersCount"
+            name="founders_count"
             label="Number of Founders"
             type="number"
             InputProps={{
@@ -144,21 +144,21 @@ export const renderStepContent = (
                 <>
                   <IconButton
                     onClick={() =>
-                      setFieldValue('foundersCount', Math.max(0, Number(values.foundersCount) - 1))
+                      setFieldValue('founders_count', Math.max(0, Number(values.founders_count) - 1))
                     }
                   >
                     <Remove />
                   </IconButton>
                   <IconButton
-                    onClick={() => setFieldValue('foundersCount', Number(values.foundersCount) + 1)}
+                    onClick={() => setFieldValue('founders_count', Number(values.founders_count) + 1)}
                   >
                     <Add />
                   </IconButton>
                 </>
               ),
             }}
-            error={touched.foundersCount && Boolean(errors.foundersCount)}
-            helperText={touched.foundersCount && errors.foundersCount}
+            error={touched.founders_count && Boolean(errors.founders_count)}
+            helperText={touched.founders_count && errors.founders_count}
             tooltip="How many co-founders are working on this startup"
           />
 

@@ -66,8 +66,7 @@ const ResetPassword: React.FC = () => {
         console.log('Attempting to reset password with code:', code);
         await supabaseResetPassword(
           code,
-          values.password!,
-          values.confirmPassword!
+          values.password!
         );
 
         setSuccess('Password has been reset successfully. You can now login with your new password.');

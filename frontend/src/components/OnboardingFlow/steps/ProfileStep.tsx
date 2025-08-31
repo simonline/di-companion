@@ -82,7 +82,6 @@ const ProfileStep: React.FC<OnboardingStepProps> = ({
       // Update the user profile
       await updateUser({
         id: user.id,
-        email: values.email,
         given_name: values.givenName,
         family_name: values.familyName,
         gender: values.gender,

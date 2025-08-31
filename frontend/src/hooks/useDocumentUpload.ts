@@ -27,8 +27,8 @@ export interface DocumentUpload {
         tags?: any;
         metadata?: any;
         aiAnalysis?: any;
-        createdAt: string;
-        updatedAt: string;
+        created_at: string;
+        updated_at: string;
     };
 }
 
@@ -50,7 +50,7 @@ export const useDocumentUpload = ({ type, onUploadSuccess, onUploadError }: UseD
                 params: {
                     filters: { type },
                     populate: 'file',
-                    sort: 'createdAt:desc'
+                    sort: 'created_at:desc'
                 }
             });
             setDocuments(response.data.data || []);
@@ -67,7 +67,7 @@ export const useDocumentUpload = ({ type, onUploadSuccess, onUploadError }: UseD
             // First upload the file
             const formData = new FormData();
             formData.append('files', file);
-            
+
             const fileResponse = await axiosInstance.post('/api/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -92,11 +92,11 @@ export const useDocumentUpload = ({ type, onUploadSuccess, onUploadError }: UseD
 
             // Refresh the list
             await fetchDocuments();
-            
+
             if (onUploadSuccess) {
                 onUploadSuccess();
             }
-            
+
             return true;
         } catch (error) {
             console.error(`Error uploading ${type}:`, error);

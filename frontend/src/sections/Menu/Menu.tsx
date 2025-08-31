@@ -21,7 +21,7 @@ function Menu() {
   const { isMobileKeyboardVisible } = useChatContext();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isCoach = user?.isCoach || false;
+  const isCoach = user?.is_coach || false;
   const userType = isCoach ? 'coach' : 'startup';
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
 

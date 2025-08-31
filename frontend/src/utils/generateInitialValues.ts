@@ -1,36 +1,38 @@
-import { Question, QuestionType, UserQuestion } from '@/types/supabase';
+import { Tables } from '@/types/database';
 import { FormValues } from './generateValidationSchema';
 
 export const generateInitialValues = (
-  questions: Question[],
-  userQuestions?: UserQuestion[],
+  questions: Tables<'questions'>[],
+  userQuestions?: Tables<'user_questions'>[],
 ): FormValues => {
   const values: FormValues = {};
 
   questions.forEach((question) => {
     const existingAnswer = userQuestions?.find(
-      (uq) => uq.question.id === question.id,
+      (uq) => uq.question_id === question.id,
     );
 
-    if (existingAnswer?.answer !== undefined) {
+    if (existingAnswer?.answer !== undefined && existingAnswer.answer !== null) {
       try {
         // Parse the JSON string to get the actual value
-        values[question.id] = JSON.parse(existingAnswer.answer);
+        values[question.id] = typeof existingAnswer.answer === 'string' 
+          ? JSON.parse(existingAnswer.answer)
+          : existingAnswer.answer;
       } catch (error) {
         // Fallback to the raw value if parsing fails
         values[question.id] = existingAnswer.answer;
       }
     } else {
       switch (question.type) {
-        case QuestionType.select_multiple:
-        case QuestionType.checkbox_multiple:
-        case QuestionType.rank:
+        case 'select_multiple':
+        case 'checkbox_multiple':
+        case 'rank':
           values[question.id] = [];
           break;
-        case QuestionType.checkbox:
+        case 'checkbox':
           values[question.id] = false;
           break;
-        case QuestionType.number:
+        case 'number':
           values[question.id] = '';
           break;
         default:

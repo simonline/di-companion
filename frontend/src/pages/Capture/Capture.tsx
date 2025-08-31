@@ -49,8 +49,8 @@ interface CaptureItem {
   title: string;
   content: string;
   tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
 }
 
 const typeIcons = {
@@ -86,8 +86,8 @@ const Capture: React.FC = () => {
     if (savedItems) {
       setItems(JSON.parse(savedItems).map((item: any) => ({
         ...item,
-        createdAt: new Date(item.createdAt),
-        updatedAt: new Date(item.updatedAt),
+        created_at: new Date(item.created_at),
+        updated_at: new Date(item.updated_at),
       })));
     }
   }, [user?.id]);
@@ -144,8 +144,8 @@ const Capture: React.FC = () => {
         .split(',')
         .map(tag => tag.trim())
         .filter(tag => tag),
-      createdAt: editingItem?.createdAt || new Date(),
-      updatedAt: new Date(),
+      created_at: editingItem?.created_at || new Date(),
+      updated_at: new Date(),
     };
 
     const updatedItems = editingItem
@@ -153,9 +153,9 @@ const Capture: React.FC = () => {
       : [...items, newItem];
 
     saveItems(updatedItems);
-    notificationActions.push({ 
-      message: editingItem ? 'Item updated successfully' : 'Item saved successfully', 
-      options: { variant: 'success' } 
+    notificationActions.push({
+      message: editingItem ? 'Item updated successfully' : 'Item saved successfully',
+      options: { variant: 'success' }
     });
     handleCloseDialog();
   };
@@ -166,8 +166,8 @@ const Capture: React.FC = () => {
     notificationActions.push({ message: 'Item deleted successfully', options: { variant: 'success' } });
   };
 
-  const filteredItems = filter === 'all' 
-    ? items 
+  const filteredItems = filter === 'all'
+    ? items
     : items.filter(item => item.type === filter);
 
   return (
@@ -177,9 +177,9 @@ const Capture: React.FC = () => {
         <Box sx={{ maxWidth: 1200, width: '100%', px: 2 }}>
           <Card sx={{ mb: 3 }}>
             <CardContent>
-              <Stack 
-                direction={{ xs: 'column', sm: 'row' }} 
-                justifyContent="space-between" 
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                justifyContent="space-between"
                 alignItems={{ xs: 'stretch', sm: 'center' }}
                 spacing={2}
               >
@@ -196,7 +196,7 @@ const Capture: React.FC = () => {
                   startIcon={<Add />}
                   onClick={() => handleOpenDialog()}
                   size="large"
-                  sx={{ 
+                  sx={{
                     minWidth: { xs: '100%', sm: 'auto' },
                     whiteSpace: 'nowrap'
                   }}
@@ -208,11 +208,11 @@ const Capture: React.FC = () => {
           </Card>
 
           <Paper sx={{ mb: 2, p: 2 }}>
-            <Stack 
-              direction="row" 
-              spacing={1} 
+            <Stack
+              direction="row"
+              spacing={1}
               alignItems="center"
-              sx={{ 
+              sx={{
                 flexWrap: 'wrap',
                 gap: 1
               }}
@@ -308,7 +308,7 @@ const Capture: React.FC = () => {
                               <Chip key={tag} label={tag} size="small" variant="outlined" />
                             ))}
                             <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-                              {item.updatedAt.toLocaleDateString()}
+                              {item.updated_at.toLocaleDateString()}
                             </Typography>
                           </Stack>
                         </Box>
@@ -393,11 +393,11 @@ const Capture: React.FC = () => {
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
               placeholder={
-                formData.type === 'link' 
+                formData.type === 'link'
                   ? 'Enter the URL or link reference'
                   : formData.type === 'file'
-                  ? 'Enter file name or reference'
-                  : 'Enter your content here...'
+                    ? 'Enter file name or reference'
+                    : 'Enter your content here...'
               }
             />
 

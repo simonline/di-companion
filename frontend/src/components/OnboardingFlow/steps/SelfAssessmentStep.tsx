@@ -14,7 +14,7 @@ import useUserQuestion from '@/hooks/useUserQuestion';
 import SurveyField from '@/components/SurveyField';
 import { generateValidationSchema, FormValues } from '@/utils/generateValidationSchema';
 import { generateInitialValues } from '@/utils/generateInitialValues';
-import { Question } from '@/types/supabase';
+import { Tables } from '@/types/database';
 import { OnboardingStepProps } from '../OnboardingFlow';
 
 const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
@@ -184,8 +184,8 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
           <Form>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {allQuestions
-                .sort((a: Question, b: Question) => (a.order || 0) - (b.order || 0))
-                .map((question: Question) => (
+                .sort((a: Tables<'questions'>, b: Tables<'questions'>) => (a.order || 0) - (b.order || 0))
+                .map((question: Tables<'questions'>) => (
                   <Field key={question.id} name={question.id}>
                     {(fieldProps: any) => (
                       <SurveyField

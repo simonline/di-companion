@@ -36,7 +36,7 @@ const Login: React.FC = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate(user.isCoach ? '/startups' : '/user', { replace: true });
+      navigate(user.is_coach ? '/startups' : '/user', { replace: true });
     }
   }, [user, navigate]);
 

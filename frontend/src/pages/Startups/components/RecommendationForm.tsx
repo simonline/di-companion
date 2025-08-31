@@ -17,15 +17,14 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { Pattern, Recommendation } from '@/types/supabase';
-import { CreateRecommendation, UpdateRecommendation } from '@/lib/supabase';
+import { Tables, TablesInsert, TablesUpdate } from '@/types/database';
 import useSearch from '@/hooks/useSearch';
 import { useAuthContext } from '@/hooks/useAuth';
 interface RecommendationFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: CreateRecommendation | UpdateRecommendation) => Promise<void>;
-  initialValues?: Recommendation;
+  onSubmit: (values: TablesInsert<'recommendations'> | TablesUpdate<'recommendations'>) => Promise<void>;
+  initialValues?: Tables<'recommendations'>;
   isSubmitting?: boolean;
   startupId: string;
 }
@@ -53,7 +52,7 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
   const { user } = useAuthContext();
   const { SearchComponent, searchResults } = useSearch();
   const isEditMode = Boolean(initialValues?.id);
-  const [selectedPatterns, setSelectedPatterns] = useState<Pattern[]>([]);
+  const [selectedPatterns, setSelectedPatterns] = useState<Tables<'patterns'>[]>([]);
   // Synchronize selectedPatterns when initialValues changes
   useEffect(() => {
     setSelectedPatterns(initialValues?.patterns || []);
@@ -69,7 +68,7 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
         : [],
       coach: user?.id,
       startup: startupId,
-      readAt: initialValues?.readAt,
+      read_at: initialValues?.read_at,
     },
     validationSchema,
     enableReinitialize: true,
@@ -82,20 +81,20 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
           patterns: { set: values.patterns },
           coach: values.coach,
           startup: values.startup,
-          readAt: values.readAt,
+          read_at: values.read_at,
         };
 
-        let formattedValues: CreateRecommendation | UpdateRecommendation;
+        let formattedValues: TablesInsert<'recommendations'> | TablesUpdate<'recommendations'>;
 
         if (values.id) {
           // For update
           formattedValues = {
             id: values.id,
             ...baseData,
-          } as UpdateRecommendation;
+          } as TablesUpdate<'recommendations'>;
         } else {
           // For create
-          formattedValues = baseData as CreateRecommendation;
+          formattedValues = baseData as TablesInsert<'recommendations'>;
         }
 
         await onSubmit(formattedValues);

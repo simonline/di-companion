@@ -4,18 +4,18 @@ import {
   supabaseCreateStartupMethod,
   supabaseUpdateStartupMethod,
 } from '@/lib/supabase';
-import type { StartupMethod, CreateStartupMethod, UpdateStartupMethod } from '@/types/supabase';
+import { Tables, TablesInsert, TablesUpdate } from '@/types/database';
 
 interface UseStartupMethod {
-  startupMethod: StartupMethod | null;
+  startupMethod: Tables<'startup_methods'> | null;
   loading: boolean;
   error: string | null;
 }
 
 interface UseStartupMethodReturn extends UseStartupMethod {
   findPatternMethod: (startupId: string, patternId: string, methodId: string) => void;
-  createStartupMethod: (data: CreateStartupMethod) => void;
-  updateStartupMethod: (data: UpdateStartupMethod) => void;
+  createStartupMethod: (data: TablesInsert<'startup_methods'>) => void;
+  updateStartupMethod: (data: TablesUpdate<'startup_methods'>) => void;
   clearError: () => void;
 }
 
@@ -40,7 +40,7 @@ export default function useStartupMethod(): UseStartupMethodReturn {
     }
   }, []);
 
-  const createStartupMethod = useCallback(async (data: CreateStartupMethod) => {
+  const createStartupMethod = useCallback(async (data: TablesInsert<'startup_methods'>) => {
     try {
       const startupMethod = await supabaseCreateStartupMethod(data);
       setState({ startupMethod, loading: false, error: null });
@@ -50,7 +50,7 @@ export default function useStartupMethod(): UseStartupMethodReturn {
     }
   }, []);
 
-  const updateStartupMethod = useCallback(async (data: UpdateStartupMethod) => {
+  const updateStartupMethod = useCallback(async (data: TablesUpdate<'startup_methods'>) => {
     try {
       const startupMethod = await supabaseUpdateStartupMethod(data);
       setState({ startupMethod, loading: false, error: null });

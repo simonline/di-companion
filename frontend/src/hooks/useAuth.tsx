@@ -14,23 +14,14 @@ import {
   supabaseVerifyOtp,
   getSession,
 } from '@/lib/supabase';
-import type {
-  CreateStartup,
-  Startup,
-  User,
-  UserRegistration,
-  StartupPattern,
-  Pattern,
-  UpdateStartup,
-  UpdateUser,
-} from '@/types/supabase';
+import { Tables, TablesInsert, TablesUpdate, User, UserCreate, UserUpdate } from '@/types/database';
 import type { CategoryEnum } from '@/utils/constants';
 import { supabase } from '@/lib/supabase';
 import { identifyUser } from '@/analytics/track';
 
 interface AuthState {
   user: User | null;
-  startup: Startup | null;
+  startup: Tables<'startups'> | null;
   loading: boolean;
   error: string | null;
 }
@@ -39,10 +30,10 @@ interface UseAuthReturn extends AuthState {
   login: (identifier: string, password: string) => Promise<User>;
   sendOtp: (email: string) => Promise<{ success: boolean; message: string }>;
   verifyOtp: (email: string, token: string) => Promise<void>;
-  register: (data: UserRegistration) => Promise<User>;
-  createStartup: (data: CreateStartup) => Promise<Startup>;
-  updateStartup: (data: UpdateStartup) => Promise<Startup>;
-  updateUser: (data: UpdateUser) => Promise<User>;
+  register: (data: UserCreate) => Promise<User>;
+  createStartup: (data: TablesInsert<'startups'>) => Promise<Tables<'startups'>>;
+  updateStartup: (data: TablesUpdate<'startups'>) => Promise<Tables<'startups'>>;
+  updateUser: (data: UserUpdate) => Promise<User>;
   updateScores: () => Promise<Record<CategoryEnum, number> | null>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -83,10 +74,10 @@ export function useAuth(): UseAuthReturn {
         // Refresh user data when signed in
         try {
           const userData = await supabaseMe();
-          console.log('Auth hook: User data fetched:', userData.email);
+          console.log('Auth hook: User data fetched:', userData);
           setUser(userData);
-          if (userData.startups?.length > 0) {
-            const startup = await supabaseGetStartup(userData.startups[0].id || userData.startups[0].id);
+          if (userData.startups && userData.startups.length > 0) {
+            const startup = await supabaseGetStartup(userData.startups[0].id);
             setStartup(startup);
           }
           setState((prev) => ({ ...prev, loading: false }));
@@ -144,9 +135,9 @@ export function useAuth(): UseAuthReturn {
               const userData = await supabaseMe();
               setUser(userData);
 
-              let startup: Startup | null = null;
-              if (userData.startups?.length > 0) {
-                startup = await supabaseGetStartup(userData.startups[0].id || userData.startups[0].id);
+              let startup: Tables<'startups'> | null = null;
+              if (userData.startups && userData.startups.length > 0) {
+                startup = await supabaseGetStartup(userData.startups[0].id);
               }
               setStartup(startup);
             } catch (error) {
@@ -164,9 +155,9 @@ export function useAuth(): UseAuthReturn {
               const userData = await supabaseMe();
               setUser(userData);
 
-              let startup: Startup | null = null;
-              if (userData.startups?.length > 0) {
-                startup = await supabaseGetStartup(userData.startups[0].id || userData.startups[0].id);
+              let startup: Tables<'startups'> | null = null;
+              if (userData.startups && userData.startups.length > 0) {
+                startup = await supabaseGetStartup(userData.startups[0].id);
               }
               setStartup(startup);
               setState((prev) => ({ ...prev, loading: false }));
@@ -187,8 +178,8 @@ export function useAuth(): UseAuthReturn {
             const userData = await supabaseMe();
             setUser(userData);
 
-            let startup: Startup | null = null;
-            if (userData.startups?.length > 0) {
+            let startup: Tables<'startups'> | null = null;
+            if (userData.startups && userData.startups.length > 0) {
               startup = await supabaseGetStartup(userData.startups[0].id);
             }
             setStartup(startup);
@@ -221,7 +212,7 @@ export function useAuth(): UseAuthReturn {
     initAuth();
   }, []);
 
-  const setUser = useCallback((userData: User | null) => {
+  const setUser = useCallback((userData: Tables<'users'> | null) => {
     setState((prev) => ({ ...prev, user: userData, error: null }));
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData));
@@ -232,7 +223,7 @@ export function useAuth(): UseAuthReturn {
     }
   }, []);
 
-  const setStartup = useCallback((startupData: Startup | null) => {
+  const setStartup = useCallback((startupData: Tables<'startups'> | null) => {
     setState((prev) => ({ ...prev, startup: startupData, error: null }));
     if (startupData) {
       localStorage.setItem('startup', JSON.stringify(startupData));
@@ -252,9 +243,9 @@ export function useAuth(): UseAuthReturn {
         const { user: userData } = await supabaseLogin(identifier, password);
         // Session is now handled by Supabase
         setUser(userData);
-        let startup: Startup | null = null;
-        if (userData.startups?.length > 0) {
-          startup = await supabaseGetStartup(userData.startups[0].id || userData.startups[0].id);
+        let startup: Tables<'startups'> | null = null;
+        if (userData.startups && userData.startups.length > 0) {
+          startup = await supabaseGetStartup(userData.startups[0].id);
         }
         setStartup(startup);
         return userData;
@@ -300,8 +291,8 @@ export function useAuth(): UseAuthReturn {
       try {
         const { user: userData } = await supabaseVerifyOtp(email, token);
         setUser(userData);
-        if (userData.startups?.length > 0) {
-          const startup = await supabaseGetStartup(userData.startups[0].id || userData.startups[0].id);
+        if (userData.startups && userData.startups.length > 0) {
+          const startup = await supabaseGetStartup(userData.startups[0].id);
           setStartup(startup);
         }
       } catch (error) {
@@ -320,12 +311,12 @@ export function useAuth(): UseAuthReturn {
   );
 
   const register = useCallback(
-    async (data: UserRegistration): Promise<User> => {
+    async (data: UserCreate): Promise<User> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const result = await supabaseRegister(data);
         // JWT token is stored by supabaseRegister function
-        const userData: User = result.user;
+        const userData: Tables<'users'> = result.user;
         // setUser(userData);
         return userData;
       } catch (error) {
@@ -452,8 +443,8 @@ export function useAuth(): UseAuthReturn {
 
     const currentStartup = state.startup;
 
-    let startupPatterns: StartupPattern[] = [];
-    let patterns: Pattern[] = [];
+    let startupPatterns: Tables<'startup_patterns'>[] = [];
+    let patterns: Tables<'patterns'>[] = [];
     try {
       startupPatterns = await supabaseGetStartupPatterns(currentStartup.id || currentStartup.id);
       patterns = await supabaseGetPatterns();
@@ -468,10 +459,10 @@ export function useAuth(): UseAuthReturn {
     // Filter patterns by categories if specified
     if (currentStartup.categories && Array.isArray(currentStartup.categories) && currentStartup.categories.length > 0) {
       patterns = patterns.filter(pattern =>
-        pattern.category && currentStartup.categories?.includes(pattern.category)
+        pattern.category && Array.isArray(currentStartup.categories) && currentStartup.categories.includes(pattern.category)
       );
       startupPatterns = startupPatterns.filter(startupPattern =>
-        startupPattern.pattern?.category && currentStartup.categories?.includes(startupPattern.pattern.category)
+        startupPattern.pattern?.category && Array.isArray(currentStartup.categories) && currentStartup.categories.includes(startupPattern.pattern.category)
       );
     }
 
@@ -488,14 +479,14 @@ export function useAuth(): UseAuthReturn {
     startupPatterns.forEach((startupPattern) => {
       if (!startupPattern.pattern?.category) return;
       console.log(startupPattern.pattern?.category);
-      categoryPoints[startupPattern.pattern?.category][0] += startupPattern.points;
+      categoryPoints[startupPattern.pattern?.category as CategoryEnum][0] += startupPattern.points;
     });
     console.log(categoryPoints);
 
     // Get total points available for each category
     patterns.forEach((pattern) => {
       if (!pattern.category) return;
-      categoryPoints[pattern.category][1] += 5;
+      categoryPoints[pattern.category as CategoryEnum][1] += 5;
     });
 
     // Calculate the performance score for each category
@@ -536,9 +527,9 @@ export function useAuth(): UseAuthReturn {
     console.log('Refreshing data');
     try {
       const user = await supabaseMe();
-      let startup: Startup | null = null;
-      if (user.startups?.length > 0) {
-        startup = await supabaseGetStartup(user.startups[0].id || user.startups[0].id);
+      let startup: Tables<'startups'> | null = null;
+      if (user.startups && user.startups.length > 0) {
+        startup = await supabaseGetStartup(user.startups[0].id);
       }
       console.log(startup);
       setState((prev) => ({ ...prev, user, startup, loading: false }));

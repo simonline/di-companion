@@ -14,7 +14,7 @@ import { CenteredFlexBox } from '@/components/styled';
 import usePattern from '@/hooks/usePattern';
 import useSurvey from '@/hooks/useSurvey';
 import useUserQuestions from '@/hooks/useUserQuestions';
-import { Question, UserQuestion, ResponseTypeEnum, ResponseEnum } from '@/types/supabase';
+import { Tables } from '@/types/database';
 import useUserQuestion from '@/hooks/useUserQuestion';
 import useStartupPattern from '@/hooks/useStartupPattern';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
@@ -99,16 +99,16 @@ const Survey: React.FC = () => {
           startup: { set: { id: startup.id } },
           user: { set: { id: user?.id as string } },
           pattern: { set: { id: patternId } },
-          responseType: ResponseTypeEnum.accept,
-          response: ResponseEnum.share_reflection,
-          appliedAt: new Date().toISOString(),
+          responseType: 'accept',
+          response: 'share_reflection',
+          applied_at: new Date().toISOString(),
           points,
         });
       } else {
         // Update the existing startup pattern with the points
         updateStartupPattern({
           id: startupPatterns[0].id,
-          appliedAt: new Date().toISOString(),
+          applied_at: new Date().toISOString(),
           points,
         });
       }
@@ -250,7 +250,7 @@ const Survey: React.FC = () => {
     }
   };
 
-  const calculatePoints = (questions: Question[], userQuestions: UserQuestion[]): number => {
+  const calculatePoints = (questions: Tables<'questions'>[], userQuestions: Tables<'user_questions'>[]): number => {
     return questions.reduce((acc, question) => {
       // Skip questions without weight
       if (!question.weight) return acc;
@@ -403,8 +403,8 @@ const Survey: React.FC = () => {
                       )}
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         {pattern.questions
-                          .sort((a: Question, b: Question) => a.order - b.order)
-                          .map((question: Question) => (
+                          .sort((a: Tables<'questions'>, b: Tables<'questions'>) => (a.order ?? 0) - (b.order ?? 0))
+                          .map((question: Tables<'questions'>) => (
                             <Field key={question.id} name={question.id}>
                               {(fieldProps: any) => (
                                 <SurveyField
@@ -451,8 +451,8 @@ const Survey: React.FC = () => {
                     <Form>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         {survey.questions
-                          .sort((a: Question, b: Question) => a.order - b.order)
-                          .map((question: Question) => (
+                          .sort((a: Tables<'questions'>, b: Tables<'questions'>) => (a.order ?? 0) - (b.order ?? 0))
+                          .map((question: Tables<'questions'>) => (
                             <Field key={question.id} name={question.id}>
                               {(fieldProps: any) => (
                                 <SurveyField

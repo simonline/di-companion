@@ -10,7 +10,7 @@ import { AgentLayout } from '@/components/AgentLayout';
 function Pages() {
   const routes = useRoutes();
   const { user } = useAuthContext();
-  const isCoach = user?.isCoach || false;
+  const isCoach = user?.is_coach || false;
 
   return (
     <Box sx={{

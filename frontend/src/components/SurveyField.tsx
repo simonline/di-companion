@@ -18,7 +18,12 @@ import {
   Typography,
 } from '@mui/material';
 import { DragDropContext, Droppable, DroppableProps, Draggable } from 'react-beautiful-dnd';
-import { Question, QuestionType, ScaleOptions, QuestionOption } from '@/types/supabase';
+import { Tables } from '@/types/database';
+import {
+  QuestionType,
+  ScaleOptions,
+  QuestionOption
+} from '@/utils/constants';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import { useAuthContext } from '@/hooks/useAuth';
@@ -27,7 +32,7 @@ import useNotifications from '@/store/notifications';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 
 interface SurveyFieldProps {
-  question: Question;
+  question: Tables<'questions'>;
   field: any;
   form: any;
 }
@@ -95,7 +100,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
 
     try {
       await createRequest({
-        startup: { id: startup.id },
+        startup: startup.id,
         comment: `I need help with the question: ${question.question}`,
       });
 

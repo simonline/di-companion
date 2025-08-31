@@ -18,7 +18,7 @@ import {
 import ImageIcon from '@mui/icons-material/Image';
 import { Close, Refresh, Check, Help } from '@mui/icons-material';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { type Pattern, ResponseTypeEnum, ResponseEnum } from '@/types/supabase';
+import { Tables } from '@/types/database';
 import {
   categoryDisplayNames,
   categoryColors,
@@ -27,6 +27,8 @@ import {
   phaseDisplayNames,
   PhaseEnum,
   CategoryEnum,
+  ResponseTypeEnum,
+  ResponseEnum,
 } from '@/utils/constants';
 import { useNavigate } from 'react-router-dom';
 import useStartupPattern from '@/hooks/useStartupPattern';
@@ -39,7 +41,7 @@ import { useChatContext } from '@/components/Chat/ChatContext';
 interface ActionDialogProps {
   open: boolean;
   onClose: () => void;
-  pattern: Pattern;
+  pattern: Tables<'patterns'>;
   responseType: ResponseTypeEnum;
   title: string;
   actions: [string, ResponseEnum][];
@@ -102,7 +104,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
           case ResponseEnum.no_value:
             if (startup?.id) {
               createRequest({
-                startup: { id: startup.id },
+                startup: startup.id,
                 comment: `I don't see value in the pattern: ${pattern.name}`,
               });
               notificationsActions.push({
@@ -114,7 +116,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
           case ResponseEnum.dont_understand:
             if (startup?.id) {
               createRequest({
-                startup: { id: startup.id },
+                startup: startup.id,
                 comment: `I don't understand the pattern: ${pattern.name}`,
               });
               notificationsActions.push({
@@ -166,7 +168,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
 };
 
 interface PatternCardProps {
-  pattern: Pattern;
+  pattern: Tables<'patterns'>;
   isInteractive?: boolean;
   onComplete?: () => void;
   nextUrl?: string;
@@ -250,20 +252,20 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, isInteractive = true
       const startupInfo = startup ? `
 Startup Context:
 - Name: ${startup.name}
-- Industry: ${startup.industry}${startup.industryOther ? ` (${startup.industryOther})` : ''}
-- Target Market: ${startup.targetMarket}
-- Product Type: ${startup.productType}
+- Industry: ${startup.industry}${startup.industry_other ? ` (${startup.industry_other})` : ''}
+- Target Market: ${startup.target_market}
+- Product Type: ${startup.product_type}
 - Phase: ${startup.phase}
 - Background: ${startup.background}
 - Idea: ${startup.idea}
-- Target Market: ${startup.targetMarket}
-- Problem Validated: ${startup.isProblemValidated ? 'Yes' : 'No'}
-- Target Group Defined: ${startup.isTargetGroupDefined ? 'Yes' : 'No'}
-- Prototype Validated: ${startup.isPrototypeValidated ? 'Yes' : 'No'}
-- MVP Tested: ${startup.isMvpTested ? 'Yes' : 'No'}
-- Qualified Conversations: ${startup.qualifiedConversationsCount || 0}
-- Founders Count: ${startup.foundersCount}
-- Start Date: ${startup.startDate}
+- Target Market: ${startup.target_market}
+- Problem Validated: ${startup.is_problem_validated ? 'Yes' : 'No'}
+- Target Group Defined: ${startup.is_target_group_defined ? 'Yes' : 'No'}
+- Prototype Validated: ${startup.is_prototype_validated ? 'Yes' : 'No'}
+- MVP Tested: ${startup.is_mvp_tested ? 'Yes' : 'No'}
+- Qualified Conversations: ${startup.qualified_conversations_count || 0}
+- Founders Count: ${startup.founders_count}
+- Start Date: ${startup.start_date}
 ` : 'No startup information available';
 
       const patternInfo = `
@@ -272,7 +274,7 @@ Pattern Information:
 - Category: ${categoryDisplayNames[pattern.category as CategoryEnum]}
 - Subcategory: ${pattern.subcategory}
 - Description: ${pattern.description}
-- Phases: ${pattern.phases.map(phase => phaseDisplayNames[phase as PhaseEnum]).join(', ')}
+- Phases: ${pattern.phases && typeof pattern.phases === 'object' && Array.isArray(pattern.phases) ? pattern.phases.map((phase: any) => phaseDisplayNames[phase as PhaseEnum]).join(', ') : ''}
 - Pattern ID: ${pattern.patternId}
 `;
 
@@ -586,7 +588,7 @@ Make your response actionable and easy to follow.`;
                 <Chip
                   label={number}
                   sx={{
-                    backgroundColor: pattern.phases.includes(phase as PhaseEnum)
+                    backgroundColor: pattern.phases && typeof pattern.phases === 'object' && Array.isArray(pattern.phases) && pattern.phases.includes(phase as PhaseEnum)
                       ? '#918d73'
                       : '#cccdcc',
                     color: 'white',

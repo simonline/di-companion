@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabaseGetPatterns, supabaseGetStartupPatterns } from '@/lib/supabase';
-import type { Pattern, Startup, StartupPattern } from '@/types/supabase';
+import { Tables } from '@/types/database';
 import { CategoryEnum } from '@/utils/constants';
 
 interface UsePatterns {
-  startup: Startup | null;
-  recommendedPatterns: Pattern[] | null;
+  startup: Tables<'startups'> | null;
+  recommendedPatterns: Tables<'patterns'>[] | null;
   loading: boolean;
   error: string | null;
   initialized: boolean;
@@ -91,9 +91,9 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
     }
 
     // If startup.categories exists and is not empty, only consider categories from that list
-    if (startup.categories && startup.categories.length > 0) {
+    if (startup.categories && Array.isArray(startup.categories) && startup.categories.length > 0) {
       categories = categories.filter(category =>
-        startup.categories!.includes(category)
+        (startup.categories as string[]).includes(category)
       );
     }
 
@@ -101,10 +101,10 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
     if (categories.length === 0) return null;
 
     // Find the lowest score among remaining categories
-    const lowestScore = Math.min(...categories.map(category => scores[category]));
+    const lowestScore = Math.min(...categories.map(category => (scores as any)[category]));
 
     const lowestCategories = categories.filter(
-      category => scores[category] == null || scores[category] === lowestScore
+      category => (scores as any)[category] == null || (scores as any)[category] === lowestScore
     );
 
     return getRandomItem(lowestCategories);
@@ -121,7 +121,7 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
       setState((prev) => ({ ...prev, loading: true }));
       try {
         // Fetch patterns already started/applied by startup
-        let usedPatterns: StartupPattern[] = [];
+        let usedPatterns: Tables<'startup_patterns'>[] = [];
         if (state.startup) {
           usedPatterns = await supabaseGetStartupPatterns(state.startup.id);
         }
@@ -131,8 +131,8 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
 
         // Try to find patterns from categories starting with the lowest score
         const excludedCategories: CategoryEnum[] = [];
-        let availablePatterns: Pattern[] = [];
-        let filteredPatterns: Pattern[] = [];
+        let availablePatterns: Tables<'patterns'>[] = [];
+        let filteredPatterns: Tables<'patterns'>[] = [];
         let category: CategoryEnum | null;
 
         console.log('usedpatternIds', usedpatternIds);
@@ -165,7 +165,7 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
         }
 
         // Get random patterns from available patterns
-        const randomPatterns: Pattern[] = [];
+        const randomPatterns: Tables<'patterns'>[] = [];
         // Loop over count to get multiple patterns (default 1), avoid duplicates
         for (let i = 0; i < (count || 1); i++) {
           const randomPattern = getRandomItem(filteredPatterns);

@@ -104,27 +104,27 @@ function UpdateProfile() {
         familyName: 'family_name',
         linkedinProfile: 'linkedin_profile',
       };
-      
-      const updateData =
+
+      const updatedData =
         isFieldSpecific && field
           ? {
-              id: user.id,
-              [fieldMap[field] || field]: values[field as keyof UpdateProfileFormValues],
-            }
+            id: user.id,
+            [fieldMap[field] || field]: values[field as keyof UpdateProfileFormValues],
+          }
           : {
-              id: user.id,
-              email: values.email,
-              given_name: values.givenName,
-              family_name: values.familyName,
-              gender: values.gender,
-              position: values.position,
-              bio: values.bio,
-              linkedin_profile: values.linkedinProfile,
-              avatar: values.avatar,
-            };
+            id: user.id,
+            email: values.email,
+            given_name: values.givenName,
+            family_name: values.familyName,
+            gender: values.gender,
+            position: values.position,
+            bio: values.bio,
+            linkedin_profile: values.linkedinProfile,
+            avatar: values.avatar,
+          };
 
       // Call the API to update the user
-      await updateUser(updateData);
+      await updateUser(updatedData);
 
       setSuccessMessage('Profile updated successfully');
 

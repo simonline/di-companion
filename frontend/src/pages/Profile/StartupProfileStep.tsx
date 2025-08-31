@@ -5,7 +5,7 @@ import { Form, Formik } from 'formik';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import { steps, renderStepContent } from '@/pages/Startups/types';
 import { useAuthContext } from '@/hooks/useAuth';
-import { Startup } from '@/types/supabase';
+import { Tables } from '@/types/database';
 
 const StartupProfileStep: React.FC = () => {
   const { startupId, stepId } = useParams<{ startupId: string; stepId: string }>();
@@ -23,7 +23,7 @@ const StartupProfileStep: React.FC = () => {
         </Typography>
 
         <Formik
-          initialValues={startup || ({} as Partial<Startup>)}
+          initialValues={startup || ({} as Partial<Tables<'startups'>>)}
           onSubmit={(values) => {
             console.log(values);
           }}

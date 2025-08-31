@@ -153,42 +153,42 @@ const Interviews: React.FC = () => {
                                 }}
                                 component="label"
                             >
-                                        <input
-                                            type="file"
-                                            hidden
-                                            accept=".mp3,.mp4,.wav,.m4a,.txt,.docx,.pdf"
-                                            onChange={handleFileChange}
-                                        />
-                                        <CloudUpload sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                                        <Typography variant="h6" gutterBottom>
-                                            {file ? 'File Selected' : 'Click to Upload Interview'}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                            {file ? file.name : 'Audio (MP3, WAV), Video (MP4), Text (TXT, DOCX, PDF)'}
-                                        </Typography>
-                                        {file && (
-                                            <Chip
-                                                icon={<Description />}
-                                                label={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
-                                                sx={{
-                                                    mt: 1,
-                                                    bgcolor: `${categoryColors.stakeholders}20`,
-                                                    color: categoryColors.stakeholders
-                                                }}
-                                            />
-                                        )}
+                                <input
+                                    type="file"
+                                    hidden
+                                    accept=".mp3,.mp4,.wav,.m4a,.txt,.docx,.pdf"
+                                    onChange={handleFileChange}
+                                />
+                                <CloudUpload sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                                <Typography variant="h6" gutterBottom>
+                                    {file ? 'File Selected' : 'Click to Upload Interview'}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                    {file ? file.name : 'Audio (MP3, WAV), Video (MP4), Text (TXT, DOCX, PDF)'}
+                                </Typography>
+                                {file && (
+                                    <Chip
+                                        icon={<Description />}
+                                        label={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                                        sx={{
+                                            mt: 1,
+                                            bgcolor: `${categoryColors.stakeholders}20`,
+                                            color: categoryColors.stakeholders
+                                        }}
+                                    />
+                                )}
                             </Paper>
 
-                            <Alert 
-                                severity="info" 
-                                sx={{ 
+                            <Alert
+                                severity="info"
+                                sx={{
                                     mt: 3,
                                     bgcolor: `${categoryColors.stakeholders}20`,
                                     color: categoryColors.stakeholders,
                                     '& .MuiAlert-icon': {
                                         color: categoryColors.stakeholders
                                     }
-                                }} 
+                                }}
                                 icon={<Info />}
                             >
                                 <Typography variant="body2">
@@ -209,7 +209,7 @@ const Interviews: React.FC = () => {
                                     ) : (
                                         <List>
                                             {documents.map((doc, index) => {
-                                                const date = new Date(doc.attributes.createdAt).toLocaleDateString();
+                                                const date = new Date(doc.attributes.created_at).toLocaleDateString();
                                                 return (
                                                     <React.Fragment key={doc.id}>
                                                         <ListItem>

@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
 import { supabaseGetPattern } from '@/lib/supabase';
-import type { Pattern } from '@/types/supabase';
+import { Tables } from '@/types/database';
 
 interface UsePattern {
-  pattern: Pattern | null;
+  pattern: Tables<'patterns'> | null;
   loading: boolean;
   error: string | null;
 }

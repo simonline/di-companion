@@ -64,3 +64,53 @@ export const phaseDisplayNames: { [key: string]: string } = {
   create: 'Create',
   implement: 'Implement',
 };
+
+
+export enum QuestionType {
+  radio = 'radio',
+  select = 'select',
+  select_multiple = 'select_multiple',
+  checkbox = 'checkbox',
+  checkbox_multiple = 'checkbox_multiple',
+  text_short = 'text_short',
+  text_long = 'text_long',
+  email = 'email',
+  number = 'number',
+  rank = 'rank',
+  scale = 'scale',
+}
+
+export interface QuestionOption {
+  value: string;
+  label: string;
+  points?: number;
+  position?: number;
+}
+
+export interface ScaleOptions {
+  min: number;
+  max: number;
+  minLabel: string;
+  maxLabel: string;
+}
+
+export enum ResponseTypeEnum {
+  accept = 'accept',
+  reject = 'reject',
+}
+
+export enum ResponseEnum {
+  share_reflection = 'share_reflection',
+  perform_exercise = 'perform_exercise',
+  think_later = 'think_later',
+  already_addressed = 'already_addressed',
+  maybe_later = 'maybe_later',
+  no_value = 'no_value',
+  dont_understand = 'dont_understand',
+}
+
+export enum InvitationStatusEnum {
+  pending = 'pending',
+  accepted = 'accepted',
+  rejected = 'rejected',
+}

@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
 import { supabaseGetStartupPatterns } from '@/lib/supabase';
-import type { StartupPattern } from '@/types/supabase';
+import { Tables } from '@/types/database';
 
 interface UseStartupPatterns {
-  startupPatterns: StartupPattern[] | null;
+  startupPatterns: Tables<'startup_patterns'>[] | null;
   loading: boolean;
   error: string | null;
 }
@@ -32,7 +32,7 @@ export default function useStartupPatterns(): UseStartupPatternsReturn {
           patternId,
         );
 
-        // Get only latest (createdAt) patterns for each combination of startup/pattern (id)
+        // Get only latest (created_at) patterns for each combination of startup/pattern (id)
         // FIXME: Create /latest endpoint for this (in progress)
         const latestPatterns = startupPatterns
           ? Object.values(
@@ -41,12 +41,12 @@ export default function useStartupPatterns(): UseStartupPatternsReturn {
                 // Ignore if no pattern given
                 if (!pattern.pattern) return acc;
                 const key = `${pattern.startup.id}-${pattern.pattern?.id}`;
-                if (!acc[key] || acc[key].createdAt > pattern.createdAt) {
+                if (!acc[key] || acc[key].created_at > pattern.created_at) {
                   acc[key] = pattern;
                 }
                 return acc;
               },
-              {} as Record<string, StartupPattern>,
+              {} as Record<string, Tables<'startup_patterns'>>,
             ),
           )
           : [];

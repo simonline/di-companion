@@ -32,7 +32,8 @@ import {
   supabaseResendInvitation,
   supabaseGetStartupMembers,
 } from '@/lib/supabase';
-import { Invitation, InvitationStatusEnum, User } from '@/types/supabase';
+import { Tables } from '@/types/database';
+import { InvitationStatusEnum } from '@/utils/constants';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -142,7 +143,7 @@ const StartupTeam: React.FC = () => {
     try {
       await supabaseCreateInvitation({
         startup: { set: { id: startupId } },
-        invitedBy: { set: { id: user.id } },
+        invited_by: { set: { id: user.id } },
         email,
       });
 
@@ -213,7 +214,7 @@ const StartupTeam: React.FC = () => {
     });
   };
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, invitation: Invitation) => {
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, invitation: Tables<'invitations'>) => {
     setAnchorEl(event.currentTarget);
     setSelectedInvitation(invitation);
   };
@@ -263,12 +264,12 @@ const StartupTeam: React.FC = () => {
           <React.Fragment key={member.id}>
             <ListItem>
               <ListItemAvatar>
-                <Avatar>{member.username.charAt(0).toUpperCase()}</Avatar>
+                <Avatar>{member.username?.charAt(0).toUpperCase() || 'U'}</Avatar>
               </ListItemAvatar>
               <ListItemText
                 primary={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {`${member.givenName || ''} ${member.familyName || ''}`.trim() ||
+                    {`${member.given_name || ''} ${member.family_name || ''}`.trim() ||
                       member.username}
                     {member.id === user?.id && (
                       <Chip size="small" label="You" color="primary" />
@@ -386,9 +387,9 @@ const StartupTeam: React.FC = () => {
                       fontSize: { xs: '0.75rem', sm: '0.875rem' },
                     }}
                   >
-                    {invitation.createdAt
+                    {invitation.created_at
                       ? `Invited on ${new Date(
-                        invitation.createdAt,
+                        invitation.created_at,
                       ).toLocaleDateString()}`
                       : 'Invitation details unavailable'}
                   </Typography>

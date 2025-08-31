@@ -22,12 +22,12 @@ import {
   MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { getRecommendationIcon } from '@/pages/Coach/types';
-import { Recommendation } from '@/types/supabase';
+import { Tables } from '@/types/database';
 import { format } from 'date-fns';
 
 interface RecommendationListProps {
-  recommendations: Recommendation[];
-  onEdit: (recommendation: Recommendation) => void;
+  recommendations: Tables<'recommendations'>[];
+  onEdit: (recommendation: Tables<'recommendations'>) => void;
   onDelete: (id: string) => void;
   loading?: boolean;
 }
@@ -39,11 +39,11 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
   loading = false,
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedRecommendation, setSelectedRecommendation] = React.useState<Recommendation | null>(
+  const [selectedRecommendation, setSelectedRecommendation] = React.useState<Tables<'recommendations'> | null>(
     null,
   );
 
-  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, recommendation: Recommendation) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, recommendation: Tables<'recommendations'>) => {
     setAnchorEl(event.currentTarget);
     setSelectedRecommendation(recommendation);
   };
@@ -104,7 +104,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                 key={recommendation.id}
                 sx={{
                   '&:last-child td, &:last-child th': { border: 0 },
-                  backgroundColor: recommendation.readAt ? undefined : 'rgba(25, 118, 210, 0.04)',
+                  backgroundColor: recommendation.read_at ? undefined : 'rgba(25, 118, 210, 0.04)',
                 }}
               >
                 <TableCell>
@@ -116,7 +116,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                   <Typography variant="body1">{recommendation.comment}</Typography>
                 </TableCell>
                 <TableCell>
-                  {recommendation.readAt ? (
+                  {recommendation.read_at ? (
                     <Chip label="Read" size="small" sx={{ bgcolor: '#e8f5e9', color: '#2e7d32' }} />
                   ) : (
                     <Chip
@@ -127,7 +127,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                   )}
                 </TableCell>
                 <TableCell>
-                  {format(new Date(recommendation.publishedAt), 'MMM dd, yyyy')}
+                  {recommendation.published_at ? format(new Date(recommendation.published_at), 'MMM dd, yyyy') : '-'}
                 </TableCell>
                 <TableCell align="right">
                   <IconButton size="small" onClick={(e) => handleOpenMenu(e, recommendation)}>

@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { type Pattern } from '@/types/supabase';
+import { Tables } from '@/types/database';
 
 interface CurrentPatternContextType {
-    currentPattern: Pattern | null;
-    setCurrentPattern: (pattern: Pattern | null) => void;
+    currentPattern: Tables<'patterns'> | null;
+    setCurrentPattern: (pattern: Tables<'patterns'> | null) => void;
 }
 
 const CurrentPatternContext = createContext<CurrentPatternContextType | undefined>(undefined);

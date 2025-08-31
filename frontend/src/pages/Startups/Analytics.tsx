@@ -38,10 +38,10 @@ import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
-import { Startup } from '@/types/supabase';
+import { Tables } from '@/types/database';
 import { formatDistanceToNow, subWeeks, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { supabaseGetStartupPatterns, supabaseGetStartups } from '@/lib/supabase';
+import { supabaseGetStartupPatterns, supabaseGetStartups, supabase } from '@/lib/supabase';
 import { categoryColors, categoryDisplayNames, phaseNumbers, PhaseEnum, CategoryEnum } from '@/utils/constants';
 
 type TimeFilter = 'thisWeek' | 'lastWeek' | 'thisMonth' | 'lastMonth' | 'thisYear' | 'custom';
@@ -69,7 +69,7 @@ interface PatternInteraction {
 }
 
 interface StartupAnalytics {
-    startup: Startup;
+    startup: Tables<'startups'>;
     users: UniqueUser[];
     patternInteractions: PatternInteraction[];
     uniquePatterns: Set<string>;
@@ -219,15 +219,38 @@ export default function AnalyticsView() {
     const [sortField, setSortField] = useState<SortField>('name');
     const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
     const [loading, setLoading] = useState(false);
+    const [coachees, setCoachees] = useState<Tables<'startups'>[]>([]);
+
+    // Fetch coachees when user is available
+    useEffect(() => {
+        const fetchCoachees = async () => {
+            if (user?.id && user?.is_coach) {
+                try {
+                    const { data, error } = await supabase
+                        .from('startups')
+                        .select('*')
+                        .eq('coach_id', user.id);
+
+                    if (!error && data) {
+                        setCoachees((data || []) as any);
+                    }
+                } catch (error) {
+                    console.error('Error fetching coachees:', error);
+                }
+            }
+        };
+
+        fetchCoachees();
+    }, [user?.id, user?.is_coach]);
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
                 // 1. Get all startups based on filter
-                let startups: Startup[] = [];
+                let startups: Tables<'startups'>[] = [];
                 if (startupFilter === 'my') {
-                    startups = user?.coachees || [];
+                    startups = coachees || [];
                 } else {
                     // Fetch all startups, not just available ones
                     const allStartups = await supabaseGetStartups();
@@ -262,7 +285,7 @@ export default function AnalyticsView() {
                         if (!analytics) continue;
 
                         // Add pattern interaction
-                        const interactionDate = new Date(pattern.createdAt);
+                        const interactionDate = new Date(pattern.created_at);
                         analytics.patternInteractions.push({
                             patternId: pattern.pattern?.id,
                             patternName: pattern.pattern?.name || 'Unnamed Pattern',
@@ -286,7 +309,7 @@ export default function AnalyticsView() {
                         // Get user info from the pattern's user attribute
                         if (pattern.user) {
                             const userId = pattern.user.id || pattern.user.id;
-                            const userName = `${pattern.user.given_name || pattern.user.givenName || ''} ${pattern.user.family_name || pattern.user.familyName || ''}`.trim() || 'Unnamed User';
+                            const userName = `${pattern.user.given_name || ''} ${pattern.user.family_name || ''}`.trim() || 'Unnamed User';
 
                             // Check if user already exists in the list
                             if (!analytics.users.some(u => u.id === userId)) {
@@ -306,7 +329,7 @@ export default function AnalyticsView() {
         };
 
         fetchData();
-    }, [user?.coachees, dateRange, startupFilter]);
+    }, [coachees.length, dateRange, startupFilter]);
 
     const handleSort = (field: SortField) => {
         if (sortField === field) {
@@ -485,7 +508,7 @@ export default function AnalyticsView() {
                                                         Startup
                                                     </TableSortLabel>
                                                 </TableCell>
-                                                <TableCell>Users</TableCell>
+                                                <TableCell>Profiles</TableCell>
                                                 <TableCell align="right">
                                                     <TableSortLabel
                                                         active={sortField === 'interactions'}

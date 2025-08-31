@@ -21,7 +21,7 @@ import { OnboardingStepProps } from '../OnboardingFlow';
 interface StartupFormValues {
   name: string;
   startDate: string;
-  foundersCount: number;
+  founders_count: number;
   background: string;
   idea: string;
   productType: string;
@@ -39,7 +39,7 @@ interface StartupFormValues {
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Startup name is required'),
   startDate: Yup.date().required('Start date is required'),
-  foundersCount: Yup.number().min(0, 'Must be 0 or greater').required('Number of founders is required'),
+  founders_count: Yup.number().min(0, 'Must be 0 or greater').required('Number of founders is required'),
   background: Yup.string().required('Team background information is required'),
   idea: Yup.string().max(200, 'Must be 200 characters or less').required('Idea description is required'),
   productType: Yup.string().oneOf(['product', 'service', 'platform'], 'Please select a valid product type').required('Product type is required'),
@@ -52,7 +52,7 @@ const validationSchema = Yup.object().shape({
 const initialValues: StartupFormValues = {
   name: '',
   startDate: '',
-  foundersCount: 1,
+  founders_count: 1,
   background: '',
   idea: '',
   productType: '',
@@ -98,7 +98,23 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
     setErrorMessage('');
 
     try {
-      await createStartup(values);
+      await createStartup({
+        name: values.name,
+        start_date: values.startDate,
+        founders_count: values.founders_count,
+        background: values.background,
+        idea: values.idea,
+        product_type: values.productType,
+        industry: values.industry,
+        industry_other: values.industryOther,
+        target_market: values.targetMarket,
+        phase: values.phase,
+        is_problem_validated: values.isProblemValidated,
+        qualified_conversations_count: values.qualifiedConversationsCount,
+        is_target_group_defined: values.isTargetGroupDefined,
+        is_prototype_validated: values.isPrototypeValidated,
+        is_mvp_tested: values.isMvpTested,
+      });
 
       // Move to completion
       onNext();
@@ -173,27 +189,27 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                     <FieldWithTooltip tooltip="How many co-founders are working on this startup">
                       <TextField
                         fullWidth
-                        name="foundersCount"
+                        name="founders_count"
                         label="Number of Founders"
                         type="number"
-                        value={values.foundersCount}
-                        onChange={(e) => setFieldValue('foundersCount', Number(e.target.value))}
-                        error={touched.foundersCount && Boolean(errors.foundersCount)}
-                        helperText={touched.foundersCount && errors.foundersCount}
+                        value={values.founders_count}
+                        onChange={(e) => setFieldValue('founders_count', Number(e.target.value))}
+                        error={touched.founders_count && Boolean(errors.founders_count)}
+                        helperText={touched.founders_count && errors.founders_count}
                         InputProps={{
                           endAdornment: (
                             <Box>
                               <IconButton
                                 size="small"
                                 onClick={() =>
-                                  setFieldValue('foundersCount', Math.max(0, values.foundersCount - 1))
+                                  setFieldValue('founders_count', Math.max(0, values.founders_count - 1))
                                 }
                               >
                                 <Remove />
                               </IconButton>
                               <IconButton
                                 size="small"
-                                onClick={() => setFieldValue('foundersCount', values.foundersCount + 1)}
+                                onClick={() => setFieldValue('founders_count', values.founders_count + 1)}
                               >
                                 <Add />
                               </IconButton>

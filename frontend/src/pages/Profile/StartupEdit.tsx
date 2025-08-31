@@ -49,7 +49,7 @@ function StartupEdit() {
   const initialValues: StartupFormValues = {
     name: startup.name || '',
     startDate: startup.startDate || '',
-    foundersCount: startup.foundersCount || 1,
+    founders_count: startup.founders_count || 1,
     background: startup.background || '',
     idea: startup.idea || '',
     productType: startup.productType || '',

@@ -23,8 +23,8 @@ import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import useRecommendations from '@/hooks/useRecommendations';
 import useRequests from '@/hooks/useRequests';
-import { Recommendation, Startup, Request } from '@/types/supabase';
-import { CreateRecommendation, UpdateRecommendation, supabaseGetStartup } from '@/lib/supabase';
+import { Tables, TablesInsert, TablesUpdate } from '@/types/database';
+import { supabaseGetStartup } from '@/lib/supabase';
 import RecommendationForm from './components/RecommendationForm';
 import RecommendationList from './components/RecommendationList';
 import RequestList from './components/RequestList';
@@ -57,11 +57,11 @@ function TabPanel(props: TabPanelProps) {
 export default function StartupView() {
   const { id: startupId } = useParams<{ id: string }>();
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingRecommendation, setEditingRecommendation] = useState<Recommendation | undefined>(
+  const [editingRecommendation, setEditingRecommendation] = useState<Tables<'recommendations'> | undefined>(
     undefined,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentStartup, setCurrentStartup] = useState<Startup | null>(null);
+  const [currentStartup, setCurrentStartup] = useState<Tables<'startups'> | null>(null);
   const [notification, setNotification] = useState<{
     message: string;
     severity: 'success' | 'error' | 'info' | 'warning';
@@ -126,24 +126,24 @@ export default function StartupView() {
     setEditingRecommendation(undefined);
   };
 
-  const handleEditRecommendation = (recommendation: Recommendation) => {
+  const handleEditRecommendation = (recommendation: Tables<'recommendations'>) => {
     setEditingRecommendation(recommendation);
     setIsFormOpen(true);
   };
 
-  const handleFormSubmit = async (values: CreateRecommendation | UpdateRecommendation) => {
+  const handleFormSubmit = async (values: TablesInsert<'recommendations'> | TablesUpdate<'recommendations'>) => {
     setIsSubmitting(true);
     try {
       if ('id' in values && values.id) {
         // Update
-        await updateRecommendation(values as UpdateRecommendation);
+        await updateRecommendation(values as TablesUpdate<'recommendations'>);
         setNotification({
           message: 'Recommendation updated successfully',
           severity: 'success',
         });
       } else {
         // Create
-        await createRecommendation(values as CreateRecommendation);
+        await createRecommendation(values as TablesInsert<'recommendations'>);
         setNotification({
           message: 'Recommendation created successfully',
           severity: 'success',
@@ -175,11 +175,11 @@ export default function StartupView() {
     }
   };
 
-  const handleMarkRequestAsRead = async (request: Request) => {
+  const handleMarkRequestAsRead = async (request: Tables<'requests'>) => {
     try {
       await updateRequest({
         id: request.id,
-        readAt: new Date().toISOString(),
+        read_at: new Date().toISOString(),
       });
       setNotification({
         message: 'Request marked as read',
@@ -243,7 +243,7 @@ export default function StartupView() {
         </Box>
 
         {/* Display Categories */}
-        {currentStartup?.categories && currentStartup.categories.length > 0 && (
+        {currentStartup?.categories && Array.isArray(currentStartup.categories) && currentStartup.categories.length > 0 && (
           <Card sx={{ width: '100%', mb: 3 }}>
             <CardContent>
               <Typography variant="subtitle1" gutterBottom>

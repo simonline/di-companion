@@ -125,7 +125,7 @@ const validationSchema = Yup.object().shape({
 const TeamContract: React.FC = () => {
     const navigate = useNavigate();
     const { startup, user } = useAuthContext();
-    const isSolo = startup?.foundersCount === 1;
+    const isSolo = startup?.founders_count === 1;
     const [activeStep, setActiveStep] = useState(0);
     const [showMemberDialog, setShowMemberDialog] = useState(false);
     const [editingMemberIndex, setEditingMemberIndex] = useState<number | null>(null);
@@ -157,7 +157,7 @@ const TeamContract: React.FC = () => {
         contractDate: new Date().toISOString().split('T')[0],
         teamMembers: isSolo ? [
             {
-                name: `${user?.givenName || ''} ${user?.familyName || ''}`.trim(),
+                name: `${user?.given_name || ''} ${user?.family_name || ''}`.trim(),
                 role: 'Founder & CEO',
                 equity: 100,
                 commitment: 'Full-time (40+ hours/week)',
@@ -776,9 +776,9 @@ This contract represents our commitment to working together effectively and tran
                                 </Typography>
                             </Box>
 
-                            <Stepper 
-                                activeStep={activeStep} 
-                                sx={{ 
+                            <Stepper
+                                activeStep={activeStep}
+                                sx={{
                                     mb: 4,
                                     '& .MuiStepLabel-label': {
                                         display: { xs: 'none', sm: 'block' }

@@ -5,10 +5,10 @@ import {
     supabaseCreateUserQuestion,
     supabaseUpdateUserQuestion,
 } from '@/lib/supabase';
-import type { UserQuestion, CreateUserQuestion, UpdateUserQuestion } from '@/types/supabase';
+import { Tables, TablesInsert, TablesUpdate } from '@/types/database';
 
 interface UseUserQuestion {
-    userQuestion: UserQuestion | null;
+    userQuestion: Tables<'user_questions'> | null;
     loading: boolean;
 }
 
@@ -19,8 +19,8 @@ interface UseUserQuestionReturn extends UseUserQuestion {
         patternId: string,
         methodId: string,
     ) => Promise<void>;
-    createUserQuestion: (createUserQuestion: CreateUserQuestion) => Promise<UserQuestion>;
-    updateUserQuestion: (updateUserQuestion: UpdateUserQuestion) => Promise<UserQuestion>;
+    createUserQuestion: (createUserQuestion: TablesInsert<'user_questions'>) => Promise<Tables<'user_questions'>>;
+    updateUserQuestion: (updateUserQuestion: TablesUpdate<'user_questions'>) => Promise<Tables<'user_questions'>>;
 }
 
 export default function useUserQuestion(): UseUserQuestionReturn {
@@ -59,7 +59,7 @@ export default function useUserQuestion(): UseUserQuestionReturn {
     );
 
     const createUserQuestion = useCallback(
-        async (createUserQuestion: CreateUserQuestion) => {
+        async (createUserQuestion: TablesInsert<'user_questions'>) => {
             try {
                 setState(prev => ({ ...prev, loading: true }));
                 const userQuestion = await supabaseCreateUserQuestion(createUserQuestion);
@@ -74,7 +74,7 @@ export default function useUserQuestion(): UseUserQuestionReturn {
     );
 
     const updateUserQuestion = useCallback(
-        async (updateUserQuestion: UpdateUserQuestion) => {
+        async (updateUserQuestion: TablesUpdate<'user_questions'>) => {
             try {
                 setState(prev => ({ ...prev, loading: true }));
                 const userQuestion = await supabaseUpdateUserQuestion(updateUserQuestion);

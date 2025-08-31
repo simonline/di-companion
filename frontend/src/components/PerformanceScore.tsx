@@ -303,7 +303,7 @@ const PerformanceScore: React.FC = () => {
               >
                 <Box
                   sx={{
-                    bgcolor: categoryColors[recommendedPatterns[0].category] || '#grey',
+                    bgcolor: categoryColors[recommendedPatterns[0].category as CategoryEnum] || '#grey',
                     height: 40,
                     p: 2,
                     borderTopLeftRadius: 8,
@@ -350,7 +350,7 @@ const PerformanceScore: React.FC = () => {
                   <Typography
                     variant="body1"
                     sx={{
-                      color: categoryColors[recommendedPatterns[0].category],
+                      color: categoryColors[recommendedPatterns[0].category as CategoryEnum],
                       fontWeight: 'bold',
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
@@ -374,10 +374,10 @@ const PerformanceScore: React.FC = () => {
                     endIcon={<ArrowForward />}
                     fullWidth
                     sx={{
-                      bgcolor: categoryColors[recommendedPatterns[0].category],
+                      bgcolor: categoryColors[recommendedPatterns[0].category as CategoryEnum],
                       color: 'white',
                       '&:hover': {
-                        bgcolor: categoryColors[recommendedPatterns[0].category],
+                        bgcolor: categoryColors[recommendedPatterns[0].category as CategoryEnum],
                         filter: 'brightness(0.9)',
                       },
                     }}

@@ -27,7 +27,7 @@ import Header from '@/sections/Header';
 const initialValues: StartupFormValues = {
   name: '',
   startDate: '',
-  foundersCount: 1,
+  founders_count: 1,
   background: '',
   idea: '',
   productType: '',
@@ -110,7 +110,21 @@ function CreateStartup() {
                     throw new Error('User not found');
                   }
                   await createStartup({
-                    ...values,
+                    name: values.name,
+                    start_date: values.startDate,
+                    founders_count: values.founders_count,
+                    background: values.background,
+                    idea: values.idea,
+                    product_type: values.productType,
+                    industry: values.industry,
+                    industry_other: values.industryOther,
+                    target_market: values.targetMarket,
+                    phase: values.phase,
+                    is_problem_validated: values.isProblemValidated,
+                    qualified_conversations_count: values.qualifiedConversationsCount,
+                    is_target_group_defined: values.isTargetGroupDefined,
+                    is_prototype_validated: values.isPrototypeValidated,
+                    is_mvp_tested: values.isMvpTested,
                     users: { set: [user.id] },
                   });
                   navigate('/startup');

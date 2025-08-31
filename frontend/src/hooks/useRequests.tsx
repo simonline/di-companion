@@ -4,21 +4,23 @@ import {
   supabaseCreateRequest,
   supabaseUpdateRequest,
   supabaseDeleteRequest,
-  CreateRequest,
-  UpdateRequest,
 } from '@/lib/supabase';
-import type { Request } from '@/types/supabase';
+import type {
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+} from '@/types/database';
 
 interface UseRequests {
-  requests: Request[] | null;
+  requests: Tables<'requests'>[] | null;
   loading: boolean;
   error: string | null;
 }
 
 interface UseRequestsReturn extends UseRequests {
   fetchRequests: (startupId: string) => void;
-  createRequest: (data: CreateRequest) => Promise<Request>;
-  updateRequest: (data: UpdateRequest) => Promise<Request>;
+  createRequest: (data: TablesInsert<'requests'>) => Promise<Tables<'requests'>>;
+  updateRequest: (data: TablesUpdate<'requests'>) => Promise<Tables<'requests'>>;
   deleteRequest: (id: string) => Promise<void>;
   clearError: () => void;
 }
@@ -37,7 +39,7 @@ export default function useRequests(): UseRequestsReturn {
   const fetchRequests = useCallback(async (startupId: string) => {
     try {
       setState((prev) => ({ ...prev, loading: true }));
-      const requests = await supabaseGetRequests([startupId]);
+      const requests = await supabaseGetRequests(startupId);
       setState({ requests, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;
@@ -45,7 +47,7 @@ export default function useRequests(): UseRequestsReturn {
     }
   }, []);
 
-  const createRequest = useCallback(async (data: CreateRequest) => {
+  const createRequest = useCallback(async (data: TablesInsert<'requests'>) => {
     try {
       const newRequest = await supabaseCreateRequest(data);
       setState((prev) => ({
@@ -60,7 +62,7 @@ export default function useRequests(): UseRequestsReturn {
     }
   }, []);
 
-  const updateRequest = useCallback(async (data: UpdateRequest) => {
+  const updateRequest = useCallback(async (data: TablesUpdate<'requests'>) => {
     try {
       const updatedRequest = await supabaseUpdateRequest(data);
       setState((prev) => ({
