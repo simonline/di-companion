@@ -28,17 +28,17 @@ const OtpSchema = Yup.object().shape({
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuthContext();
+  const { user, profile } = useAuthContext();
   const [, { push }] = useNotifications();
   const [emailSent, setEmailSent] = useState(false);
   const [email, setEmail] = useState('');
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user) {
-      navigate(user.is_coach ? '/startups' : '/user', { replace: true });
+    if (user && profile) {
+      navigate(profile.is_coach ? '/startups' : '/user', { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, profile, navigate]);
 
   const handleSubmit = async (
     values: LoginFormValues,
@@ -170,7 +170,7 @@ const Login: React.FC = () => {
                     value={values.otp || ''}
                     autoComplete="one-time-code"
                     inputProps={{ 
-                      maxLength: 6,
+                      max_length: 6,
                       pattern: '[0-9]*',
                       inputMode: 'numeric',
                       autoComplete: 'one-time-code',

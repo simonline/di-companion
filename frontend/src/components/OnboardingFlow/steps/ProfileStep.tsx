@@ -19,6 +19,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useAuthContext } from '@/hooks/useAuth';
 import { OnboardingStepProps } from '../OnboardingFlow';
 import { getAvatarUrl } from '@/lib/supabase';
+import { TablesUpdate } from '@/types/database';
 
 interface ProfileFormValues {
   email: string;
@@ -56,21 +57,21 @@ const ProfileStep: React.FC<OnboardingStepProps> = ({
   isFirstStep,
   isLastStep,
 }) => {
-  const { user, updateUser } = useAuthContext();
+  const { user, profile, updateProfile } = useAuthContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  if (!user) return null;
+  if (!user || !profile) return null;
 
-  // Initialize form values from user data
+  // Initialize form values from user and profile data
   const initialValues: ProfileFormValues = {
     email: user.email || '',
-    givenName: user.given_name || '',
-    familyName: user.family_name || '',
-    gender: user.gender || '',
-    position: user.position || '',
-    bio: user.bio || '',
-    linkedinProfile: user.linkedin_profile || '',
+    givenName: profile.given_name || '',
+    familyName: profile.family_name || '',
+    gender: profile.gender || '',
+    position: profile.position || '',
+    bio: profile.bio || '',
+    linkedinProfile: profile.linkedin_profile || '',
     avatar: undefined,
   };
 
@@ -79,17 +80,17 @@ const ProfileStep: React.FC<OnboardingStepProps> = ({
     setErrorMessage('');
 
     try {
-      // Update the user profile
-      await updateUser({
-        id: user.id,
+      // Update the profile
+      await updateProfile({
+        id: profile.id,
         given_name: values.givenName,
         family_name: values.familyName,
         gender: values.gender,
         position: values.position,
         bio: values.bio,
         linkedin_profile: values.linkedinProfile,
-        avatar: values.avatar,
-      });
+        ...( values.avatar ? { avatar: values.avatar } : {} )
+      } as TablesUpdate<'profiles'> & { avatar?: File });
 
       // Move to next step
       onNext();
@@ -123,7 +124,7 @@ const ProfileStep: React.FC<OnboardingStepProps> = ({
     });
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(() => {
-      return getAvatarUrl(user.avatar_url) || null;
+      return getAvatarUrl(profile.avatar_id) || null;
     });
 
     const avatarFile = form.values.avatar;
@@ -139,7 +140,7 @@ const ProfileStep: React.FC<OnboardingStepProps> = ({
     const handleRemoveAvatar = (e: React.MouseEvent) => {
       e.stopPropagation();
       form.setFieldValue('avatar', undefined);
-      setPreviewUrl(getAvatarUrl(user.avatar_url) || null);
+      setPreviewUrl(getAvatarUrl(profile.avatar_id) || null);
     };
 
     return (

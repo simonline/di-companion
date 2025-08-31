@@ -16,6 +16,7 @@ import { generateValidationSchema, FormValues } from '@/utils/generateValidation
 import { generateInitialValues } from '@/utils/generateInitialValues';
 import { Tables } from '@/types/database';
 import { OnboardingStepProps } from '../OnboardingFlow';
+import { supabaseGetSurveyQuestions } from '@/lib/supabase';
 
 const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
   onNext,
@@ -35,13 +36,18 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
   const { createUserQuestion, updateUserQuestion } = useUserQuestion();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-
-  // Get all questions for the assessment
-  const allQuestions = survey?.questions || [];
+  const [questions, setQuestions] = useState<Tables<'questions'>[]>([]);
 
   useEffect(() => {
     fetchSurveyByName("Self Assessment");
   }, [fetchSurveyByName]);
+
+  useEffect(() => {
+    // Fetch questions separately when survey is loaded
+    if (survey?.id) {
+      supabaseGetSurveyQuestions(survey.id).then(setQuestions);
+    }
+  }, [survey]);
 
   useEffect(() => {
     if (startup?.id && user?.id) {
@@ -57,14 +63,14 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
       setErrorMessage('');
 
       // Process each question's answer
-      for (const question of allQuestions) {
+      for (const question of questions) {
         const answer = values[question.id];
         const existingResponse = userQuestions?.find(
-          (uq) => uq.question.id === question.id,
+          (uq) => uq.question && uq.question.id === question.id,
         );
 
         // Skip if answer is empty and question is not required
-        if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.isRequired) continue;
+        if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) continue;
 
         // Skip if answer hasn't changed
         if (existingResponse) {
@@ -141,7 +147,7 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
     );
   }
 
-  if (!survey || !allQuestions.length) {
+  if (!survey || !questions.length) {
     return (
       <Box sx={{ textAlign: 'center', py: 4 }}>
         <Typography variant="h6" gutterBottom>
@@ -176,14 +182,14 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
       )}
 
       <Formik
-        initialValues={generateInitialValues(allQuestions, userQuestions || undefined)}
-        validationSchema={generateValidationSchema(allQuestions)}
+        initialValues={generateInitialValues(questions, userQuestions || undefined)}
+        validationSchema={generateValidationSchema(questions)}
         onSubmit={handleSubmit}
       >
         {({ isValid }) => (
           <Form>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {allQuestions
+              {questions
                 .sort((a: Tables<'questions'>, b: Tables<'questions'>) => (a.order || 0) - (b.order || 0))
                 .map((question: Tables<'questions'>) => (
                   <Field key={question.id} name={question.id}>

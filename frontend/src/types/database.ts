@@ -11,6 +11,8 @@ import {
 // Custom types
 export interface User {
   id: string;
+  email: string;
+  password?: string;
 }
 export type UserCreate = Omit<User, 'id'>;
 export type UserUpdate = Partial<User>;
@@ -22,13 +24,19 @@ export type Database = MergeDeep<
     public: {
       'patterns': {
         Row: {
-          name: string
+          name: string,
+          image?: { url: string | null }
         },
         Insert: {
-          name: string
+          name: string,
         },
         Update: {
-          name: string
+          name: string,
+        }
+      },
+      'profiles': {
+        Row: {
+          avatar?: { url: string | null }
         }
       },
       'questions': {
@@ -47,15 +55,15 @@ export type Database = MergeDeep<
       },
       'startup_patterns': {
         Row: {
-          responseType: ResponseTypeEnum,
+          response_type: ResponseTypeEnum,
           response: ResponseEnum
         }
         Insert: {
-          responseType: ResponseTypeEnum,
+          response_type: ResponseTypeEnum,
           response: ResponseEnum
         }
         Update: {
-          responseType: ResponseTypeEnum,
+          response_type: ResponseTypeEnum,
           response: ResponseEnum
         }
       },

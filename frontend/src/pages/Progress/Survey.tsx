@@ -27,9 +27,10 @@ import SurveyField from '@/components/SurveyField';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { generateValidationSchema, FormValues } from '@/utils/generateValidationSchema';
 import { generateInitialValues } from '@/utils/generateInitialValues';
+import { supabaseGetPatternQuestions, supabaseGetSurveyQuestions } from '@/lib/supabase';
 
 const Survey: React.FC = () => {
-  const { patternId } = useParams<{ patternId: string }>();
+  const { pattern_id } = useParams<{ pattern_id: string }>();
   const { state } = useLocation();
   const navigate = useNavigate();
   const [, notificationsActions] = useNotifications();
@@ -51,8 +52,10 @@ const Survey: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
-  const hasPatternQuestions = pattern?.questions && pattern.questions.length > 0;
-  const hasSurveyQuestions = survey?.questions && survey.questions.length > 0;
+  const [patternQuestions, setPatternQuestions] = useState<Tables<'questions'>[]>([]);
+  const [surveyQuestions, setSurveyQuestions] = useState<Tables<'questions'>[]>([]);
+  const hasPatternQuestions = patternQuestions.length > 0;
+  const hasSurveyQuestions = surveyQuestions.length > 0;
 
   useEffect(() => {
     setActiveStep(hasPatternQuestions ? 0 : 1);
@@ -63,11 +66,25 @@ const Survey: React.FC = () => {
   }, [fetchPattern, patternId]);
 
   useEffect(() => {
+    // Fetch pattern questions separately
+    if (pattern?.id) {
+      supabaseGetPatternQuestions(pattern.id).then(setPatternQuestions);
+    }
+  }, [pattern]);
+
+  useEffect(() => {
     if (pattern && pattern.survey) {
       // Fetch survey and questions
       fetchSurveyByName("Default Survey");
     }
   }, [fetchSurveyByName, pattern]);
+
+  useEffect(() => {
+    // Fetch survey questions separately
+    if (survey?.id) {
+      supabaseGetSurveyQuestions(survey.id).then(setSurveyQuestions);
+    }
+  }, [survey]);
 
   useEffect(() => {
     if (startup && userId && patternId) {
@@ -85,8 +102,8 @@ const Survey: React.FC = () => {
     if (isApplied && pattern && survey && userQuestions && startupPatterns && startup?.id && patternId) {
       const points = calculatePoints(
         [
-          ...pattern.questions,
-          ...survey.questions,
+          ...patternQuestions,
+          ...surveyQuestions,
         ],
         userQuestions
       );
@@ -98,8 +115,8 @@ const Survey: React.FC = () => {
         createStartupPattern({
           startup: { set: { id: startup.id } },
           user: { set: { id: user?.id as string } },
-          pattern: { set: { id: patternId } },
-          responseType: 'accept',
+          pattern: { set: { id: pattern_id } },
+          response_type: 'accept',
           response: 'share_reflection',
           applied_at: new Date().toISOString(),
           points,
@@ -134,7 +151,7 @@ const Survey: React.FC = () => {
     state,
     notificationsActions,
     pattern,
-    patternId,
+    pattern_id,
     startup,
   ]);
 
@@ -144,14 +161,14 @@ const Survey: React.FC = () => {
       if (!pattern || !user || !patternId) return;
 
       // Process each question's answer
-      const questionPromises = pattern.questions.map(async (question) => {
+      const questionPromises = patternQuestions.map(async (question) => {
         const answer = values[question.id];
         const existingResponse = userQuestions?.find(
           (uq) => uq.question.id === question.id,
         );
 
         // Skip if answer is empty and question is not required
-        if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.isRequired) return null;
+        if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) return null;
 
         // Skip if answer hasn't changed
         if (existingResponse) {
@@ -161,9 +178,9 @@ const Survey: React.FC = () => {
 
         const payload = {
           user: { set: { id: user.id } },
-          pattern: { set: { id: patternId } },
+          pattern: { set: { id: pattern_id } },
           question: { set: { id: question.id } },
-          startup: { set: { id: user.startups?.[0]?.id } },
+          startup: { set: { id: startup?.id } },
           answer: JSON.stringify(answer),
         };
 
@@ -200,14 +217,14 @@ const Survey: React.FC = () => {
       if (!startup || !user || !patternId || !survey) return;
 
       // Process each question's answer
-      const questionPromises = survey.questions.map(async (question) => {
+      const questionPromises = surveyQuestions.map(async (question) => {
         const answer = values[question.id];
         const existingResponse = userQuestions?.find(
           (uq) => uq.question.id === question.id,
         );
 
         // Skip if answer is empty and question is not required
-        if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.isRequired) return null;
+        if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) return null;
 
         // Skip if answer hasn't changed
         if (existingResponse) {
@@ -217,9 +234,9 @@ const Survey: React.FC = () => {
 
         const payload = {
           user: { set: { id: user.id } },
-          pattern: { set: { id: patternId } },
+          pattern: { set: { id: pattern_id } },
           question: { set: { id: question.id } },
-          startup: { set: { id: user.startups?.[0]?.id } },
+          startup: { set: { id: startup?.id } },
           answer: JSON.stringify(answer),
         };
 
@@ -364,10 +381,10 @@ const Survey: React.FC = () => {
               {activeStep === 0 && hasPatternQuestions && (
                 <Formik
                   initialValues={generateInitialValues(
-                    pattern.questions,
+                    patternQuestions,
                     userQuestions || undefined,
                   )}
-                  validationSchema={generateValidationSchema(pattern.questions)}
+                  validationSchema={generateValidationSchema(patternQuestions)}
                   onSubmit={handleAssessmentSubmit}
                   validateOnChange={true}
                   validateOnBlur={true}
@@ -378,7 +395,7 @@ const Survey: React.FC = () => {
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                           <Typography variant="body2" color="error">
                             Some fields are not valid:
-                            {pattern.questions
+                            {patternQuestions
                               .filter((question) => errors[question.id])
                               .map((question) => (
                                 <Typography key={question.id}>
@@ -396,13 +413,13 @@ const Survey: React.FC = () => {
                               Form Valid: {isValid ? 'Yes' : 'No'}
                               <br />
                               Required Fields:{' '}
-                              {pattern.questions.filter((q) => q.isRequired).length}
+                              {patternQuestions.filter((q) => q.is_required).length}
                             </Typography>
                           </Box>
                         </Box>
                       )}
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        {pattern.questions
+                        {patternQuestions
                           .sort((a: Tables<'questions'>, b: Tables<'questions'>) => (a.order ?? 0) - (b.order ?? 0))
                           .map((question: Tables<'questions'>) => (
                             <Field key={question.id} name={question.id}>
@@ -441,16 +458,16 @@ const Survey: React.FC = () => {
               {activeStep === 1 && hasSurveyQuestions && (
                 <Formik
                   initialValues={generateInitialValues(
-                    survey.questions,
+                    surveyQuestions,
                     userQuestions || undefined,
                   )}
-                  validationSchema={generateValidationSchema(survey.questions)}
+                  validationSchema={generateValidationSchema(surveyQuestions)}
                   onSubmit={handleEffortSubmit}
                 >
                   {({ isValid }) => (
                     <Form>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        {survey.questions
+                        {surveyQuestions
                           .sort((a: Tables<'questions'>, b: Tables<'questions'>) => (a.order ?? 0) - (b.order ?? 0))
                           .map((question: Tables<'questions'>) => (
                             <Field key={question.id} name={question.id}>

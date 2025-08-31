@@ -124,7 +124,7 @@ const validationSchema = Yup.object().shape({
 
 const TeamContract: React.FC = () => {
     const navigate = useNavigate();
-    const { startup, user } = useAuthContext();
+    const { startup, user, profile } = useAuthContext();
     const isSolo = startup?.founders_count === 1;
     const [activeStep, setActiveStep] = useState(0);
     const [showMemberDialog, setShowMemberDialog] = useState(false);
@@ -157,7 +157,7 @@ const TeamContract: React.FC = () => {
         contractDate: new Date().toISOString().split('T')[0],
         teamMembers: isSolo ? [
             {
-                name: `${user?.given_name || ''} ${user?.family_name || ''}`.trim(),
+                name: `${profile?.given_name || ''} ${profile?.family_name || ''}`.trim(),
                 role: 'Founder & CEO',
                 equity: 100,
                 commitment: 'Full-time (40+ hours/week)',

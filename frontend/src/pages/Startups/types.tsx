@@ -17,20 +17,20 @@ export const steps = ['About Your Startup', 'Product & Market', 'Validation & Pr
 
 export interface StartupFormValues {
   name: string;
-  startDate: string;
+  start_date: string;
   founders_count: number;
   background: string;
   idea: string;
-  productType: string;
+  product_type: string;
   industry: string;
   industryOther?: string;
-  targetMarket: string;
+  target_market: string;
   phase: string;
-  isProblemValidated: boolean;
-  qualifiedConversationsCount: number;
-  isTargetGroupDefined: boolean;
-  isPrototypeValidated: boolean;
-  isMvpTested: boolean;
+  is_problem_validated: boolean;
+  qualified_conversations_count: number;
+  is_target_group_defined: boolean;
+  is_prototype_validated: boolean;
+  is_mvp_tested: boolean;
   scores?: Record<CategoryEnum, number>;
   submit?: { message: string };
 }
@@ -39,7 +39,7 @@ export const stepValidationSchemas = [
   // Step 1: About Your Startup
   Yup.object().shape({
     name: Yup.string().required('Startup name is required'),
-    startDate: Yup.date().required('Start date is required'),
+    start_date: Yup.date().required('Start date is required'),
     founders_count: Yup.number()
       .min(0, 'Must be 0 or greater')
       .required('Number of founders is required'),
@@ -51,11 +51,11 @@ export const stepValidationSchemas = [
 
   // Step 2: Product & Market
   Yup.object().shape({
-    productType: Yup.string()
+    product_type: Yup.string()
       .oneOf(['product', 'service', 'platform'], 'Please select a valid product type')
       .required('Product type is required'),
     industry: Yup.string().required('Industry is required'),
-    targetMarket: Yup.string()
+    target_market: Yup.string()
       .oneOf(['b2b', 'b2c'], 'Must be either B2B or B2C')
       .required('Target market is required'),
     phase: Yup.string()
@@ -68,11 +68,11 @@ export const stepValidationSchemas = [
 
   // Step 3: Validation & Progress
   Yup.object().shape({
-    isProblemValidated: Yup.boolean(),
-    qualifiedConversationsCount: Yup.number().min(0, 'Must be 0 or greater'),
-    isTargetGroupDefined: Yup.boolean(),
-    isPrototypeValidated: Yup.boolean(),
-    isMvpTested: Yup.boolean(),
+    is_problem_validated: Yup.boolean(),
+    qualified_conversations_count: Yup.number().min(0, 'Must be 0 or greater'),
+    is_target_group_defined: Yup.boolean(),
+    is_prototype_validated: Yup.boolean(),
+    is_mvp_tested: Yup.boolean(),
   }),
 ];
 
@@ -127,8 +127,8 @@ export const renderStepContent = (
             InputLabelProps={{
               shrink: true,
             }}
-            error={touched.startDate && Boolean(errors.startDate)}
-            helperText={touched.startDate && errors.startDate}
+            error={touched.start_date && Boolean(errors.start_date)}
+            helperText={touched.start_date && errors.start_date}
             tooltip="When you first started working on this startup idea"
           />
 
@@ -207,8 +207,8 @@ export const renderStepContent = (
             margin="normal"
             name="productType"
             label="What are you building?"
-            error={touched.productType && Boolean(errors.productType)}
-            helperText={touched.productType && errors.productType}
+            error={touched.product_type && Boolean(errors.product_type)}
+            helperText={touched.product_type && errors.product_type}
             tooltip="Select the type that best describes what you're building"
           >
             <MenuItem value="product">Physical Product</MenuItem>
@@ -241,8 +241,8 @@ export const renderStepContent = (
               margin="normal"
               name="industryOther"
               label="Please specify your industry"
-              error={touched.industryOther && Boolean(errors.industryOther)}
-              helperText={touched.industryOther && errors.industryOther}
+              error={touched.industry_other && Boolean(errors.industry_other)}
+              helperText={touched.industry_other && errors.industry_other}
             />
           )}
 
@@ -253,8 +253,8 @@ export const renderStepContent = (
             margin="normal"
             name="targetMarket"
             label="Who are your customers?"
-            error={touched.targetMarket && Boolean(errors.targetMarket)}
-            helperText={touched.targetMarket && errors.targetMarket}
+            error={touched.target_market && Boolean(errors.target_market)}
+            helperText={touched.target_market && errors.target_market}
             tooltip="Are you selling to businesses (B2B) or consumers (B2C)?"
           >
             <MenuItem value="b2b">Business to Business (B2B)</MenuItem>
@@ -301,7 +301,7 @@ export const renderStepContent = (
                 <Field
                   as={Checkbox}
                   name="isProblemValidated"
-                  checked={values.isProblemValidated}
+                  checked={values.is_problem_validated}
                 />
               }
               label="Have you validated that your target market has the problem you're solving?"
@@ -315,9 +315,9 @@ export const renderStepContent = (
               label="How many customer interviews have you conducted?"
               type="number"
               error={
-                touched.qualifiedConversationsCount && Boolean(errors.qualifiedConversationsCount)
+                touched.qualified_conversations_count && Boolean(errors.qualified_conversations_count)
               }
-              helperText={touched.qualifiedConversationsCount && errors.qualifiedConversationsCount}
+              helperText={touched.qualified_conversations_count && errors.qualified_conversations_count}
               tooltip="Number of in-depth conversations with potential customers"
             />
 
@@ -326,7 +326,7 @@ export const renderStepContent = (
                 <Field
                   as={Checkbox}
                   name="isTargetGroupDefined"
-                  checked={values.isTargetGroupDefined}
+                  checked={values.is_target_group_defined}
                 />
               }
               label="Have you clearly defined your target customer segment?"
@@ -343,14 +343,14 @@ export const renderStepContent = (
                 <Field
                   as={Checkbox}
                   name="isPrototypeValidated"
-                  checked={values.isPrototypeValidated}
+                  checked={values.is_prototype_validated}
                 />
               }
               label="Have you created and tested a prototype with potential users?"
             />
 
             <FormControlLabel
-              control={<Field as={Checkbox} name="isMvpTested" checked={values.isMvpTested} />}
+              control={<Field as={Checkbox} name="isMvpTested" checked={values.is_mvp_tested} />}
               label="Have you built and tested a Minimum Viable Product (MVP)?"
             />
           </Box>

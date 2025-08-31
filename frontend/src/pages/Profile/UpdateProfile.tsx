@@ -63,7 +63,7 @@ const genderOptions = [
 function UpdateProfile() {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { user, updateUser } = useAuthContext();
+  const { user, profile, updateProfile } = useAuthContext();
   const { field } = useParams<{ field?: string }>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -78,15 +78,15 @@ function UpdateProfile() {
   // Get the field to edit or default to all fields
   const isFieldSpecific = !!field;
 
-  // Initialize form values from user data
+  // Initialize form values from user and profile data
   const initialValues: UpdateProfileFormValues = {
     email: user.email || '',
-    givenName: user.given_name || '',
-    familyName: user.family_name || '',
-    gender: user.gender || '',
-    position: user.position || '',
-    bio: user.bio || '',
-    linkedinProfile: user.linkedin_profile || '',
+    givenName: profile?.given_name || '',
+    familyName: profile?.family_name || '',
+    gender: profile?.gender || '',
+    position: profile?.position || '',
+    bio: profile?.bio || '',
+    linkedinProfile: profile?.linkedin_profile || '',
     avatar: undefined,
   };
 
@@ -113,7 +113,6 @@ function UpdateProfile() {
           }
           : {
             id: user.id,
-            email: values.email,
             given_name: values.givenName,
             family_name: values.familyName,
             gender: values.gender,
@@ -123,8 +122,8 @@ function UpdateProfile() {
             avatar: values.avatar,
           };
 
-      // Call the API to update the user
-      await updateUser(updatedData);
+      // Call the API to update the profile
+      await updateProfile(updatedData);
 
       setSuccessMessage('Profile updated successfully');
 
@@ -229,7 +228,7 @@ function UpdateProfile() {
 
     // Current avatar preview URL
     const [previewUrl, setPreviewUrl] = useState<string | null>(() => {
-      return getAvatarUrl(user.avatar_url) || null;
+      return profile ? getAvatarUrl(profile.avatar_id) : null;
     });
 
     // Create a preview when a new file is selected
@@ -249,7 +248,7 @@ function UpdateProfile() {
       form.setFieldValue('avatar', undefined);
 
       // Reset to existing avatar if available
-      setPreviewUrl(getAvatarUrl(user.avatar_url) || null);
+      setPreviewUrl(profile ? getAvatarUrl(profile.avatar_id) : null);
     };
 
     return (

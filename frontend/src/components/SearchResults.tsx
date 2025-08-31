@@ -135,7 +135,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               />
               <Chip
                 size="small"
-                label={pattern.patternId}
+                label={pattern.pattern_id}
                 variant="outlined"
                 sx={{
                   position: 'absolute',

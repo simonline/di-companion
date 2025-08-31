@@ -16,7 +16,7 @@ interface UseUserQuestionReturn extends UseUserQuestion {
     fetchUserQuestion: (id: string) => Promise<void>;
     findPatternMethod: (
         userId: string,
-        patternId: string,
+        pattern_id: string,
         methodId: string,
     ) => Promise<void>;
     createUserQuestion: (createUserQuestion: TablesInsert<'user_questions'>) => Promise<Tables<'user_questions'>>;
@@ -41,12 +41,12 @@ export default function useUserQuestion(): UseUserQuestionReturn {
     }, []);
 
     const findPatternMethod = useCallback(
-        async (userId: string, patternId: string, methodId: string) => {
+        async (userId: string, pattern_id: string, methodId: string) => {
             try {
                 setState(prev => ({ ...prev, loading: true }));
                 const userQuestion = await supabaseFindUserQuestion(
                     userId,
-                    patternId,
+                    pattern_id,
                     methodId,
                 );
                 setState({ userQuestion, loading: false });

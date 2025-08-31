@@ -47,8 +47,8 @@ import { CategoryEnum, categoryDisplayNames, categoryColors } from '@/utils/cons
 export default function OverviewView() {
   const { user } = useAuthContext();
   const [requests, setRequests] = useState<any[]>([]);
-  const [availableStartups, setAvailableStartups] = useState<Startup[]>([]);
-  const [coachees, setCoachees] = useState<Startup[]>([]);
+  const [availableStartups, setAvailableStartups] = useState<Tables<'startups'>[]>([]);
+  const [coachees, setCoachees] = useState<Tables<'startups'>[]>([]);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedStartup, setSelectedStartup] = useState<string>('');
   const [notification, setNotification] = useState<{
@@ -56,7 +56,7 @@ export default function OverviewView() {
     severity: 'success' | 'error' | 'info' | 'warning';
   } | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedStartupForMenu, setSelectedStartupForMenu] = useState<Startup | null>(null);
+  const [selectedStartupForMenu, setSelectedStartupForMenu] = useState<Tables<'startups'> | null>(null);
   const { fetchStartupPatterns, startupPatterns } = useStartupPatterns();
 
   // State for category assignment dialog
@@ -65,7 +65,7 @@ export default function OverviewView() {
 
   // State for bulk category assignment
   const [isBulkCategoryDialogOpen, setIsBulkCategoryDialogOpen] = useState(false);
-  const [selectedStartups, setSelectedStartups] = useState<Startup[]>([]);
+  const [selectedStartups, setSelectedStartups] = useState<Tables<'startups'>[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // Get count of coachees
@@ -96,7 +96,7 @@ export default function OverviewView() {
   // Fetch coachees when user is available
   useEffect(() => {
     const fetchCoachees = async () => {
-      if (user?.id && user?.is_coach) {
+      if (user?.id && profile?.is_coach) {
         try {
           const { data, error } = await supabase
             .from('startups')
@@ -115,7 +115,7 @@ export default function OverviewView() {
     };
 
     fetchCoachees();
-  }, [user?.id, user?.is_coach]);
+  }, [user?.id, profile?.is_coach]);
 
   // Get requests and available startups
   useEffect(() => {

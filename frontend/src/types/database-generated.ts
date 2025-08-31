@@ -326,6 +326,71 @@ export type Database = {
           },
         ]
       }
+      documents: {
+        Row: {
+          id: string
+          filename: string
+          original_name: string
+          mime_type: string
+          size_bytes: number
+          bucket: string
+          storage_path: string
+          category: string | null
+          uploaded_by: string | null
+          uploaded_at: string
+          entity_type: string | null
+          entity_id: string | null
+          entity_field: string | null
+          metadata: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          filename: string
+          original_name: string
+          mime_type: string
+          size_bytes: number
+          bucket?: string
+          storage_path: string
+          category?: string | null
+          uploaded_by?: string | null
+          uploaded_at?: string
+          entity_type?: string | null
+          entity_id?: string | null
+          entity_field?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          filename?: string
+          original_name?: string
+          mime_type?: string
+          size_bytes?: number
+          bucket?: string
+          storage_path?: string
+          category?: string | null
+          uploaded_by?: string | null
+          uploaded_at?: string
+          entity_type?: string | null
+          entity_id?: string | null
+          entity_field?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       i18n_locale: {
         Row: {
           code: string | null

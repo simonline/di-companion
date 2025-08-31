@@ -19,19 +19,21 @@ import { useAuthContext } from '@/hooks/useAuth';
 import useNotifications from '@/store/notifications';
 import { Grid } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { supabaseGetPatternMethods } from '@/lib/supabase';
+import { Tables } from '@/types/database';
 
 const validationSchema = Yup.object({
-  resultText: Yup.string().required('Please describe the tools or methods you applied'),
+  result_text: Yup.string().required('Please describe the tools or methods you applied'),
   resultFiles: Yup.array().min(0, 'Files are optional'),
 });
 
 interface FormValues {
-  resultText: string;
+  result_text: string;
   resultFiles: File[];
 }
 
 const Methods: React.FC = () => {
-  const { patternId } = useParams<{ patternId: string }>();
+  const { pattern_id } = useParams<{ pattern_id: string }>();
   const navigate = useNavigate();
   const [, notificationsActions] = useNotifications();
   const { startup } = useAuthContext();
@@ -46,16 +48,24 @@ const Methods: React.FC = () => {
     error: startupMethodError,
   } = useStartupMethod();
   const [methodModalOpen, setMethodModalOpen] = useState(false);
+  const [patternMethods, setPatternMethods] = useState<Tables<'methods'>[]>([]);
 
   useEffect(() => {
     fetchPattern(patternId as string);
   }, [fetchPattern, patternId]);
 
   useEffect(() => {
-    if (pattern && pattern.methods && pattern.methods.length > 0) {
-      fetchMethod(pattern.methods[0].id);
+    // Fetch methods separately
+    if (pattern?.id) {
+      supabaseGetPatternMethods(pattern.id).then(setPatternMethods);
     }
-  }, [fetchMethod, pattern]);
+  }, [pattern]);
+
+  useEffect(() => {
+    if (patternMethods.length > 0) {
+      fetchMethod(patternMethods[0].id);
+    }
+  }, [fetchMethod, patternMethods]);
 
   useEffect(() => {
     if (startup && pattern && method) {
@@ -64,7 +74,7 @@ const Methods: React.FC = () => {
   }, [findPatternMethod, startup, pattern, method]);
 
   const initialValues: FormValues = {
-    resultText: startupMethod?.resultText || '',
+    result_text: startupMethod?.result_text || '',
     // @ts-expect-error resultFiles is not a string
     resultFiles: startupMethod?.resultFiles || [],
   };
@@ -75,7 +85,7 @@ const Methods: React.FC = () => {
       if (startupMethod) {
         updateStartupMethod({
           id: startupMethod.id,
-          resultText: values.resultText,
+          result_text: values.result_text,
           resultFiles: values.resultFiles,
         });
       } else {
@@ -83,7 +93,7 @@ const Methods: React.FC = () => {
           startup: { set: { id: startup.id } },
           method: { set: { id: method.id } },
           pattern: { set: { id: pattern.id } },
-          resultText: values.resultText,
+          result_text: values.result_text,
           resultFiles: values.resultFiles,
         });
       }
@@ -94,7 +104,7 @@ const Methods: React.FC = () => {
         message: 'Method completed successfully',
       });
       // Continue with survey to complete the pattern
-      navigate(`/progress/${patternId}/survey`);
+      navigate(`/progress/${pattern_id}/survey`);
     } catch (error) {
       console.error('Error submitting form:', error);
       notificationsActions.push({
@@ -220,7 +230,7 @@ const Methods: React.FC = () => {
     );
   };
 
-  if ((patternLoading || pattern?.methods?.length) && (methodLoading || startupMethodLoading)) {
+  if ((patternLoading || patternMethods.length > 0) && (methodLoading || startupMethodLoading)) {
     return (
       <Box
         sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}
@@ -342,8 +352,8 @@ const Methods: React.FC = () => {
                               multiline
                               rows={4}
                               label="Which tools or methods did you apply here?"
-                              error={touched.resultText && Boolean(errors.resultText)}
-                              helperText={touched.resultText && errors.resultText}
+                              error={touched.result_text && Boolean(errors.result_text)}
+                              helperText={touched.result_text && errors.result_text}
                               sx={{ mb: 3 }}
                             />
                           )}

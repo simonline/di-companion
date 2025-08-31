@@ -42,7 +42,7 @@ interface ActionDialogProps {
   open: boolean;
   onClose: () => void;
   pattern: Tables<'patterns'>;
-  responseType: ResponseTypeEnum;
+  response_type: ResponseTypeEnum;
   title: string;
   actions: [string, ResponseEnum][];
   onComplete?: () => void;
@@ -53,7 +53,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
   open,
   onClose,
   pattern,
-  responseType,
+  response_type,
   title,
   actions,
   onComplete,
@@ -72,11 +72,11 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
         startup: { set: { id: startup?.id as string } },
         pattern: { set: { id: pattern.id } },
         user: { set: { id: user?.id as string } },
-        responseType,
+        response_type,
         response,
       });
     }
-  }, [response, createStartupPattern, pattern, responseType, startup]);
+  }, [response, createStartupPattern, pattern, response_type, startup]);
 
   useEffect(() => {
     if (response && startupPattern) {
@@ -136,7 +136,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
         onComplete();
       }
     }
-  }, [response, startupPattern, navigate, pattern, responseType, startup, createRequest, notificationsActions, onComplete]);
+  }, [response, startupPattern, navigate, pattern, response_type, startup, createRequest, notificationsActions, onComplete]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -179,10 +179,10 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, isInteractive = true
   const [isFlipped, setIsFlipped] = React.useState(false);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [dialogConfig, setDialogConfig] = React.useState<{
-    responseType: ResponseTypeEnum;
+    response_type: ResponseTypeEnum;
     title: string;
     actions: [string, ResponseEnum][];
-  }>({ responseType: ResponseTypeEnum.accept, title: '', actions: [] });
+  }>({ response_type: ResponseTypeEnum.accept, title: '', actions: [] });
   const [isVisible, setIsVisible] = React.useState(true);
   const [exitDirection, setExitDirection] = React.useState<'left' | 'right' | null>(null);
   const { setCurrentPattern } = useCurrentPattern();
@@ -202,7 +202,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, isInteractive = true
     setTimeout(() => {
       if (direction === 'right') {
         setDialogConfig({
-          responseType: ResponseTypeEnum.accept,
+          response_type: ResponseTypeEnum.accept,
           title: 'Great! What would you like to do?',
           actions: [
             ['Explore methods', ResponseEnum.perform_exercise],
@@ -212,7 +212,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, isInteractive = true
         });
       } else {
         setDialogConfig({
-          responseType: ResponseTypeEnum.reject,
+          response_type: ResponseTypeEnum.reject,
           title: 'Why are you passing?',
           actions: [
             ['Already addressed', ResponseEnum.already_addressed],
@@ -275,7 +275,7 @@ Pattern Information:
 - Subcategory: ${pattern.subcategory}
 - Description: ${pattern.description}
 - Phases: ${pattern.phases && typeof pattern.phases === 'object' && Array.isArray(pattern.phases) ? pattern.phases.map((phase: any) => phaseDisplayNames[phase as PhaseEnum]).join(', ') : ''}
-- Pattern ID: ${pattern.patternId}
+- Pattern ID: ${pattern.pattern_id}
 `;
 
       const userPrompt = `I need help understanding and implementing the "${pattern.name}" pattern. Can you provide clear, actionable guidance?`;
@@ -460,7 +460,7 @@ Make your response actionable and easy to follow.`;
         >
           {pattern.name}
         </Typography>
-        {pattern.relatedPatterns && (
+        {pattern.related_patterns && (
           <Box
             sx={{
               flex: 1,
@@ -477,7 +477,7 @@ Make your response actionable and easy to follow.`;
                 display: '-webkit-box',
               }}
             >
-              {pattern.relatedPatterns.map((relPattern, index) => (
+              {pattern.related_patterns.map((relPattern, index) => (
                 <React.Fragment key={relPattern.name}>
                   <Typography
                     component="a"
@@ -496,7 +496,7 @@ Make your response actionable and easy to follow.`;
                   >
                     {relPattern.name}
                   </Typography>
-                  {index !== pattern.relatedPatterns.length - 1 && (
+                  {index !== pattern.related_patterns.length - 1 && (
                     <Typography variant="body2" lineHeight="1.2em" sx={{ display: 'inline' }}>
                       {' '}
                       –{' '}
@@ -510,7 +510,7 @@ Make your response actionable and easy to follow.`;
         <Box sx={{ position: 'absolute', bottom: '70px', right: '40px' }}>
           <Chip
             size="small"
-            label={pattern.patternId}
+            label={pattern.pattern_id}
             variant="outlined"
             sx={{
               fontWeight: 'bold',
@@ -734,7 +734,7 @@ Make your response actionable and easy to follow.`;
           open={dialogOpen}
           onClose={handleDialogClose}
           pattern={pattern}
-          responseType={dialogConfig.responseType}
+          responseType={dialogConfig.response_type}
           title={dialogConfig.title}
           actions={dialogConfig.actions}
           onComplete={onComplete}

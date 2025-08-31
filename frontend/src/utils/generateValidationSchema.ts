@@ -32,7 +32,7 @@ export const generateValidationSchema = (questions: Tables<'questions'>[]) => {
         validator = Yup.string();
     }
 
-    if (question.isRequired) {
+    if (question.is_required) {
       validator = validator.required('This field is required');
     }
 

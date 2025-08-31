@@ -16,7 +16,7 @@ import { CreateRequest } from '@/lib/supabase';
 interface RequestFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: CreateRequest) => Promise<void>;
+  onSubmit: (values: TablesInsert<'requests'>) => Promise<void>;
   isSubmitting: boolean;
   startupId?: string;
 }

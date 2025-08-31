@@ -13,7 +13,7 @@ interface UseStartupMethod {
 }
 
 interface UseStartupMethodReturn extends UseStartupMethod {
-  findPatternMethod: (startupId: string, patternId: string, methodId: string) => void;
+  findPatternMethod: (startupId: string, pattern_id: string, methodId: string) => void;
   createStartupMethod: (data: TablesInsert<'startup_methods'>) => void;
   updateStartupMethod: (data: TablesUpdate<'startup_methods'>) => void;
   clearError: () => void;
@@ -30,9 +30,9 @@ export default function useStartupMethod(): UseStartupMethodReturn {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const findPatternMethod = useCallback(async (startupId: string, patternId: string, methodId: string) => {
+  const findPatternMethod = useCallback(async (startupId: string, pattern_id: string, methodId: string) => {
     try {
-      const startupMethod = await supabaseFindStartupMethod(startupId, patternId, methodId);
+      const startupMethod = await supabaseFindStartupMethod(startupId, pattern_id, methodId);
       setState({ startupMethod, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

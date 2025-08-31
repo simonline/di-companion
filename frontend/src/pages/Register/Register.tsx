@@ -386,7 +386,7 @@ function Register() {
                             (touched.bio && errors.bio) ||
                             `${formProps.values.bio?.length || 0}/200 characters`
                           }
-                          inputProps={{ maxLength: 200 }}
+                          inputProps={{ max_length: 200 }}
                         />
                       </Grid>
                       <Grid item xs={12}>

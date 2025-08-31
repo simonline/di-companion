@@ -10,7 +10,7 @@ interface UseSurvey {
 
 interface UseSurveyReturn extends UseSurvey {
   fetchSurvey: (id: string) => void;
-  fetchSurveyByPattern: (patternId: string) => void;
+  fetchSurveyByPattern: (pattern_id: string) => void;
   fetchSurveyByName: (name: string) => void;
   clearError: () => void;
 }
@@ -36,7 +36,7 @@ export default function useSurvey(): UseSurveyReturn {
     }
   }, []);
 
-  const fetchSurveyByPattern = useCallback(async (patternId: string) => {
+  const fetchSurveyByPattern = useCallback(async (pattern_id: string) => {
     try {
       const pattern = await supabaseGetPattern(patternId);
       if (!pattern.survey) {

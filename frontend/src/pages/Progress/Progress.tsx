@@ -42,7 +42,7 @@ type FilterStatus = 'in_progress' | 'applied' | 'not_applied';
 export const getPatternStatus = (pattern: Tables<'startup_patterns'>): FilterStatus | null => {
   if (pattern.applied_at) {
     return 'applied';
-  } else if (pattern.responseType === ResponseTypeEnum.accept) {
+  } else if (pattern.response_type === ResponseTypeEnum.accept) {
     return 'in_progress';
   } else {
     return 'not_applied';

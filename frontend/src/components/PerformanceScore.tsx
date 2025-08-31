@@ -324,10 +324,10 @@ const PerformanceScore: React.FC = () => {
                     },
                   }}
                 >
-                  {recommendedPatterns[0].image?.url ? (
+                  {(recommendedPatterns[0] as any).image?.url ? (
                     <img
-                      src={recommendedPatterns[0].image.url}
-                      alt={recommendedPatterns[0].name}
+                      src={(recommendedPatterns[0] as any).image.url}
+                      alt={recommendedPatterns[0].name!}
                     />
                   ) : (
                     <Box

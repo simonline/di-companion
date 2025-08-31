@@ -127,7 +127,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
   };
 
   // Skip rendering if field is hidden
-  if (question.isHidden) {
+  if (question.is_hidden) {
     return null;
   }
 
@@ -135,11 +135,11 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
     fullWidth: true,
     label:
       question.question +
-      (question.isRequired ? ' *' : '') +
-      (question.maxLength ? ` (max. ${question.maxLength} characters)` : ''),
+      (question.is_required ? ' *' : '') +
+      (question.max_length ? ` (max. ${question.max_length} characters)` : ''),
     error: !!error,
     helperText: error,
-    inputProps: question.maxLength ? { maxLength: question.maxLength } : undefined,
+    inputProps: question.max_length ? { max_length: question.max_length } : undefined,
     InputLabelProps: {
       sx: {
         whiteSpace: 'normal',
@@ -151,14 +151,14 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
   const renderFieldWithHelp = (fieldComponent: React.ReactNode) => (
     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
       {fieldComponent}
-      {question.helpText && (
-        <HtmlTooltip title={question.helpText}>
+      {question.help_text && (
+        <HtmlTooltip title={question.help_text}>
           <IconButton size="small" sx={{ ml: 1 }}>
             <HelpOutlineIcon fontSize="small" />
           </IconButton>
         </HtmlTooltip>
       )}
-      {question.showRequestCoach && (
+      {question.show_request_coach && (
         <Tooltip title="Ask your coach for help" placement="right">
           <IconButton size="small" onClick={handleRequestCoach} sx={{ ml: 1 }}>
             <QuestionAnswerIcon fontSize="small" />
@@ -173,7 +173,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
       return (
         <FormControl component="fieldset" error={!!error} fullWidth>
           <FormLabel component="legend">
-            {question.question + (question.isRequired ? ' *' : '')}
+            {question.question + (question.is_required ? ' *' : '')}
           </FormLabel>
           <RadioGroup {...field} row>
             {Array.isArray(question.options) &&
@@ -197,7 +197,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
     case QuestionType.select:
       return (
         <FormControl fullWidth error={!!error}>
-          <FormLabel>{question.question + (question.isRequired ? ' *' : '')}</FormLabel>
+          <FormLabel>{question.question + (question.is_required ? ' *' : '')}</FormLabel>
           {renderFieldWithHelp(
             <Select {...field} sx={{ width: '100%' }}>
               {Array.isArray(question.options) &&
@@ -215,7 +215,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
     case QuestionType.select_multiple:
       return (
         <FormControl fullWidth error={!!error}>
-          <FormLabel>{question.question + (question.isRequired ? ' *' : '')}</FormLabel>
+          <FormLabel>{question.question + (question.is_required ? ' *' : '')}</FormLabel>
           {renderFieldWithHelp(
             <Select
               {...field}
@@ -254,7 +254,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
             {renderFieldWithHelp(
               <FormControlLabel
                 control={<Checkbox {...field} checked={field.value} />}
-                label={question.question + (question.isRequired ? ' *' : '')}
+                label={question.question + (question.is_required ? ' *' : '')}
               />,
             )}
           </FormGroup>
@@ -277,7 +277,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
       return (
         <FormControl component="fieldset" error={!!error} fullWidth>
           <FormLabel component="legend">
-            {question.question + (question.isRequired ? ' *' : '')}
+            {question.question + (question.is_required ? ' *' : '')}
           </FormLabel>
           {renderFieldWithHelp(
             <FormGroup>
@@ -315,7 +315,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
       return (
         <FormControl component="fieldset" error={!!error} fullWidth>
           <FormLabel component="legend">
-            {question.question + (question.isRequired ? ' *' : '')}
+            {question.question + (question.is_required ? ' *' : '')}
           </FormLabel>
           {renderFieldWithHelp(
             <DragDropContext onDragEnd={handleDragEnd}>
@@ -382,7 +382,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
       return (
         <FormControl component="fieldset" error={!!error} fullWidth>
           <FormLabel component="legend">
-            {question.question + (question.isRequired ? ' *' : '')}
+            {question.question + (question.is_required ? ' *' : '')}
           </FormLabel>
           {renderFieldWithHelp(
             <Box sx={{ width: '100%', px: 2, position: 'relative' }}>

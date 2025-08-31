@@ -26,19 +26,19 @@ import Header from '@/sections/Header';
 
 const initialValues: StartupFormValues = {
   name: '',
-  startDate: '',
+  start_date: '',
   founders_count: 1,
   background: '',
   idea: '',
-  productType: '',
+  product_type: '',
   industry: '',
-  targetMarket: '',
+  target_market: '',
   phase: '',
-  isProblemValidated: false,
-  qualifiedConversationsCount: 0,
-  isTargetGroupDefined: false,
-  isPrototypeValidated: false,
-  isMvpTested: false,
+  is_problem_validated: false,
+  qualified_conversations_count: 0,
+  is_target_group_defined: false,
+  is_prototype_validated: false,
+  is_mvp_tested: false,
 };
 
 function CreateStartup() {
@@ -111,20 +111,20 @@ function CreateStartup() {
                   }
                   await createStartup({
                     name: values.name,
-                    start_date: values.startDate,
+                    start_date: values.start_date,
                     founders_count: values.founders_count,
                     background: values.background,
                     idea: values.idea,
-                    product_type: values.productType,
+                    product_type: values.product_type,
                     industry: values.industry,
-                    industry_other: values.industryOther,
-                    target_market: values.targetMarket,
+                    industry_other: values.industry_other,
+                    target_market: values.target_market,
                     phase: values.phase,
-                    is_problem_validated: values.isProblemValidated,
-                    qualified_conversations_count: values.qualifiedConversationsCount,
-                    is_target_group_defined: values.isTargetGroupDefined,
-                    is_prototype_validated: values.isPrototypeValidated,
-                    is_mvp_tested: values.isMvpTested,
+                    is_problem_validated: values.is_problem_validated,
+                    qualified_conversations_count: values.qualified_conversations_count,
+                    is_target_group_defined: values.is_target_group_defined,
+                    is_prototype_validated: values.is_prototype_validated,
+                    is_mvp_tested: values.is_mvp_tested,
                     users: { set: [user.id] },
                   });
                   navigate('/startup');

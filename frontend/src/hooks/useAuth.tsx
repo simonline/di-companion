@@ -3,13 +3,14 @@ import {
   supabaseGetStartupPatterns,
   supabaseGetPatterns,
   supabaseGetStartup,
+  supabaseGetUserStartups,
   supabaseMe,
   supabaseLogin,
   supabaseLogout,
   supabaseRegister,
   supabaseCreateStartup,
   supabaseUpdateStartup,
-  supabaseUpdateUser,
+  supabaseUpdateProfile,
   supabaseSendOtp,
   supabaseVerifyOtp,
   getSession,
@@ -21,6 +22,7 @@ import { identifyUser } from '@/analytics/track';
 
 interface AuthState {
   user: User | null;
+  profile: Tables<'profiles'> | null;
   startup: Tables<'startups'> | null;
   loading: boolean;
   error: string | null;
@@ -34,6 +36,7 @@ interface UseAuthReturn extends AuthState {
   createStartup: (data: TablesInsert<'startups'>) => Promise<Tables<'startups'>>;
   updateStartup: (data: TablesUpdate<'startups'>) => Promise<Tables<'startups'>>;
   updateUser: (data: UserUpdate) => Promise<User>;
+  updateProfile: (data: TablesUpdate<'profiles'>) => Promise<Tables<'profiles'>>;
   updateScores: () => Promise<Record<CategoryEnum, number> | null>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -45,6 +48,7 @@ interface UseAuthReturn extends AuthState {
 export function useAuth(): UseAuthReturn {
   const [state, setState] = useState<AuthState>({
     user: null,
+    profile: null,
     startup: null,
     loading: true,
     error: null,
@@ -65,7 +69,7 @@ export function useAuth(): UseAuthReturn {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
         if (event === 'SIGNED_OUT') {
-          setUser(null);
+          setUserAndProfile(null, null);
           setStartup(null);
         }
       }
@@ -73,12 +77,20 @@ export function useAuth(): UseAuthReturn {
         console.log('Auth hook: SIGNED_IN event, fetching user data...');
         // Refresh user data when signed in
         try {
-          const userData = await supabaseMe();
-          console.log('Auth hook: User data fetched:', userData);
-          setUser(userData);
-          if (userData.startups && userData.startups.length > 0) {
-            const startup = await supabaseGetStartup(userData.startups[0].id);
-            setStartup(startup);
+          const { user, profile } = await supabaseMe();
+          console.log('Auth hook: User data fetched:', user, profile);
+          setUserAndProfile(user, profile);
+          // Query startups separately
+          if (user) {
+            const { data: startupLinks } = await supabase
+              .from('startups_users_lnk')
+              .select('startup_id')
+              .eq('user_id', user.id)
+              .limit(1);
+            if (startupLinks && startupLinks.length > 0) {
+              const startup = await supabaseGetStartup(startupLinks[0].startup_id);
+              setStartup(startup);
+            }
           }
           setState((prev) => ({ ...prev, loading: false }));
         } catch (error) {
@@ -132,12 +144,19 @@ export function useAuth(): UseAuthReturn {
 
             // Now fetch fresh data in the background
             try {
-              const userData = await supabaseMe();
-              setUser(userData);
+              const { user, profile } = await supabaseMe();
+              setUserAndProfile(user, profile);
 
               let startup: Tables<'startups'> | null = null;
-              if (userData.startups && userData.startups.length > 0) {
-                startup = await supabaseGetStartup(userData.startups[0].id);
+              if (user) {
+                const { data: startupLinks } = await supabase
+                  .from('startups_users_lnk')
+                  .select('startup_id')
+                  .eq('user_id', user.id)
+                  .limit(1);
+                if (startupLinks && startupLinks.length > 0) {
+                  startup = await supabaseGetStartup(startupLinks[0].startup_id);
+                }
               }
               setStartup(startup);
             } catch (error) {
@@ -152,12 +171,19 @@ export function useAuth(): UseAuthReturn {
 
             // Try to fetch fresh data
             try {
-              const userData = await supabaseMe();
-              setUser(userData);
+              const { user, profile } = await supabaseMe();
+              setUserAndProfile(user, profile);
 
               let startup: Tables<'startups'> | null = null;
-              if (userData.startups && userData.startups.length > 0) {
-                startup = await supabaseGetStartup(userData.startups[0].id);
+              if (user) {
+                const { data: startupLinks } = await supabase
+                  .from('startups_users_lnk')
+                  .select('startup_id')
+                  .eq('user_id', user.id)
+                  .limit(1);
+                if (startupLinks && startupLinks.length > 0) {
+                  startup = await supabaseGetStartup(startupLinks[0].startup_id);
+                }
               }
               setStartup(startup);
               setState((prev) => ({ ...prev, loading: false }));
@@ -175,8 +201,8 @@ export function useAuth(): UseAuthReturn {
         } else {
           // No cached data but we have a session, fetch fresh data
           try {
-            const userData = await supabaseMe();
-            setUser(userData);
+            const { user, profile } = await supabaseMe();
+            setUserAndProfile(user, profile);
 
             let startup: Tables<'startups'> | null = null;
             if (userData.startups && userData.startups.length > 0) {
@@ -212,8 +238,8 @@ export function useAuth(): UseAuthReturn {
     initAuth();
   }, []);
 
-  const setUser = useCallback((userData: Tables<'users'> | null) => {
-    setState((prev) => ({ ...prev, user: userData, error: null }));
+  const setUserAndProfile = useCallback((userData: User | null, profileData: Tables<'profiles'> | null) => {
+    setState((prev) => ({ ...prev, user: userData, profile: profileData, error: null }));
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData));
       identifyUser(userData.id);
@@ -242,13 +268,13 @@ export function useAuth(): UseAuthReturn {
       try {
         const { user: userData } = await supabaseLogin(identifier, password);
         // Session is now handled by Supabase
-        setUser(userData);
+        setUserAndProfile(user, profile);
         let startup: Tables<'startups'> | null = null;
         if (userData.startups && userData.startups.length > 0) {
           startup = await supabaseGetStartup(userData.startups[0].id);
         }
         setStartup(startup);
-        return userData;
+        return user;
       } catch (error) {
         const err = error as Error;
         setState((prev) => ({
@@ -261,7 +287,7 @@ export function useAuth(): UseAuthReturn {
         setState((prev) => ({ ...prev, loading: false }));
       }
     },
-    [setUser, setStartup],
+    [setUserAndProfile, setStartup],
   );
 
   const sendOtp = useCallback(
@@ -289,10 +315,17 @@ export function useAuth(): UseAuthReturn {
     async (email: string, token: string): Promise<void> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const { user: userData } = await supabaseVerifyOtp(email, token);
-        setUser(userData);
-        if (userData.startups && userData.startups.length > 0) {
-          const startup = await supabaseGetStartup(userData.startups[0].id);
+        const { user, profile } = await supabaseVerifyOtp(email, token);
+        setUserAndProfile(user, profile);
+        if (user) {
+          const { data: startupLinks } = await supabase
+            .from('startups_users_lnk')
+            .select('startup_id')
+            .eq('user_id', user.id)
+            .limit(1);
+          if (startupLinks && startupLinks.length > 0) {
+            const startup = await supabaseGetStartup(startupLinks[0].startup_id);
+          }
           setStartup(startup);
         }
       } catch (error) {
@@ -307,18 +340,18 @@ export function useAuth(): UseAuthReturn {
         setState((prev) => ({ ...prev, loading: false }));
       }
     },
-    [setUser, setStartup],
+    [setUserAndProfile, setStartup],
   );
 
   const register = useCallback(
-    async (data: UserCreate): Promise<User> => {
+    async (data: UserCreate & TablesInsert<'profiles'>): Promise<User> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const result = await supabaseRegister(data);
         // JWT token is stored by supabaseRegister function
-        const userData: Tables<'users'> = result.user;
-        // setUser(userData);
-        return userData;
+        const { user, profile } = result;
+        setUserAndProfile(user, profile);
+        return user;
       } catch (error) {
         const err = error as Error;
         setState((prev) => ({
@@ -335,7 +368,7 @@ export function useAuth(): UseAuthReturn {
   );
 
   const createStartup = useCallback(
-    async (data: CreateStartup): Promise<Startup> => {
+    async (data: TablesInsert<'startups'>): Promise<Tables<'startups'>> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const startup = await supabaseCreateStartup(data);
@@ -357,7 +390,7 @@ export function useAuth(): UseAuthReturn {
   );
 
   const updateStartup = useCallback(
-    async (data: UpdateStartup): Promise<Startup> => {
+    async (data: TablesUpdate<'startups'>): Promise<Tables<'startups'>> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const startup = await supabaseUpdateStartup(data);
@@ -378,19 +411,19 @@ export function useAuth(): UseAuthReturn {
     [setStartup],
   );
 
-  const updateUser = useCallback(
-    async (data: UpdateUser): Promise<User> => {
+  const updateProfile = useCallback(
+    async (data: TablesUpdate<'profiles'>): Promise<Tables<'profiles'>> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const updatedUser = await supabaseUpdateUser(data);
-        console.log('Updated user:', updatedUser);
+        const updatedProfile = await supabaseUpdateProfile(data);
+        console.log('Updated profile:', updatedProfile);
 
         // Merge the updated user data with existing user data to preserve all properties
         setState((prev) => {
           if (prev.user) {
-            const mergedUser = { ...prev.user, ...updatedUser };
+            const mergedProfile = { ...prev.profile, ...updatedProfile };
             localStorage.setItem('user', JSON.stringify(mergedUser));
-            return { ...prev, user: mergedUser, loading: false };
+            return { ...prev, profile: mergedProfile, loading: false };
           } else {
             localStorage.setItem('user', JSON.stringify(updatedUser));
             return { ...prev, user: updatedUser, loading: false };
@@ -399,7 +432,7 @@ export function useAuth(): UseAuthReturn {
 
         // Return the updated user data (API response)
         // This doesn't include the merge as the setState hasn't necessarily applied yet
-        return updatedUser;
+        return updatedProfile;
       } catch (error) {
         const err = error as Error;
         setState((prev) => ({
@@ -419,7 +452,7 @@ export function useAuth(): UseAuthReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       await supabaseLogout();
-      setUser(null);
+      setUserAndProfile(null, null);
       setStartup(null);
     } catch (error) {
       const err = error as Error;
@@ -429,13 +462,13 @@ export function useAuth(): UseAuthReturn {
         loading: false,
       }));
       // Even if the server-side logout fails, clear local state
-      setUser(null);
+      setUserAndProfile(null, null);
       setStartup(null);
       throw error;
     } finally {
       setState((prev) => ({ ...prev, loading: false }));
     }
-  }, [setUser, setStartup]);
+  }, [setUserAndProfile, setStartup]);
 
   const updateScores = useCallback(async (): Promise<Record<CategoryEnum, number> | null> => {
     // Get current state values to ensure we're working with the latest data
@@ -526,13 +559,19 @@ export function useAuth(): UseAuthReturn {
   const refreshData = useCallback(async () => {
     console.log('Refreshing data');
     try {
-      const user = await supabaseMe();
+      const userData = await supabaseMe();
       let startup: Tables<'startups'> | null = null;
-      if (user.startups && user.startups.length > 0) {
-        startup = await supabaseGetStartup(user.startups[0].id);
+
+      // Fetch user's startups separately
+      if (userData.user?.id) {
+        const startups = await supabaseGetUserStartups(userData.user.id);
+        if (startups.length > 0) {
+          startup = await supabaseGetStartup(startups[0].id);
+        }
       }
+
       console.log(startup);
-      setState((prev) => ({ ...prev, user, startup, loading: false }));
+      setState((prev) => ({ ...prev, user: userData.user, profile: userData.profile, startup, loading: false }));
     } catch (error) {
       setState((prev) => ({ ...prev, loading: false }));
     }
@@ -546,7 +585,7 @@ export function useAuth(): UseAuthReturn {
     register,
     createStartup,
     updateStartup,
-    updateUser,
+    updateProfile,
     updateScores,
     logout,
     isAuthenticated: !!state.user,

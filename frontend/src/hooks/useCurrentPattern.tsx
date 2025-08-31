@@ -21,7 +21,7 @@ interface CurrentPatternProviderProps {
 }
 
 export const CurrentPatternProvider: React.FC<CurrentPatternProviderProps> = ({ children }) => {
-    const [currentPattern, setCurrentPattern] = useState<Pattern | null>(null);
+    const [currentPattern, setCurrentPattern] = useState<Tables<'patterns'> | null>(null);
 
     return (
         <CurrentPatternContext.Provider value={{ currentPattern, setCurrentPattern }}>

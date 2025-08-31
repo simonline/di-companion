@@ -50,7 +50,7 @@ type SortField = 'name' | 'interactions';
 type SortOrder = 'asc' | 'desc';
 
 interface DateRange {
-    startDate: Date;
+    start_date: Date;
     endDate: Date;
 }
 
@@ -60,7 +60,7 @@ interface UniqueUser {
 }
 
 interface PatternInteraction {
-    patternId: string;
+    pattern_id: string;
     patternName: string;
     lastInteraction: Date;
     category?: CategoryEnum;
@@ -210,7 +210,7 @@ export default function AnalyticsView() {
     const [timeFilter, setTimeFilter] = useState<TimeFilter>('thisMonth');
     const [startupFilter, setStartupFilter] = useState<StartupFilter>('my');
     const [dateRange, setDateRange] = useState<DateRange>({
-        startDate: startOfMonth(new Date()),
+        start_date: startOfMonth(new Date()),
         endDate: new Date(),
     });
     const [analytics, setAnalytics] = useState<StartupAnalytics[]>([]);
@@ -224,7 +224,7 @@ export default function AnalyticsView() {
     // Fetch coachees when user is available
     useEffect(() => {
         const fetchCoachees = async () => {
-            if (user?.id && user?.is_coach) {
+            if (user?.id && profile?.is_coach) {
                 try {
                     const { data, error } = await supabase
                         .from('startups')
@@ -241,7 +241,7 @@ export default function AnalyticsView() {
         };
 
         fetchCoachees();
-    }, [user?.id, user?.is_coach]);
+    }, [user?.id, profile?.is_coach]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -287,7 +287,7 @@ export default function AnalyticsView() {
                         // Add pattern interaction
                         const interactionDate = new Date(pattern.created_at);
                         analytics.patternInteractions.push({
-                            patternId: pattern.pattern?.id,
+                            pattern_id: pattern.pattern?.id,
                             patternName: pattern.pattern?.name || 'Unnamed Pattern',
                             lastInteraction: interactionDate,
                             category: pattern.pattern?.category as CategoryEnum,
@@ -359,31 +359,31 @@ export default function AnalyticsView() {
         switch (value) {
             case 'thisWeek':
                 setDateRange({
-                    startDate: startOfWeek(now, { locale: de }),
+                    start_date: startOfWeek(now, { locale: de }),
                     endDate: now,
                 });
                 break;
             case 'lastWeek':
                 setDateRange({
-                    startDate: startOfWeek(subWeeks(now, 1), { locale: de }),
+                    start_date: startOfWeek(subWeeks(now, 1), { locale: de }),
                     endDate: endOfWeek(subWeeks(now, 1), { locale: de }),
                 });
                 break;
             case 'thisMonth':
                 setDateRange({
-                    startDate: startOfMonth(now),
+                    start_date: startOfMonth(now),
                     endDate: now,
                 });
                 break;
             case 'lastMonth':
                 setDateRange({
-                    startDate: startOfMonth(subMonths(now, 1)),
+                    start_date: startOfMonth(subMonths(now, 1)),
                     endDate: endOfMonth(subMonths(now, 1)),
                 });
                 break;
             case 'thisYear':
                 setDateRange({
-                    startDate: startOfYear(now),
+                    start_date: startOfYear(now),
                     endDate: now,
                 });
                 break;
@@ -459,10 +459,10 @@ export default function AnalyticsView() {
                                         <TextField
                                             label="Von"
                                             type="date"
-                                            value={dateRange.startDate.toISOString().split('T')[0]}
+                                            value={dateRange.start_date.toISOString().split('T')[0]}
                                             onChange={(e) => setDateRange(prev => ({
                                                 ...prev,
-                                                startDate: new Date(e.target.value),
+                                                start_date: new Date(e.target.value),
                                             }))}
                                             InputLabelProps={{ shrink: true }}
                                         />
@@ -634,10 +634,10 @@ export default function AnalyticsView() {
                                     {/* Group patterns by pattern ID and show unique patterns */}
                                     {Array.from(new Map(
                                         selectedStartup.patternInteractions.map(interaction =>
-                                            [interaction.patternId, interaction]
+                                            [interaction.pattern_id, interaction]
                                         )
                                     ).values()).map((interaction) => (
-                                        <ListItem key={interaction.patternId} sx={{ p: 0, mb: 2 }}>
+                                        <ListItem key={interaction.pattern_id} sx={{ p: 0, mb: 2 }}>
                                             <PatternInteractionListItem interaction={interaction} />
                                         </ListItem>
                                     ))}

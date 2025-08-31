@@ -75,7 +75,7 @@ const StartupTeam: React.FC = () => {
   const { startupId } = useParams<{ startupId: string }>();
   const navigate = useNavigate();
   const { user } = useAuthContext();
-  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [invitations, setInvitations] = useState<Tables<'invitations'>[]>([]);
   const [members, setMembers] = useState<User[]>([]);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -91,7 +91,7 @@ const StartupTeam: React.FC = () => {
     severity: 'info',
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
+  const [selectedInvitation, setSelectedInvitation] = useState<Tables<'invitations'> | null>(null);
 
   const baseUrl = window.location.origin;
 

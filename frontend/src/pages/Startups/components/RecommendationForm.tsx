@@ -20,11 +20,17 @@ import * as Yup from 'yup';
 import { Tables, TablesInsert, TablesUpdate } from '@/types/database';
 import useSearch from '@/hooks/useSearch';
 import { useAuthContext } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
+
+type RecommendationWithPatterns = Tables<'recommendations'> & {
+  patterns?: Tables<'patterns'>[];
+};
+
 interface RecommendationFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: TablesInsert<'recommendations'> | TablesUpdate<'recommendations'>) => Promise<void>;
-  initialValues?: Tables<'recommendations'>;
+  onSubmit: (values: TablesInsert<'recommendations'> | TablesUpdate<'recommendations'>, patternIds: string[]) => Promise<void>;
+  initialValues?: RecommendationWithPatterns;
   isSubmitting?: boolean;
   startupId: string;
 }
@@ -53,19 +59,36 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
   const { SearchComponent, searchResults } = useSearch();
   const isEditMode = Boolean(initialValues?.id);
   const [selectedPatterns, setSelectedPatterns] = useState<Tables<'patterns'>[]>([]);
-  // Synchronize selectedPatterns when initialValues changes
+  
+  // Fetch patterns when editing a recommendation or use provided patterns
   useEffect(() => {
-    setSelectedPatterns(initialValues?.patterns || []);
-  }, [initialValues?.patterns]);
+    const fetchPatterns = async () => {
+      if (initialValues?.patterns) {
+        // Use patterns provided in initialValues
+        setSelectedPatterns(initialValues.patterns);
+      } else if (isEditMode && initialValues?.id) {
+        // Fetch patterns from the link table
+        const { data } = await supabase
+          .from('recommendations_patterns_lnk')
+          .select('pattern_id, patterns(*)')
+          .eq('recommendation_id', initialValues.id);
+        
+        if (data) {
+          const patterns = data.map((item: any) => item.patterns).filter(Boolean);
+          setSelectedPatterns(patterns);
+        }
+      }
+    };
+    
+    fetchPatterns();
+  }, [initialValues?.id, initialValues?.patterns, isEditMode]);
 
   const formik = useFormik({
     initialValues: {
       id: initialValues?.id || '',
       comment: initialValues?.comment || '',
       type: initialValues?.type || 'pattern',
-      patterns: initialValues?.patterns
-        ? initialValues.patterns.map((pattern: any) => pattern.id)
-        : [],
+      patterns: selectedPatterns.map(p => p.id),
       coach: user?.id,
       startup: startupId,
       read_at: initialValues?.read_at,
@@ -75,10 +98,10 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
     onSubmit: async (values) => {
       try {
         // Create different objects based on whether we're creating or updating
+        // Create recommendation data without patterns
         const baseData = {
           comment: values.comment,
           type: values.type,
-          patterns: { set: values.patterns },
           coach: values.coach,
           startup: values.startup,
           read_at: values.read_at,
@@ -97,7 +120,8 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
           formattedValues = baseData as TablesInsert<'recommendations'>;
         }
 
-        await onSubmit(formattedValues);
+        // Pass pattern IDs separately
+        await onSubmit(formattedValues, values.patterns);
         onClose();
       } catch (error) {
         console.error('Form submission error:', error);

@@ -19,8 +19,8 @@ interface UseRecommendations {
 
 interface UseRecommendationsReturn extends UseRecommendations {
   fetchRecommendations: (startupId?: string) => void;
-  createRecommendation: (data: TablesInsert<'recommendations'>) => Promise<Tables<'recommendations'>>;
-  updateRecommendation: (data: TablesUpdate<'recommendations'>) => Promise<Tables<'recommendations'>>;
+  createRecommendation: (data: TablesInsert<'recommendations'>, patternIds?: string[]) => Promise<Tables<'recommendations'>>;
+  updateRecommendation: (data: TablesUpdate<'recommendations'>, patternIds?: string[]) => Promise<Tables<'recommendations'>>;
   deleteRecommendation: (id: string) => Promise<void>;
   clearError: () => void;
 }
@@ -47,9 +47,9 @@ export default function useRecommendations(): UseRecommendationsReturn {
     }
   }, []);
 
-  const createRecommendation = useCallback(async (data: TablesInsert<'recommendations'>) => {
+  const createRecommendation = useCallback(async (data: TablesInsert<'recommendations'>, patternIds?: string[]) => {
     try {
-      const newRecommendation = await supabaseCreateRecommendation(data);
+      const newRecommendation = await supabaseCreateRecommendation(data, patternIds);
       setState((prev) => ({
         ...prev,
         recommendations: prev.recommendations
@@ -64,9 +64,9 @@ export default function useRecommendations(): UseRecommendationsReturn {
     }
   }, []);
 
-  const updateRecommendation = useCallback(async (data: TablesUpdate<'recommendations'>) => {
+  const updateRecommendation = useCallback(async (data: TablesUpdate<'recommendations'>, patternIds?: string[]) => {
     try {
-      const updatedRecommendation = await supabaseUpdateRecommendation(data);
+      const updatedRecommendation = await supabaseUpdateRecommendation(data, patternIds);
       setState((prev) => ({
         ...prev,
         recommendations:

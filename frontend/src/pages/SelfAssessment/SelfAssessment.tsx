@@ -105,7 +105,7 @@ const SelfAssessment: React.FC = () => {
         );
 
         // Skip if answer is empty and question is not required
-        if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.isRequired) continue;
+        if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) continue;
 
         // Skip if answer hasn't changed
         if (existingResponse) {

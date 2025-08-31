@@ -39,7 +39,7 @@ export default function useUserQuestions(): UseUserQuestionsReturn {
                 const userQuestions = await supabaseGetUserQuestions(
                     startupId,
                     userId,
-                    patternId,
+                    pattern_id,
                 );
                 setState({ userQuestions, loading: false, error: null });
             } catch (err: unknown) {

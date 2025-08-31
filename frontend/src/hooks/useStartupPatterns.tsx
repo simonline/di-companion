@@ -29,7 +29,7 @@ export default function useStartupPatterns(): UseStartupPatternsReturn {
       try {
         const startupPatterns = await supabaseGetStartupPatterns(
           startupId,
-          patternId,
+          pattern_id,
         );
 
         // Get only latest (created_at) patterns for each combination of startup/pattern (id)

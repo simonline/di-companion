@@ -20,50 +20,50 @@ import { OnboardingStepProps } from '../OnboardingFlow';
 
 interface StartupFormValues {
   name: string;
-  startDate: string;
+  start_date: string;
   founders_count: number;
   background: string;
   idea: string;
-  productType: string;
+  product_type: string;
   industry: string;
   industryOther?: string;
-  targetMarket: string;
+  target_market: string;
   phase: string;
-  isProblemValidated: boolean;
-  qualifiedConversationsCount: number;
-  isTargetGroupDefined: boolean;
-  isPrototypeValidated: boolean;
-  isMvpTested: boolean;
+  is_problem_validated: boolean;
+  qualified_conversations_count: number;
+  is_target_group_defined: boolean;
+  is_prototype_validated: boolean;
+  is_mvp_tested: boolean;
 }
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Startup name is required'),
-  startDate: Yup.date().required('Start date is required'),
+  start_date: Yup.date().required('Start date is required'),
   founders_count: Yup.number().min(0, 'Must be 0 or greater').required('Number of founders is required'),
   background: Yup.string().required('Team background information is required'),
   idea: Yup.string().max(200, 'Must be 200 characters or less').required('Idea description is required'),
-  productType: Yup.string().oneOf(['product', 'service', 'platform'], 'Please select a valid product type').required('Product type is required'),
+  product_type: Yup.string().oneOf(['product', 'service', 'platform'], 'Please select a valid product type').required('Product type is required'),
   industry: Yup.string().required('Industry is required'),
-  targetMarket: Yup.string().oneOf(['b2b', 'b2c'], 'Must be either B2B or B2C').required('Target market is required'),
+  target_market: Yup.string().oneOf(['b2b', 'b2c'], 'Must be either B2B or B2C').required('Target market is required'),
   phase: Yup.string().oneOf(['start', 'discover_explore', 'transform', 'create', 'implement'], 'Please select a valid phase').required('Current phase is required'),
-  qualifiedConversationsCount: Yup.number().min(0, 'Must be 0 or greater'),
+  qualified_conversations_count: Yup.number().min(0, 'Must be 0 or greater'),
 });
 
 const initialValues: StartupFormValues = {
   name: '',
-  startDate: '',
+  start_date: '',
   founders_count: 1,
   background: '',
   idea: '',
-  productType: '',
+  product_type: '',
   industry: '',
-  targetMarket: '',
+  target_market: '',
   phase: '',
-  isProblemValidated: false,
-  qualifiedConversationsCount: 0,
-  isTargetGroupDefined: false,
-  isPrototypeValidated: false,
-  isMvpTested: false,
+  is_problem_validated: false,
+  qualified_conversations_count: 0,
+  is_target_group_defined: false,
+  is_prototype_validated: false,
+  is_mvp_tested: false,
 };
 
 const FieldWithTooltip = ({ tooltip, children }: { tooltip: string; children: React.ReactNode }) => (
@@ -100,20 +100,20 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
     try {
       await createStartup({
         name: values.name,
-        start_date: values.startDate,
+        start_date: values.start_date,
         founders_count: values.founders_count,
         background: values.background,
         idea: values.idea,
-        product_type: values.productType,
+        product_type: values.product_type,
         industry: values.industry,
-        industry_other: values.industryOther,
-        target_market: values.targetMarket,
+        industry_other: values.industry_other,
+        target_market: values.target_market,
         phase: values.phase,
-        is_problem_validated: values.isProblemValidated,
-        qualified_conversations_count: values.qualifiedConversationsCount,
-        is_target_group_defined: values.isTargetGroupDefined,
-        is_prototype_validated: values.isPrototypeValidated,
-        is_mvp_tested: values.isMvpTested,
+        is_problem_validated: values.is_problem_validated,
+        qualified_conversations_count: values.qualified_conversations_count,
+        is_target_group_defined: values.is_target_group_defined,
+        is_prototype_validated: values.is_prototype_validated,
+        is_mvp_tested: values.is_mvp_tested,
       });
 
       // Move to completion
@@ -176,11 +176,11 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                         name="startDate"
                         label="Start Date"
                         type="date"
-                        value={values.startDate}
+                        value={values.start_date}
                         onChange={(e) => setFieldValue('startDate', e.target.value)}
                         InputLabelProps={{ shrink: true }}
-                        error={touched.startDate && Boolean(errors.startDate)}
-                        helperText={touched.startDate && errors.startDate}
+                        error={touched.start_date && Boolean(errors.start_date)}
+                        helperText={touched.start_date && errors.start_date}
                       />
                     </FieldWithTooltip>
                   </Grid>
@@ -250,7 +250,7 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                         error={touched.idea && Boolean(errors.idea)}
                         helperText={touched.idea && errors.idea}
                         placeholder="Describe your startup idea in a few sentences (max 200 characters)"
-                        inputProps={{ maxLength: 200 }}
+                        inputProps={{ max_length: 200 }}
                       />
                     </FieldWithTooltip>
                   </Grid>
@@ -271,10 +271,10 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                         fullWidth
                         name="productType"
                         label="What are you building?"
-                        value={values.productType}
+                        value={values.product_type}
                         onChange={(e) => setFieldValue('productType', e.target.value)}
-                        error={touched.productType && Boolean(errors.productType)}
-                        helperText={touched.productType && errors.productType}
+                        error={touched.product_type && Boolean(errors.product_type)}
+                        helperText={touched.product_type && errors.product_type}
                       >
                         <MenuItem value="product">Physical Product</MenuItem>
                         <MenuItem value="service">Service</MenuItem>
@@ -310,7 +310,7 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                         fullWidth
                         name="industryOther"
                         label="Please specify your industry"
-                        value={values.industryOther || ''}
+                        value={values.industry_other || ''}
                         onChange={(e) => setFieldValue('industryOther', e.target.value)}
                       />
                     </Grid>
@@ -323,10 +323,10 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                         fullWidth
                         name="targetMarket"
                         label="Target Market"
-                        value={values.targetMarket}
+                        value={values.target_market}
                         onChange={(e) => setFieldValue('targetMarket', e.target.value)}
-                        error={touched.targetMarket && Boolean(errors.targetMarket)}
-                        helperText={touched.targetMarket && errors.targetMarket}
+                        error={touched.target_market && Boolean(errors.target_market)}
+                        helperText={touched.target_market && errors.target_market}
                       >
                         <MenuItem value="b2b">Business to Business (B2B)</MenuItem>
                         <MenuItem value="b2c">Business to Consumer (B2C)</MenuItem>
@@ -372,7 +372,7 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                       control={
                         <Checkbox
                           name="isProblemValidated"
-                          checked={values.isProblemValidated}
+                          checked={values.is_problem_validated}
                           onChange={(e) => setFieldValue('isProblemValidated', e.target.checked)}
                         />
                       }
@@ -387,7 +387,7 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                         name="qualifiedConversationsCount"
                         label="Customer Interviews Conducted"
                         type="number"
-                        value={values.qualifiedConversationsCount}
+                        value={values.qualified_conversations_count}
                         onChange={(e) => setFieldValue('qualifiedConversationsCount', Number(e.target.value))}
                       />
                     </FieldWithTooltip>
@@ -398,7 +398,7 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                       control={
                         <Checkbox
                           name="isTargetGroupDefined"
-                          checked={values.isTargetGroupDefined}
+                          checked={values.is_target_group_defined}
                           onChange={(e) => setFieldValue('isTargetGroupDefined', e.target.checked)}
                         />
                       }
@@ -411,7 +411,7 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                       control={
                         <Checkbox
                           name="isPrototypeValidated"
-                          checked={values.isPrototypeValidated}
+                          checked={values.is_prototype_validated}
                           onChange={(e) => setFieldValue('isPrototypeValidated', e.target.checked)}
                         />
                       }
@@ -424,7 +424,7 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                       control={
                         <Checkbox
                           name="isMvpTested"
-                          checked={values.isMvpTested}
+                          checked={values.is_mvp_tested}
                           onChange={(e) => setFieldValue('isMvpTested', e.target.checked)}
                         />
                       }

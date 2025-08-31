@@ -8,7 +8,7 @@ import Header from '@/sections/Header';
 import { useCurrentPattern } from '@/hooks/useCurrentPattern';
 
 const Progress: React.FC = () => {
-  const { id: patternId } = useParams<{ id: string }>();
+  const { id: pattern_id } = useParams<{ id: string }>();
   const { fetchPattern, pattern, loading, error } = usePattern();
   const navigate = useNavigate();
   const { setCurrentPattern } = useCurrentPattern();

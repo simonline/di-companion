@@ -17,11 +17,11 @@ import { useChatContext } from '@/components/Chat/ChatContext';
 
 function Menu() {
   const { pathname } = useLocation();
-  const { user } = useAuthContext();
+  const { profile } = useAuthContext();
   const { isMobileKeyboardVisible } = useChatContext();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isCoach = user?.is_coach || false;
+  const isCoach = profile?.is_coach || false;
   const userType = isCoach ? 'coach' : 'startup';
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
 

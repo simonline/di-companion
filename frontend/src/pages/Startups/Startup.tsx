@@ -131,19 +131,19 @@ export default function StartupView() {
     setIsFormOpen(true);
   };
 
-  const handleFormSubmit = async (values: TablesInsert<'recommendations'> | TablesUpdate<'recommendations'>) => {
+  const handleFormSubmit = async (values: TablesInsert<'recommendations'> | TablesUpdate<'recommendations'>, patternIds: string[]) => {
     setIsSubmitting(true);
     try {
       if ('id' in values && values.id) {
         // Update
-        await updateRecommendation(values as TablesUpdate<'recommendations'>);
+        await updateRecommendation(values as TablesUpdate<'recommendations'>, patternIds);
         setNotification({
           message: 'Recommendation updated successfully',
           severity: 'success',
         });
       } else {
         // Create
-        await createRecommendation(values as TablesInsert<'recommendations'>);
+        await createRecommendation(values as TablesInsert<'recommendations'>, patternIds);
         setNotification({
           message: 'Recommendation created successfully',
           severity: 'success',

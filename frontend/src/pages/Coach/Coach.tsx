@@ -23,7 +23,7 @@ import RequestForm from './components/RequestForm';
 
 export const Coach: React.FC = () => {
   const navigate = useNavigate();
-  const { startup, user } = useAuthContext();
+  const { startup, profile } = useAuthContext();
   const coach = startup?.coach;
   const { fetchRecommendations, updateRecommendation, recommendations, loading, error } =
     useRecommendations();
@@ -43,7 +43,7 @@ export const Coach: React.FC = () => {
   }, [fetchRecommendations, startup]);
 
   // Redirect to Startups view if user is a coach
-  if (user?.is_coach) {
+  if (profile?.is_coach) {
     return <Navigate to="/startups" replace />;
   }
 

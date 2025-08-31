@@ -41,7 +41,7 @@ interface OnboardingStep {
 
 const User: React.FC = () => {
   const navigate = useNavigate();
-  const { user, startup } = useAuthContext();
+  const { user, profile, startup } = useAuthContext();
   const { getRecommendedPatterns, recommendedPatterns, loading } = useRecommendedPatterns(CategoryEnum.entrepreneur);
   const [onboardingSteps, setOnboardingSteps] = useState<OnboardingStep[]>([]);
 
@@ -53,15 +53,15 @@ const User: React.FC = () => {
   useEffect(() => {
     // Determine completion status for each step
     const profileCompleted = !!(
-      user?.given_name &&
-      user?.family_name &&
+      profile?.given_name &&
+      profile?.family_name &&
       user?.email
     );
 
     // Check if user has completed assessment (we'll check if they have bio or position as proxy)
     const assessmentCompleted = !!(
-      user?.bio ||
-      user?.position
+      profile?.bio ||
+      profile?.position
     );
 
     const startupCompleted = !!(startup?.id);
@@ -100,14 +100,14 @@ const User: React.FC = () => {
         completed: startupCompleted,
       },
     ]);
-  }, [user, startup]);
+  }, [user, profile, startup]);
 
   const completedSteps = onboardingSteps.filter(step => step.completed).length;
   const totalSteps = onboardingSteps.length;
   const progressPercentage = (completedSteps / totalSteps) * 100;
 
-  const avatarUrl = getAvatarUrl(user?.avatar_url);
-  const userInitials = `${user?.given_name?.charAt(0) || ''}${user?.family_name?.charAt(0) || ''}`;
+  const avatarUrl = profile ? getAvatarUrl(profile.avatar_id) : undefined;
+  const userInitials = `${profile?.given_name?.charAt(0) || ''}${profile?.family_name?.charAt(0) || ''}`;
 
   return (
     <>
@@ -122,13 +122,13 @@ const User: React.FC = () => {
                 <Avatar
                   src={avatarUrl}
                   sx={{ width: 60, height: 60 }}
-                  alt={`${user?.given_name} ${user?.family_name}`}
+                  alt={`${profile?.given_name} ${profile?.family_name}`}
                 >
-                  {userInitials || user?.username?.charAt(0).toUpperCase()}
+                  {userInitials || user?.email?.charAt(0).toUpperCase()}
                 </Avatar>
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="h5" fontWeight="700">
-                    {user?.given_name} {user?.family_name}
+                    {profile?.given_name} {profile?.family_name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                     Welcome! Let's set up your innovation toolkit and get you started
@@ -312,10 +312,10 @@ const User: React.FC = () => {
                     },
                   }}
                 >
-                  {recommendedPatterns[0].image?.url ? (
+                  {(recommendedPatterns[0] as any).image?.url ? (
                     <img
-                      src={recommendedPatterns[0].image.url}
-                      alt={recommendedPatterns[0].name}
+                      src={(recommendedPatterns[0] as any).image.url}
+                      alt={recommendedPatterns[0].name!}
                     />
                   ) : (
                     <Box

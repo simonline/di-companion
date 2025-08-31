@@ -62,7 +62,7 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
     return array[Math.floor(Math.random() * array.length)];
   };
 
-  const getRecommendedCategory = useCallback((startup: Startup, excludedCategories: CategoryEnum[] = []): CategoryEnum | null => {
+  const getRecommendedCategory = useCallback((startup: Tables<'startups'>, excludedCategories: CategoryEnum[] = []): CategoryEnum | null => {
     if (!startup?.scores) {
       // If filtering for non-entrepreneur, return a random non-entrepreneur category
       if (isExcludeEntrepreneur(categoryFilter)) {

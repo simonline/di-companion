@@ -48,20 +48,20 @@ function StartupEdit() {
   // Convert Startup type to StartupFormValues for the form
   const initialValues: StartupFormValues = {
     name: startup.name || '',
-    startDate: startup.startDate || '',
+    start_date: startup.start_date || '',
     founders_count: startup.founders_count || 1,
     background: startup.background || '',
     idea: startup.idea || '',
-    productType: startup.productType || '',
+    product_type: startup.product_type || '',
     industry: startup.industry || '',
-    industryOther: startup.industryOther || '',
-    targetMarket: startup.targetMarket || '',
+    industry_other: startup.industry_other || '',
+    target_market: startup.target_market || '',
     phase: startup.phase || '',
-    isProblemValidated: startup.isProblemValidated || false,
-    qualifiedConversationsCount: startup.qualifiedConversationsCount || 0,
-    isTargetGroupDefined: startup.isTargetGroupDefined || false,
-    isPrototypeValidated: startup.isPrototypeValidated || false,
-    isMvpTested: startup.isMvpTested || false,
+    is_problem_validated: startup.is_problem_validated || false,
+    qualified_conversations_count: startup.qualified_conversations_count || 0,
+    is_target_group_defined: startup.is_target_group_defined || false,
+    is_prototype_validated: startup.is_prototype_validated || false,
+    is_mvp_tested: startup.is_mvp_tested || false,
   };
 
   const handleSubmit = async (
