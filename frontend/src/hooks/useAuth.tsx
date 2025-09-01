@@ -122,7 +122,7 @@ export function useAuth(): UseAuthReturn {
       subscription.unsubscribe();
       clearInterval(tokenCheckInterval);
     };
-  });
+  }, [checkTokenExpiration, state.user]);
 
   // Initialize user/startup from localStorage first, then validate with Supabase session
   // Note: We intentionally omit setUser and setStartup from deps to avoid infinite loops
@@ -249,7 +249,7 @@ export function useAuth(): UseAuthReturn {
     };
 
     initAuth();
-  });
+  }, []);
 
   const setUserAndProfile = useCallback((userData: User | null, profileData: Profile | null) => {
     setState((prev) => ({ ...prev, user: userData, profile: profileData, error: null }));

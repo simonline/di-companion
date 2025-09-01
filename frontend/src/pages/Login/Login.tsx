@@ -51,9 +51,9 @@ const Login: React.FC = () => {
           shouldCreateUser: false, // Don't create new users
         },
       });
-      
+
       if (error) throw error;
-      
+
       setEmail(values.email);
       setEmailSent(true);
       push({
@@ -83,19 +83,19 @@ const Login: React.FC = () => {
         token: values.otp,
         type: 'email',
       });
-      
+
       if (error) throw error;
-      
+
       // Check if session was established
       if (!data.session) {
         throw new Error('Failed to establish session');
       }
-      
+
       push({
         message: 'Successfully signed in!',
         options: { variant: 'success' }
       });
-      
+
       // The auth context will handle the redirect
       navigate('/', { replace: true });
     } catch (err) {
@@ -119,9 +119,9 @@ const Login: React.FC = () => {
           shouldCreateUser: false,
         },
       });
-      
+
       if (error) throw error;
-      
+
       push({
         message: 'New OTP code sent! Check your email.',
         options: { variant: 'success' }
@@ -152,7 +152,7 @@ const Login: React.FC = () => {
             <Typography variant="body1" sx={{ mb: 3, textAlign: 'center' }}>
               Enter the code from your email to sign in. The code will expire in 1 hour.
             </Typography>
-            
+
             <Formik
               initialValues={{ otp: '' }}
               validationSchema={OtpSchema}
@@ -169,7 +169,7 @@ const Login: React.FC = () => {
                     type="text"
                     value={values.otp || ''}
                     autoComplete="one-time-code"
-                    inputProps={{ 
+                    inputProps={{
                       max_length: 6,
                       pattern: '[0-9]*',
                       inputMode: 'numeric',
@@ -195,7 +195,7 @@ const Login: React.FC = () => {
                 </Form>
               )}
             </Formik>
-            
+
             <Box sx={{ textAlign: 'center', mt: 2 }}>
               <Typography variant="body2" sx={{ mb: 1 }}>
                 Didn&apos;t receive the code?
