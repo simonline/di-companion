@@ -74,6 +74,7 @@ export function useAuth(): UseAuthReturn {
   }, []);
 
   // Setup event listener for auth state changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // Listen for Supabase auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -114,7 +115,10 @@ export function useAuth(): UseAuthReturn {
       const isExpired = await checkTokenExpiration();
       if (isExpired && state.user) {
         console.log('Token expired, logging out...');
-        await logout();
+        // Instead of calling logout, just clear the auth state
+        setUserAndProfile(null, null);
+        setStartup(null);
+        await supabase.auth.signOut();
       }
     }, 60000);
 

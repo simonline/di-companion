@@ -37,3 +37,6 @@ networks:
 volumes:
   postgres_data:
   strapi_data:
+  srv_postgres_data:
+    external: true
+    name: srv_postgres_data
