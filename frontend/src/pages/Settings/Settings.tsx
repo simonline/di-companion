@@ -24,10 +24,13 @@ import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/sections/Header';
+import useTheme from '@/store/theme';
+import { Themes } from '@/theme/types';
 
 function Settings() {
   const { user, logout } = useAuthContext();
   const navigate = useNavigate();
+  const [themeMode, themeActions] = useTheme();
 
   if (!user) {
     navigate('/login');
@@ -37,6 +40,10 @@ function Settings() {
   const handleLogout = async () => {
     await logout();
     navigate('/');
+  };
+
+  const handleThemeToggle = () => {
+    themeActions.toggle();
   };
 
   return (
@@ -102,7 +109,10 @@ function Settings() {
                       <DarkMode />
                     </ListItemIcon>
                     <ListItemText primary="Dark Mode" />
-                    <Switch />
+                    <Switch 
+                      checked={themeMode === Themes.DARK}
+                      onChange={handleThemeToggle}
+                    />
                   </ListItem>
                   <ListItem>
                     <ListItemIcon>

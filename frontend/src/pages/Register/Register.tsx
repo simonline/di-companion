@@ -445,7 +445,6 @@ function Register() {
                       justifyContent: 'flex-end',
                       p: 3,
                       borderTop: `1px solid ${theme.palette.divider}`,
-                      backgroundColor: theme.palette.grey[50],
                     }}
                   >
                     {errors.submit && (

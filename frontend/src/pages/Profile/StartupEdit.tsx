@@ -207,7 +207,6 @@ function StartupEdit() {
                       justifyContent: 'space-between',
                       p: 3,
                       borderTop: `1px solid ${theme.palette.divider}`,
-                      backgroundColor: theme.palette.grey[50],
                     }}
                   >
                     <Button

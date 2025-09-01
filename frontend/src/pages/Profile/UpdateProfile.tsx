@@ -350,7 +350,6 @@ function UpdateProfile() {
                       justifyContent: 'space-between',
                       p: 3,
                       borderTop: `1px solid ${theme.palette.divider}`,
-                      backgroundColor: theme.palette.grey[50],
                     }}
                   >
                     <Button variant="outlined" onClick={() => navigate('/profile')}>

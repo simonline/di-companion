@@ -14,9 +14,10 @@ function Pages() {
 
   return (
     <Box sx={{
-      height: 'calc(100vh - 80px)',
-      overflowY: 'hidden',
-      position: 'relative'
+      height: '100vh',
+      overflowY: 'auto',
+      position: 'relative',
+      paddingBottom: '80px' // Add padding for bottom navigation
     }}>
       <Routes>
         {Object.values(routes as AppRoutes)

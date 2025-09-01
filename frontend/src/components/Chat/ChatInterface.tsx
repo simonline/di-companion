@@ -105,7 +105,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
 
         // Get current page context
         const pageContext = getPageContext();
-        
+
         // Enhance the message with context
         const enhancedSystemPrompt = `${selectedAgent.systemPrompt}
 
@@ -146,10 +146,10 @@ Current Page Context:
                     px: 3,
                 }}
             >
-                <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
+                <Typography variant="h6" gutterBottom sx={{ color: 'background.default' }}>
                     Your AI Companion
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 2, color: 'rgba(255, 255, 255, 0.8)' }}>
+                <Typography variant="body2" sx={{ mb: 2, color: 'background.default' }}>
                     Choose an expert to help with your startup challenges
                 </Typography>
 
@@ -163,18 +163,18 @@ Current Page Context:
                             fullWidth
                             size="small"
                             sx={{
-                                backgroundColor: selectedAgent.id === 'general-coach' ? 'white' : 'rgba(255, 255, 255, 0.1)',
-                                color: selectedAgent.id === 'general-coach' ? generalCoach.color : 'white',
-                                borderColor: 'white',
+                                backgroundColor: selectedAgent.id === 'general-coach' ? 'background.default' : 'rgba(255, 255, 255, 0.1)',
+                                color: selectedAgent.id === 'general-coach' ? generalCoach.color : 'background.default',
+                                borderColor: 'background.default',
                                 borderWidth: selectedAgent.id === 'general-coach' ? 2 : 1,
                                 height: 40, // Match dropdown height
                                 textTransform: 'none',
                                 '&:hover': {
-                                    backgroundColor: selectedAgent.id === 'general-coach' ? 'white' : 'rgba(255, 255, 255, 0.2)',
+                                    backgroundColor: selectedAgent.id === 'general-coach' ? 'background.default' : 'rgba(255, 255, 255, 0.2)',
                                     borderWidth: 2,
                                 },
                                 '&.MuiButton-contained': {
-                                    backgroundColor: 'white',
+                                    backgroundColor: 'background.default',
                                     color: generalCoach.color,
                                 },
                             }}
@@ -185,7 +185,7 @@ Current Page Context:
                                     sx={{
                                         width: 20,
                                         height: 20,
-                                        backgroundColor: 'white',
+                                        backgroundColor: 'background.default',
                                     }}
                                 />
                                 <Typography variant="body2">
@@ -223,7 +223,7 @@ Current Page Context:
                                                 sx={{
                                                     width: 20,
                                                     height: 20,
-                                                    backgroundColor: 'white',
+                                                    backgroundColor: 'background.default',
                                                 }}
                                             />
                                             <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
@@ -234,21 +234,21 @@ Current Page Context:
                                 }}
                                 sx={{
                                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                    color: 'white',
+                                    color: 'background.default',
                                     height: 40, // Match button height
                                     '& .MuiOutlinedInput-notchedOutline': {
-                                        borderColor: 'white',
+                                        borderColor: 'background.default',
                                     },
                                     '&:hover .MuiOutlinedInput-notchedOutline': {
-                                        borderColor: 'white',
+                                        borderColor: 'background.default',
                                         borderWidth: 2,
                                     },
                                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                        borderColor: 'white',
+                                        borderColor: 'background.default',
                                         borderWidth: 2,
                                     },
                                     '& .MuiSelect-icon': {
-                                        color: 'white',
+                                        color: 'background.default',
                                     },
                                 }}
                                 MenuProps={{
@@ -278,7 +278,7 @@ Current Page Context:
                                                 sx={{
                                                     width: 32,
                                                     height: 32,
-                                                    backgroundColor: 'white',
+                                                    backgroundColor: 'background.default',
                                                     border: `2px solid ${agent.color}`,
                                                 }}
                                             />
@@ -344,7 +344,7 @@ Current Page Context:
                                         sx={{
                                             width: 48,
                                             height: 48,
-                                            backgroundColor: 'white',
+                                            backgroundColor: 'background.default',
                                             border: '2px solid white',
                                             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                                         }}
@@ -353,8 +353,8 @@ Current Page Context:
                                 <Box
                                     sx={{
                                         p: 2,
-                                        backgroundColor: message.sender === 'user' ? 'white' : 'rgba(255, 255, 255, 0.5)', // White with 50% transparency
-                                        color: message.sender === 'user' ? 'text.primary' : 'text.primary',
+                                        backgroundColor: message.sender === 'user' ? 'background.default' : 'rgba(255, 255, 255, 0.5)', // White with 50% transparency
+                                        color: 'text.primary',
                                         borderRadius: 2,
                                         border: message.sender === 'user' ? '1px solid rgba(0, 0, 0, 0.1)' : 'none',
                                     }}
@@ -370,7 +370,7 @@ Current Page Context:
                                 {message.sender === 'user' && (
                                     <Avatar
                                         sx={{
-                                            bgcolor: 'white',
+                                            bgcolor: 'background.default',
                                             color: 'text.primary',
                                             width: 48,
                                             height: 48,
@@ -391,7 +391,7 @@ Current Page Context:
                                     sx={{
                                         width: 48,
                                         height: 48,
-                                        backgroundColor: 'white',
+                                        backgroundColor: 'background.default',
                                         border: '2px solid white',
                                         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                                     }}
@@ -430,7 +430,7 @@ Current Page Context:
                         size="small"
                         sx={{
                             '& .MuiOutlinedInput-root': {
-                                backgroundColor: 'white',
+                                backgroundColor: 'background.paper',
                                 borderRadius: 2,
                             },
                         }}
