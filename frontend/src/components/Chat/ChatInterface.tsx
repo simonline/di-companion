@@ -4,21 +4,15 @@ import {
     TextField,
     IconButton,
     Typography,
-    Paper,
     Avatar,
-    Divider,
     CircularProgress,
-    ButtonGroup,
     Button,
     Select,
     MenuItem,
     FormControl,
-    InputLabel,
-    Chip,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useChatContext } from './ChatContext';
 import { Agent, agents, generalCoach, specializedAgents } from './types';
 import { useLocation } from 'react-router-dom';

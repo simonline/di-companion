@@ -27,10 +27,32 @@ export interface User {
 export type UserCreate = Omit<User, 'id'>;
 export type UserUpdate = Partial<User>;
 
+// Progress tracking types
+export interface UserProgress {
+  profile: boolean;
+  values: boolean;
+  assessment: boolean;
+  startup: boolean;
+}
+
+export interface StartupProgress {
+  'startup-profile': boolean;
+  'startup-members': boolean;
+  'team-values': boolean;
+  'team-contract': boolean;
+  'team-assessment': boolean;
+  'stakeholder-map': boolean;
+  'interviews': boolean;
+  'persona': boolean;
+  'pitch-deck': boolean;
+  'financial-plan': boolean;
+}
+
 // Profiles
-export interface Profile extends Tables<'profiles'> {
+export interface Profile extends Omit<Tables<'profiles'>, 'progress'> {
   avatar?: { url: string | null }
   user?: User
+  progress: UserProgress | null
 }
 
 export interface ProfileCreate extends Omit<TablesInsert<'profiles'>, 'id'> {
@@ -151,9 +173,10 @@ export type StartupQuestionCreate = TablesInsert<'startup_questions'>;
 export type StartupQuestionUpdate = TablesUpdate<'startup_questions'>;
 
 // Startups
-export interface Startup extends Tables<'startups'> {
+export interface Startup extends Omit<Tables<'startups'>, 'progress'> {
   logo?: { url: string | null }
   categories: CategoryEnum[]
+  progress: StartupProgress | null
 }
 export type StartupCreate = TablesInsert<'startups'>;
 export type StartupUpdate = TablesUpdate<'startups'>;

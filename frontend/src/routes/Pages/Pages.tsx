@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import { AppRoutes } from '@/routes/types';
 import useRoutes from '..';
-import { getPageHeight } from './utils';
+// import { getPageHeight } from './utils'; // Unused
 import ProtectedRoute from '../ProtectedRoute';
 import { useAuthContext } from '@/hooks/useAuth';
 import { AgentLayout } from '@/components/AgentLayout';
@@ -24,7 +24,7 @@ function Pages() {
           .filter((route) => route.visibleTo.includes(isCoach ? 'coach' : 'startup'))
           .map(({ path, component: Component, requiresAuth, requiresStartup, agent }) => {
             // Disable AgentLayout for Welcome page and all auth-related pages
-            const authPaths = ['/', '/login', '/logout', '/signup', '/reset-password', '/no-startup', '/auth/callback'];
+            const authPaths = ['/', '/login', '/logout', '/signup', '/reset-password', '/no-startup', '/auth/callback', '/register/confirm'];
             const shouldUseAgentLayout = path ? !authPaths.includes(path) : true;
             
             return (

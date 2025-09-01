@@ -5,13 +5,13 @@ import usePattern from '@/hooks/usePattern';
 import PatternCard from '@/components/PatternCard';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/sections/Header';
-import useSearch from '@/hooks/useSearch';
+// import useSearch from '@/hooks/useSearch'; // Unused
 import { useCurrentPattern } from '@/hooks/useCurrentPattern';
 
 const ExplorePattern: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { fetchPattern, pattern, loading, error } = usePattern();
-  const { SearchComponent } = useSearch();
+  // const { SearchComponent } = useSearch(); // Unused
   const navigate = useNavigate();
   const { setCurrentPattern } = useCurrentPattern();
 
@@ -88,9 +88,10 @@ const ExplorePattern: React.FC = () => {
   return (
     <>
       <Header title="Explore" />
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+      {/* Search temporarily disabled */}
+      {/* <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
         <SearchComponent />
-      </Box>
+      </Box> */}
       <FullSizeCenteredFlexBox>
         <PatternCard pattern={pattern} onComplete={handlePatternComplete} />
       </FullSizeCenteredFlexBox>

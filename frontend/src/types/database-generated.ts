@@ -752,6 +752,7 @@ export type Database = {
           locale: string | null
           phone: string | null
           position: string | null
+          progress: Json | null
           updated_at: string | null
           username: string | null
         }
@@ -771,6 +772,7 @@ export type Database = {
           locale?: string | null
           phone?: string | null
           position?: string | null
+          progress?: Json | null
           updated_at?: string | null
           username?: string | null
         }
@@ -790,6 +792,7 @@ export type Database = {
           locale?: string | null
           phone?: string | null
           position?: string | null
+          progress?: Json | null
           updated_at?: string | null
           username?: string | null
         }
@@ -1390,6 +1393,7 @@ export type Database = {
           name: string | null
           phase: string | null
           product_type: string | null
+          progress: Json | null
           published_at: string | null
           qualified_conversations_count: number | null
           score: number | null
@@ -1420,6 +1424,7 @@ export type Database = {
           name?: string | null
           phase?: string | null
           product_type?: string | null
+          progress?: Json | null
           published_at?: string | null
           qualified_conversations_count?: number | null
           score?: number | null
@@ -1450,6 +1455,7 @@ export type Database = {
           name?: string | null
           phase?: string | null
           product_type?: string | null
+          progress?: Json | null
           published_at?: string | null
           qualified_conversations_count?: number | null
           score?: number | null

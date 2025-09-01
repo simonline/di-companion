@@ -51,10 +51,10 @@ function NoStartup() {
               >
                 <Divider
                   orientation="vertical"
-                  flexItem
                   sx={{
                     display: { xs: 'none', md: 'block' },
                     height: '120px',
+                    alignSelf: 'center'
                   }}
                 />
                 <Typography
@@ -69,10 +69,10 @@ function NoStartup() {
                 </Typography>
                 <Divider
                   orientation="vertical"
-                  flexItem
                   sx={{
                     display: { xs: 'none', md: 'block' },
                     height: '120px',
+                    alignSelf: 'center'
                   }}
                 />
                 <Divider
@@ -107,7 +107,7 @@ function NoStartup() {
                 </Box>
                 <Button
                   component={Link}
-                  to="/create-startup"
+                  to="/startup/create"
                   variant="contained"
                   color="primary"
                   size="large"

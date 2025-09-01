@@ -21,7 +21,7 @@ import {
   Alert,
   Avatar,
 } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
 import Header from '@/sections/Header';
 import { useDropzone } from 'react-dropzone';
@@ -29,7 +29,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import { getAvatarUrl } from '@/lib/supabase';
 
-interface UpdateProfileFormValues {
+interface ProfileFormValues {
   email: string;
   givenName: string;
   familyName: string;
@@ -60,14 +60,19 @@ const genderOptions = [
   { value: 'other', label: 'Other' },
 ];
 
-function UpdateProfile() {
+function ProfileForm() {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { user, profile, updateProfile } = useAuthContext();
+  const location = useLocation();
+  const { user, profile, updateProfile, createProfile } = useAuthContext();
   const { field } = useParams<{ field?: string }>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Determine where to navigate back to based on query params
+  const searchParams = new URLSearchParams(location.search);
+  const fromPage = searchParams.get('from');
 
   // Redirect if user is not authenticated
   if (!user) {
@@ -78,8 +83,11 @@ function UpdateProfile() {
   // Get the field to edit or default to all fields
   const isFieldSpecific = !!field;
 
+  // Determine if this is create or update mode
+  const isCreateMode = !profile;
+
   // Initialize form values from user and profile data
-  const initialValues: UpdateProfileFormValues = {
+  const initialValues: ProfileFormValues = {
     email: user.email || '',
     givenName: profile?.given_name || '',
     familyName: profile?.family_name || '',
@@ -91,45 +99,83 @@ function UpdateProfile() {
   };
 
   const handleSubmit = async (
-    values: UpdateProfileFormValues,
-    { setSubmitting, setErrors }: FormikHelpers<UpdateProfileFormValues>,
+    values: ProfileFormValues,
+    { setSubmitting, setErrors }: FormikHelpers<ProfileFormValues>,
   ): Promise<void> => {
     setIsSubmitting(true);
     setErrorMessage('');
 
     try {
-      // If we're only updating a specific field, only include that field in the update
-      const fieldMap: Record<string, string> = {
-        givenName: 'given_name',
-        familyName: 'family_name',
-        linkedinProfile: 'linkedin_profile',
-      };
+      if (isCreateMode) {
+        // Create new profile
+        await createProfile({
+          given_name: values.givenName,
+          family_name: values.familyName,
+          gender: values.gender,
+          position: values.position,
+          bio: values.bio,
+          linkedin_profile: values.linkedinProfile,
+          avatarFile: values.avatar,
+        });
+      } else {
+        // Update existing profile
+        const fieldMap: Record<string, string> = {
+          givenName: 'given_name',
+          familyName: 'family_name',
+          linkedinProfile: 'linkedin_profile',
+        };
 
-      const updatedData =
-        isFieldSpecific && field
-          ? {
+        const updatedData =
+          isFieldSpecific && field
+            ? {
+              id: user.id,
+              [fieldMap[field] || field]: values[field as keyof ProfileFormValues],
+            }
+            : {
+              id: user.id,
+              given_name: values.givenName,
+              family_name: values.familyName,
+              gender: values.gender,
+              position: values.position,
+              bio: values.bio,
+              linkedin_profile: values.linkedinProfile,
+              avatar: values.avatar,
+            };
+
+        // Call the API to update the profile
+        await updateProfile(updatedData);
+      }
+
+      // Mark profile step as completed if coming from user page
+      if (fromPage === 'user' && profile) {
+        const currentProgress = profile.progress || {
+          profile: false,
+          values: false,
+          assessment: false,
+          startup: false
+        };
+
+        // Check if profile is complete (has required fields)
+        if (values.givenName && values.familyName && values.email) {
+          await updateProfile({
             id: user.id,
-            [fieldMap[field] || field]: values[field as keyof UpdateProfileFormValues],
-          }
-          : {
-            id: user.id,
-            given_name: values.givenName,
-            family_name: values.familyName,
-            gender: values.gender,
-            position: values.position,
-            bio: values.bio,
-            linkedin_profile: values.linkedinProfile,
-            avatar: values.avatar,
-          };
+            progress: {
+              ...currentProgress,
+              profile: true
+            }
+          });
+        }
+      }
 
-      // Call the API to update the profile
-      await updateProfile(updatedData);
-
-      setSuccessMessage('Profile updated successfully');
+      setSuccessMessage(isCreateMode ? 'Profile created successfully' : 'Profile updated successfully');
 
       // Navigate back after a short delay
       setTimeout(() => {
-        navigate('/profile');
+        if (isCreateMode) {
+          navigate('/startup/create');
+        } else {
+          navigate(fromPage === 'user' ? '/user' : fromPage === 'settings' ? '/settings' : '/user');
+        }
       }, 1500);
     } catch (err) {
       const error = err as Error;
@@ -161,7 +207,7 @@ function UpdateProfile() {
     });
   };
 
-  const renderFormField = (fieldName: keyof UpdateProfileFormValues, label: string) => {
+  const renderFormField = (fieldName: keyof ProfileFormValues, label: string) => {
     // Only render the specific field if in field-specific mode
     if (isFieldSpecific && field !== fieldName) return null;
 
@@ -292,17 +338,19 @@ function UpdateProfile() {
 
   return (
     <>
-      <Header title={isFieldSpecific ? `Edit ${field}` : 'Update Profile'} />
+      <Header title={isCreateMode ? 'Complete Your Profile' : (isFieldSpecific ? `Edit ${field}` : 'Update Profile')} />
       <Container maxWidth="md" sx={{ my: 8 }}>
-        <Box sx={{ mb: 1 }}>
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={() => navigate('/user')}
-            sx={{ color: 'text.secondary' }}
-          >
-            Back to User
-          </Button>
-        </Box>
+        {!isCreateMode && (
+          <Box sx={{ mb: 1 }}>
+            <Button
+              startIcon={<ArrowBack />}
+              onClick={() => navigate(fromPage === 'settings' ? '/settings' : '/user')}
+              sx={{ color: 'text.secondary' }}
+            >
+              Back to {fromPage === 'settings' ? 'Settings' : 'User'}
+            </Button>
+          </Box>
+        )}
         <Card elevation={3} sx={{ borderRadius: 2, overflow: 'visible' }}>
           <CardContent>
             <Formik
@@ -352,7 +400,7 @@ function UpdateProfile() {
                       borderTop: `1px solid ${theme.palette.divider}`,
                     }}
                   >
-                    <Button variant="outlined" onClick={() => navigate('/profile')}>
+                    <Button variant="outlined" onClick={() => navigate(fromPage === 'settings' ? '/settings' : '/user')}>
                       Cancel
                     </Button>
                     <Button
@@ -379,7 +427,7 @@ function UpdateProfile() {
                           }}
                         />
                       )}
-                      Save Changes
+                      {isCreateMode ? 'Create Profile' : 'Save Changes'}
                     </Button>
                   </Box>
                 </Form>
@@ -416,4 +464,4 @@ function UpdateProfile() {
   );
 }
 
-export default UpdateProfile;
+export default ProfileForm;

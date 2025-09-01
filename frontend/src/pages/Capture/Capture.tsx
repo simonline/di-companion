@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Card,
@@ -7,24 +7,20 @@ import {
   TextField,
   Button,
   Stack,
-  Alert,
   Chip,
   IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  Paper,
-  Divider,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
-  TextareaAutosize,
+  Paper,
+  CircularProgress,
+  Grid,
+  Avatar,
 } from '@mui/material';
 import {
   Save,
@@ -34,14 +30,18 @@ import {
   LightbulbOutlined,
   DescriptionOutlined,
   LinkOutlined,
-  ImageOutlined,
   AttachFile,
   Close,
+  CloudUpload,
+  Download,
+  Visibility,
 } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
 import useNotifications from '@/store/notifications';
+import { uploadDocument, getDocuments, deleteDocument, getDocumentUrl, supabase } from '@/lib/supabase';
+import type { Document } from '@/types/database';
 
 interface CaptureItem {
   id: string;
@@ -51,6 +51,7 @@ interface CaptureItem {
   tags: string[];
   created_at: Date;
   updated_at: Date;
+  documentId?: string;
 }
 
 const typeIcons = {
@@ -71,6 +72,8 @@ const Capture: React.FC = () => {
   const { user } = useAuthContext();
   const [, notificationActions] = useNotifications();
   const [items, setItems] = useState<CaptureItem[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [users, setUsers] = useState<{ [key: string]: any }>({});
   const [openDialog, setOpenDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<CaptureItem | null>(null);
   const [formData, setFormData] = useState({
@@ -80,6 +83,10 @@ const Capture: React.FC = () => {
     tags: '',
   });
   const [filter, setFilter] = useState<'all' | CaptureItem['type']>('all');
+  const [uploading, setUploading] = useState(false);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const savedItems = localStorage.getItem(`capture_items_${user?.id}`);
@@ -90,7 +97,41 @@ const Capture: React.FC = () => {
         updated_at: new Date(item.updated_at),
       })));
     }
-  }, [user?.id]);
+    fetchDocuments();
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchDocuments = async () => {
+    if (!user?.id) return;
+    setLoadingDocs(true);
+    try {
+      const docs = await getDocuments({ category: 'workshop_capture' });
+      setDocuments(docs);
+      
+      // Fetch user info for each unique uploader
+      const uniqueUserIds = [...new Set(docs.map(d => d.uploaded_by).filter(Boolean))];
+      const userPromises = uniqueUserIds.map(async (userId) => {
+        const { data } = await supabase
+          .from('profiles')
+          .select('id, name, email')
+          .eq('id', userId!)
+          .single();
+        return { id: userId, data };
+      });
+      
+      const userResults = await Promise.all(userPromises);
+      const userMap: { [key: string]: any } = {};
+      userResults.forEach(result => {
+        if (result.data) {
+          userMap[result.id!] = result.data;
+        }
+      });
+      setUsers(userMap);
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+    } finally {
+      setLoadingDocs(false);
+    }
+  };
 
   const saveItems = (newItems: CaptureItem[]) => {
     localStorage.setItem(`capture_items_${user?.id}`, JSON.stringify(newItems));
@@ -121,6 +162,7 @@ const Capture: React.FC = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingItem(null);
+    setSelectedFile(null);
     setFormData({
       type: 'idea',
       title: '',
@@ -129,10 +171,37 @@ const Capture: React.FC = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.title.trim()) {
       notificationActions.push({ message: 'Title is required', options: { variant: 'error' } });
       return;
+    }
+
+    let documentId: string | undefined;
+    
+    if (formData.type === 'file' && selectedFile) {
+      setUploading(true);
+      try {
+        const uploadedId = await uploadDocument(
+          selectedFile,
+          undefined,
+          undefined,
+          undefined,
+          'workshop_capture'
+        );
+        if (uploadedId) {
+          documentId = uploadedId;
+          await fetchDocuments();
+        }
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        notificationActions.push({ 
+          message: 'Failed to upload file', 
+          options: { variant: 'error' } 
+        });
+      } finally {
+        setUploading(false);
+      }
     }
 
     const newItem: CaptureItem = {
@@ -146,6 +215,7 @@ const Capture: React.FC = () => {
         .filter(tag => tag),
       created_at: editingItem?.created_at || new Date(),
       updated_at: new Date(),
+      documentId,
     };
 
     const updatedItems = editingItem
@@ -160,10 +230,63 @@ const Capture: React.FC = () => {
     handleCloseDialog();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    const item = items.find(i => i.id === id);
+    if (item?.documentId) {
+      try {
+        await deleteDocument(item.documentId);
+        await fetchDocuments();
+      } catch (error) {
+        console.error('Error deleting document:', error);
+      }
+    }
     const updatedItems = items.filter(item => item.id !== id);
     saveItems(updatedItems);
     notificationActions.push({ message: 'Item deleted successfully', options: { variant: 'success' } });
+  };
+
+  const handleDeleteDocument = async (docId: string) => {
+    try {
+      await deleteDocument(docId);
+      await fetchDocuments();
+      notificationActions.push({ 
+        message: 'Document deleted successfully', 
+        options: { variant: 'success' } 
+      });
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      notificationActions.push({ 
+        message: 'Failed to delete document', 
+        options: { variant: 'error' } 
+      });
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      if (!formData.title) {
+        setFormData({ ...formData, title: file.name });
+      }
+    }
+  };
+
+  const getUserDisplay = (userId: string | null) => {
+    if (!userId) return { name: 'Unknown', initials: '?' };
+    const userInfo = users[userId];
+    if (userInfo) {
+      const name = userInfo.name || userInfo.email?.split('@')[0] || 'Unknown';
+      const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase();
+      return { name, initials };
+    }
+    return { name: 'Loading...', initials: '?' };
+  };
+
+  const handleUploadClick = () => {
+    setFormData({ type: 'file', title: '', content: '', tags: '' });
+    setSelectedFile(null);
+    setOpenDialog(true);
   };
 
   const filteredItems = filter === 'all'
@@ -175,6 +298,40 @@ const Capture: React.FC = () => {
       <Header title="Add your content" />
       <CenteredFlexBox>
         <Box sx={{ maxWidth: 1200, width: '100%', px: 2 }}>
+          <Card sx={{ mb: 3, bgcolor: 'primary.lighter', border: '2px solid', borderColor: 'primary.main' }}>
+            <CardContent>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                justifyContent="space-between"
+                alignItems={{ xs: 'stretch', sm: 'center' }}
+                spacing={2}
+              >
+                <Box>
+                  <Typography variant="h5" fontWeight="700" gutterBottom>
+                    📁 Upload Documents
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Upload workshop materials, PDFs, images, and other documents
+                  </Typography>
+                </Box>
+                <Button
+                  variant="contained"
+                  startIcon={<CloudUpload />}
+                  onClick={handleUploadClick}
+                  size="large"
+                  color="primary"
+                  sx={{
+                    minWidth: { xs: '100%', sm: 'auto' },
+                    whiteSpace: 'nowrap',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Upload File
+                </Button>
+              </Stack>
+            </CardContent>
+          </Card>
+
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <Stack
@@ -188,7 +345,7 @@ const Capture: React.FC = () => {
                     Add your content
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Save ideas, notes, links, and documents from your workshops and brainstorming sessions
+                    Save ideas, notes, and links from your workshops and brainstorming sessions
                   </Typography>
                 </Box>
                 <Button
@@ -254,6 +411,103 @@ const Capture: React.FC = () => {
               />
             </Stack>
           </Paper>
+
+          {documents.length > 0 && (
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight="600" gutterBottom>
+                  Uploaded Documents
+                </Typography>
+                {loadingDocs ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <Grid container spacing={2}>
+                    {documents.map((doc) => {
+                      const uploader = getUserDisplay(doc.uploaded_by);
+                      return (
+                        <Grid item xs={12} sm={6} md={4} key={doc.id}>
+                          <Paper
+                            sx={{
+                              p: 2,
+                              height: '100%',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 1,
+                              border: '1px solid',
+                              borderColor: 'divider',
+                              '&:hover': {
+                                borderColor: 'primary.main',
+                                bgcolor: 'action.hover'
+                              }
+                            }}
+                          >
+                            <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Typography variant="subtitle2" noWrap title={doc.filename}>
+                                  {doc.filename}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {doc.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'} • 
+                                  {(doc.size_bytes / 1024).toFixed(1)} KB
+                                </Typography>
+                              </Box>
+                              <AttachFile color="action" />
+                            </Stack>
+                            
+                            <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
+                              <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem', bgcolor: 'primary.main' }}>
+                                {uploader.initials}
+                              </Avatar>
+                              <Typography variant="caption" color="text.secondary" noWrap>
+                                {uploader.name}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                • {new Date(doc.uploaded_at).toLocaleDateString()}
+                              </Typography>
+                            </Stack>
+
+                            <Stack direction="row" spacing={1} sx={{ mt: 'auto' }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => window.open(getDocumentUrl(doc.id), '_blank')}
+                                title="View"
+                              >
+                                <Visibility fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  const link = document.createElement('a');
+                                  link.href = getDocumentUrl(doc.id);
+                                  link.download = doc.filename;
+                                  link.click();
+                                }}
+                                title="Download"
+                              >
+                                <Download fontSize="small" />
+                              </IconButton>
+                              {doc.uploaded_by === user?.id && (
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() => handleDeleteDocument(doc.id)}
+                                  title="Delete"
+                                >
+                                  <Delete fontSize="small" />
+                                </IconButton>
+                              )}
+                            </Stack>
+                          </Paper>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {filteredItems.length === 0 ? (
             <Card>
@@ -385,21 +639,48 @@ const Capture: React.FC = () => {
               required
             />
 
-            <TextField
-              label="Content"
-              fullWidth
-              multiline
-              rows={4}
-              value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              placeholder={
-                formData.type === 'link'
-                  ? 'Enter the URL or link reference'
-                  : formData.type === 'file'
-                    ? 'Enter file name or reference'
+            {formData.type === 'file' ? (
+              <Box>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  hidden
+                  onChange={handleFileSelect}
+                />
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  startIcon={<CloudUpload />}
+                  onClick={() => fileInputRef.current?.click()}
+                  sx={{ mb: 2 }}
+                >
+                  {selectedFile ? selectedFile.name : 'Choose File'}
+                </Button>
+                <TextField
+                  label="Description (optional)"
+                  fullWidth
+                  multiline
+                  rows={3}
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  placeholder="Add a description for this file..."
+                />
+              </Box>
+            ) : (
+              <TextField
+                label="Content"
+                fullWidth
+                multiline
+                rows={4}
+                value={formData.content}
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                placeholder={
+                  formData.type === 'link'
+                    ? 'Enter the URL or link reference'
                     : 'Enter your content here...'
-              }
-            />
+                }
+              />
+            )}
 
             <TextField
               label="Tags"
@@ -413,8 +694,13 @@ const Capture: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSave} variant="contained" startIcon={<Save />}>
-            {editingItem ? 'Update' : 'Save'}
+          <Button 
+            onClick={handleSave} 
+            variant="contained" 
+            startIcon={uploading ? <CircularProgress size={20} /> : <Save />}
+            disabled={uploading || (formData.type === 'file' && !selectedFile)}
+          >
+            {uploading ? 'Uploading...' : editingItem ? 'Update' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>

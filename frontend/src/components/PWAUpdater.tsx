@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { Button, Snackbar, Alert } from '@mui/material';
 

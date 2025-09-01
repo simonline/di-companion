@@ -28,20 +28,16 @@ import { CategoryEnum, categoryDisplayNames } from '@/utils/constants';
 
 const SelfAssessment: React.FC = () => {
   const navigate = useNavigate();
-  const { user, startup, updateScores } = useAuthContext();
+  const { user, startup, profile, updateProfile, updateScores } = useAuthContext();
 
-  // Determine which page to return to based on referrer or default to user
-  const [returnPath, setReturnPath] = useState('/user');
-  const [returnLabel, setReturnLabel] = useState('User');
-
-  useEffect(() => {
-    // Check if we came from startup page
-    const referrer = document.referrer;
-    if (referrer.includes('/startup')) {
-      setReturnPath('/startup');
-      setReturnLabel('Startup');
-    }
-  }, []);
+  // SelfAssessment can be called from both User page (step 3) and Startup page (team-assessment)
+  // We determine where to return based on the context:
+  // - If called as part of user onboarding (step 3) -> return to /user
+  // - If called as part of startup journey (team-assessment) -> return to /startup
+  // We can check this by looking at the progress state
+  const isUserOnboarding = profile && !profile.progress?.assessment;
+  const returnPath = isUserOnboarding ? '/user' : '/startup';
+  const returnLabel = isUserOnboarding ? 'User' : 'Startup';
   const { fetchSurveyByName, survey, loading: surveyLoading, error: surveyError } = useSurvey();
   const {
     fetchUserQuestions,
@@ -147,13 +143,40 @@ const SelfAssessment: React.FC = () => {
       } else {
         // Only update scores when we've completed all steps
         await updateScores();
+        
+        // Mark assessment as completed based on context
+        if (isUserOnboarding && profile) {
+          // User onboarding context - mark user assessment as complete
+          const currentProgress = profile.progress || {
+            profile: false,
+            values: false,
+            assessment: false,
+            startup: false
+          };
+          await updateProfile({
+            id: user.id,
+            progress: {
+              ...currentProgress,
+              assessment: true
+            }
+          });
+        } else if (!isUserOnboarding && startup) {
+          // Startup journey context - mark team-assessment as complete
+          // TODO: Update startup progress when API is available
+          const currentProgress = startup.progress || {};
+          // await updateStartupProgress({
+          //   ...currentProgress,
+          //   'team-assessment': true
+          // });
+        }
+        
         notificationsActions.push({
           options: { variant: 'success' },
           message: 'Self assessment completed successfully',
         });
         // Clear the saved step from localStorage
         localStorage.removeItem('selfAssessmentActiveStep');
-        navigate('/startup');
+        navigate(returnPath);
       }
     } catch (error) {
       notificationsActions.push({

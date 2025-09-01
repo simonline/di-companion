@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, Container, Grid, Card, CardContent, Avatar, Chip, IconButton, Collapse, Paper } from '@mui/material';
+import { Box, Typography, Button, Container, Grid, Card, CardContent, Avatar, IconButton, Paper } from '@mui/material';
 import StyleIcon from '@mui/icons-material/Style';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import SpeedIcon from '@mui/icons-material/Speed';
@@ -110,7 +110,7 @@ function Welcome() {
                     <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.8 }}>
                       1. Open in Safari browser<br />
                       2. Tap the Share button<br />
-                      3. Select "Add to Home Screen"
+                      3. Select &quot;Add to Home Screen&quot;
                     </Typography>
                   </Box>
                 </Box>
@@ -127,7 +127,7 @@ function Welcome() {
                     <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.8 }}>
                       1. Open in Chrome browser<br />
                       2. Tap the menu button (⋮)<br />
-                      3. Select "Install app"
+                      3. Select &quot;Install app&quot;
                     </Typography>
                   </Box>
                 </Box>

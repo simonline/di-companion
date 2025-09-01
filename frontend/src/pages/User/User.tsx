@@ -29,6 +29,7 @@ import Header from '@/sections/Header';
 import { categoryColors, CategoryEnum } from '@/utils/constants';
 import { getAvatarUrl } from '@/lib/supabase';
 import { CenteredFlexBox } from '@/components/styled';
+import ProfileForm from '@/pages/User/ProfileForm';
 
 interface OnboardingStep {
   id: string;
@@ -51,20 +52,13 @@ const User: React.FC = () => {
   }, [getRecommendedPatterns]);
 
   useEffect(() => {
-    // Determine completion status for each step
-    const profileCompleted = !!(
-      profile?.given_name &&
-      profile?.family_name &&
-      user?.email
-    );
-
-    // Check if user has completed assessment (we'll check if they have bio or position as proxy)
-    const assessmentCompleted = !!(
-      profile?.bio ||
-      profile?.position
-    );
-
-    const startupCompleted = !!(startup?.id);
+    // Use progress field if available, otherwise fall back to checking fields
+    const progress = profile?.progress || {
+      profile: false,
+      values: false,
+      assessment: false,
+      startup: false,
+    };
 
     setOnboardingSteps([
       {
@@ -72,32 +66,32 @@ const User: React.FC = () => {
         title: 'Complete Your Profile',
         description: 'Add your personal and professional information to personalize your experience.',
         icon: <Person sx={{ fontSize: 32 }} />,
-        route: '/profile',
-        completed: profileCompleted,
+        route: '/profile/edit?from=user',
+        completed: progress.profile,
       },
       {
         id: 'values',
         title: 'Your Values',
         description: 'Define your personal values through our guided workshop process.',
         icon: <Favorite sx={{ fontSize: 32 }} />,
-        route: '/tools/user-values',
-        completed: false, // TODO: Add completion logic
+        route: '/tools/user-values?from=user',
+        completed: progress.values,
       },
       {
         id: 'assessment',
         title: 'Self Assessment',
         description: 'Take the entrepreneurship assessment to understand your strengths and areas for growth.',
         icon: <Assessment sx={{ fontSize: 32 }} />,
-        route: '/self-assessment',
-        completed: assessmentCompleted,
+        route: '/self-assessment?from=user',
+        completed: progress.assessment,
       },
       {
         id: 'startup',
         title: 'Create Your Startup',
         description: 'Set up your startup profile to access personalized patterns and recommendations.',
         icon: <RocketLaunch sx={{ fontSize: 32 }} />,
-        route: startup?.id ? `/profile/startup/${startup.id}/edit` : '/create-startup',
-        completed: startupCompleted,
+        route: startup?.id ? `/startup/edit?from=user` : '/startup/create?from=user',
+        completed: progress.startup,
       },
     ]);
   }, [user, profile, startup]);

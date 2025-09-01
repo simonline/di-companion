@@ -20,7 +20,7 @@ interface CurrentPatternProviderProps {
     children: ReactNode;
 }
 
-export const CurrentPatternProvider: React.FC<CurrentPatternProviderProps> = ({ children }) => {
+export const CurrentPatternProvider: React.FC<CurrentPatternProviderProps> = ({ children }) => { // eslint-disable-line react/prop-types
     const [currentPattern, setCurrentPattern] = useState<Pattern | null>(null);
 
     return (

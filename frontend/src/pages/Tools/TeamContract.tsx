@@ -211,7 +211,9 @@ const TeamContract: React.FC = () => {
             setTimeout(() => {
                 const contractText = generateContractText(values);
                 downloadContract(contractText, values.startupName);
-            }, 1000);
+                // Navigate back to startup page after successful save
+                navigate('/startup');
+            }, 1500);
 
         } catch (error) {
             setSnackbar({

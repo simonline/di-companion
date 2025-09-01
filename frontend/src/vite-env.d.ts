@@ -1,1 +1,12 @@
 /// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_API_URL: string
+  readonly VITE_BACKEND_URL: string
+  readonly VITE_AMPLITUDE_API_KEY: string
+  readonly VITE_HCAPTCHA_SITE_KEY: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}

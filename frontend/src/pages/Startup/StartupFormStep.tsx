@@ -7,7 +7,7 @@ import { FullSizeCenteredFlexBox } from '@/components/styled';
 import { steps, renderStepContent } from '@/pages/Startups/types';
 import { useAuthContext } from '@/hooks/useAuth';
 
-const StartupProfileStep: React.FC = () => {
+const StartupFormStep: React.FC = () => {
   const { stepId } = useParams<{ stepId: string }>();
   const { user, startup } = useAuthContext();
 
@@ -50,4 +50,4 @@ const StartupProfileStep: React.FC = () => {
   );
 };
 
-export default StartupProfileStep;
+export default StartupFormStep;

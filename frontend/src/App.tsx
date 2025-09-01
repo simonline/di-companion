@@ -19,6 +19,7 @@ import { ChatProvider } from '@/components/Chat/ChatContext';
 import AmplitudeProvider from '@/analytics/AmplitudeProvider';
 import RouteTracker from '@/analytics/RouteTracker';
 import { BugReportButton } from '@/components/BugReportButton';
+import CookieBanner from '@/components/CookieBanner';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
                 <Menu />
                 <RouteTracker />
                 <BugReportButton showFloatingButton={true} />
+                <CookieBanner />
               </BrowserRouter>
             </ChatProvider>
           </CurrentPatternProvider>

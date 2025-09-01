@@ -21,6 +21,7 @@ import { Psychology, Group, Share, ArrowBack } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useNavigate } from 'react-router-dom';
+import { useAuthContext } from '@/hooks/useAuth';
 
 const VALUES = [
     'Agility', 'Transparency', 'Modernity', 'Mindfulness', 'Caring', 'Dignity', 'Humility',
@@ -36,6 +37,7 @@ const VALUES = [
 
 const UserValues: React.FC = () => {
     const navigate = useNavigate();
+    const { user, profile, updateProfile } = useAuthContext();
     const [activeStep, setActiveStep] = useState(0);
     const [selectedValues, setSelectedValues] = useState<string[]>([]);
     const [top15Values, setTop15Values] = useState<string[]>([]);
@@ -168,7 +170,7 @@ const UserValues: React.FC = () => {
         }
     };
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (activeStep === 0 && selectedValues.length === 0) {
             alert('Please select at least one value before proceeding.');
             return;
@@ -181,6 +183,27 @@ const UserValues: React.FC = () => {
             alert('Please select exactly 7 values before proceeding.');
             return;
         }
+        
+        // If we've completed the last step, mark values as completed
+        if (activeStep === 2 && profile && user) {
+            const currentProgress = profile.progress || {
+                profile: false,
+                values: false,
+                assessment: false,
+                startup: false
+            };
+            await updateProfile({
+                id: user.id,
+                progress: {
+                    ...currentProgress,
+                    values: true
+                }
+            });
+            // Navigate back to user page after completion
+            navigate('/user');
+            return;
+        }
+        
         setActiveStep(prev => prev + 1);
     };
 

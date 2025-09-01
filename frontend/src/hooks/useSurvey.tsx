@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabaseGetPattern, supabaseGetSurvey, supabaseGetSurveyByName } from '@/lib/supabase';
-import { Pattern, Survey } from '@/types/database';
+import { Survey } from '@/types/database';
 
 interface UseSurvey {
   survey: Survey | null;

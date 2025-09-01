@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Fab, Slide, useMediaQuery, useTheme, Badge, IconButton, Typography, Fade } from '@mui/material';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
+import { Box, Fab, Slide, useMediaQuery, useTheme, Badge, IconButton, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChatIcon from '@mui/icons-material/Chat';

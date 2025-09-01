@@ -4,7 +4,6 @@ import type {
   Document,
   FileRecord,
   User,
-  UserCreate,
   Profile,
   ProfileCreate,
   ProfileUpdate,
@@ -102,18 +101,28 @@ export async function supabaseLogin(identifier: string, password: string) {
   };
 }
 
-// OTP Authentication - sends 6-digit code instead of magic link
-export async function supabaseSendOtp(email: string) {
+// Magic Link Authentication - sends magic link for passwordless login
+export async function supabaseSendMagicLink(email: string) {
+  const options: any = {
+    shouldCreateUser: false, // Don't create new users via magic link login
+    emailRedirectTo: `${window.location.origin}/auth/callback`,
+  };
+
+  // Login doesn't require captcha - only signup does
+
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: {
-      shouldCreateUser: false, // Don't create new users via OTP
-    },
+    options,
   });
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return { success: true, message: 'Check your email for the login code!' };
+  return { success: true, message: 'Check your email for the magic link!' };
+}
+
+// OTP Authentication - sends 6-digit code instead of magic link (legacy, kept for compatibility)
+export async function supabaseSendOtp(email: string) {
+  return supabaseSendMagicLink(email);
 }
 
 // Verify OTP (for email verification after magic link click)
@@ -135,96 +144,139 @@ export async function supabaseVerifyOtp(email: string, token: string) {
   };
 }
 
-export async function supabaseRegister(userData: UserCreate & ProfileCreate): Promise<{
-  jwt: string,
-  user: User,
-  profile: Profile
+// Passwordless registration with magic link and hCaptcha
+export async function supabaseRegister(userData: {
+  email: string;
+  acceptedPrivacyPolicy?: boolean;
+  captchaToken?: string;
+}): Promise<{
+  user: { id: string; email: string }
 }> {
-  // First, sign up the user with Supabase Auth
-  const { data: authData, error: authError } = await supabase.auth.signUp({
-    email: userData.email,
-    password: userData.password!,
-    options: {
-      data: {
-        username: userData.username,
-        given_name: userData.given_name,
-        family_name: userData.family_name,
-      },
+  // For passwordless signup, we use signInWithOtp which sends a magic link
+  const options: any = {
+    shouldCreateUser: true,
+    emailRedirectTo: `${window.location.origin}/auth/callback`,
+    data: {
+      accepted_privacy_policy: userData.acceptedPrivacyPolicy || false,
+      privacy_policy_accepted_at: userData.acceptedPrivacyPolicy ? new Date().toISOString() : null,
     },
-  });
+  };
 
-  if (authError) throw new Error(handleSupabaseError(authError));
-
-  // Create user profile in the users table
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .insert({
-      id: authData.user!.id,
-      email: userData.email,
-      username: userData.username,
-      given_name: userData.given_name,
-      family_name: userData.family_name,
-      gender: userData.gender,
-      position: userData.position,
-      bio: userData.bio,
-      linkedin_profile: userData.linkedin_profile,
-      is_coach: userData.is_coach || false,
-      phone: userData.phone,
-      is_phone_visible: userData.is_phone_visible || false,
-    })
-    .select()
-    .single();
-
-  if (profileError) throw new Error(handleSupabaseError(profileError));
-
-  // Handle avatar upload with new file system if provided
-  if (userData.avatarFile && authData.user) {
-    try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-
-      // Create FormData for file upload
-      const formData = new FormData();
-      formData.append('file', userData.avatarFile);
-
-      // Build query params
-      const params = new URLSearchParams();
-      params.append('category', 'avatar');
-      params.append('entity_type', 'profile');
-      params.append('entity_id', authData.user.id);
-
-      // Upload to backend
-      const response = await fetch(`${backendUrl}/api/files/upload?${params}`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${authData.session?.access_token}`,
-        },
-      });
-
-      if (response.ok) {
-        const fileRecord = await response.json();
-
-        // Update profile with avatar_id
-        if (fileRecord && fileRecord.id) {
-          await supabase
-            .from('profiles')
-            .update({ avatar_id: fileRecord.id })
-            .eq('id', authData.user.id);
-        }
-      }
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-    }
+  // Include captchaToken for signup if provided (Supabase has captcha enabled)
+  if (userData.captchaToken) {
+    options.captchaToken = userData.captchaToken;
   }
 
+  const { error } = await supabase.auth.signInWithOtp({
+    email: userData.email,
+    options,
+  });
+
+  if (error) {
+    // Check if user already exists
+    if (error.message?.includes('User already registered')) {
+      throw new Error('An account with this email already exists. Please sign in instead.');
+    }
+    throw new Error(handleSupabaseError(error));
+  }
+
+  // For OTP signup, we don't get user data immediately
+  // User will be created when they click the magic link
   return {
-    jwt: authData.session?.access_token || '',
     user: {
-      id: authData.user!.id,
+      id: '', // Will be set after email confirmation
       email: userData.email,
     },
-    profile: profile
   };
+}
+
+// Create or update user profile (called after email confirmation)
+export async function supabaseCreateProfile(profileData: ProfileCreate & { id: string }): Promise<Profile> {
+  // Check if profile already exists
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select()
+    .eq('id', profileData.id)
+    .single();
+
+  if (existingProfile) {
+    // Update existing profile
+    const { data: profile, error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        username: profileData.username,
+        given_name: profileData.given_name,
+        family_name: profileData.family_name,
+        gender: profileData.gender,
+        position: profileData.position,
+        bio: profileData.bio,
+        linkedin_profile: profileData.linkedin_profile,
+        is_coach: profileData.is_coach || false,
+        phone: profileData.phone,
+        is_phone_visible: profileData.is_phone_visible || false,
+      })
+      .eq('id', profileData.id)
+      .select()
+      .single();
+
+    if (updateError) throw new Error(handleSupabaseError(updateError));
+    return profile as Profile;
+  } else {
+    // Create new profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: profileData.id,
+        username: profileData.username,
+        given_name: profileData.given_name,
+        family_name: profileData.family_name,
+        gender: profileData.gender,
+        position: profileData.position,
+        bio: profileData.bio,
+        linkedin_profile: profileData.linkedin_profile,
+        is_coach: profileData.is_coach || false,
+        phone: profileData.phone,
+        is_phone_visible: profileData.is_phone_visible || false,
+      })
+      .select()
+      .single();
+
+    if (profileError) {
+      console.error('Profile creation failed for user:', profileData.id, profileError);
+      if (profileError.message?.includes('row-level security policy')) {
+        throw new Error('Profile creation failed. Please contact support to complete your registration.');
+      }
+      throw new Error(handleSupabaseError(profileError));
+    }
+
+    // Handle avatar upload if provided
+    if (profileData.avatarFile) {
+      const session = await getSession();
+      const fileRecord = await uploadFileToBackend(
+        profileData.avatarFile,
+        'avatar',
+        'profile',
+        profileData.id,
+        session?.access_token
+      );
+
+      if (fileRecord) {
+        // Update profile with avatar_id
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ avatar_id: fileRecord.id })
+          .eq('id', profileData.id);
+
+        if (!updateError) {
+          profile.avatar_id = fileRecord.id;
+        } else {
+          console.error('Failed to update profile with avatar:', updateError);
+        }
+      }
+    }
+
+    return profile as Profile;
+  }
 }
 
 export async function supabaseMe(): Promise<{ user: User; profile: Profile | null }> {
@@ -316,40 +368,17 @@ export async function supabaseUpdateProfile(updateProfile: ProfileUpdate) {
 
   // Handle avatar upload with new file system if provided
   if (avatar) {
-    try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-      const { data: { session } } = await supabase.auth.getSession();
+    const fileRecord = await uploadFileToBackend(
+      avatar,
+      'avatar',
+      'profile',
+      id as string
+    );
 
-      // Create FormData for file upload
-      const formData = new FormData();
-      formData.append('file', avatar);
-
-      // Build query params
-      const params = new URLSearchParams();
-      params.append('category', 'avatar');
-      params.append('entity_type', 'profile');
-      params.append('entity_id', id as string);
-
-      // Upload to backend
-      const response = await fetch(`${backendUrl}/api/files/upload?${params}`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`Upload failed: ${error}`);
-      }
-
-      const fileRecord = await response.json();
-      if (fileRecord && fileRecord.id) {
-        avatarId = fileRecord.id;
-      }
-    } catch (error) {
-      throw new Error(handleSupabaseError(error));
+    if (fileRecord) {
+      avatarId = fileRecord.id;
+    } else {
+      throw new Error('Failed to upload avatar');
     }
   }
 
@@ -464,29 +493,9 @@ export async function supabaseCreateStartup(startup: StartupCreate): Promise<Sta
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) throw new Error('Not authenticated');
 
-  // Field names already match database schema
-  const dbStartup = {
-    name: startup.name,
-    start_date: startup.start_date,
-    founders_count: startup.founders_count,
-    background: startup.background,
-    product_type: startup.product_type,
-    idea: startup.idea,
-    industry: startup.industry,
-    industry_other: startup.industry_other,
-    target_market: startup.target_market,
-    phase: startup.phase,
-    is_problem_validated: startup.is_problem_validated,
-    qualified_conversations_count: startup.qualified_conversations_count,
-    is_target_group_defined: startup.is_target_group_defined,
-    is_prototype_validated: startup.is_prototype_validated,
-    is_mvp_tested: startup.is_mvp_tested,
-    categories: startup.categories,
-  };
-
   const { data, error } = await supabase
     .from('startups')
-    .insert(dbStartup)
+    .insert(startup)
     .select()
     .single();
 
@@ -526,6 +535,7 @@ export async function supabaseUpdateStartup(updateStartup: StartupUpdate): Promi
   if (updates.scores) dbUpdate.scores = updates.scores;
   if (updates.score) dbUpdate.score = updates.score;
   if (updates.categories) dbUpdate.categories = updates.categories;
+  if (updates.progress) dbUpdate.progress = updates.progress;
 
   const { data, error } = await supabase
     .from('startups')
@@ -759,6 +769,68 @@ export function getFileUrl(fileId: string): string {
   return `${backendUrl}/api/files/${fileId}`;
 }
 
+// Shared file upload helper function (DRY principle)
+export async function uploadFileToBackend(
+  file: File,
+  category: string,
+  entityType: string,
+  entityId: string,
+  accessToken?: string | null
+): Promise<{ id: string;[key: string]: any } | null> {
+  try {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+
+    // Get access token if not provided
+    let token = accessToken;
+    if (!token) {
+      const { data: { session } } = await supabase.auth.getSession();
+      token = session?.access_token || null;
+    }
+
+    if (!token) {
+      console.error('No access token available for file upload');
+      return null;
+    }
+
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Build query params
+    const params = new URLSearchParams();
+    params.append('category', category);
+    params.append('entity_type', entityType);
+    params.append('entity_id', entityId);
+
+    // Upload to backend
+    const response = await fetch(`${backendUrl}/api/files/upload?${params}`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`File upload failed (${response.status}):`, errorText);
+      return null;
+    }
+
+    const fileRecord = await response.json();
+
+    if (!fileRecord || !fileRecord.id) {
+      console.error('Invalid file record returned from upload');
+      return null;
+    }
+
+    return fileRecord;
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    return null;
+  }
+}
+
 // Helper function to get document URL
 export function getDocumentUrl(documentId: string): string {
   if (!documentId) return '';
@@ -796,38 +868,20 @@ export async function updateEntityImage(
   imageFile: File
 ): Promise<string | null> {
   try {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-    const { data: { session } } = await supabase.auth.getSession();
+    // Determine the category based on entity type
+    const category = entityType === 'startup' ? 'logo' :
+      entityType === 'profile' ? 'avatar' : 'image';
 
-    // Create FormData for file upload
-    const formData = new FormData();
-    formData.append('file', imageFile);
+    // Use the shared upload function
+    const fileRecord = await uploadFileToBackend(
+      imageFile,
+      category,
+      entityType,
+      entityId
+    );
 
-    // Build query params
-    const params = new URLSearchParams();
-    params.append('category', entityType === 'startup' ? 'logo' : entityType === 'profile' ? 'avatar' : 'image');
-    params.append('entity_type', entityType);
-    params.append('entity_id', entityId);
-
-    // Upload to backend
-    const response = await fetch(`${backendUrl}/api/files/upload?${params}`, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Authorization': `Bearer ${session?.access_token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error(`Error uploading ${entityType} image:`, error);
-      return null;
-    }
-
-    const fileRecord = await response.json();
-
-    if (!fileRecord || !fileRecord.id) {
-      console.error(`Error: No file record returned for ${entityType}`);
+    if (!fileRecord) {
+      console.error(`Failed to upload ${entityType} image`);
       return null;
     }
 
@@ -1517,7 +1571,7 @@ export async function supabaseGetStartupMembers(startupId: string): Promise<Prof
 
   if (profilesError) throw new Error(handleSupabaseError(profilesError));
 
-  return data;
+  return data as Profile[];
 }
 
 export async function supabaseGetAvailableStartups(): Promise<Startup[]> {

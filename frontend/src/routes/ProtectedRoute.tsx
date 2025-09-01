@@ -28,7 +28,7 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({
   }
 
   // Allow access to login and register pages without authentication
-  if (['/login', '/signup', '/create-startup'].includes(location.pathname)) {
+  if (['/login', '/signup'].includes(location.pathname)) {
     return children;
   }
 
@@ -37,7 +37,7 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // If the user is not associated with a startup, redirect to create-startup
+  // If the user is not associated with a startup, redirect to no-startup page
   if (requiresStartup && !startup) {
     console.log(user);
     console.log(startup);

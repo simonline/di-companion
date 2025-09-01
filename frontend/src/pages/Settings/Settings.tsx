@@ -15,10 +15,10 @@ import {
   Person,
   Email,
   Logout,
-  Security,
   NotificationsActive,
   DarkMode,
-  Language
+  Language,
+  Policy,
 } from '@mui/icons-material';
 import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
@@ -28,7 +28,7 @@ import useTheme from '@/store/theme';
 import { Themes } from '@/theme/types';
 
 function Settings() {
-  const { user, logout } = useAuthContext();
+  const { user, profile, logout } = useAuthContext();
   const navigate = useNavigate();
   const [themeMode, themeActions] = useTheme();
 
@@ -58,30 +58,21 @@ function Settings() {
                   Account Settings
                 </Typography>
                 <List>
-                  <ListItemButton onClick={() => navigate('/profile/edit')}>
+                  <ListItemButton onClick={() => navigate('/profile/edit?from=settings')}>
                     <ListItemIcon>
                       <Person />
                     </ListItemIcon>
                     <ListItemText
-                      primary="Edit Profile"
-                      secondary="Update your personal information"
+                      primary="Name"
+                      secondary={`${profile?.given_name || ''} ${profile?.family_name || ''}`.trim() || 'Not set'}
                     />
                   </ListItemButton>
-                  <ListItemButton onClick={() => navigate('/profile/edit/password')}>
-                    <ListItemIcon>
-                      <Security />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Change Password"
-                      secondary="Update your security credentials"
-                    />
-                  </ListItemButton>
-                  <ListItemButton>
+                  <ListItemButton onClick={() => navigate('/profile/edit?from=settings')}>
                     <ListItemIcon>
                       <Email />
                     </ListItemIcon>
                     <ListItemText
-                      primary="Email Preferences"
+                      primary="Email"
                       secondary={user.email}
                     />
                   </ListItemButton>
@@ -120,6 +111,27 @@ function Settings() {
                     </ListItemIcon>
                     <ListItemText primary="Language" secondary="English" />
                   </ListItem>
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" fontWeight="600" gutterBottom>
+                  Legal & Privacy
+                </Typography>
+                <List>
+                  <ListItemButton onClick={() => navigate('/privacy-policy')}>
+                    <ListItemIcon>
+                      <Policy />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Privacy Policy"
+                      secondary="View our privacy policy and data handling practices"
+                    />
+                  </ListItemButton>
                 </List>
               </CardContent>
             </Card>

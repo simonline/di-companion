@@ -436,7 +436,7 @@ const StartupTeam: React.FC = () => {
         <Box sx={{ width: '100%', maxWidth: 600, mb: 4 }}>
           <Button
             startIcon={<ArrowBackIcon />}
-            onClick={() => navigate(`/profile/startup/${startupId}`)}
+            onClick={() => navigate(`/startup`)}
             sx={{ mb: 2 }}
           >
             Back to Startup Profile

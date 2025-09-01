@@ -24,6 +24,7 @@ function Menu() {
   const isCoach = profile?.is_coach || false;
   const userType = isCoach ? 'coach' : 'startup';
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
+  const routes = useAppRoutes();
 
   // Hide menu on mobile when keyboard is visible
   if (isMobile && isMobileKeyboardVisible) {
@@ -44,7 +45,7 @@ function Menu() {
             },
           }}
         >
-          {Object.values(useAppRoutes())
+          {Object.values(routes)
             .filter(
               (route) => route.title && (!route.visibleTo || route.visibleTo.includes(userType)),
             )

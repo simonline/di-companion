@@ -14,6 +14,7 @@ export enum Pages {
   Progress,
   ProgressPattern,
   Startup,
+  StartupCreate,
   CoachStartup,
   Coach,
   Settings,
@@ -23,9 +24,8 @@ export enum Pages {
   Analytics,
   Profile,
   UserProfile,
-  UserProfileField,
-  StartupProfile,
-  StartupProfileStep,
+  StartupForm,
+  StartupFormStep,
   StartupEdit,
   Survey,
   SelfAssessment,
@@ -44,6 +44,9 @@ export enum Pages {
   Capture,
   StakeholderMap,
   Persona,
+  ConfirmEmail,
+  EmailConfirmed,
+  PrivacyPolicy,
 }
 
 type PathRouteCustomProps = {

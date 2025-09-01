@@ -63,7 +63,7 @@ function Startup() {
               </Typography>
               <Button
                 variant="contained"
-                onClick={() => navigate('/create-startup')}
+                onClick={() => navigate('/startup/create')}
               >
                 Create Startup
               </Button>
@@ -74,6 +74,20 @@ function Startup() {
     );
   }
 
+  // Use progress field if available
+  const stepProgress = startup.progress || {
+    'startup-profile': false,
+    'startup-members': false,
+    'team-values': false,
+    'team-contract': false,
+    'team-assessment': false,
+    'stakeholder-map': false,
+    'interviews': false,
+    'persona': false,
+    'pitch-deck': false,
+    'financial-plan': false,
+  };
+
   const steps: Step[] = [
     {
       id: 'startup-profile',
@@ -81,17 +95,17 @@ function Startup() {
       description: 'Complete your startup information and vision',
       icon: RocketLaunch,
       color: categoryColors.team,
-      path: `/profile/startup/${startup.id}/edit`,
-      completed: true // You can track actual completion status
+      path: `/startup/edit`,
+      completed: stepProgress['startup-profile']
     },
     {
       id: 'startup-members',
-      title: 'Startup Members',
+      title: 'Startup Team',
       description: 'Add team members and define roles',
       icon: Group,
       color: categoryColors.team,
-      path: `/profile/startup/${startup.id}/team`,
-      completed: false
+      path: `/startup/team`,
+      completed: stepProgress['startup-members']
     },
     {
       id: 'team-values',
@@ -100,7 +114,7 @@ function Startup() {
       icon: Handshake,
       color: categoryColors.team,
       path: '/tools/team-values',
-      completed: false
+      completed: stepProgress['team-values']
     },
     {
       id: 'team-contract',
@@ -109,7 +123,7 @@ function Startup() {
       icon: Description,
       color: categoryColors.team,
       path: '/tools/team-contract',
-      completed: false
+      completed: stepProgress['team-contract']
     },
     {
       id: 'team-assessment',
@@ -118,7 +132,7 @@ function Startup() {
       icon: Assessment,
       color: categoryColors.team,
       path: '/self-assessment',
-      completed: false
+      completed: stepProgress['team-assessment']
     },
     {
       id: 'stakeholder-map',
@@ -127,7 +141,7 @@ function Startup() {
       icon: AccountTree,
       color: categoryColors.stakeholders,
       path: '/tools/stakeholder-map',
-      completed: false
+      completed: stepProgress['stakeholder-map']
     },
     {
       id: 'interviews',
@@ -136,7 +150,7 @@ function Startup() {
       icon: RecordVoiceOver,
       color: categoryColors.stakeholders,
       path: '/tools/interviews',
-      completed: false
+      completed: stepProgress['interviews']
     },
     {
       id: 'persona',
@@ -145,7 +159,7 @@ function Startup() {
       icon: Person,
       color: categoryColors.stakeholders,
       path: '/tools/persona',
-      completed: false
+      completed: stepProgress['persona']
     },
     {
       id: 'pitch-deck',
@@ -154,7 +168,7 @@ function Startup() {
       icon: Slideshow,
       color: categoryColors.product,
       path: '/tools/pitch-deck',
-      completed: false
+      completed: stepProgress['pitch-deck']
     },
     {
       id: 'financial-plan',
@@ -163,7 +177,7 @@ function Startup() {
       icon: AttachMoney,
       color: categoryColors.sustainability,
       path: '/tools/financial-plan',
-      completed: false
+      completed: stepProgress['financial-plan']
     }
   ];
 

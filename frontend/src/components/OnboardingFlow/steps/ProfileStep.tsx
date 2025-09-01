@@ -19,7 +19,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useAuthContext } from '@/hooks/useAuth';
 import { OnboardingStepProps } from '../OnboardingFlow';
 import { getAvatarUrl } from '@/lib/supabase';
-import { FileRecord, ProfileUpdate } from '@/types/database';
+import { ProfileUpdate } from '@/types/database';
 
 interface ProfileFormValues {
   email: string;

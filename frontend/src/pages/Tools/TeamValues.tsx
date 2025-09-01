@@ -4,7 +4,6 @@ import {
     Card,
     CardContent,
     Typography,
-    Container,
     Button,
 } from '@mui/material';
 import { Groups, ArrowBack } from '@mui/icons-material';
@@ -37,7 +36,7 @@ const TeamValues: React.FC = () => {
                                 Team Values Workshop
                             </Typography>
                             <Typography variant="body1" color="text.secondary">
-                                Coming soon - Define your team's corporate value set through a collaborative process
+                                Coming soon - Define your team&apos;s corporate value set through a collaborative process
                             </Typography>
                         </Box>
 
@@ -51,7 +50,7 @@ const TeamValues: React.FC = () => {
                                 This feature is under development
                             </Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                                We're working on a collaborative tool to help your team define and align on shared values.
+                                We&apos;re working on a collaborative tool to help your team define and align on shared values.
                             </Typography>
                         </Box>
                     </CardContent>

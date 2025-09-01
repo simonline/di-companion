@@ -8,10 +8,12 @@ import {
   supabaseLogin,
   supabaseLogout,
   supabaseRegister,
+  supabaseCreateProfile,
   supabaseCreateStartup,
   supabaseUpdateStartup,
   supabaseUpdateProfile,
   supabaseSendOtp,
+  supabaseSendMagicLink,
   supabaseVerifyOtp,
   getSession,
 } from '@/lib/supabase';
@@ -25,7 +27,6 @@ import {
   StartupPattern,
   StartupUpdate,
   User,
-  UserCreate,
 } from '@/types/database';
 import type { CategoryEnum } from '@/utils/constants';
 import { supabase } from '@/lib/supabase';
@@ -43,7 +44,8 @@ interface UseAuthReturn extends AuthState {
   login: (identifier: string, password: string) => Promise<User>;
   sendOtp: (email: string) => Promise<{ success: boolean; message: string }>;
   verifyOtp: (email: string, token: string) => Promise<void>;
-  register: (data: UserCreate & ProfileCreate) => Promise<User>;
+  register: (data: { email: string; acceptedPrivacyPolicy?: boolean; captchaToken?: string }) => Promise<{ id: string; email: string }>;
+  createProfile: (data: ProfileCreate) => Promise<Profile>;
   createStartup: (data: StartupCreate) => Promise<Startup>;
   updateStartup: (data: StartupUpdate) => Promise<Startup>;
   updateProfile: (data: ProfileUpdate) => Promise<Profile>;
@@ -71,6 +73,27 @@ export function useAuth(): UseAuthReturn {
 
     const now = Math.floor(Date.now() / 1000);
     return session.expires_at ? session.expires_at < now : true;
+  }, []);
+
+
+  const setUserAndProfile = useCallback((userData: User | null, profileData: Profile | null) => {
+    setState((prev) => ({ ...prev, user: userData, profile: profileData, error: null }));
+    if (userData) {
+      localStorage.setItem('user', JSON.stringify(userData));
+      identifyUser(userData.id);
+    } else {
+      localStorage.removeItem('user');
+      identifyUser("");
+    }
+  }, []);
+
+  const setStartup = useCallback((startupData: Startup | null) => {
+    setState((prev) => ({ ...prev, startup: startupData, error: null }));
+    if (startupData) {
+      localStorage.setItem('startup', JSON.stringify(startupData));
+    } else {
+      localStorage.removeItem('startup');
+    }
   }, []);
 
   // Setup event listener for auth state changes
@@ -126,11 +149,10 @@ export function useAuth(): UseAuthReturn {
       subscription.unsubscribe();
       clearInterval(tokenCheckInterval);
     };
-  }, [checkTokenExpiration, state.user]);
+  }, [setUserAndProfile, setStartup, checkTokenExpiration, state.user]);
 
   // Initialize user/startup from localStorage first, then validate with Supabase session
   // Note: We intentionally omit setUser and setStartup from deps to avoid infinite loops
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const initAuth = async () => {
       // First, check if we have a Supabase session (this reads from localStorage automatically)
@@ -253,27 +275,8 @@ export function useAuth(): UseAuthReturn {
     };
 
     initAuth();
-  }, []);
+  }, [setUserAndProfile, setStartup]);
 
-  const setUserAndProfile = useCallback((userData: User | null, profileData: Profile | null) => {
-    setState((prev) => ({ ...prev, user: userData, profile: profileData, error: null }));
-    if (userData) {
-      localStorage.setItem('user', JSON.stringify(userData));
-      identifyUser(userData.id);
-    } else {
-      localStorage.removeItem('user');
-      identifyUser("");
-    }
-  }, []);
-
-  const setStartup = useCallback((startupData: Startup | null) => {
-    setState((prev) => ({ ...prev, startup: startupData, error: null }));
-    if (startupData) {
-      localStorage.setItem('startup', JSON.stringify(startupData));
-    } else {
-      localStorage.removeItem('startup');
-    }
-  }, []);
 
   const clearError = useCallback(() => {
     setState((prev) => ({ ...prev, error: null }));
@@ -363,15 +366,14 @@ export function useAuth(): UseAuthReturn {
     [setUserAndProfile, setStartup],
   );
 
+  // Simplified registration - just email and password
   const register = useCallback(
-    async (data: UserCreate & ProfileCreate): Promise<User> => {
+    async (data: { email: string; acceptedPrivacyPolicy?: boolean; captchaToken?: string }): Promise<{ id: string; email: string }> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const result = await supabaseRegister(data);
-        // JWT token is stored by supabaseRegister function
-        const { user, profile } = result;
-        setUserAndProfile(user, profile);
-        return user;
+        // User is created but no profile yet - magic link sent to email
+        return result.user;
       } catch (error) {
         const err = error as Error;
         setState((prev) => ({
@@ -384,7 +386,33 @@ export function useAuth(): UseAuthReturn {
         setState((prev) => ({ ...prev, loading: false }));
       }
     },
-    [setUserAndProfile],
+    [],
+  );
+
+  // Create profile after email confirmation
+  const createProfile = useCallback(
+    async (data: ProfileCreate): Promise<Profile> => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+      try {
+        if (!state.user?.id) {
+          throw new Error('User must be logged in to create profile');
+        }
+        const profile = await supabaseCreateProfile({ ...data, id: state.user.id });
+        setUserAndProfile(state.user, profile);
+        return profile;
+      } catch (error) {
+        const err = error as Error;
+        setState((prev) => ({
+          ...prev,
+          error: err.message,
+          loading: false,
+        }));
+        throw error;
+      } finally {
+        setState((prev) => ({ ...prev, loading: false }));
+      }
+    },
+    [state.user, setUserAndProfile],
   );
 
   const createStartup = useCallback(
@@ -452,7 +480,7 @@ export function useAuth(): UseAuthReturn {
 
         // Return the updated user data (API response)
         // This doesn't include the merge as the setState hasn't necessarily applied yet
-        return updatedProfile;
+        return updatedProfile as Profile;
       } catch (error) {
         const err = error as Error;
         setState((prev) => ({
@@ -603,6 +631,7 @@ export function useAuth(): UseAuthReturn {
     sendOtp,
     verifyOtp,
     register,
+    createProfile,
     createStartup,
     updateStartup,
     updateProfile,
