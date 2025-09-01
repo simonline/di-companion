@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { Tables } from '@/types/database';
+import { Pattern } from '@/types/database';
 
 interface CurrentPatternContextType {
-    currentPattern: Tables<'patterns'> | null;
-    setCurrentPattern: (pattern: Tables<'patterns'> | null) => void;
+    currentPattern: Pattern | null;
+    setCurrentPattern: (pattern: Pattern | null) => void;
 }
 
 const CurrentPatternContext = createContext<CurrentPatternContextType | undefined>(undefined);
@@ -21,7 +21,7 @@ interface CurrentPatternProviderProps {
 }
 
 export const CurrentPatternProvider: React.FC<CurrentPatternProviderProps> = ({ children }) => {
-    const [currentPattern, setCurrentPattern] = useState<Tables<'patterns'> | null>(null);
+    const [currentPattern, setCurrentPattern] = useState<Pattern | null>(null);
 
     return (
         <CurrentPatternContext.Provider value={{ currentPattern, setCurrentPattern }}>

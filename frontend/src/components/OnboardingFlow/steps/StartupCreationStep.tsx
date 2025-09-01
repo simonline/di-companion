@@ -26,7 +26,7 @@ interface StartupFormValues {
   idea: string;
   product_type: string;
   industry: string;
-  industryOther?: string;
+  industry_other?: string;
   target_market: string;
   phase: string;
   is_problem_validated: boolean;
@@ -173,11 +173,11 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                     <FieldWithTooltip tooltip="When you first started working on this startup idea">
                       <TextField
                         fullWidth
-                        name="startDate"
+                        name="start_date"
                         label="Start Date"
                         type="date"
                         value={values.start_date}
-                        onChange={(e) => setFieldValue('startDate', e.target.value)}
+                        onChange={(e) => setFieldValue('start_date', e.target.value)}
                         InputLabelProps={{ shrink: true }}
                         error={touched.start_date && Boolean(errors.start_date)}
                         helperText={touched.start_date && errors.start_date}
@@ -250,7 +250,7 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                         error={touched.idea && Boolean(errors.idea)}
                         helperText={touched.idea && errors.idea}
                         placeholder="Describe your startup idea in a few sentences (max 200 characters)"
-                        inputProps={{ max_length: 200 }}
+                        inputProps={{ maxLength: 200 }}
                       />
                     </FieldWithTooltip>
                   </Grid>
@@ -269,10 +269,10 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                       <TextField
                         select
                         fullWidth
-                        name="productType"
+                        name="product_type"
                         label="What are you building?"
                         value={values.product_type}
-                        onChange={(e) => setFieldValue('productType', e.target.value)}
+                        onChange={(e) => setFieldValue('product_type', e.target.value)}
                         error={touched.product_type && Boolean(errors.product_type)}
                         helperText={touched.product_type && errors.product_type}
                       >
@@ -308,10 +308,10 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                     <Grid item xs={12}>
                       <TextField
                         fullWidth
-                        name="industryOther"
+                        name="industry_other"
                         label="Please specify your industry"
                         value={values.industry_other || ''}
-                        onChange={(e) => setFieldValue('industryOther', e.target.value)}
+                        onChange={(e) => setFieldValue('industry_other', e.target.value)}
                       />
                     </Grid>
                   )}
@@ -321,10 +321,10 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                       <TextField
                         select
                         fullWidth
-                        name="targetMarket"
+                        name="target_market"
                         label="Target Market"
                         value={values.target_market}
-                        onChange={(e) => setFieldValue('targetMarket', e.target.value)}
+                        onChange={(e) => setFieldValue('target_market', e.target.value)}
                         error={touched.target_market && Boolean(errors.target_market)}
                         helperText={touched.target_market && errors.target_market}
                       >
@@ -371,9 +371,9 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                     <FormControlLabel
                       control={
                         <Checkbox
-                          name="isProblemValidated"
+                          name="is_problem_validated"
                           checked={values.is_problem_validated}
-                          onChange={(e) => setFieldValue('isProblemValidated', e.target.checked)}
+                          onChange={(e) => setFieldValue('is_problem_validated', e.target.checked)}
                         />
                       }
                       label="Have you validated that your target market has the problem you're solving?"
@@ -384,11 +384,11 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                     <FieldWithTooltip tooltip="Number of in-depth conversations with potential customers">
                       <TextField
                         fullWidth
-                        name="qualifiedConversationsCount"
+                        name="qualified_conversations_count"
                         label="Customer Interviews Conducted"
                         type="number"
                         value={values.qualified_conversations_count}
-                        onChange={(e) => setFieldValue('qualifiedConversationsCount', Number(e.target.value))}
+                        onChange={(e) => setFieldValue('qualified_conversations_count', Number(e.target.value))}
                       />
                     </FieldWithTooltip>
                   </Grid>
@@ -397,9 +397,9 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                     <FormControlLabel
                       control={
                         <Checkbox
-                          name="isTargetGroupDefined"
+                          name="is_target_group_defined"
                           checked={values.is_target_group_defined}
-                          onChange={(e) => setFieldValue('isTargetGroupDefined', e.target.checked)}
+                          onChange={(e) => setFieldValue('is_target_group_defined', e.target.checked)}
                         />
                       }
                       label="Have you clearly defined your target customer segment?"
@@ -410,9 +410,9 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                     <FormControlLabel
                       control={
                         <Checkbox
-                          name="isPrototypeValidated"
+                          name="is_prototype_validated"
                           checked={values.is_prototype_validated}
-                          onChange={(e) => setFieldValue('isPrototypeValidated', e.target.checked)}
+                          onChange={(e) => setFieldValue('is_prototype_validated', e.target.checked)}
                         />
                       }
                       label="Have you created and tested a prototype with potential users?"
@@ -423,9 +423,9 @@ const StartupCreationStep: React.FC<OnboardingStepProps> = ({
                     <FormControlLabel
                       control={
                         <Checkbox
-                          name="isMvpTested"
+                          name="is_mvp_tested"
                           checked={values.is_mvp_tested}
-                          onChange={(e) => setFieldValue('isMvpTested', e.target.checked)}
+                          onChange={(e) => setFieldValue('is_mvp_tested', e.target.checked)}
                         />
                       }
                       label="Have you built and tested a Minimum Viable Product (MVP)?"

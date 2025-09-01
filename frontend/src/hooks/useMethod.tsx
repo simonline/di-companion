@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
 import { supabaseGetMethod } from '@/lib/supabase';
-import { Tables } from '@/types/database';
+import { Method } from '@/types/database';
 
 interface UseMethod {
-    method: Tables<'methods'> | null;
+    method: Method | null;
     loading: boolean;
     error: string | null;
 }

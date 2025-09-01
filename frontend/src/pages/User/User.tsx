@@ -120,7 +120,7 @@ const User: React.FC = () => {
               {/* Header Section */}
               <Stack direction="row" spacing={3} alignItems="center">
                 <Avatar
-                  src={avatarUrl}
+                  src={avatarUrl ? avatarUrl : undefined}
                   sx={{ width: 60, height: 60 }}
                   alt={`${profile?.given_name} ${profile?.family_name}`}
                 >
@@ -131,7 +131,7 @@ const User: React.FC = () => {
                     {profile?.given_name} {profile?.family_name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                    Welcome! Let's set up your innovation toolkit and get you started
+                    Welcome! Let&apos;s set up your innovation toolkit and get you started
                   </Typography>
                 </Box>
               </Stack>
@@ -171,7 +171,7 @@ const User: React.FC = () => {
                 </Box>
                 {progressPercentage === 100 && (
                   <Typography variant="caption" sx={{ mt: 1, display: 'block', color: categoryColors.entrepreneur }}>
-                    🎉 Congratulations! You've completed all onboarding steps.
+                    🎉 Congratulations! You&apos;ve completed all onboarding steps.
                   </Typography>
                 )}
               </Box>
@@ -352,7 +352,7 @@ const User: React.FC = () => {
                     {recommendedPatterns[0].name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    This pattern can help you improve your startup's performance.
+                    This pattern can help you improve your startup&apos;s performance.
                   </Typography>
                 </CardContent>
                 <Box sx={{ p: 2, pt: 0, mt: 'auto' }}>

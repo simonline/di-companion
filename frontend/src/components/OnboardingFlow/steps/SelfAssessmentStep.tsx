@@ -14,7 +14,7 @@ import useUserQuestion from '@/hooks/useUserQuestion';
 import SurveyField from '@/components/SurveyField';
 import { generateValidationSchema, FormValues } from '@/utils/generateValidationSchema';
 import { generateInitialValues } from '@/utils/generateInitialValues';
-import { Tables } from '@/types/database';
+import { Question } from '@/types/database';
 import { OnboardingStepProps } from '../OnboardingFlow';
 import { supabaseGetSurveyQuestions } from '@/lib/supabase';
 
@@ -36,7 +36,7 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
   const { createUserQuestion, updateUserQuestion } = useUserQuestion();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [questions, setQuestions] = useState<Tables<'questions'>[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
 
   useEffect(() => {
     fetchSurveyByName("Self Assessment");
@@ -190,8 +190,8 @@ const SelfAssessmentStep: React.FC<OnboardingStepProps> = ({
           <Form>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {questions
-                .sort((a: Tables<'questions'>, b: Tables<'questions'>) => (a.order || 0) - (b.order || 0))
-                .map((question: Tables<'questions'>) => (
+                .sort((a: Question, b: Question) => (a.order || 0) - (b.order || 0))
+                .map((question: Question) => (
                   <Field key={question.id} name={question.id}>
                     {(fieldProps: any) => (
                       <SurveyField

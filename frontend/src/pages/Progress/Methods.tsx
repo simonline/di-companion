@@ -20,7 +20,7 @@ import useNotifications from '@/store/notifications';
 import { Grid } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { supabaseGetPatternMethods } from '@/lib/supabase';
-import { Tables } from '@/types/database';
+import { Method } from '@/types/database';
 
 const validationSchema = Yup.object({
   result_text: Yup.string().required('Please describe the tools or methods you applied'),
@@ -33,7 +33,7 @@ interface FormValues {
 }
 
 const Methods: React.FC = () => {
-  const { pattern_id } = useParams<{ pattern_id: string }>();
+  const { patternId } = useParams<{ patternId: string }>();
   const navigate = useNavigate();
   const [, notificationsActions] = useNotifications();
   const { startup } = useAuthContext();
@@ -48,7 +48,7 @@ const Methods: React.FC = () => {
     error: startupMethodError,
   } = useStartupMethod();
   const [methodModalOpen, setMethodModalOpen] = useState(false);
-  const [patternMethods, setPatternMethods] = useState<Tables<'methods'>[]>([]);
+  const [patternMethods, setPatternMethods] = useState<Method[]>([]);
 
   useEffect(() => {
     fetchPattern(patternId as string);
@@ -86,16 +86,16 @@ const Methods: React.FC = () => {
         updateStartupMethod({
           id: startupMethod.id,
           result_text: values.result_text,
-          resultFiles: values.resultFiles,
-        });
+        }, values.resultFiles);
       } else {
         createStartupMethod({
-          startup: { set: { id: startup.id } },
-          method: { set: { id: method.id } },
-          pattern: { set: { id: pattern.id } },
+          startup_id: startup.id,
+          method_id: method.id,
+          pattern_id: pattern.id,
           result_text: values.result_text,
-          resultFiles: values.resultFiles,
-        });
+        },
+          values.resultFiles
+        );
       }
       notificationsActions.push({
         options: {
@@ -104,7 +104,7 @@ const Methods: React.FC = () => {
         message: 'Method completed successfully',
       });
       // Continue with survey to complete the pattern
-      navigate(`/progress/${pattern_id}/survey`);
+      navigate(`/progress/${patternId}/survey`);
     } catch (error) {
       console.error('Error submitting form:', error);
       notificationsActions.push({

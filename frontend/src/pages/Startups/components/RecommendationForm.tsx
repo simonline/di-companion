@@ -17,19 +17,24 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { Tables, TablesInsert, TablesUpdate } from '@/types/database';
+import {
+  Pattern,
+  Recommendation,
+  RecommendationCreate,
+  RecommendationUpdate
+} from '@/types/database';
 import useSearch from '@/hooks/useSearch';
 import { useAuthContext } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 
-type RecommendationWithPatterns = Tables<'recommendations'> & {
-  patterns?: Tables<'patterns'>[];
+type RecommendationWithPatterns = Recommendation & {
+  patterns?: Pattern[];
 };
 
 interface RecommendationFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: TablesInsert<'recommendations'> | TablesUpdate<'recommendations'>, patternIds: string[]) => Promise<void>;
+  onSubmit: (values: RecommendationCreate | RecommendationUpdate, patternIds: string[]) => Promise<void>;
   initialValues?: RecommendationWithPatterns;
   isSubmitting?: boolean;
   startupId: string;
@@ -58,8 +63,8 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
   const { user } = useAuthContext();
   const { SearchComponent, searchResults } = useSearch();
   const isEditMode = Boolean(initialValues?.id);
-  const [selectedPatterns, setSelectedPatterns] = useState<Tables<'patterns'>[]>([]);
-  
+  const [selectedPatterns, setSelectedPatterns] = useState<Pattern[]>([]);
+
   // Fetch patterns when editing a recommendation or use provided patterns
   useEffect(() => {
     const fetchPatterns = async () => {
@@ -72,14 +77,14 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
           .from('recommendations_patterns_lnk')
           .select('pattern_id, patterns(*)')
           .eq('recommendation_id', initialValues.id);
-        
+
         if (data) {
           const patterns = data.map((item: any) => item.patterns).filter(Boolean);
           setSelectedPatterns(patterns);
         }
       }
     };
-    
+
     fetchPatterns();
   }, [initialValues?.id, initialValues?.patterns, isEditMode]);
 
@@ -107,17 +112,17 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
           read_at: values.read_at,
         };
 
-        let formattedValues: TablesInsert<'recommendations'> | TablesUpdate<'recommendations'>;
+        let formattedValues: RecommendationCreate | RecommendationUpdate;
 
         if (values.id) {
           // For update
           formattedValues = {
             id: values.id,
             ...baseData,
-          } as TablesUpdate<'recommendations'>;
+          } as RecommendationUpdate;
         } else {
           // For create
-          formattedValues = baseData as TablesInsert<'recommendations'>;
+          formattedValues = baseData as RecommendationCreate;
         }
 
         // Pass pattern IDs separately

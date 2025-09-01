@@ -1,16 +1,16 @@
 import { useState, useCallback } from 'react';
 import { supabaseGetPattern, supabaseGetSurvey, supabaseGetSurveyByName } from '@/lib/supabase';
-import { Tables } from '@/types/database';
+import { Pattern, Survey } from '@/types/database';
 
 interface UseSurvey {
-  survey: Tables<'surveys'> | null;
+  survey: Survey | null;
   loading: boolean;
   error: string | null;
 }
 
 interface UseSurveyReturn extends UseSurvey {
   fetchSurvey: (id: string) => void;
-  fetchSurveyByPattern: (pattern_id: string) => void;
+  fetchSurveyByPattern: (patternId: string) => void;
   fetchSurveyByName: (name: string) => void;
   clearError: () => void;
 }
@@ -36,7 +36,7 @@ export default function useSurvey(): UseSurveyReturn {
     }
   }, []);
 
-  const fetchSurveyByPattern = useCallback(async (pattern_id: string) => {
+  const fetchSurveyByPattern = useCallback(async (patternId: string) => {
     try {
       const pattern = await supabaseGetPattern(patternId);
       if (!pattern.survey) {

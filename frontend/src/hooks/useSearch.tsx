@@ -1,18 +1,18 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import useSearchPatterns from './useSearchPatterns';
-import { Tables } from '@/types/database';
+import { Pattern } from '@/types/database';
 import SearchBar from '@/components/SearchBar';
 import SearchResults from '@/components/SearchResults';
 
 interface UseSearchReturn {
   searchContainerRef: React.RefObject<HTMLDivElement>;
-  searchResults: Tables<'patterns'>[] | null;
+  searchResults: Pattern[] | null;
   searchLoading: boolean;
   searchError: string | null;
   isSearching: boolean;
   handleSearch: (query: string) => void;
   SearchComponent: React.FC<{
-    onSelect?: (pattern: Tables<'patterns'>) => void;
+    onSelect?: (pattern: Pattern) => void;
     preventNavigation?: boolean;
     forceExpanded?: boolean;
   }>;
@@ -68,7 +68,7 @@ export default function useSearch(): UseSearchReturn {
       preventNavigation,
       forceExpanded,
     }: {
-      onSelect?: (pattern: Tables<'patterns'>) => void;
+      onSelect?: (pattern: Pattern) => void;
       preventNavigation?: boolean;
       forceExpanded?: boolean;
     }) => {

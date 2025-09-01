@@ -228,7 +228,8 @@ function UpdateProfile() {
 
     // Current avatar preview URL
     const [previewUrl, setPreviewUrl] = useState<string | null>(() => {
-      return profile ? getAvatarUrl(profile.avatar_id) : null;
+      const url = profile && profile.avatar_id ? getAvatarUrl(profile.avatar_id) : null;
+      return url ?? null;
     });
 
     // Create a preview when a new file is selected
@@ -248,7 +249,7 @@ function UpdateProfile() {
       form.setFieldValue('avatar', undefined);
 
       // Reset to existing avatar if available
-      setPreviewUrl(profile ? getAvatarUrl(profile.avatar_id) : null);
+      setPreviewUrl(profile && profile.avatar_id ? getAvatarUrl(profile.avatar_id) : null);
     };
 
     return (

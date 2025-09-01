@@ -1,5 +1,38 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Database, Tables, TablesInsert, TablesUpdate, User } from '@/types/database';
+import type {
+  Database,
+  Document,
+  FileRecord,
+  User,
+  UserCreate,
+  Profile,
+  ProfileCreate,
+  ProfileUpdate,
+  Pattern,
+  Startup,
+  StartupCreate,
+  StartupUpdate,
+  StartupPattern,
+  StartupPatternCreate,
+  StartupPatternUpdate,
+  Survey,
+  Question,
+  Method,
+  StartupMethod,
+  StartupMethodCreate,
+  StartupMethodUpdate,
+  Recommendation,
+  RecommendationCreate,
+  RecommendationUpdate,
+  Invitation,
+  InvitationCreate,
+  UserQuestion,
+  UserQuestionCreate,
+  UserQuestionUpdate,
+  Request,
+  RequestCreate,
+  RequestUpdate
+} from '@/types/database';
 import { CategoryEnum } from '@/utils/constants';
 
 // Initialize Supabase client
@@ -102,25 +135,15 @@ export async function supabaseVerifyOtp(email: string, token: string) {
   };
 }
 
-export async function supabaseRegister(userData: {
-  username: string;
-  email: string;
-  password: string;
-  given_name: string;
-  family_name: string;
-  gender?: string;
-  position?: string;
-  bio?: string;
-  linkedin_profile?: string;
-  avatar?: File;
-  is_coach?: boolean;
-  phone?: string;
-  is_phone_visible?: boolean;
-}) {
+export async function supabaseRegister(userData: UserCreate & ProfileCreate): Promise<{
+  jwt: string,
+  user: User,
+  profile: Profile
+}> {
   // First, sign up the user with Supabase Auth
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: userData.email,
-    password: userData.password,
+    password: userData.password!,
     options: {
       data: {
         username: userData.username,
@@ -155,42 +178,42 @@ export async function supabaseRegister(userData: {
   if (profileError) throw new Error(handleSupabaseError(profileError));
 
   // Handle avatar upload with new file system if provided
-  if (userData.avatar && authData.user) {
-    const fileExt = userData.avatar.name.split('.').pop();
-    const fileName = `avatar_${authData.user.id}.${fileExt}`;
-    const storagePath = `profiles/${authData.user.id}/${fileName}`;
+  if (userData.avatarFile && authData.user) {
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
-    // Upload to S3/storage
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(storagePath, userData.avatar, { upsert: true });
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('file', userData.avatarFile);
 
-    if (!uploadError) {
-      // Create file record
-      const { data: fileRecord, error: fileError } = await supabase
-        .from('files')
-        .insert({
-          filename: fileName,
-          original_name: userData.avatar.name,
-          mime_type: userData.avatar.type,
-          size_bytes: userData.avatar.size,
-          bucket: 'avatars',
-          storage_path: storagePath,
-          is_public: true,
-          entity_type: 'profile',
-          entity_id: authData.user.id,
-          uploaded_by: authData.user.id,
-        })
-        .select()
-        .single();
+      // Build query params
+      const params = new URLSearchParams();
+      params.append('category', 'avatar');
+      params.append('entity_type', 'profile');
+      params.append('entity_id', authData.user.id);
 
-      if (!fileError && fileRecord) {
+      // Upload to backend
+      const response = await fetch(`${backendUrl}/api/files/upload?${params}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${authData.session?.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const fileRecord = await response.json();
+
         // Update profile with avatar_id
-        await supabase
-          .from('profiles')
-          .update({ avatar_id: fileRecord.id })
-          .eq('id', authData.user.id);
+        if (fileRecord && fileRecord.id) {
+          await supabase
+            .from('profiles')
+            .update({ avatar_id: fileRecord.id })
+            .eq('id', authData.user.id);
+        }
       }
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
     }
   }
 
@@ -204,7 +227,7 @@ export async function supabaseRegister(userData: {
   };
 }
 
-export async function supabaseMe(): Promise<{ user: User; profile: Tables<'profiles'> | null }> {
+export async function supabaseMe(): Promise<{ user: User; profile: Profile | null }> {
   console.log('[supabaseMe] Starting to fetch user data...');
 
   try {
@@ -274,7 +297,7 @@ export async function supabaseMe(): Promise<{ user: User; profile: Tables<'profi
       profile: {
         ...profile,
         avatar: { url: avatarUrl }
-      } as Tables<'profiles'>
+      } as Profile
     };
   } catch (error) {
     console.error('[supabaseMe] Fatal error:', error);
@@ -287,45 +310,46 @@ export async function supabaseLogout() {
   if (error) throw new Error(handleSupabaseError(error));
 }
 
-export async function supabaseUpdateProfile(updateProfile: TablesUpdate<'profiles'>) {
+export async function supabaseUpdateProfile(updateProfile: ProfileUpdate) {
   const { id, avatar, ...updates } = updateProfile as any;
   let avatarId;
 
   // Handle avatar upload with new file system if provided
   if (avatar) {
-    const fileExt = avatar.name.split('.').pop();
-    const fileName = `avatar_${id}.${fileExt}`;
-    const storagePath = `profiles/${id}/${fileName}`;
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+      const { data: { session } } = await supabase.auth.getSession();
 
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(storagePath, avatar, { upsert: true });
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('file', avatar);
 
-    if (uploadError) throw new Error(handleSupabaseError(uploadError));
+      // Build query params
+      const params = new URLSearchParams();
+      params.append('category', 'avatar');
+      params.append('entity_type', 'profile');
+      params.append('entity_id', id as string);
 
-    // Create or update file record
-    const { data: fileRecord, error: fileError } = await supabase
-      .from('files')
-      .upsert({
-        filename: fileName,
-        original_name: avatar.name,
-        mime_type: avatar.type,
-        size_bytes: avatar.size,
-        bucket: 'avatars',
-        storage_path: storagePath,
-        is_public: true,
-        entity_type: 'profile',
-        entity_id: id,
-        uploaded_by: id,
-      }, {
-        onConflict: 'entity_type,entity_id',
-        ignoreDuplicates: false,
-      })
-      .select()
-      .single();
+      // Upload to backend
+      const response = await fetch(`${backendUrl}/api/files/upload?${params}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
+      });
 
-    if (!fileError && fileRecord) {
-      avatarId = fileRecord.id;
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Upload failed: ${error}`);
+      }
+
+      const fileRecord = await response.json();
+      if (fileRecord && fileRecord.id) {
+        avatarId = fileRecord.id;
+      }
+    } catch (error) {
+      throw new Error(handleSupabaseError(error));
     }
   }
 
@@ -345,8 +369,26 @@ export async function supabaseUpdateProfile(updateProfile: TablesUpdate<'profile
   return data;
 }
 
+export async function supabaseGetProfileById(userId: string): Promise<Profile | null> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(`
+      *,
+      user:users(*)
+    `)
+    .eq('id', userId)
+    .single();
+
+  if (error) {
+    console.error('[supabaseGetProfileById] Error fetching profile:', error);
+    return null;
+  }
+
+  return data as any;
+}
+
 // Patterns
-export async function supabaseGetPatterns(category?: CategoryEnum): Promise<Tables<'patterns'>[]> {
+export async function supabaseGetPatterns(category?: CategoryEnum): Promise<Pattern[]> {
   let query = supabase
     .from('patterns')
     .select(`
@@ -374,7 +416,7 @@ export async function supabaseGetPatterns(category?: CategoryEnum): Promise<Tabl
   if (error) throw new Error(handleSupabaseError(error));
 
   // Transform the data to match the expected format
-  return (data || []).map(pattern => {
+  return (data as any || []).map((pattern: Pattern) => {
     // Get image URL from the joined file record using backend endpoint
     const imageUrl = pattern.image_id ? getFileUrl(pattern.image_id) : '';
 
@@ -385,7 +427,7 @@ export async function supabaseGetPatterns(category?: CategoryEnum): Promise<Tabl
   });
 }
 
-export async function supabaseGetPattern(id: string): Promise<Tables<'patterns'>> {
+export async function supabaseGetPattern(id: string): Promise<Pattern> {
   const { data, error } = await supabase
     .from('patterns')
     .select(`
@@ -412,13 +454,13 @@ export async function supabaseGetPattern(id: string): Promise<Tables<'patterns'>
   const imageUrl = data.image_id ? getFileUrl(data.image_id) : '';
 
   return {
-    ...data,
+    ...(data as any),
     image: { url: imageUrl },
-  } as Tables<'patterns'>;
+  } as Pattern;
 }
 
 // Startups
-export async function supabaseCreateStartup(startup: TablesInsert<'startups'>): Promise<Tables<'startups'>> {
+export async function supabaseCreateStartup(startup: StartupCreate): Promise<Startup> {
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) throw new Error('Not authenticated');
 
@@ -458,10 +500,10 @@ export async function supabaseCreateStartup(startup: TablesInsert<'startups'>): 
       startup_id: data.id,
     });
 
-  return data;
+  return data as Startup;
 }
 
-export async function supabaseUpdateStartup(updateStartup: TablesUpdate<'startups'>): Promise<Tables<'startups'>> {
+export async function supabaseUpdateStartup(updateStartup: StartupUpdate): Promise<Startup> {
   const { id, ...updates } = updateStartup;
 
   // Field names already match database schema
@@ -494,11 +536,11 @@ export async function supabaseUpdateStartup(updateStartup: TablesUpdate<'startup
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data as Tables<'startups'>;
+  return data as Startup;
 }
 
 
-export async function supabaseGetUserStartups(userId: string): Promise<Tables<'startups'>[]> {
+export async function supabaseGetUserStartups(userId: string): Promise<Startup[]> {
   const { data: startupLinks, error } = await supabase
     .from('startups_users_lnk')
     .select('startup:startups(*)')
@@ -509,7 +551,7 @@ export async function supabaseGetUserStartups(userId: string): Promise<Tables<'s
   return startupLinks?.map((link: any) => link.startup).filter(Boolean) || [];
 }
 
-export async function supabaseGetStartup(id: string): Promise<Tables<'startups'>> {
+export async function supabaseGetStartup(id: string): Promise<Startup> {
   const { data, error } = await supabase
     .from('startups')
     .select('*')
@@ -518,17 +560,17 @@ export async function supabaseGetStartup(id: string): Promise<Tables<'startups'>
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as Startup;
 }
 
-export async function supabaseGetStartups(): Promise<Tables<'startups'>[]> {
+export async function supabaseGetStartups(): Promise<Startup[]> {
   const { data, error } = await supabase
     .from('startups')
     .select('*');
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as Startup[];
 }
 
 // Startup Patterns
@@ -536,7 +578,7 @@ export async function supabaseGetStartupPatterns(
   startupId: string,
   patternId?: string,
   dateRange?: { start_date: Date; endDate: Date }
-): Promise<Tables<'startup_patterns'>[]> {
+): Promise<StartupPattern[]> {
   let query = supabase
     .from('startup_patterns')
     .select(`
@@ -561,12 +603,12 @@ export async function supabaseGetStartupPatterns(
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as StartupPattern[];
 }
 
 export async function supabaseCreateStartupPattern(
-  startupPattern: TablesInsert<'startup_patterns'>
-): Promise<Tables<'startup_patterns'>> {
+  startupPattern: StartupPatternCreate
+): Promise<StartupPattern> {
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) throw new Error('Not authenticated');
 
@@ -587,12 +629,12 @@ export async function supabaseCreateStartupPattern(
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as StartupPattern;
 }
 
 export async function supabaseUpdateStartupPattern(
-  updateStartupPattern: TablesUpdate<'startup_patterns'>
-): Promise<Tables<'startup_patterns'>> {
+  updateStartupPattern: StartupPatternUpdate
+): Promise<StartupPattern> {
   const { id, ...updates } = updateStartupPattern;
 
   const { data, error } = await supabase
@@ -610,7 +652,7 @@ export async function supabaseUpdateStartupPattern(
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as StartupPattern;
 }
 
 // Other functions follow similar pattern...
@@ -623,7 +665,7 @@ export async function supabaseGetFiles(
   entityType?: string,
   entityId?: string,
   category?: string
-): Promise<Tables<'files'>[]> {
+): Promise<FileRecord[]> {
   let query = supabase
     .from('files')
     .select('*')
@@ -643,10 +685,10 @@ export async function supabaseGetFiles(
   const { data, error } = await query;
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data || [];
+  return data;
 }
 
-export async function supabaseGetFile(fileId: string): Promise<Tables<'files'> | null> {
+export async function supabaseGetFile(fileId: string): Promise<FileRecord | null> {
   const { data, error } = await supabase
     .from('files')
     .select('*')
@@ -663,8 +705,8 @@ export async function supabaseGetFile(fileId: string): Promise<Tables<'files'> |
 }
 
 export async function supabaseCreateFileRecord(
-  file: Omit<Tables<'files'>, 'id' | 'created_at' | 'updated_at'>
-): Promise<Tables<'files'>> {
+  file: Omit<FileRecord, 'id' | 'created_at' | 'updated_at'>
+): Promise<FileRecord> {
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) throw new Error('Not authenticated');
 
@@ -683,8 +725,8 @@ export async function supabaseCreateFileRecord(
 
 export async function supabaseUpdateFileRecord(
   fileId: string,
-  updates: Partial<Tables<'files'>>
-): Promise<Tables<'files'>> {
+  updates: Partial<FileRecord>
+): Promise<FileRecord> {
   const { data, error } = await supabase
     .from('files')
     .update(updates)
@@ -730,19 +772,17 @@ export function getDocumentUrl(documentId: string): string {
 
 // Helper function to get avatar URL - maintained for backward compatibility
 // This handles both old string URLs and new file objects
-export function getAvatarUrl(avatarUrlOrFile?: string | any): string | undefined {
-  if (!avatarUrlOrFile) return undefined;
+export function getAvatarUrl(avatarUrlOrFile?: string | any): string | null {
+  if (!avatarUrlOrFile) return null;
 
   // If it's a string and already a full URL, return as is
   if (typeof avatarUrlOrFile === 'string') {
     if (avatarUrlOrFile.startsWith('http')) {
       return avatarUrlOrFile;
     }
-    // Legacy support: get from Supabase storage if needed
-    const { data } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(avatarUrlOrFile);
-    return data.publicUrl;
+    // For legacy storage paths, use backend to serve the file
+    // The backend will handle the WebDAV/S3 authentication
+    return getFileUrl(avatarUrlOrFile);
   }
 
   // If it's a file object, use getFileUrl
@@ -755,68 +795,68 @@ export async function updateEntityImage(
   entityId: string,
   imageFile: File
 ): Promise<string | null> {
-  const fileExt = imageFile.name.split('.').pop();
-  const fileName = `${entityType}_${entityId}.${fileExt}`;
-  const storagePath = `${entityType}s/${entityId}/${fileName}`;
-  const bucket = `${entityType}s`;
+  try {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    const { data: { session } } = await supabase.auth.getSession();
 
-  // Upload to storage
-  const { error: uploadError } = await supabase.storage
-    .from(bucket)
-    .upload(storagePath, imageFile, { upsert: true });
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('file', imageFile);
 
-  if (uploadError) {
-    console.error(`Error uploading ${entityType} image:`, uploadError);
+    // Build query params
+    const params = new URLSearchParams();
+    params.append('category', entityType === 'startup' ? 'logo' : entityType === 'profile' ? 'avatar' : 'image');
+    params.append('entity_type', entityType);
+    params.append('entity_id', entityId);
+
+    // Upload to backend
+    const response = await fetch(`${backendUrl}/api/files/upload?${params}`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Authorization': `Bearer ${session?.access_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error(`Error uploading ${entityType} image:`, error);
+      return null;
+    }
+
+    const fileRecord = await response.json();
+
+    if (!fileRecord || !fileRecord.id) {
+      console.error(`Error: No file record returned for ${entityType}`);
+      return null;
+    }
+
+    // Update the entity with the new image_id
+    const columnName = entityType === 'startup' ? 'logo_id' :
+      entityType === 'profile' ? 'avatar_id' :
+        'image_id';
+
+    const tableName = `${entityType}s`;
+
+    const { error: updateError } = await supabase
+      .from(tableName as any)
+      .update({ [columnName]: fileRecord.id })
+      .eq('id', entityId);
+
+    if (updateError) {
+      console.error(`Error updating ${entityType} with image_id:`, updateError);
+      return null;
+    }
+
+    return fileRecord.id;
+  } catch (error) {
+    console.error(`Error uploading ${entityType} image:`, error);
     return null;
   }
-
-  // Create or update file record
-  const { data: fileRecord, error: fileError } = await supabase
-    .from('files')
-    .upsert({
-      filename: fileName,
-      original_name: imageFile.name,
-      mime_type: imageFile.type,
-      size_bytes: imageFile.size,
-      bucket,
-      storage_path: storagePath,
-      is_public: true,
-      entity_type: entityType,
-      entity_id: entityId,
-    }, {
-      onConflict: 'entity_type,entity_id',
-      ignoreDuplicates: false,
-    })
-    .select()
-    .single();
-
-  if (fileError) {
-    console.error(`Error creating file record for ${entityType}:`, fileError);
-    return null;
-  }
-
-  // Update the entity with the new image_id
-  const columnName = entityType === 'startup' ? 'logo_id' :
-    entityType === 'profile' ? 'avatar_id' :
-      'image_id';
-
-  const tableName = `${entityType}s`;
-
-  const { error: updateError } = await supabase
-    .from(tableName as any)
-    .update({ [columnName]: fileRecord.id })
-    .eq('id', entityId);
-
-  if (updateError) {
-    console.error(`Error updating ${entityType} with image_id:`, updateError);
-    return null;
-  }
-
-  return fileRecord.id;
 }
 
 // Surveys and Questions
-export async function supabaseGetSurveys(): Promise<Tables<'surveys'>[]> {
+export async function supabaseGetSurveys(): Promise<Survey[]> {
   const { data, error } = await supabase
     .from('surveys')
     .select(`
@@ -828,10 +868,10 @@ export async function supabaseGetSurveys(): Promise<Tables<'surveys'>[]> {
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as Survey[];
 }
 
-export async function supabaseGetSurvey(id: string): Promise<Tables<'surveys'>> {
+export async function supabaseGetSurvey(id: string): Promise<Survey> {
   const { data, error } = await supabase
     .from('surveys')
     .select(`
@@ -845,10 +885,10 @@ export async function supabaseGetSurvey(id: string): Promise<Tables<'surveys'>> 
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as Survey;
 }
 
-export async function supabaseGetSurveyByName(name: string): Promise<Tables<'surveys'>> {
+export async function supabaseGetSurveyByName(name: string): Promise<Survey> {
   const { data, error } = await supabase
     .from('surveys')
     .select(`
@@ -862,10 +902,10 @@ export async function supabaseGetSurveyByName(name: string): Promise<Tables<'sur
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as Survey;
 }
 
-export async function supabaseGetSurveyQuestions(surveyId: string): Promise<Tables<'questions'>[]> {
+export async function supabaseGetSurveyQuestions(surveyId: string): Promise<Question[]> {
   const { data, error } = await supabase
     .from('questions_survey_lnk')
     .select('question:questions(*)')
@@ -873,10 +913,10 @@ export async function supabaseGetSurveyQuestions(surveyId: string): Promise<Tabl
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data.map(link => link.question) as Tables<'questions'>[];
+  return data.map(link => link.question) as Question[];
 }
 
-export async function supabaseGetPatternQuestions(patternId: string): Promise<Tables<'questions'>[]> {
+export async function supabaseGetPatternQuestions(patternId: string): Promise<Question[]> {
   const { data, error } = await supabase
     .from('questions_patterns_lnk')
     .select('question:questions(*)')
@@ -884,10 +924,10 @@ export async function supabaseGetPatternQuestions(patternId: string): Promise<Ta
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data.map(link => link.question) as Tables<'questions'>[];
+  return data.map(link => link.question) as Question[];
 }
 
-export async function supabaseGetPatternMethods(patternId: string): Promise<Tables<'methods'>[]> {
+export async function supabaseGetPatternMethods(patternId: string): Promise<Method[]> {
   const { data, error } = await supabase
     .from('methods_patterns_lnk')
     .select('method:methods(*)')
@@ -895,10 +935,10 @@ export async function supabaseGetPatternMethods(patternId: string): Promise<Tabl
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data.map(link => link.method) as Tables<'methods'>[];
+  return data.map(link => link.method) as Method[];
 }
 
-export async function supabaseGetQuestions(): Promise<Tables<'questions'>[]> {
+export async function supabaseGetQuestions(): Promise<Question[]> {
   const { data, error } = await supabase
     .from('questions')
     .select('*')
@@ -906,7 +946,7 @@ export async function supabaseGetQuestions(): Promise<Tables<'questions'>[]> {
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as Question[];
 }
 
 // Startup Methods
@@ -914,7 +954,7 @@ export async function supabaseGetStartupMethods(
   startupId?: string,
   patternId?: string,
   methodId?: string
-): Promise<Tables<'startup_methods'>[]> {
+): Promise<StartupMethod[]> {
   let query = supabase
     .from('startup_methods')
     .select(`
@@ -941,7 +981,7 @@ export async function supabaseGetStartupMethods(
   return data;
 }
 
-export async function supabaseGetStartupMethod(id: string): Promise<Tables<'startup_methods'>> {
+export async function supabaseGetStartupMethod(id: string): Promise<StartupMethod> {
   const { data, error } = await supabase
     .from('startup_methods')
     .select(`
@@ -962,7 +1002,7 @@ export async function supabaseFindStartupMethod(
   startupId: string,
   patternId: string,
   methodId: string
-): Promise<Tables<'startup_methods'> | null> {
+): Promise<StartupMethod | null> {
   const { data, error } = await supabase
     .from('startup_methods')
     .select(`
@@ -984,7 +1024,7 @@ export async function supabaseFindStartupMethod(
   return data;
 }
 
-export async function supabaseCreateStartupMethod(createStartupMethod: TablesInsert<'startup_methods'>, resultFiles: File[]): Promise<Tables<'startup_methods'>> {
+export async function supabaseCreateStartupMethod(createStartupMethod: StartupMethodCreate, resultFiles: File[]): Promise<StartupMethod> {
   // Create the startup method
   const { data, error } = await supabase
     .from('startup_methods')
@@ -1018,7 +1058,7 @@ export async function supabaseCreateStartupMethod(createStartupMethod: TablesIns
   return data;
 }
 
-export async function supabaseUpdateStartupMethod(updateStartupMethod: TablesUpdate<'startup_methods'>, resultFiles: File[]): Promise<Tables<'startup_methods'>> {
+export async function supabaseUpdateStartupMethod(updateStartupMethod: StartupMethodUpdate, resultFiles: File[]): Promise<StartupMethod> {
   const { id, ...payload } = updateStartupMethod;
 
   // Update the startup method
@@ -1056,7 +1096,7 @@ export async function supabaseUpdateStartupMethod(updateStartupMethod: TablesUpd
 }
 
 // Recommendations
-export async function supabaseGetRecommendations(startupId?: string): Promise<Tables<'recommendations'>[]> {
+export async function supabaseGetRecommendations(startupId?: string): Promise<Recommendation[]> {
   let query = supabase
     .from('recommendations')
     .select(`
@@ -1076,14 +1116,14 @@ export async function supabaseGetRecommendations(startupId?: string): Promise<Ta
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as any;
 }
 
 
 export async function supabaseCreateRecommendation(
-  recommendation: TablesInsert<'recommendations'>,
+  recommendation: RecommendationCreate,
   patternIds?: string[]
-): Promise<Tables<'recommendations'>> {
+): Promise<Recommendation> {
   const { data: rec, error } = await supabase
     .from('recommendations')
     .insert(recommendation)
@@ -1107,12 +1147,12 @@ export async function supabaseCreateRecommendation(
   return supabaseGetRecommendation(rec.id);
 }
 
-async function supabaseGetRecommendation(id: string): Promise<Tables<'recommendations'>> {
+async function supabaseGetRecommendation(id: string): Promise<Recommendation> {
   const { data, error } = await supabase
     .from('recommendations')
     .select(`
       *,
-      patterns:recommendations_patterns(
+      patterns:recommendations_patterns_lnk(
         pattern:patterns(*)
       ),
       coach:users!coach_id(*),
@@ -1123,11 +1163,11 @@ async function supabaseGetRecommendation(id: string): Promise<Tables<'recommenda
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as any;
 }
 
 // Invitations
-export async function supabaseGetInvitations(startupId: string): Promise<Tables<'invitations'>[]> {
+export async function supabaseGetInvitations(startupId: string): Promise<Invitation[]> {
   const { data, error } = await supabase
     .from('invitations')
     .select('*')
@@ -1138,7 +1178,7 @@ export async function supabaseGetInvitations(startupId: string): Promise<Tables<
   return data;
 }
 
-export async function supabaseCreateInvitation(invitation: TablesInsert<'invitations'>): Promise<Tables<'invitations'>> {
+export async function supabaseCreateInvitation(invitation: InvitationCreate): Promise<Invitation> {
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) throw new Error('Not authenticated');
 
@@ -1159,7 +1199,7 @@ export async function supabaseCreateInvitation(invitation: TablesInsert<'invitat
   return data;
 }
 
-export async function supabaseAcceptInvitation(token: string): Promise<Tables<'invitations'>> {
+export async function supabaseAcceptInvitation(token: string): Promise<Invitation> {
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) throw new Error('Not authenticated');
 
@@ -1185,7 +1225,7 @@ export async function supabaseAcceptInvitation(token: string): Promise<Tables<'i
 }
 
 // Methods
-export async function supabaseGetMethods(): Promise<Tables<'methods'>[]> {
+export async function supabaseGetMethods(): Promise<Method[]> {
   const { data, error } = await supabase
     .from('methods')
     .select('*');
@@ -1195,7 +1235,7 @@ export async function supabaseGetMethods(): Promise<Tables<'methods'>[]> {
   return data;
 }
 
-export async function supabaseGetMethod(id: string): Promise<Tables<'methods'> | null> {
+export async function supabaseGetMethod(id: string): Promise<Method | null> {
   const { data, error } = await supabase
     .from('methods')
     .select(`
@@ -1217,7 +1257,7 @@ export async function supabaseGetUserQuestions(
   startupId?: string,
   userId?: string,
   patternId?: string
-): Promise<Tables<'user_questions'>[]> {
+): Promise<UserQuestion[]> {
   let query = supabase
     .from('user_questions')
     .select(`
@@ -1240,12 +1280,12 @@ export async function supabaseGetUserQuestions(
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as UserQuestion[];
 }
 
 export async function supabaseUpdateUserQuestion(
-  updateUserQuestion: TablesUpdate<'user_questions'>
-): Promise<Tables<'user_questions'>> {
+  updateUserQuestion: UserQuestionUpdate
+): Promise<UserQuestion> {
   const { id, ...updates } = updateUserQuestion;
 
   const { error } = await supabase
@@ -1260,7 +1300,7 @@ export async function supabaseUpdateUserQuestion(
   return supabaseGetUserQuestion(id!);
 }
 
-export async function supabaseGetUserQuestion(id: string): Promise<Tables<'user_questions'>> {
+export async function supabaseGetUserQuestion(id: string): Promise<UserQuestion> {
   const { data, error } = await supabase
     .from('user_questions')
     .select(`
@@ -1271,7 +1311,7 @@ export async function supabaseGetUserQuestion(id: string): Promise<Tables<'user_
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as UserQuestion;
 }
 
 export async function supabaseFindUserQuestion(
@@ -1279,7 +1319,7 @@ export async function supabaseFindUserQuestion(
   patternId: string,
   questionId: string,
   startupId?: string
-): Promise<Tables<'user_questions'> | null> {
+): Promise<UserQuestion | null> {
   // Find the user question by matching foreign keys directly
   let query = supabase
     .from('user_questions')
@@ -1305,8 +1345,8 @@ export async function supabaseFindUserQuestion(
 }
 
 export async function supabaseCreateUserQuestion(
-  createUserQuestion: TablesInsert<'user_questions'>
-): Promise<Tables<'user_questions'>> {
+  createUserQuestion: UserQuestionCreate
+): Promise<UserQuestion> {
   const { data, error } = await supabase
     .from('user_questions')
     .insert(createUserQuestion)
@@ -1319,7 +1359,7 @@ export async function supabaseCreateUserQuestion(
 }
 
 // Requests
-export async function supabaseGetRequests(startupId?: string): Promise<Tables<'requests'>[]> {
+export async function supabaseGetRequests(startupId?: string): Promise<Request[]> {
   let query = supabase
     .from('requests')
     .select('*');
@@ -1334,7 +1374,7 @@ export async function supabaseGetRequests(startupId?: string): Promise<Tables<'r
   return data;
 }
 
-export async function supabaseCreateRequest(request: TablesInsert<'requests'>): Promise<Tables<'requests'>> {
+export async function supabaseCreateRequest(request: RequestCreate): Promise<Request> {
   const { data, error } = await supabase
     .from('requests')
     .insert(request)
@@ -1346,7 +1386,7 @@ export async function supabaseCreateRequest(request: TablesInsert<'requests'>): 
   return data;
 }
 
-export async function supabaseUpdateRequest(update: TablesUpdate<'requests'>): Promise<Tables<'requests'>> {
+export async function supabaseUpdateRequest(update: RequestUpdate): Promise<Request> {
   const { id, ...updates } = update;
 
   const { data, error } = await supabase
@@ -1375,9 +1415,9 @@ export async function supabaseDeleteRequest(id: string): Promise<void> {
 
 // Additional missing functions
 export async function supabaseUpdateRecommendation(
-  update: TablesUpdate<'recommendations'>,
+  update: RecommendationUpdate,
   patternIds?: string[]
-): Promise<Tables<'recommendations'>> {
+): Promise<Recommendation> {
   const { id, ...updates } = update;
 
   const { error } = await supabase
@@ -1423,7 +1463,7 @@ export async function supabaseDeleteRecommendation(id: string): Promise<void> {
   if (error) throw new Error(handleSupabaseError(error));
 }
 
-export async function supabaseGetStartupPattern(startupPatternId: string): Promise<Tables<'startup_patterns'>> {
+export async function supabaseGetStartupPattern(startupPatternId: string): Promise<StartupPattern> {
   const patterns = await supabaseGetStartupPatterns('', '', undefined);
   const pattern = patterns.find(p => p.id === startupPatternId);
   if (!pattern) throw new Error('Startup pattern not found');
@@ -1439,11 +1479,11 @@ export async function supabaseDeleteInvitation(id: string): Promise<void> {
   if (error) throw new Error(handleSupabaseError(error));
 }
 
-export async function supabaseResendInvitation(id: string): Promise<Tables<'invitations'>> {
+export async function supabaseResendInvitation(id: string): Promise<Invitation> {
   return supabaseGetInvitation(id);
 }
 
-async function supabaseGetInvitation(id: string): Promise<Tables<'invitations'>> {
+async function supabaseGetInvitation(id: string): Promise<Invitation> {
   const { data, error } = await supabase
     .from('invitations')
     .select('*')
@@ -1455,7 +1495,7 @@ async function supabaseGetInvitation(id: string): Promise<Tables<'invitations'>>
   return data;
 }
 
-export async function supabaseGetStartupMembers(startupId: string): Promise<Tables<'profiles'>[]> {
+export async function supabaseGetStartupMembers(startupId: string): Promise<Profile[]> {
   // First get the user IDs from the link table
   const { data: linkData, error: linkError } = await supabase
     .from('startups_users_lnk')
@@ -1472,7 +1512,7 @@ export async function supabaseGetStartupMembers(startupId: string): Promise<Tabl
 
   const { data, error: profilesError } = await supabase
     .from('profiles')
-    .select('*')
+    .select('*, users!inner(*)')
     .in('id', userIds);
 
   if (profilesError) throw new Error(handleSupabaseError(profilesError));
@@ -1480,7 +1520,7 @@ export async function supabaseGetStartupMembers(startupId: string): Promise<Tabl
   return data;
 }
 
-export async function supabaseGetAvailableStartups(): Promise<Tables<'startups'>[]> {
+export async function supabaseGetAvailableStartups(): Promise<Startup[]> {
   return supabaseGetStartups();
 }
 
@@ -1511,30 +1551,30 @@ export async function uploadDocument(
 ): Promise<string | null> {
   try {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-    
+
     // Create FormData for file upload
     const formData = new FormData();
     formData.append('file', file);
-    
+
     // Build query params
     const params = new URLSearchParams();
     if (category) params.append('category', category);
     if (entityType) params.append('entity_type', entityType);
     if (entityId) params.append('entity_id', entityId);
     if (entityField) params.append('entity_field', entityField);
-    
+
     // Upload to backend
     const response = await fetch(`${backendUrl}/api/documents/upload?${params}`, {
       method: 'POST',
       body: formData,
       credentials: 'include', // Include cookies if using session auth
     });
-    
+
     if (!response.ok) {
       const error = await response.text();
       throw new Error(`Upload failed: ${error}`);
     }
-    
+
     const result = await response.json();
     return result.id;
   } catch (error) {
@@ -1543,7 +1583,7 @@ export async function uploadDocument(
   }
 }
 
-export async function getDocument(documentId: string): Promise<Tables<'documents'> | null> {
+export async function getDocument(documentId: string): Promise<Document | null> {
   try {
     // First get metadata from Supabase
     const { data, error } = await supabase
@@ -1575,29 +1615,29 @@ export async function getDocuments(filters?: {
   entityType?: string;
   entityId?: string;
   entityField?: string;
-}): Promise<Tables<'documents'>[]> {
+}): Promise<Document[]> {
   try {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-    
+
     // Build query params
     const params = new URLSearchParams();
     if (filters?.category) params.append('category', filters.category);
     if (filters?.entityType) params.append('entity_type', filters.entityType);
     if (filters?.entityId) params.append('entity_id', filters.entityId);
     if (filters?.entityField) params.append('entity_field', filters.entityField);
-    
+
     // Fetch from backend
     const response = await fetch(`${backendUrl}/api/documents?${params}`, {
       method: 'GET',
       credentials: 'include',
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch documents');
     }
-    
+
     const documents = await response.json();
-    
+
     // Add URLs to each document
     return documents.map((doc: any) => ({
       ...doc,
@@ -1612,13 +1652,13 @@ export async function getDocuments(filters?: {
 export async function deleteDocument(documentId: string): Promise<void> {
   try {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-    
+
     // Delete via backend API
     const response = await fetch(`${backendUrl}/api/documents/${documentId}`, {
       method: 'DELETE',
       credentials: 'include',
     });
-    
+
     if (!response.ok) {
       const error = await response.text();
       throw new Error(`Delete failed: ${error}`);
@@ -1633,14 +1673,14 @@ export async function getEntityDocuments(
   entityType: string,
   entityId: string,
   entityField?: string
-): Promise<Tables<'documents'>[]> {
+): Promise<Document[]> {
   try {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-    
+
     // Build query params
     const params = new URLSearchParams();
     if (entityField) params.append('entity_field', entityField);
-    
+
     // Fetch from backend
     const response = await fetch(
       `${backendUrl}/api/documents/entity/${entityType}/${entityId}?${params}`,
@@ -1649,13 +1689,13 @@ export async function getEntityDocuments(
         credentials: 'include',
       }
     );
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch entity documents');
     }
-    
+
     const documents = await response.json();
-    
+
     // Add URLs to each document
     return documents.map((doc: any) => ({
       ...doc,
@@ -1671,6 +1711,6 @@ export async function getEntityDocuments(
 export async function getStartupMethodDocuments(
   startupMethodId: string,
   field: string = 'resultFiles'
-): Promise<Tables<'documents'>[]> {
+): Promise<Document[]> {
   return getEntityDocuments('startup_method', startupMethodId, field);
 }

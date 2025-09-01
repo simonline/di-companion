@@ -1,16 +1,16 @@
 import { useState, useCallback, useRef } from 'react';
-import { Tables } from '@/types/database';
+import { Pattern } from '@/types/database';
 
 interface UseSearchPatternsReturn {
   searchPatterns: (query: string) => Promise<void>;
-  searchResults: Tables<'patterns'>[] | null;
+  searchResults: Pattern[] | null;
   loading: boolean;
   error: string | null;
   clearResults: () => void;
 }
 
 export default function useSearchPatterns(): UseSearchPatternsReturn {
-  const [searchResults, setSearchResults] = useState<Tables<'patterns'>[] | null>(null);
+  const [searchResults, setSearchResults] = useState<Pattern[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const activeRequestRef = useRef<AbortController | null>(null);
@@ -77,7 +77,7 @@ export default function useSearchPatterns(): UseSearchPatternsReturn {
         throw new Error(errorData.error?.message || 'API request failed');
       }
 
-      const data = (await response.json()) as { data: Tables<'patterns'>[] };
+      const data = (await response.json()) as { data: Pattern[] };
 
       // Only update state if this is still the active request
       if (activeRequestRef.current === abortController) {

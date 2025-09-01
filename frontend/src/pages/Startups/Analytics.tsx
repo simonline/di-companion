@@ -38,7 +38,7 @@ import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
-import { Tables } from '@/types/database';
+import { Startup } from '@/types/database';
 import { formatDistanceToNow, subWeeks, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { supabaseGetStartupPatterns, supabaseGetStartups, supabase } from '@/lib/supabase';
@@ -60,7 +60,7 @@ interface UniqueUser {
 }
 
 interface PatternInteraction {
-    pattern_id: string;
+    patternId: string;
     patternName: string;
     lastInteraction: Date;
     category?: CategoryEnum;
@@ -69,7 +69,7 @@ interface PatternInteraction {
 }
 
 interface StartupAnalytics {
-    startup: Tables<'startups'>;
+    startup: Startup;
     users: UniqueUser[];
     patternInteractions: PatternInteraction[];
     uniquePatterns: Set<string>;
@@ -82,7 +82,7 @@ interface PatternInteractionListItemProps {
     interaction: PatternInteraction;
 }
 
-const PatternInteractionListItem: React.FC<PatternInteractionListItemProps> = ({ interaction }) => {
+const PatternInteractionListItem: React.FC<PatternInteractionListItemProps> = ({ interaction }: PatternInteractionListItemProps) => {
     const [isHovered, setIsHovered] = useState(false);
 
     // Use the pattern's category color if available, otherwise use default
@@ -206,7 +206,7 @@ const PatternInteractionListItem: React.FC<PatternInteractionListItemProps> = ({
 };
 
 export default function AnalyticsView() {
-    const { user } = useAuthContext();
+    const { user, profile } = useAuthContext();
     const [timeFilter, setTimeFilter] = useState<TimeFilter>('thisMonth');
     const [startupFilter, setStartupFilter] = useState<StartupFilter>('my');
     const [dateRange, setDateRange] = useState<DateRange>({
@@ -219,7 +219,7 @@ export default function AnalyticsView() {
     const [sortField, setSortField] = useState<SortField>('name');
     const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
     const [loading, setLoading] = useState(false);
-    const [coachees, setCoachees] = useState<Tables<'startups'>[]>([]);
+    const [coachees, setCoachees] = useState<Startup[]>([]);
 
     // Fetch coachees when user is available
     useEffect(() => {
@@ -248,7 +248,7 @@ export default function AnalyticsView() {
             setLoading(true);
             try {
                 // 1. Get all startups based on filter
-                let startups: Tables<'startups'>[] = [];
+                let startups: Startup[] = [];
                 if (startupFilter === 'my') {
                     startups = coachees || [];
                 } else {
@@ -287,7 +287,7 @@ export default function AnalyticsView() {
                         // Add pattern interaction
                         const interactionDate = new Date(pattern.created_at);
                         analytics.patternInteractions.push({
-                            pattern_id: pattern.pattern?.id,
+                            patternId: pattern.pattern?.id,
                             patternName: pattern.pattern?.name || 'Unnamed Pattern',
                             lastInteraction: interactionDate,
                             category: pattern.pattern?.category as CategoryEnum,
@@ -307,13 +307,12 @@ export default function AnalyticsView() {
                         }
 
                         // Get user info from the pattern's user attribute
-                        if (pattern.user) {
-                            const userId = pattern.user.id || pattern.user.id;
-                            const userName = `${pattern.user.given_name || ''} ${pattern.user.family_name || ''}`.trim() || 'Unnamed User';
+                        if (pattern.user_id) {
+                            const userId = pattern.user_id || pattern.user_id;
 
                             // Check if user already exists in the list
                             if (!analytics.users.some(u => u.id === userId)) {
-                                analytics.users.push({ id: userId, name: userName });
+                                analytics.users.push({ id: userId, name: '' });
                             }
                         }
                     }
@@ -329,7 +328,7 @@ export default function AnalyticsView() {
         };
 
         fetchData();
-    }, [coachees.length, dateRange, startupFilter]);
+    }, [coachees, dateRange, startupFilter]);
 
     const handleSort = (field: SortField) => {
         if (sortField === field) {
@@ -634,10 +633,10 @@ export default function AnalyticsView() {
                                     {/* Group patterns by pattern ID and show unique patterns */}
                                     {Array.from(new Map(
                                         selectedStartup.patternInteractions.map(interaction =>
-                                            [interaction.pattern_id, interaction]
+                                            [interaction.patternId, interaction]
                                         )
                                     ).values()).map((interaction) => (
-                                        <ListItem key={interaction.pattern_id} sx={{ p: 0, mb: 2 }}>
+                                        <ListItem key={interaction.patternId} sx={{ p: 0, mb: 2 }}>
                                             <PatternInteractionListItem interaction={interaction} />
                                         </ListItem>
                                     ))}

@@ -22,12 +22,12 @@ import {
   MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { getRecommendationIcon } from '@/pages/Coach/types';
-import { Tables } from '@/types/database';
+import { Recommendation } from '@/types/database';
 import { format } from 'date-fns';
 
 interface RecommendationListProps {
-  recommendations: Tables<'recommendations'>[];
-  onEdit: (recommendation: Tables<'recommendations'>) => void;
+  recommendations: Recommendation[];
+  onEdit: (recommendation: Recommendation) => void;
   onDelete: (id: string) => void;
   loading?: boolean;
 }
@@ -39,11 +39,11 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
   loading = false,
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedRecommendation, setSelectedRecommendation] = React.useState<Tables<'recommendations'> | null>(
+  const [selectedRecommendation, setSelectedRecommendation] = React.useState<Recommendation | null>(
     null,
   );
 
-  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, recommendation: Tables<'recommendations'>) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, recommendation: Recommendation) => {
     setAnchorEl(event.currentTarget);
     setSelectedRecommendation(recommendation);
   };
@@ -127,7 +127,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                   )}
                 </TableCell>
                 <TableCell>
-                  {recommendation.published_at ? format(new Date(recommendation.published_at), 'MMM dd, yyyy') : '-'}
+                  {format(new Date(recommendation.created_at), 'MMM dd, yyyy')}
                 </TableCell>
                 <TableCell align="right">
                   <IconButton size="small" onClick={(e) => handleOpenMenu(e, recommendation)}>

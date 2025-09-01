@@ -14,8 +14,8 @@ const Progress: React.FC = () => {
   const { setCurrentPattern } = useCurrentPattern();
 
   useEffect(() => {
-    fetchPattern(patternId as string);
-  }, [fetchPattern, patternId]);
+    fetchPattern(pattern_id as string);
+  }, [fetchPattern, pattern_id]);
 
   // Set the current pattern when pattern is loaded
   useEffect(() => {

@@ -22,11 +22,11 @@ import {
   MarkEmailRead as MarkEmailReadIcon,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import { Tables } from '@/types/database';
+import { Request } from '@/types/database';
 
 interface RequestListProps {
-  requests: Tables<'requests'>[];
-  onMarkAsRead: (request: Tables<'requests'>) => void;
+  requests: Request[];
+  onMarkAsRead: (request: Request) => void;
   onDelete: (id: string) => void;
   loading?: boolean;
 }
@@ -38,9 +38,9 @@ const RequestList: React.FC<RequestListProps> = ({
   loading = false,
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedRequest, setSelectedRequest] = React.useState<Tables<'requests'> | null>(null);
+  const [selectedRequest, setSelectedRequest] = React.useState<Request | null>(null);
 
-  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, request: Tables<'requests'>) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, request: Request) => {
     setAnchorEl(event.currentTarget);
     setSelectedRequest(request);
   };
@@ -87,8 +87,8 @@ const RequestList: React.FC<RequestListProps> = ({
   // Sort requests by date (newest first)
   const sortedRequests = [...requests].sort(
     (a, b) => {
-      const dateA = a.published_at ? new Date(a.published_at).getTime() : 0;
-      const dateB = b.published_at ? new Date(b.published_at).getTime() : 0;
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return dateB - dateA;
     },
   );
@@ -134,7 +134,7 @@ const RequestList: React.FC<RequestListProps> = ({
                     />
                   )}
                 </TableCell>
-                <TableCell>{request.published_at ? format(new Date(request.published_at), 'MMM dd, yyyy') : '-'}</TableCell>
+                <TableCell>{format(new Date(request.created_at), 'MMM dd, yyyy')}</TableCell>
                 <TableCell align="right">
                   <IconButton size="small" onClick={(e) => handleOpenMenu(e, request)}>
                     <MoreVertIcon />

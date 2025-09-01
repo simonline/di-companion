@@ -11,12 +11,12 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { CreateRequest } from '@/lib/supabase';
+import { RequestCreate } from '@/types/database';
 
 interface RequestFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: TablesInsert<'requests'>) => Promise<void>;
+  onSubmit: (values: RequestCreate) => Promise<void>;
   isSubmitting: boolean;
   startupId?: string;
 }
@@ -41,7 +41,7 @@ const RequestForm: React.FC<RequestFormProps> = ({
       try {
         await onSubmit({
           ...values,
-          startup: startupId,
+          startup_id: startupId,
         });
         formik.resetForm();
         onClose();

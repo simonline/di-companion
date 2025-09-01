@@ -32,7 +32,10 @@ import {
   supabaseResendInvitation,
   supabaseGetStartupMembers,
 } from '@/lib/supabase';
-import { Tables } from '@/types/database';
+import {
+  Invitation,
+  Profile
+} from '@/types/database';
 import { InvitationStatusEnum } from '@/utils/constants';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -75,8 +78,8 @@ const StartupTeam: React.FC = () => {
   const { startupId } = useParams<{ startupId: string }>();
   const navigate = useNavigate();
   const { user } = useAuthContext();
-  const [invitations, setInvitations] = useState<Tables<'invitations'>[]>([]);
-  const [members, setMembers] = useState<User[]>([]);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [members, setMembers] = useState<Profile[]>([]);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [invitationLoading, setInvitationLoading] = useState(false);
@@ -91,7 +94,7 @@ const StartupTeam: React.FC = () => {
     severity: 'info',
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedInvitation, setSelectedInvitation] = useState<Tables<'invitations'> | null>(null);
+  const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
 
   const baseUrl = window.location.origin;
 
@@ -142,8 +145,8 @@ const StartupTeam: React.FC = () => {
     setInvitationLoading(true);
     try {
       await supabaseCreateInvitation({
-        startup: { set: { id: startupId } },
-        invited_by: { set: { id: user.id } },
+        startup_id: startupId,
+        invited_by_id: user.id,
         email,
       });
 
@@ -214,7 +217,7 @@ const StartupTeam: React.FC = () => {
     });
   };
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, invitation: Tables<'invitations'>) => {
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, invitation: Invitation) => {
     setAnchorEl(event.currentTarget);
     setSelectedInvitation(invitation);
   };
@@ -229,7 +232,7 @@ const StartupTeam: React.FC = () => {
 
     switch (action) {
       case 'copy':
-        copyInvitationLink(selectedInvitation.token);
+        copyInvitationLink(selectedInvitation.token!);
         break;
       case 'resend':
         await handleResendInvitation(selectedInvitation.id);
@@ -279,7 +282,7 @@ const StartupTeam: React.FC = () => {
                 secondary={
                   <>
                     <Typography component="span" variant="body2" color="text.primary">
-                      {member.email}
+                      {member.user?.email}
                     </Typography>
                     {member.position && ` — ${member.position}`}
                   </>
@@ -303,7 +306,7 @@ const StartupTeam: React.FC = () => {
     }
 
     const pendingInvitations = invitations.filter(
-      (invitation) => invitation.invitationStatus === InvitationStatusEnum.pending,
+      (invitation) => invitation.invitation_status === InvitationStatusEnum.pending,
     );
 
     if (!pendingInvitations || pendingInvitations.length === 0) {
@@ -405,7 +408,7 @@ const StartupTeam: React.FC = () => {
           onClose={handleMenuClose}
           onClick={handleMenuClose}
         >
-          {selectedInvitation?.invitationStatus === InvitationStatusEnum.pending && (
+          {selectedInvitation?.invitation_status === InvitationStatusEnum.pending && (
             <>
               <MenuItem onClick={() => handleMenuAction('copy')}>
                 <ContentCopyIcon fontSize="small" sx={{ mr: 1 }} />

@@ -23,7 +23,7 @@ import useNotifications from '@/store/notifications';
 import SurveyField from '@/components/SurveyField';
 import { generateValidationSchema, FormValues } from '@/utils/generateValidationSchema';
 import { generateInitialValues } from '@/utils/generateInitialValues';
-import { Tables } from '@/types/database';
+import { Question } from '@/types/database';
 import { CategoryEnum, categoryDisplayNames } from '@/utils/constants';
 
 const SelfAssessment: React.FC = () => {
@@ -66,15 +66,15 @@ const SelfAssessment: React.FC = () => {
 
   // Group questions by category
   const questionsByCategory = React.useMemo(() => {
-    if (!survey?.questions) return {} as Record<CategoryEnum, Tables<'questions'>[]>;
-    return survey.questions.reduce((acc: Record<CategoryEnum, Tables<'questions'>>, question: Tables<'questions'>) => {
+    if (!survey?.questions) return {} as Record<CategoryEnum, Question[]>;
+    return survey.questions.reduce((acc: Record<CategoryEnum, Question[]>, question: Question) => {
       const categories = (question as any).categories || [CategoryEnum.entrepreneur];
       categories.forEach((category: CategoryEnum) => {
         if (!acc[category]) acc[category] = [];
         acc[category].push(question);
       });
       return acc;
-    }, {} as Record<CategoryEnum, Tables<'questions'>[]>);
+    }, {} as Record<CategoryEnum, Question[]>);
   }, [survey]);
 
   const categories = Object.keys(questionsByCategory) as CategoryEnum[];
@@ -304,8 +304,8 @@ const SelfAssessment: React.FC = () => {
                 <Form>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {currentQuestions
-                      .sort((a: Tables<'questions'>, b: Tables<'questions'>) => (a.order || 0) - (b.order || 0))
-                      .map((question: Tables<'questions'>) => (
+                      .sort((a: Question, b: Question) => (a.order || 0) - (b.order || 0))
+                      .map((question: Question) => (
                         <Field key={question.id} name={question.id}>
                           {(fieldProps: any) => (
                             <SurveyField

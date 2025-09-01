@@ -1,10 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import axios from 'axios';
-import { Tables } from '@/types/database';
-
-// Use the database structure directly
-type FileUpload = Tables<'files'>;
+import { FileRecord } from '@/types/database';
 
 interface UploadOptions {
   category?: string;
@@ -15,18 +12,18 @@ interface UploadOptions {
   onProgress?: (progress: number) => void;
 }
 
-interface UseFileUploadReturn {
-  upload: (file: File, options?: UploadOptions) => Promise<FileUpload | null>;
-  uploadMultiple: (files: File[], options?: UploadOptions) => Promise<FileUpload[]>;
+interface UseFileRecordReturn {
+  upload: (file: File, options?: UploadOptions) => Promise<FileRecord | null>;
+  uploadMultiple: (files: File[], options?: UploadOptions) => Promise<FileRecord[]>;
   deleteFile: (fileId: string) => Promise<boolean>;
   getSignedUrl: (fileId: string, expiresIn?: number) => Promise<string | null>;
-  getFilesByEntity: (entityType: string, entityId: string) => Promise<FileUpload[]>;
+  getFilesByEntity: (entityType: string, entityId: string) => Promise<FileRecord[]>;
   uploading: boolean;
   progress: number;
   error: string | null;
 }
 
-export const useFileUpload = (): UseFileUploadReturn => {
+export const useFileRecord = (): UseFileRecordReturn => {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +31,7 @@ export const useFileUpload = (): UseFileUploadReturn => {
   const upload = useCallback(async (
     file: File,
     options: UploadOptions = {}
-  ): Promise<FileUpload | null> => {
+  ): Promise<FileRecord | null> => {
     setUploading(true);
     setProgress(0);
     setError(null);
@@ -106,8 +103,8 @@ export const useFileUpload = (): UseFileUploadReturn => {
   const uploadMultiple = useCallback(async (
     files: File[],
     options: UploadOptions = {}
-  ): Promise<FileUpload[]> => {
-    const results: FileUpload[] = [];
+  ): Promise<FileRecord[]> => {
+    const results: FileRecord[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -179,7 +176,7 @@ export const useFileUpload = (): UseFileUploadReturn => {
   const getFilesByEntity = useCallback(async (
     entityType: string,
     entityId: string
-  ): Promise<FileUpload[]> => {
+  ): Promise<FileRecord[]> => {
     try {
       const { data, error } = await supabase
         .from('files')

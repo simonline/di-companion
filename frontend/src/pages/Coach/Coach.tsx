@@ -10,7 +10,7 @@ import {
   Alert,
 } from '@mui/material';
 import { getRecommendationIcon } from './types';
-import { Tables, TablesInsert } from '@/types/database';
+import { Profile, Recommendation, RequestCreate } from '@/types/database';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import useRecommendations from '@/hooks/useRecommendations';
@@ -20,21 +20,31 @@ import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import RequestForm from './components/RequestForm';
+import { getAvatarUrl, supabaseGetProfileById } from '@/lib/supabase';
 
 export const Coach: React.FC = () => {
   const navigate = useNavigate();
   const { startup, profile } = useAuthContext();
-  const coach = startup?.coach;
   const { fetchRecommendations, updateRecommendation, recommendations, loading, error } =
     useRecommendations();
   const { createRequest } = useRequests();
-
+  const [coach, setCoach] = useState<Profile | null>(null);
   const [isRequestFormOpen, setIsRequestFormOpen] = useState(false);
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
   const [notification, setNotification] = useState<{
     message: string;
     severity: 'success' | 'error' | 'info' | 'warning';
   } | null>(null);
+
+  useEffect(() => {
+    const fetchCoach = async () => {
+      if (startup?.coach_id) {
+        setCoach(await supabaseGetProfileById(startup.coach_id));
+      }
+    };
+
+    fetchCoach();
+  }, [startup]);
 
   useEffect(() => {
     if (startup) {
@@ -55,7 +65,7 @@ export const Coach: React.FC = () => {
     setIsRequestFormOpen(false);
   };
 
-  const handleSubmitRequest = async (values: TablesInsert<'requests'>) => {
+  const handleSubmitRequest = async (values: RequestCreate) => {
     setIsSubmittingRequest(true);
 
     try {
@@ -79,7 +89,7 @@ export const Coach: React.FC = () => {
     setNotification(null);
   };
 
-  const handleRecommendationClick = (recommendation: Tables<'recommendations'>) => {
+  const handleRecommendationClick = (recommendation: Recommendation) => {
     // Mark recommendation as read
     if (!recommendation.read_at) {
       updateRecommendation({
@@ -171,7 +181,7 @@ export const Coach: React.FC = () => {
               }}
             >
               <Avatar
-                src={coach.avatar_url || undefined}
+                src={getAvatarUrl(coach.avatar_id) || undefined}
                 sx={{
                   width: 60,
                   height: 60,
@@ -224,7 +234,7 @@ export const Coach: React.FC = () => {
                     <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
                   </Box>
                 }
-                href={`mailto:${coach.email}`}
+                href={`mailto:${coach.user?.email}`}
                 sx={{
                   textTransform: 'none',
                   px: 2,
@@ -304,7 +314,7 @@ export const Coach: React.FC = () => {
               {recommendations
                 .slice()
                 .sort(
-                  (a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime(),
+                  (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
                 )
                 .map((recommendation) => (
                   <Box
@@ -373,7 +383,7 @@ export const Coach: React.FC = () => {
                                 mt: 0.3,
                               }}
                             >
-                              {format(new Date(recommendation.published_at), 'MMM dd, yyyy')}
+                              {format(new Date(recommendation.created_at), 'MMM dd, yyyy')}
                             </Typography>
                           </Box>
 

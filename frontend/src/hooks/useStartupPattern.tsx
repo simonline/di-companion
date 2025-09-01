@@ -4,18 +4,18 @@ import {
   supabaseCreateStartupPattern,
   supabaseUpdateStartupPattern,
 } from '@/lib/supabase';
-import { Tables, TablesInsert, TablesUpdate } from '@/types/database';
+import { StartupPattern, StartupPatternCreate, StartupPatternUpdate } from '@/types/database';
 
 interface UseStartupPattern {
-  startupPattern: Tables<'startup_patterns'> | null;
+  startupPattern: StartupPattern | null;
   loading: boolean;
   error: string | null;
 }
 
 interface UseStartupPatternReturn extends UseStartupPattern {
   fetchStartupPattern: (id: string) => void;
-  createStartupPattern: (createStartupPattern: TablesInsert<'startup_patterns'>) => void;
-  updateStartupPattern: (updateStartupPattern: TablesUpdate<'startup_patterns'>) => void;
+  createStartupPattern: (createStartupPattern: StartupPatternCreate) => void;
+  updateStartupPattern: (updateStartupPattern: StartupPatternUpdate) => void;
   clearError: () => void;
 }
 
@@ -40,7 +40,7 @@ export default function useStartupPattern(): UseStartupPatternReturn {
     }
   }, []);
 
-  const createStartupPattern = useCallback(async (createStartupPattern: TablesInsert<'startup_patterns'>) => {
+  const createStartupPattern = useCallback(async (createStartupPattern: StartupPatternCreate) => {
     try {
       const startupPattern = await supabaseCreateStartupPattern(createStartupPattern);
       setState({ startupPattern, loading: false, error: null });
@@ -50,7 +50,7 @@ export default function useStartupPattern(): UseStartupPatternReturn {
     }
   }, []);
 
-  const updateStartupPattern = useCallback(async (updateStartupPattern: TablesUpdate<'startup_patterns'>) => {
+  const updateStartupPattern = useCallback(async (updateStartupPattern: StartupPatternUpdate) => {
     try {
       const startupPattern = await supabaseUpdateStartupPattern(updateStartupPattern);
       setState({ startupPattern, loading: false, error: null });

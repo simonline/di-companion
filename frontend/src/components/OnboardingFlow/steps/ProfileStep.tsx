@@ -19,7 +19,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useAuthContext } from '@/hooks/useAuth';
 import { OnboardingStepProps } from '../OnboardingFlow';
 import { getAvatarUrl } from '@/lib/supabase';
-import { TablesUpdate } from '@/types/database';
+import { FileRecord, ProfileUpdate } from '@/types/database';
 
 interface ProfileFormValues {
   email: string;
@@ -89,8 +89,8 @@ const ProfileStep: React.FC<OnboardingStepProps> = ({
         position: values.position,
         bio: values.bio,
         linkedin_profile: values.linkedinProfile,
-        ...( values.avatar ? { avatar: values.avatar } : {} )
-      } as TablesUpdate<'profiles'> & { avatar?: File });
+        ...(values.avatar ? { avatar: values.avatar } : {})
+      } as ProfileUpdate & { avatar?: File });
 
       // Move to next step
       onNext();

@@ -1,15 +1,15 @@
 import React from 'react';
 import { Typography, List, ListItem, ListItemText, Paper, Fade, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Tables } from '@/types/database';
+import { Pattern } from '@/types/database';
 import { categoryColors, CategoryEnum } from '@/utils/constants';
 
 interface SearchResultsProps {
-  results: Tables<'patterns'>[] | null;
+  results: Pattern[] | null;
   loading: boolean;
   error: string | null;
   anchorEl?: HTMLElement | null;
-  onSelect?: (pattern: Tables<'patterns'>) => void;
+  onSelect?: (pattern: Pattern) => void;
   preventNavigation?: boolean;
 }
 
@@ -49,7 +49,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     return null;
   }
 
-  const handlePatternClick = (pattern: Tables<'patterns'>) => {
+  const handlePatternClick = (pattern: Pattern) => {
     if (preventNavigation) {
       onSelect?.(pattern);
       return;
@@ -129,7 +129,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     }}
                   >
                     {pattern.description?.substring(0, 60)}
-                    {pattern.description?.length > 60 ? '...' : ''}
+                    {pattern.description && pattern.description.length > 60 ? '...' : ''}
                   </Typography>
                 }
               />

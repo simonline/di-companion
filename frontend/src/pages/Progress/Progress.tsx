@@ -24,10 +24,11 @@ import {
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { CenteredFlexBox } from '@/components/styled';
-import { Tables } from '@/types/database';
+import { StartupPattern } from '@/types/database';
 import {
   categoryColors,
   categoryDisplayNames,
+  CategoryEnum,
   phaseNumbers,
   PhaseEnum,
   ResponseTypeEnum,
@@ -39,7 +40,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 
 type FilterStatus = 'in_progress' | 'applied' | 'not_applied';
 
-export const getPatternStatus = (pattern: Tables<'startup_patterns'>): FilterStatus | null => {
+export const getPatternStatus = (pattern: StartupPattern): FilterStatus | null => {
   if (pattern.applied_at) {
     return 'applied';
   } else if (pattern.response_type === ResponseTypeEnum.accept) {
@@ -49,7 +50,7 @@ export const getPatternStatus = (pattern: Tables<'startup_patterns'>): FilterSta
   }
 };
 
-const PatternListItem: React.FC<{ startupPattern: Tables<'startup_patterns'> }> = ({ startupPattern }) => {
+const PatternListItem: React.FC<{ startupPattern: StartupPattern }> = ({ startupPattern }) => {
   const { pattern } = startupPattern;
   const [isHovered, setIsHovered] = useState(false);
 
@@ -71,7 +72,7 @@ const PatternListItem: React.FC<{ startupPattern: Tables<'startup_patterns'> }> 
           left: 0,
           width: '4px',
           height: '100%',
-          backgroundColor: categoryColors[pattern.category],
+          backgroundColor: categoryColors[pattern.category as CategoryEnum],
           borderTopLeftRadius: 8,
           borderBottomLeftRadius: 8,
         },
@@ -87,8 +88,8 @@ const PatternListItem: React.FC<{ startupPattern: Tables<'startup_patterns'> }> 
                 sx={{
                   width: 56,
                   height: 56,
-                  bgcolor: `${categoryColors[pattern.category]}22`,
-                  color: categoryColors[pattern.category],
+                  bgcolor: `${categoryColors[pattern.category as CategoryEnum]}22`,
+                  color: categoryColors[pattern.category as CategoryEnum],
                 }}
               >
                 {pattern.image?.url ? (
@@ -125,13 +126,13 @@ const PatternListItem: React.FC<{ startupPattern: Tables<'startup_patterns'> }> 
 
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             <Chip
-              label={categoryDisplayNames[pattern.category]}
+              label={categoryDisplayNames[pattern.category as CategoryEnum]}
               size="small"
               sx={{
-                bgcolor: `${categoryColors[pattern.category]}`,
+                bgcolor: `${categoryColors[pattern.category as CategoryEnum]}`,
                 color: 'white',
                 fontWeight: 700,
-                '&:hover': { bgcolor: `${categoryColors[pattern.category]}22` },
+                '&:hover': { bgcolor: `${categoryColors[pattern.category as CategoryEnum]}22` },
                 height: 24,
               }}
             />

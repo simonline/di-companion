@@ -125,7 +125,7 @@ function CreateStartup() {
                     is_target_group_defined: values.is_target_group_defined,
                     is_prototype_validated: values.is_prototype_validated,
                     is_mvp_tested: values.is_mvp_tested,
-                    users: { set: [user.id] },
+                    created_by_id: user.id,
                   });
                   navigate('/startup');
                 } catch (err: unknown) {

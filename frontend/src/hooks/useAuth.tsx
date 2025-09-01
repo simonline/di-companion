@@ -15,15 +15,26 @@ import {
   supabaseVerifyOtp,
   getSession,
 } from '@/lib/supabase';
-import { Tables, TablesInsert, TablesUpdate, User, UserCreate, UserUpdate } from '@/types/database';
+import {
+  Pattern,
+  Profile,
+  ProfileCreate,
+  ProfileUpdate,
+  Startup,
+  StartupCreate,
+  StartupPattern,
+  StartupUpdate,
+  User,
+  UserCreate,
+} from '@/types/database';
 import type { CategoryEnum } from '@/utils/constants';
 import { supabase } from '@/lib/supabase';
 import { identifyUser } from '@/analytics/track';
 
 interface AuthState {
   user: User | null;
-  profile: Tables<'profiles'> | null;
-  startup: Tables<'startups'> | null;
+  profile: Profile | null;
+  startup: Startup | null;
   loading: boolean;
   error: string | null;
 }
@@ -32,11 +43,10 @@ interface UseAuthReturn extends AuthState {
   login: (identifier: string, password: string) => Promise<User>;
   sendOtp: (email: string) => Promise<{ success: boolean; message: string }>;
   verifyOtp: (email: string, token: string) => Promise<void>;
-  register: (data: UserCreate) => Promise<User>;
-  createStartup: (data: TablesInsert<'startups'>) => Promise<Tables<'startups'>>;
-  updateStartup: (data: TablesUpdate<'startups'>) => Promise<Tables<'startups'>>;
-  updateUser: (data: UserUpdate) => Promise<User>;
-  updateProfile: (data: TablesUpdate<'profiles'>) => Promise<Tables<'profiles'>>;
+  register: (data: UserCreate & ProfileCreate) => Promise<User>;
+  createStartup: (data: StartupCreate) => Promise<Startup>;
+  updateStartup: (data: StartupUpdate) => Promise<Startup>;
+  updateProfile: (data: ProfileUpdate) => Promise<Profile>;
   updateScores: () => Promise<Record<CategoryEnum, number> | null>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -88,7 +98,7 @@ export function useAuth(): UseAuthReturn {
               .eq('user_id', user.id)
               .limit(1);
             if (startupLinks && startupLinks.length > 0) {
-              const startup = await supabaseGetStartup(startupLinks[0].startup_id);
+              const startup = await supabaseGetStartup(startupLinks[0].startup_id!);
               setStartup(startup);
             }
           }
@@ -112,7 +122,7 @@ export function useAuth(): UseAuthReturn {
       subscription.unsubscribe();
       clearInterval(tokenCheckInterval);
     };
-  }, [checkTokenExpiration, state.user]);
+  });
 
   // Initialize user/startup from localStorage first, then validate with Supabase session
   // Note: We intentionally omit setUser and setStartup from deps to avoid infinite loops
@@ -147,7 +157,7 @@ export function useAuth(): UseAuthReturn {
               const { user, profile } = await supabaseMe();
               setUserAndProfile(user, profile);
 
-              let startup: Tables<'startups'> | null = null;
+              let startup: Startup | null = null;
               if (user) {
                 const { data: startupLinks } = await supabase
                   .from('startups_users_lnk')
@@ -155,7 +165,7 @@ export function useAuth(): UseAuthReturn {
                   .eq('user_id', user.id)
                   .limit(1);
                 if (startupLinks && startupLinks.length > 0) {
-                  startup = await supabaseGetStartup(startupLinks[0].startup_id);
+                  startup = await supabaseGetStartup(startupLinks[0].startup_id!);
                 }
               }
               setStartup(startup);
@@ -174,7 +184,7 @@ export function useAuth(): UseAuthReturn {
               const { user, profile } = await supabaseMe();
               setUserAndProfile(user, profile);
 
-              let startup: Tables<'startups'> | null = null;
+              let startup: Startup | null = null;
               if (user) {
                 const { data: startupLinks } = await supabase
                   .from('startups_users_lnk')
@@ -182,7 +192,7 @@ export function useAuth(): UseAuthReturn {
                   .eq('user_id', user.id)
                   .limit(1);
                 if (startupLinks && startupLinks.length > 0) {
-                  startup = await supabaseGetStartup(startupLinks[0].startup_id);
+                  startup = await supabaseGetStartup(startupLinks[0].startup_id!);
                 }
               }
               setStartup(startup);
@@ -204,9 +214,12 @@ export function useAuth(): UseAuthReturn {
             const { user, profile } = await supabaseMe();
             setUserAndProfile(user, profile);
 
-            let startup: Tables<'startups'> | null = null;
-            if (userData.startups && userData.startups.length > 0) {
-              startup = await supabaseGetStartup(userData.startups[0].id);
+            let startup: Startup | null = null;
+            if (user?.id) {
+              const userStartups = await supabaseGetUserStartups(user.id);
+              if (userStartups.length > 0) {
+                startup = userStartups[0];
+              }
             }
             setStartup(startup);
             setState((prev) => ({ ...prev, loading: false }));
@@ -236,9 +249,9 @@ export function useAuth(): UseAuthReturn {
     };
 
     initAuth();
-  }, []);
+  });
 
-  const setUserAndProfile = useCallback((userData: User | null, profileData: Tables<'profiles'> | null) => {
+  const setUserAndProfile = useCallback((userData: User | null, profileData: Profile | null) => {
     setState((prev) => ({ ...prev, user: userData, profile: profileData, error: null }));
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData));
@@ -249,7 +262,7 @@ export function useAuth(): UseAuthReturn {
     }
   }, []);
 
-  const setStartup = useCallback((startupData: Tables<'startups'> | null) => {
+  const setStartup = useCallback((startupData: Startup | null) => {
     setState((prev) => ({ ...prev, startup: startupData, error: null }));
     if (startupData) {
       localStorage.setItem('startup', JSON.stringify(startupData));
@@ -266,12 +279,15 @@ export function useAuth(): UseAuthReturn {
     async (identifier: string, password: string): Promise<User> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const { user: userData } = await supabaseLogin(identifier, password);
+        const { user, profile } = await supabaseLogin(identifier, password);
         // Session is now handled by Supabase
         setUserAndProfile(user, profile);
-        let startup: Tables<'startups'> | null = null;
-        if (userData.startups && userData.startups.length > 0) {
-          startup = await supabaseGetStartup(userData.startups[0].id);
+        let startup: Startup | null = null;
+        if (user?.id) {
+          const userStartups = await supabaseGetUserStartups(user.id);
+          if (userStartups.length > 0) {
+            startup = userStartups[0];
+          }
         }
         setStartup(startup);
         return user;
@@ -324,9 +340,9 @@ export function useAuth(): UseAuthReturn {
             .eq('user_id', user.id)
             .limit(1);
           if (startupLinks && startupLinks.length > 0) {
-            const startup = await supabaseGetStartup(startupLinks[0].startup_id);
+            const startup = await supabaseGetStartup(startupLinks[0].startup_id!);
+            setStartup(startup);
           }
-          setStartup(startup);
         }
       } catch (error) {
         const err = error as Error;
@@ -344,7 +360,7 @@ export function useAuth(): UseAuthReturn {
   );
 
   const register = useCallback(
-    async (data: UserCreate & TablesInsert<'profiles'>): Promise<User> => {
+    async (data: UserCreate & ProfileCreate): Promise<User> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const result = await supabaseRegister(data);
@@ -364,11 +380,11 @@ export function useAuth(): UseAuthReturn {
         setState((prev) => ({ ...prev, loading: false }));
       }
     },
-    [],
+    [setUserAndProfile],
   );
 
   const createStartup = useCallback(
-    async (data: TablesInsert<'startups'>): Promise<Tables<'startups'>> => {
+    async (data: StartupCreate): Promise<Startup> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const startup = await supabaseCreateStartup(data);
@@ -390,7 +406,7 @@ export function useAuth(): UseAuthReturn {
   );
 
   const updateStartup = useCallback(
-    async (data: TablesUpdate<'startups'>): Promise<Tables<'startups'>> => {
+    async (data: StartupUpdate): Promise<Startup> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const startup = await supabaseUpdateStartup(data);
@@ -412,21 +428,21 @@ export function useAuth(): UseAuthReturn {
   );
 
   const updateProfile = useCallback(
-    async (data: TablesUpdate<'profiles'>): Promise<Tables<'profiles'>> => {
+    async (data: ProfileUpdate): Promise<Profile> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const updatedProfile = await supabaseUpdateProfile(data);
         console.log('Updated profile:', updatedProfile);
 
         // Merge the updated user data with existing user data to preserve all properties
-        setState((prev) => {
+        setState((prev: any) => {
           if (prev.user) {
             const mergedProfile = { ...prev.profile, ...updatedProfile };
-            localStorage.setItem('user', JSON.stringify(mergedUser));
+            localStorage.setItem('user', JSON.stringify(mergedProfile));
             return { ...prev, profile: mergedProfile, loading: false };
           } else {
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-            return { ...prev, user: updatedUser, loading: false };
+            localStorage.setItem('user', JSON.stringify(updatedProfile));
+            return { ...prev, user: updatedProfile, loading: false };
           }
         });
 
@@ -476,8 +492,8 @@ export function useAuth(): UseAuthReturn {
 
     const currentStartup = state.startup;
 
-    let startupPatterns: Tables<'startup_patterns'>[] = [];
-    let patterns: Tables<'patterns'>[] = [];
+    let startupPatterns: StartupPattern[] = [];
+    let patterns: Pattern[] = [];
     try {
       startupPatterns = await supabaseGetStartupPatterns(currentStartup.id || currentStartup.id);
       patterns = await supabaseGetPatterns();
@@ -492,9 +508,9 @@ export function useAuth(): UseAuthReturn {
     // Filter patterns by categories if specified
     if (currentStartup.categories && Array.isArray(currentStartup.categories) && currentStartup.categories.length > 0) {
       patterns = patterns.filter(pattern =>
-        pattern.category && Array.isArray(currentStartup.categories) && currentStartup.categories.includes(pattern.category)
+        pattern.category && Array.isArray(currentStartup.categories) && currentStartup.categories.includes(pattern.category as CategoryEnum)
       );
-      startupPatterns = startupPatterns.filter(startupPattern =>
+      startupPatterns = startupPatterns.filter((startupPattern: StartupPattern) =>
         startupPattern.pattern?.category && Array.isArray(currentStartup.categories) && currentStartup.categories.includes(startupPattern.pattern.category)
       );
     }
@@ -512,7 +528,7 @@ export function useAuth(): UseAuthReturn {
     startupPatterns.forEach((startupPattern) => {
       if (!startupPattern.pattern?.category) return;
       console.log(startupPattern.pattern?.category);
-      categoryPoints[startupPattern.pattern?.category as CategoryEnum][0] += startupPattern.points;
+      categoryPoints[startupPattern.pattern?.category as CategoryEnum][0] += startupPattern.points || 0;
     });
     console.log(categoryPoints);
 
@@ -560,7 +576,7 @@ export function useAuth(): UseAuthReturn {
     console.log('Refreshing data');
     try {
       const userData = await supabaseMe();
-      let startup: Tables<'startups'> | null = null;
+      let startup: Startup | null = null;
 
       // Fetch user's startups separately
       if (userData.user?.id) {

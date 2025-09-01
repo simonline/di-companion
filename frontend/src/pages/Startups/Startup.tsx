@@ -23,7 +23,13 @@ import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import useRecommendations from '@/hooks/useRecommendations';
 import useRequests from '@/hooks/useRequests';
-import { Tables, TablesInsert, TablesUpdate } from '@/types/database';
+import {
+  Recommendation,
+  RecommendationCreate,
+  RecommendationUpdate,
+  Request,
+  Startup
+} from '@/types/database';
 import { supabaseGetStartup } from '@/lib/supabase';
 import RecommendationForm from './components/RecommendationForm';
 import RecommendationList from './components/RecommendationList';
@@ -57,11 +63,11 @@ function TabPanel(props: TabPanelProps) {
 export default function StartupView() {
   const { id: startupId } = useParams<{ id: string }>();
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingRecommendation, setEditingRecommendation] = useState<Tables<'recommendations'> | undefined>(
+  const [editingRecommendation, setEditingRecommendation] = useState<Recommendation | undefined>(
     undefined,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentStartup, setCurrentStartup] = useState<Tables<'startups'> | null>(null);
+  const [currentStartup, setCurrentStartup] = useState<Startup | null>(null);
   const [notification, setNotification] = useState<{
     message: string;
     severity: 'success' | 'error' | 'info' | 'warning';
@@ -126,24 +132,24 @@ export default function StartupView() {
     setEditingRecommendation(undefined);
   };
 
-  const handleEditRecommendation = (recommendation: Tables<'recommendations'>) => {
+  const handleEditRecommendation = (recommendation: Recommendation) => {
     setEditingRecommendation(recommendation);
     setIsFormOpen(true);
   };
 
-  const handleFormSubmit = async (values: TablesInsert<'recommendations'> | TablesUpdate<'recommendations'>, patternIds: string[]) => {
+  const handleFormSubmit = async (values: RecommendationCreate | RecommendationUpdate, patternIds: string[]) => {
     setIsSubmitting(true);
     try {
       if ('id' in values && values.id) {
         // Update
-        await updateRecommendation(values as TablesUpdate<'recommendations'>, patternIds);
+        await updateRecommendation(values as RecommendationUpdate, patternIds);
         setNotification({
           message: 'Recommendation updated successfully',
           severity: 'success',
         });
       } else {
         // Create
-        await createRecommendation(values as TablesInsert<'recommendations'>, patternIds);
+        await createRecommendation(values as RecommendationCreate, patternIds);
         setNotification({
           message: 'Recommendation created successfully',
           severity: 'success',
@@ -175,7 +181,7 @@ export default function StartupView() {
     }
   };
 
-  const handleMarkRequestAsRead = async (request: Tables<'requests'>) => {
+  const handleMarkRequestAsRead = async (request: Request) => {
     try {
       await updateRequest({
         id: request.id,

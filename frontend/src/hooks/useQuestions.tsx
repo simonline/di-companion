@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
 import { supabaseGetQuestions } from '@/lib/supabase';
-import { Tables } from '@/types/database';
+import { Question } from '@/types/database';
 
 interface UseQuestions {
-  questions: Tables<'questions'>[] | null;
+  questions: Question[] | null;
   loading: boolean;
   error: string | null;
 }

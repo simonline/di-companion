@@ -18,12 +18,12 @@ import {
   Typography,
 } from '@mui/material';
 import { DragDropContext, Droppable, DroppableProps, Draggable } from 'react-beautiful-dnd';
-import { Tables } from '@/types/database';
 import {
   QuestionType,
   ScaleOptions,
   QuestionOption
 } from '@/utils/constants';
+import { Question } from '@/types/database';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import { useAuthContext } from '@/hooks/useAuth';
@@ -32,7 +32,7 @@ import useNotifications from '@/store/notifications';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 
 interface SurveyFieldProps {
-  question: Tables<'questions'>;
+  question: Question;
   field: any;
   form: any;
 }
@@ -100,7 +100,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
 
     try {
       await createRequest({
-        startup: startup.id,
+        startup_id: startup.id,
         comment: `I need help with the question: ${question.question}`,
       });
 
@@ -177,7 +177,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
           </FormLabel>
           <RadioGroup {...field} row>
             {Array.isArray(question.options) &&
-              question.options.map(({ value, label }) => (
+              question.options.map(({ value, label }: QuestionOption) => (
                 <FormControlLabel
                   key={value}
                   value={value}
@@ -201,7 +201,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
           {renderFieldWithHelp(
             <Select {...field} sx={{ width: '100%' }}>
               {Array.isArray(question.options) &&
-                question.options.map(({ value, label }) => (
+                question.options.map(({ value, label }: QuestionOption) => (
                   <MenuItem key={value} value={value}>
                     {label}
                   </MenuItem>
@@ -235,7 +235,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
               }}
             >
               {Array.isArray(question.options) &&
-                question.options.map(({ value, label }) => (
+                question.options.map(({ value, label }: QuestionOption) => (
                   <MenuItem key={value} value={value}>
                     <Checkbox checked={Array.isArray(field.value) && field.value.includes(value)} />
                     {label}
@@ -282,7 +282,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
           {renderFieldWithHelp(
             <FormGroup>
               {Array.isArray(question.options) &&
-                question.options.map(({ value, label }) => (
+                question.options.map(({ value, label }: QuestionOption) => (
                   <FormControlLabel
                     key={value}
                     control={

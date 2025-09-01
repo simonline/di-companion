@@ -1,9 +1,9 @@
-import { Tables } from '@/types/database';
+import { Question, UserQuestion } from '@/types/database';
 import { FormValues } from './generateValidationSchema';
 
 export const generateInitialValues = (
-  questions: Tables<'questions'>[],
-  userQuestions?: Tables<'user_questions'>[],
+  questions: Question[],
+  userQuestions?: UserQuestion[],
 ): FormValues => {
   const values: FormValues = {};
 
@@ -15,12 +15,12 @@ export const generateInitialValues = (
     if (existingAnswer?.answer !== undefined && existingAnswer.answer !== null) {
       try {
         // Parse the JSON string to get the actual value
-        values[question.id] = typeof existingAnswer.answer === 'string' 
+        values[question.id] = typeof existingAnswer.answer === 'string'
           ? JSON.parse(existingAnswer.answer)
           : existingAnswer.answer;
       } catch (error) {
         // Fallback to the raw value if parsing fails
-        values[question.id] = existingAnswer.answer;
+        values[question.id] = existingAnswer.answer as any;
       }
     } else {
       switch (question.type) {

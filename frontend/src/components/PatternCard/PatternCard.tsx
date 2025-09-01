@@ -18,7 +18,7 @@ import {
 import ImageIcon from '@mui/icons-material/Image';
 import { Close, Refresh, Check, Help } from '@mui/icons-material';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { Tables } from '@/types/database';
+import { Pattern } from '@/types/database';
 import {
   categoryDisplayNames,
   categoryColors,
@@ -41,8 +41,8 @@ import { useChatContext } from '@/components/Chat/ChatContext';
 interface ActionDialogProps {
   open: boolean;
   onClose: () => void;
-  pattern: Tables<'patterns'>;
-  response_type: ResponseTypeEnum;
+  pattern: Pattern;
+  responseType: ResponseTypeEnum;
   title: string;
   actions: [string, ResponseEnum][];
   onComplete?: () => void;
@@ -53,7 +53,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
   open,
   onClose,
   pattern,
-  response_type,
+  responseType,
   title,
   actions,
   onComplete,
@@ -69,14 +69,14 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
   useEffect(() => {
     if (response) {
       createStartupPattern({
-        startup: { set: { id: startup?.id as string } },
-        pattern: { set: { id: pattern.id } },
-        user: { set: { id: user?.id as string } },
-        response_type,
+        startup_id: startup?.id as string,
+        pattern_id: pattern.id,
+        user_id: user?.id as string,
+        response_type: responseType,
         response,
       });
     }
-  }, [response, createStartupPattern, pattern, response_type, startup]);
+  });
 
   useEffect(() => {
     if (response && startupPattern) {
@@ -104,7 +104,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
           case ResponseEnum.no_value:
             if (startup?.id) {
               createRequest({
-                startup: startup.id,
+                startup_id: startup.id,
                 comment: `I don't see value in the pattern: ${pattern.name}`,
               });
               notificationsActions.push({
@@ -116,7 +116,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
           case ResponseEnum.dont_understand:
             if (startup?.id) {
               createRequest({
-                startup: startup.id,
+                startup_id: startup.id,
                 comment: `I don't understand the pattern: ${pattern.name}`,
               });
               notificationsActions.push({
@@ -136,7 +136,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
         onComplete();
       }
     }
-  }, [response, startupPattern, navigate, pattern, response_type, startup, createRequest, notificationsActions, onComplete]);
+  });
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -168,7 +168,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
 };
 
 interface PatternCardProps {
-  pattern: Tables<'patterns'>;
+  pattern: Pattern;
   isInteractive?: boolean;
   onComplete?: () => void;
   nextUrl?: string;
@@ -186,7 +186,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, isInteractive = true
   const [isVisible, setIsVisible] = React.useState(true);
   const [exitDirection, setExitDirection] = React.useState<'left' | 'right' | null>(null);
   const { setCurrentPattern } = useCurrentPattern();
-  const { startup, user } = useAuthContext();
+  const { startup } = useAuthContext();
   const { sendProgrammaticMessage } = useChatContext();
 
   // Set the current pattern when the pattern prop changes
@@ -477,7 +477,7 @@ Make your response actionable and easy to follow.`;
                 display: '-webkit-box',
               }}
             >
-              {pattern.related_patterns.map((relPattern, index) => (
+              {pattern.related_patterns && pattern.related_patterns.map((relPattern, index) => (
                 <React.Fragment key={relPattern.name}>
                   <Typography
                     component="a"
@@ -496,7 +496,7 @@ Make your response actionable and easy to follow.`;
                   >
                     {relPattern.name}
                   </Typography>
-                  {index !== pattern.related_patterns.length - 1 && (
+                  {index !== pattern.related_patterns!.length - 1 && (
                     <Typography variant="body2" lineHeight="1.2em" sx={{ display: 'inline' }}>
                       {' '}
                       –{' '}

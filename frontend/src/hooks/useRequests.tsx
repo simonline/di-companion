@@ -6,21 +6,21 @@ import {
   supabaseDeleteRequest,
 } from '@/lib/supabase';
 import type {
-  Tables,
-  TablesInsert,
-  TablesUpdate,
+  Request,
+  RequestCreate,
+  RequestUpdate
 } from '@/types/database';
 
 interface UseRequests {
-  requests: Tables<'requests'>[] | null;
+  requests: Request[] | null;
   loading: boolean;
   error: string | null;
 }
 
 interface UseRequestsReturn extends UseRequests {
   fetchRequests: (startupId: string) => void;
-  createRequest: (data: TablesInsert<'requests'>) => Promise<Tables<'requests'>>;
-  updateRequest: (data: TablesUpdate<'requests'>) => Promise<Tables<'requests'>>;
+  createRequest: (data: RequestCreate) => Promise<Request>;
+  updateRequest: (data: RequestUpdate) => Promise<Request>;
   deleteRequest: (id: string) => Promise<void>;
   clearError: () => void;
 }
@@ -47,7 +47,7 @@ export default function useRequests(): UseRequestsReturn {
     }
   }, []);
 
-  const createRequest = useCallback(async (data: TablesInsert<'requests'>) => {
+  const createRequest = useCallback(async (data: RequestCreate) => {
     try {
       const newRequest = await supabaseCreateRequest(data);
       setState((prev) => ({
@@ -62,7 +62,7 @@ export default function useRequests(): UseRequestsReturn {
     }
   }, []);
 
-  const updateRequest = useCallback(async (data: TablesUpdate<'requests'>) => {
+  const updateRequest = useCallback(async (data: RequestUpdate) => {
     try {
       const updatedRequest = await supabaseUpdateRequest(data);
       setState((prev) => ({

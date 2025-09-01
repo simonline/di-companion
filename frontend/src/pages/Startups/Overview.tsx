@@ -37,8 +37,8 @@ import { CenteredFlexBox } from '@/components/styled';
 import { Link } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
-import { Tables } from '@/types/database';
-import { supabaseGetRequests, supabaseGetAvailableStartups, supabaseUpdateUser, supabaseUpdateStartup, supabase } from '@/lib/supabase';
+import { Startup } from '@/types/database';
+import { supabaseGetRequests, supabaseGetAvailableStartups, supabaseUpdateStartup, supabase } from '@/lib/supabase';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { formatDistanceToNow } from 'date-fns';
 import React from 'react';
@@ -47,8 +47,8 @@ import { CategoryEnum, categoryDisplayNames, categoryColors } from '@/utils/cons
 export default function OverviewView() {
   const { user } = useAuthContext();
   const [requests, setRequests] = useState<any[]>([]);
-  const [availableStartups, setAvailableStartups] = useState<Tables<'startups'>[]>([]);
-  const [coachees, setCoachees] = useState<Tables<'startups'>[]>([]);
+  const [availableStartups, setAvailableStartups] = useState<Startup[]>([]);
+  const [coachees, setCoachees] = useState<Startup[]>([]);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedStartup, setSelectedStartup] = useState<string>('');
   const [notification, setNotification] = useState<{
@@ -56,7 +56,7 @@ export default function OverviewView() {
     severity: 'success' | 'error' | 'info' | 'warning';
   } | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedStartupForMenu, setSelectedStartupForMenu] = useState<Tables<'startups'> | null>(null);
+  const [selectedStartupForMenu, setSelectedStartupForMenu] = useState<Startup | null>(null);
   const { fetchStartupPatterns, startupPatterns } = useStartupPatterns();
 
   // State for category assignment dialog
@@ -65,7 +65,7 @@ export default function OverviewView() {
 
   // State for bulk category assignment
   const [isBulkCategoryDialogOpen, setIsBulkCategoryDialogOpen] = useState(false);
-  const [selectedStartups, setSelectedStartups] = useState<Tables<'startups'>[]>([]);
+  const [selectedStartups, setSelectedStartups] = useState<Startup[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // Get count of coachees
@@ -96,26 +96,25 @@ export default function OverviewView() {
   // Fetch coachees when user is available
   useEffect(() => {
     const fetchCoachees = async () => {
-      if (user?.id && profile?.is_coach) {
-        try {
-          const { data, error } = await supabase
-            .from('startups')
-            .select('*')
-            .eq('coach_id', user.id);
+      if (!user) return;
+      try {
+        const { data, error } = await supabase
+          .from('startups')
+          .select('*')
+          .eq('coach_id', user.id);
 
-          if (error) {
-            console.error('Error fetching coachees:', error);
-          } else {
-            setCoachees((data || []) as any);
-          }
-        } catch (error) {
+        if (error) {
           console.error('Error fetching coachees:', error);
+        } else {
+          setCoachees((data || []) as any);
         }
+      } catch (error) {
+        console.error('Error fetching coachees:', error);
       }
     };
 
     fetchCoachees();
-  }, [user?.id, profile?.is_coach]);
+  }, [user?.id]);
 
   // Get requests and available startups
   useEffect(() => {
@@ -157,11 +156,11 @@ export default function OverviewView() {
   const unreadRequestsCount = requests.filter((req) => !req.read_at).length;
 
   // Helper function to get last activity date
-  const getLastActivityDate = (startup: Tables<'startups'>): string => {
+  const getLastActivityDate = (startup: Startup): string => {
     if (!startupPatterns) return 'No activity yet';
 
     const startupPatternsForStartup = startupPatterns.filter(
-      (pattern) => pattern.startup.id === startup.id
+      (pattern) => pattern.startup_id === startup.id
     );
 
     if (startupPatternsForStartup.length === 0) return 'No activity yet';
@@ -223,7 +222,7 @@ export default function OverviewView() {
     }
   };
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, startup: Tables<'startups'>) => {
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, startup: Startup) => {
     event.preventDefault(); // Prevent navigation
     setMenuAnchorEl(event.currentTarget);
     setSelectedStartupForMenu(startup);
@@ -281,12 +280,18 @@ export default function OverviewView() {
           return startup;
         });
 
-        // Update user with updated coachees
-        if (user?.id) {
-          await supabaseUpdateUser({
-            id: user.id,
-          });
+        // Update each startup's coach_id if needed
+        for (const startup of updatedCoachees) {
+          if (startup.coach_id !== user?.id) {
+            await supabaseUpdateStartup({
+              id: startup.id,
+              coach_id: user?.id,
+            });
+          }
         }
+
+        // Update local state
+        setCoachees(updatedCoachees);
       }
 
       setNotification({
@@ -305,7 +310,7 @@ export default function OverviewView() {
   };
 
   // Toggle startup selection for bulk operations
-  const handleStartupSelection = (startup: Tables<'startups'>) => {
+  const handleStartupSelection = (startup: Startup) => {
     setSelectedStartups(prev => {
       const isSelected = prev.some(s => s.id === startup.id);
       if (isSelected) {
@@ -361,13 +366,6 @@ export default function OverviewView() {
           }
           return startup;
         });
-
-        // Update user with updated coachees
-        if (user?.id) {
-          await supabaseUpdateUser({
-            id: user.id,
-          });
-        }
       }
 
       setNotification({

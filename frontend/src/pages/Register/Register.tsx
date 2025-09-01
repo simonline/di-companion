@@ -109,7 +109,7 @@ function Register() {
         position: isCoach ? undefined : values.position,
         bio: values.bio,
         linkedin_profile: values.linkedinProfile,
-        avatar: values.avatar,
+        avatarFile: values.avatar,
         is_coach: isCoach,
         ...(isCoach && { phone: values.phone, is_phone_visible: values.isPhoneVisible }),
       });

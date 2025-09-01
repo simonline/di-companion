@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
 import { supabaseGetUserQuestions } from '@/lib/supabase';
-import { Tables } from '@/types/database';
+import { UserQuestion } from '@/types/database';
 
 interface UseUserQuestions {
-    userQuestions: Tables<'user_questions'>[] | null;
+    userQuestions: UserQuestion[] | null;
     loading: boolean;
     error: string | null;
 }
@@ -39,7 +39,7 @@ export default function useUserQuestions(): UseUserQuestionsReturn {
                 const userQuestions = await supabaseGetUserQuestions(
                     startupId,
                     userId,
-                    pattern_id,
+                    patternId,
                 );
                 setState({ userQuestions, loading: false, error: null });
             } catch (err: unknown) {

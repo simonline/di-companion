@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
 import { supabaseGetStartupMethods } from '@/lib/supabase';
-import { Tables } from '@/types/database';
+import { StartupMethod } from '@/types/database';
 
 interface UseStartupMethods {
-  startupMethods: Tables<'startup_methods'>[] | null;
+  startupMethods: StartupMethod[] | null;
   loading: boolean;
   error: string | null;
 }

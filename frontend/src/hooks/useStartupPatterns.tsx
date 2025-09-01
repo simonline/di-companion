@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
 import { supabaseGetStartupPatterns } from '@/lib/supabase';
-import { Tables } from '@/types/database';
+import { StartupPattern } from '@/types/database';
 
 interface UseStartupPatterns {
-  startupPatterns: Tables<'startup_patterns'>[] | null;
+  startupPatterns: StartupPattern[] | null;
   loading: boolean;
   error: string | null;
 }
@@ -29,7 +29,7 @@ export default function useStartupPatterns(): UseStartupPatternsReturn {
       try {
         const startupPatterns = await supabaseGetStartupPatterns(
           startupId,
-          pattern_id,
+          patternId,
         );
 
         // Get only latest (created_at) patterns for each combination of startup/pattern (id)
@@ -46,7 +46,7 @@ export default function useStartupPatterns(): UseStartupPatternsReturn {
                 }
                 return acc;
               },
-              {} as Record<string, Tables<'startup_patterns'>>,
+              {} as Record<string, StartupPattern>,
             ),
           )
           : [];

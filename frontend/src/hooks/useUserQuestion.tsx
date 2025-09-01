@@ -5,10 +5,10 @@ import {
     supabaseCreateUserQuestion,
     supabaseUpdateUserQuestion,
 } from '@/lib/supabase';
-import { Tables, TablesInsert, TablesUpdate } from '@/types/database';
+import { UserQuestion, UserQuestionCreate, UserQuestionUpdate } from '@/types/database';
 
 interface UseUserQuestion {
-    userQuestion: Tables<'user_questions'> | null;
+    userQuestion: UserQuestion | null;
     loading: boolean;
 }
 
@@ -16,11 +16,11 @@ interface UseUserQuestionReturn extends UseUserQuestion {
     fetchUserQuestion: (id: string) => Promise<void>;
     findPatternMethod: (
         userId: string,
-        pattern_id: string,
+        patternId: string,
         methodId: string,
     ) => Promise<void>;
-    createUserQuestion: (createUserQuestion: TablesInsert<'user_questions'>) => Promise<Tables<'user_questions'>>;
-    updateUserQuestion: (updateUserQuestion: TablesUpdate<'user_questions'>) => Promise<Tables<'user_questions'>>;
+    createUserQuestion: (createUserQuestion: UserQuestionCreate) => Promise<UserQuestion>;
+    updateUserQuestion: (updateUserQuestion: UserQuestionUpdate) => Promise<UserQuestion>;
 }
 
 export default function useUserQuestion(): UseUserQuestionReturn {
@@ -41,12 +41,12 @@ export default function useUserQuestion(): UseUserQuestionReturn {
     }, []);
 
     const findPatternMethod = useCallback(
-        async (userId: string, pattern_id: string, methodId: string) => {
+        async (userId: string, patternId: string, methodId: string) => {
             try {
                 setState(prev => ({ ...prev, loading: true }));
                 const userQuestion = await supabaseFindUserQuestion(
                     userId,
-                    pattern_id,
+                    patternId,
                     methodId,
                 );
                 setState({ userQuestion, loading: false });
@@ -59,7 +59,7 @@ export default function useUserQuestion(): UseUserQuestionReturn {
     );
 
     const createUserQuestion = useCallback(
-        async (createUserQuestion: TablesInsert<'user_questions'>) => {
+        async (createUserQuestion: UserQuestionCreate) => {
             try {
                 setState(prev => ({ ...prev, loading: true }));
                 const userQuestion = await supabaseCreateUserQuestion(createUserQuestion);
@@ -74,7 +74,7 @@ export default function useUserQuestion(): UseUserQuestionReturn {
     );
 
     const updateUserQuestion = useCallback(
-        async (updateUserQuestion: TablesUpdate<'user_questions'>) => {
+        async (updateUserQuestion: UserQuestionUpdate) => {
             try {
                 setState(prev => ({ ...prev, loading: true }));
                 const userQuestion = await supabaseUpdateUserQuestion(updateUserQuestion);

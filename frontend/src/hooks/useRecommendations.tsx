@@ -6,21 +6,21 @@ import {
   supabaseDeleteRecommendation,
 } from '@/lib/supabase';
 import type {
-  Tables,
-  TablesInsert,
-  TablesUpdate,
+  Recommendation,
+  RecommendationCreate,
+  RecommendationUpdate
 } from '@/types/database';
 
 interface UseRecommendations {
-  recommendations: Tables<'recommendations'>[] | null;
+  recommendations: Recommendation[] | null;
   loading: boolean;
   error: string | null;
 }
 
 interface UseRecommendationsReturn extends UseRecommendations {
   fetchRecommendations: (startupId?: string) => void;
-  createRecommendation: (data: TablesInsert<'recommendations'>, patternIds?: string[]) => Promise<Tables<'recommendations'>>;
-  updateRecommendation: (data: TablesUpdate<'recommendations'>, patternIds?: string[]) => Promise<Tables<'recommendations'>>;
+  createRecommendation: (data: RecommendationCreate, patternIds?: string[]) => Promise<Recommendation>;
+  updateRecommendation: (data: RecommendationUpdate, patternIds?: string[]) => Promise<Recommendation>;
   deleteRecommendation: (id: string) => Promise<void>;
   clearError: () => void;
 }
@@ -47,7 +47,7 @@ export default function useRecommendations(): UseRecommendationsReturn {
     }
   }, []);
 
-  const createRecommendation = useCallback(async (data: TablesInsert<'recommendations'>, patternIds?: string[]) => {
+  const createRecommendation = useCallback(async (data: RecommendationCreate, patternIds?: string[]) => {
     try {
       const newRecommendation = await supabaseCreateRecommendation(data, patternIds);
       setState((prev) => ({
@@ -64,7 +64,7 @@ export default function useRecommendations(): UseRecommendationsReturn {
     }
   }, []);
 
-  const updateRecommendation = useCallback(async (data: TablesUpdate<'recommendations'>, patternIds?: string[]) => {
+  const updateRecommendation = useCallback(async (data: RecommendationUpdate, patternIds?: string[]) => {
     try {
       const updatedRecommendation = await supabaseUpdateRecommendation(data, patternIds);
       setState((prev) => ({

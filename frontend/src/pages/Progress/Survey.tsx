@@ -14,7 +14,10 @@ import { CenteredFlexBox } from '@/components/styled';
 import usePattern from '@/hooks/usePattern';
 import useSurvey from '@/hooks/useSurvey';
 import useUserQuestions from '@/hooks/useUserQuestions';
-import { Tables } from '@/types/database';
+import {
+  Question,
+  UserQuestion
+} from '@/types/database';
 import useUserQuestion from '@/hooks/useUserQuestion';
 import useStartupPattern from '@/hooks/useStartupPattern';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
@@ -30,7 +33,7 @@ import { generateInitialValues } from '@/utils/generateInitialValues';
 import { supabaseGetPatternQuestions, supabaseGetSurveyQuestions } from '@/lib/supabase';
 
 const Survey: React.FC = () => {
-  const { pattern_id } = useParams<{ pattern_id: string }>();
+  const { patternId } = useParams<{ patternId: string }>();
   const { state } = useLocation();
   const navigate = useNavigate();
   const [, notificationsActions] = useNotifications();
@@ -52,8 +55,8 @@ const Survey: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
-  const [patternQuestions, setPatternQuestions] = useState<Tables<'questions'>[]>([]);
-  const [surveyQuestions, setSurveyQuestions] = useState<Tables<'questions'>[]>([]);
+  const [patternQuestions, setPatternQuestions] = useState<Question[]>([]);
+  const [surveyQuestions, setSurveyQuestions] = useState<Question[]>([]);
   const hasPatternQuestions = patternQuestions.length > 0;
   const hasSurveyQuestions = surveyQuestions.length > 0;
 
@@ -113,9 +116,9 @@ const Survey: React.FC = () => {
       // If no startup pattern exists, create one
       if (!startupPatterns || startupPatterns.length === 0) {
         createStartupPattern({
-          startup: { set: { id: startup.id } },
-          user: { set: { id: user?.id as string } },
-          pattern: { set: { id: pattern_id } },
+          startup_id: startup.id,
+          user_id: user?.id as string,
+          pattern_id: patternId,
           response_type: 'accept',
           response: 'share_reflection',
           applied_at: new Date().toISOString(),
@@ -142,6 +145,9 @@ const Survey: React.FC = () => {
   }, [
     isApplied,
     startupPatterns,
+    patternQuestions,
+    surveyQuestions,
+    user?.id,
     survey,
     userQuestions,
     updateScores,
@@ -151,7 +157,7 @@ const Survey: React.FC = () => {
     state,
     notificationsActions,
     pattern,
-    pattern_id,
+    patternId,
     startup,
   ]);
 
@@ -172,15 +178,15 @@ const Survey: React.FC = () => {
 
         // Skip if answer hasn't changed
         if (existingResponse) {
-          const existingAnswer = JSON.parse(existingResponse.answer);
+          const existingAnswer = JSON.parse(existingResponse.answer as any);
           if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) return null;
         }
 
         const payload = {
-          user: { set: { id: user.id } },
-          pattern: { set: { id: pattern_id } },
-          question: { set: { id: question.id } },
-          startup: { set: { id: startup?.id } },
+          user_id: user.id,
+          pattern_id: patternId,
+          question_id: question.id,
+          startup_id: startup?.id,
           answer: JSON.stringify(answer),
         };
 
@@ -228,15 +234,15 @@ const Survey: React.FC = () => {
 
         // Skip if answer hasn't changed
         if (existingResponse) {
-          const existingAnswer = JSON.parse(existingResponse.answer);
+          const existingAnswer = JSON.parse(existingResponse.answer as any);
           if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) return null;
         }
 
         const payload = {
-          user: { set: { id: user.id } },
-          pattern: { set: { id: pattern_id } },
-          question: { set: { id: question.id } },
-          startup: { set: { id: startup?.id } },
+          user_id: user.id,
+          pattern_id: patternId,
+          question_id: question.id,
+          startup_id: startup?.id,
           answer: JSON.stringify(answer),
         };
 
@@ -267,7 +273,7 @@ const Survey: React.FC = () => {
     }
   };
 
-  const calculatePoints = (questions: Tables<'questions'>[], userQuestions: Tables<'user_questions'>[]): number => {
+  const calculatePoints = (questions: Question[], userQuestions: UserQuestion[]): number => {
     return questions.reduce((acc, question) => {
       // Skip questions without weight
       if (!question.weight) return acc;
@@ -278,7 +284,7 @@ const Survey: React.FC = () => {
       );
 
       if (!userQuestion) return acc;
-      const answer = JSON.parse(userQuestion.answer);
+      const answer = JSON.parse(userQuestion.answer as any);
       // Find the option that corresponds to the answer
       const option = Array.isArray(question.options)
         ? question.options.find((o: { value: any }) => o.value === answer)
@@ -420,8 +426,8 @@ const Survey: React.FC = () => {
                       )}
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         {patternQuestions
-                          .sort((a: Tables<'questions'>, b: Tables<'questions'>) => (a.order ?? 0) - (b.order ?? 0))
-                          .map((question: Tables<'questions'>) => (
+                          .sort((a: Question, b: Question) => (a.order ?? 0) - (b.order ?? 0))
+                          .map((question: Question) => (
                             <Field key={question.id} name={question.id}>
                               {(fieldProps: any) => (
                                 <SurveyField
@@ -468,8 +474,8 @@ const Survey: React.FC = () => {
                     <Form>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         {surveyQuestions
-                          .sort((a: Tables<'questions'>, b: Tables<'questions'>) => (a.order ?? 0) - (b.order ?? 0))
-                          .map((question: Tables<'questions'>) => (
+                          .sort((a: Question, b: Question) => (a.order ?? 0) - (b.order ?? 0))
+                          .map((question: Question) => (
                             <Field key={question.id} name={question.id}>
                               {(fieldProps: any) => (
                                 <SurveyField

@@ -23,7 +23,7 @@ export interface StartupFormValues {
   idea: string;
   product_type: string;
   industry: string;
-  industryOther?: string;
+  industry_other?: string;
   target_market: string;
   phase: string;
   is_problem_validated: boolean;
@@ -121,7 +121,7 @@ export const renderStepContent = (
             as={TextField}
             fullWidth
             margin="normal"
-            name="startDate"
+            name="start_date"
             label="When did you start working on this idea?"
             type="date"
             InputLabelProps={{
@@ -205,7 +205,7 @@ export const renderStepContent = (
             select
             fullWidth
             margin="normal"
-            name="productType"
+            name="product_type"
             label="What are you building?"
             error={touched.product_type && Boolean(errors.product_type)}
             helperText={touched.product_type && errors.product_type}
@@ -239,7 +239,7 @@ export const renderStepContent = (
               as={TextField}
               fullWidth
               margin="normal"
-              name="industryOther"
+              name="industry_other"
               label="Please specify your industry"
               error={touched.industry_other && Boolean(errors.industry_other)}
               helperText={touched.industry_other && errors.industry_other}
@@ -251,7 +251,7 @@ export const renderStepContent = (
             select
             fullWidth
             margin="normal"
-            name="targetMarket"
+            name="target_market"
             label="Who are your customers?"
             error={touched.target_market && Boolean(errors.target_market)}
             helperText={touched.target_market && errors.target_market}
@@ -300,7 +300,7 @@ export const renderStepContent = (
               control={
                 <Field
                   as={Checkbox}
-                  name="isProblemValidated"
+                  name="is_problem_validated"
                   checked={values.is_problem_validated}
                 />
               }
@@ -311,7 +311,7 @@ export const renderStepContent = (
               as={TextField}
               fullWidth
               margin="normal"
-              name="qualifiedConversationsCount"
+              name="qualified_conversations_count"
               label="How many customer interviews have you conducted?"
               type="number"
               error={
@@ -325,7 +325,7 @@ export const renderStepContent = (
               control={
                 <Field
                   as={Checkbox}
-                  name="isTargetGroupDefined"
+                  name="is_target_group_defined"
                   checked={values.is_target_group_defined}
                 />
               }
@@ -342,7 +342,7 @@ export const renderStepContent = (
               control={
                 <Field
                   as={Checkbox}
-                  name="isPrototypeValidated"
+                  name="is_prototype_validated"
                   checked={values.is_prototype_validated}
                 />
               }
@@ -350,7 +350,7 @@ export const renderStepContent = (
             />
 
             <FormControlLabel
-              control={<Field as={Checkbox} name="isMvpTested" checked={values.is_mvp_tested} />}
+              control={<Field as={Checkbox} name="is_mvp_tested" checked={values.is_mvp_tested} />}
               label="Have you built and tested a Minimum Viable Product (MVP)?"
             />
           </Box>

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabaseGetPatterns, supabaseGetStartupPatterns } from '@/lib/supabase';
-import { Tables } from '@/types/database';
+import { Pattern, Startup, StartupPattern } from '@/types/database';
 import { CategoryEnum } from '@/utils/constants';
 
 interface UsePatterns {
-  startup: Tables<'startups'> | null;
-  recommendedPatterns: Tables<'patterns'>[] | null;
+  startup: Startup | null;
+  recommendedPatterns: Pattern[] | null;
   loading: boolean;
   error: string | null;
   initialized: boolean;
@@ -62,7 +62,7 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
     return array[Math.floor(Math.random() * array.length)];
   };
 
-  const getRecommendedCategory = useCallback((startup: Tables<'startups'>, excludedCategories: CategoryEnum[] = []): CategoryEnum | null => {
+  const getRecommendedCategory = useCallback((startup: Startup, excludedCategories: CategoryEnum[] = []): CategoryEnum | null => {
     if (!startup?.scores) {
       // If filtering for non-entrepreneur, return a random non-entrepreneur category
       if (isExcludeEntrepreneur(categoryFilter)) {
@@ -121,7 +121,7 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
       setState((prev) => ({ ...prev, loading: true }));
       try {
         // Fetch patterns already started/applied by startup
-        let usedPatterns: Tables<'startup_patterns'>[] = [];
+        let usedPatterns: StartupPattern[] = [];
         if (state.startup) {
           usedPatterns = await supabaseGetStartupPatterns(state.startup.id);
         }
@@ -131,8 +131,8 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
 
         // Try to find patterns from categories starting with the lowest score
         const excludedCategories: CategoryEnum[] = [];
-        let availablePatterns: Tables<'patterns'>[] = [];
-        let filteredPatterns: Tables<'patterns'>[] = [];
+        let availablePatterns: Pattern[] = [];
+        let filteredPatterns: Pattern[] = [];
         let category: CategoryEnum | null;
 
         console.log('usedpatternIds', usedpatternIds);
@@ -165,7 +165,7 @@ export default function usePatterns(categoryFilter?: CategoryFilter): UsePattern
         }
 
         // Get random patterns from available patterns
-        const randomPatterns: Tables<'patterns'>[] = [];
+        const randomPatterns: Pattern[] = [];
         // Loop over count to get multiple patterns (default 1), avoid duplicates
         for (let i = 0; i < (count || 1); i++) {
           const randomPattern = getRandomItem(filteredPatterns);
