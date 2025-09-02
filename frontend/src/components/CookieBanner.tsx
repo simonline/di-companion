@@ -18,7 +18,7 @@ const CookieBanner: React.FC = () => {
     if (window.amplitude) {
       window.amplitude.track('Cookie Consent Declined');
       // Optionally disable tracking
-      window.amplitude.setOptOut(true);
+      // window.amplitude.setOptOut(true);
     }
   };
 

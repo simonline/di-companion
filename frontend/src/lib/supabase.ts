@@ -1224,12 +1224,26 @@ async function supabaseGetRecommendation(id: string): Promise<Recommendation> {
 export async function supabaseGetInvitations(startupId: string): Promise<Invitation[]> {
   const { data, error } = await supabase
     .from('invitations')
-    .select('*')
+    .select(`
+      *,
+      invited_by_id:profiles(
+        id,
+        username,
+        given_name,
+        family_name
+      )
+    `)
     .eq('startup_id', startupId);
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  // Transform the data to flatten the nested structure
+  const invitations = data?.map((inv: any) => ({
+    ...inv,
+    invited_by: inv.invited_by?.profiles
+  })) || [];
+
+  return invitations;
 }
 
 export async function supabaseCreateInvitation(invitation: InvitationCreate): Promise<Invitation> {
@@ -1242,7 +1256,6 @@ export async function supabaseCreateInvitation(invitation: InvitationCreate): Pr
     .from('invitations')
     .insert({
       ...invitation,
-      // Note: invited_by relationship needs to be created separately
       token,
     })
     .select("*")
@@ -1274,6 +1287,26 @@ export async function supabaseAcceptInvitation(token: string): Promise<Invitatio
       user_id: authData.user.id,
       startup_id: data.startup_id,
     });
+
+  // Get current startup progress
+  const { data: startup, error: startupError } = await supabase
+    .from('startups')
+    .select('progress')
+    .eq('id', data.startup_id!)
+    .single();
+
+  if (!startupError && startup) {
+    // Update progress to set startup-team to true
+    await supabase
+      .from('startups')
+      .update({
+        progress: {
+          ...(startup.progress as object || {}),
+          'startup-team': true
+        }
+      })
+      .eq('id', data.startup_id!);
+  }
 
   return data;
 }
@@ -1550,28 +1583,18 @@ async function supabaseGetInvitation(id: string): Promise<Invitation> {
 }
 
 export async function supabaseGetStartupMembers(startupId: string): Promise<Profile[]> {
-  // First get the user IDs from the link table
-  const { data: linkData, error: linkError } = await supabase
+  const { data, error } = await supabase
     .from('startups_users_lnk')
-    .select('user_id')
+    .select(`
+      user:profiles(*)
+    `)
     .eq('startup_id', startupId);
 
-  if (linkError) throw new Error(handleSupabaseError(linkError));
+  if (error) throw new Error(handleSupabaseError(error));
+  if (!data || data.length === 0) return [];
 
-  if (!linkData || linkData.length === 0) return [];
-
-  // Then get the profiles for those users
-  const userIds = linkData.filter(link => link.user_id).map(link => link.user_id).filter(Boolean) as string[];
-  if (userIds.length === 0) return [];
-
-  const { data, error: profilesError } = await supabase
-    .from('profiles')
-    .select('*, users!inner(*)')
-    .in('id', userIds);
-
-  if (profilesError) throw new Error(handleSupabaseError(profilesError));
-
-  return data as Profile[];
+  // Extract the profiles from the result
+  return data.map(item => item.user) as any;
 }
 
 export async function supabaseGetAvailableStartups(): Promise<Startup[]> {

@@ -76,7 +76,9 @@ export type DocumentCreate = TablesInsert<'documents'>;
 export type DocumentUpdate = TablesUpdate<'documents'>;
 
 // Invitations
-export type Invitation = Tables<'invitations'>;
+export interface Invitation extends Tables<'invitations'> {
+  invited_by?: Pick<Profile, 'id' | 'username' | 'given_name' | 'family_name'>;
+}
 export type InvitationCreate = TablesInsert<'invitations'>;
 export type InvitationUpdate = TablesUpdate<'invitations'>;
 

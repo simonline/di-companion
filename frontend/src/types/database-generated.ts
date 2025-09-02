@@ -1496,7 +1496,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "startups"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       surveys: {

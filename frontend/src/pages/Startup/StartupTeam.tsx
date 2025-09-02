@@ -75,9 +75,8 @@ function a11yProps(index: number) {
 }
 
 const StartupTeam: React.FC = () => {
-  const { startupId } = useParams<{ startupId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthContext();
+  const { user, startup } = useAuthContext();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [members, setMembers] = useState<Profile[]>([]);
   const [email, setEmail] = useState('');
@@ -103,18 +102,19 @@ const StartupTeam: React.FC = () => {
   };
 
   const loadData = useCallback(async () => {
-    if (!startupId) return;
+    if (!startup?.id) return;
 
     setLoading(true);
     try {
       const [membersData, invitationsData] = await Promise.all([
-        supabaseGetStartupMembers(startupId),
-        supabaseGetInvitations(startupId),
+        supabaseGetStartupMembers(startup!.id),
+        supabaseGetInvitations(startup!.id),
       ]);
-
+      console.log("Setting: " + JSON.stringify(membersData));
       setMembers(membersData);
       setInvitations(invitationsData);
     } catch (error) {
+
       setSnackbar({
         open: true,
         message: 'Failed to load team data',
@@ -123,13 +123,13 @@ const StartupTeam: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [startupId]);
+  }, [startup!.id]);
 
   useEffect(() => {
-    if (startupId) {
+    if (startup!.id) {
       loadData();
     }
-  }, [startupId, loadData]);
+  }, [startup!.id, loadData]);
 
   // Set tab to invitations if we have invitations but no members
   useEffect(() => {
@@ -140,12 +140,12 @@ const StartupTeam: React.FC = () => {
 
   const handleCreateInvitation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!startupId || !user || !email) return;
+    if (!startup!.id || !user || !email) return;
 
     setInvitationLoading(true);
     try {
       await supabaseCreateInvitation({
-        startup_id: startupId,
+        startup_id: startup!.id,
         invited_by_id: user.id,
         email,
       });
@@ -282,9 +282,8 @@ const StartupTeam: React.FC = () => {
                 secondary={
                   <>
                     <Typography component="span" variant="body2" color="text.primary">
-                      {member.user?.email}
+                      {member.position}
                     </Typography>
-                    {member.position && ` — ${member.position}`}
                   </>
                 }
               />
@@ -395,6 +394,9 @@ const StartupTeam: React.FC = () => {
                         invitation.created_at,
                       ).toLocaleDateString()}`
                       : 'Invitation details unavailable'}
+                    {invitation.invited_by && (
+                      <> by {invitation.invited_by.given_name || invitation.invited_by.username || 'Unknown'}</>
+                    )}
                   </Typography>
                 }
               />
