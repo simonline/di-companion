@@ -144,10 +144,17 @@ const StartupTeam: React.FC = () => {
 
     setInvitationLoading(true);
     try {
+      // Get the current user's profile for inviter_name
+      const inviterName = user.profile?.given_name && user.profile?.family_name 
+        ? `${user.profile.given_name} ${user.profile.family_name}`
+        : user.profile?.username || user.email || 'A team member';
+      
       await supabaseCreateInvitation({
         startup_id: startup!.id,
         invited_by_id: user.id,
         email,
+        inviter_name: inviterName,
+        startup_name: startup!.name || 'the startup',
       });
 
       setEmail('');
@@ -155,13 +162,13 @@ const StartupTeam: React.FC = () => {
 
       setSnackbar({
         open: true,
-        message: 'Invitation sent successfully',
+        message: 'Invitation sent successfully. Email has been sent.',
         severity: 'success',
       });
     } catch (error) {
       setSnackbar({
         open: true,
-        message: 'Failed to send invitation',
+        message: error instanceof Error ? error.message : 'Failed to send invitation',
         severity: 'error',
       });
     } finally {
@@ -191,16 +198,17 @@ const StartupTeam: React.FC = () => {
   const handleResendInvitation = async (id: string) => {
     try {
       await supabaseResendInvitation(id);
+      await loadData(); // Reload to show updated expiration date
 
       setSnackbar({
         open: true,
-        message: 'Invitation resent successfully',
+        message: 'Invitation resent successfully. Reminder email has been sent.',
         severity: 'success',
       });
     } catch (error) {
       setSnackbar({
         open: true,
-        message: 'Failed to resend invitation',
+        message: error instanceof Error ? error.message : 'Failed to resend invitation',
         severity: 'error',
       });
     }

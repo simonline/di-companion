@@ -18,22 +18,34 @@ function ConfirmEmail() {
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const email = location.state?.email || '';
+  const returnUrl = location.state?.returnUrl || null;
 
   // If user is already authenticated (email confirmed), redirect to appropriate page
   useEffect(() => {
     if (user) {
-      // Check if user has a startup, if not redirect to create one
-      navigate('/startup');
+      // If we have a returnUrl (e.g., from invitation), go there
+      if (returnUrl) {
+        navigate(returnUrl);
+      } else {
+        // Check if user has a startup, if not redirect to create one
+        navigate('/startup');
+      }
     }
-  }, [user, navigate]);
+  }, [user, navigate, returnUrl]);
 
   const handleResendEmail = () => {
     // This could trigger a resend email function if needed
-    navigate('/login');
+    const loginUrl = returnUrl 
+      ? `/login?returnUrl=${encodeURIComponent(returnUrl)}&email=${encodeURIComponent(email)}`
+      : '/login';
+    navigate(loginUrl);
   };
 
   const handleGoToLogin = () => {
-    navigate('/login');
+    const loginUrl = returnUrl 
+      ? `/login?returnUrl=${encodeURIComponent(returnUrl)}&email=${encodeURIComponent(email)}`
+      : '/login';
+    navigate(loginUrl);
   };
 
   return (

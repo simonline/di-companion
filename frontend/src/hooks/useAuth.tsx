@@ -15,6 +15,7 @@ import {
   supabaseSendOtp,
   supabaseSendMagicLink,
   supabaseVerifyOtp,
+  supabaseAutoAcceptInvitations,
   getSession,
 } from '@/lib/supabase';
 import {
@@ -114,20 +115,58 @@ export function useAuth(): UseAuthReturn {
           const { user, profile } = await supabaseMe();
           console.log('Auth hook: User data fetched:', user, profile);
           setUserAndProfile(user, profile);
-          // Query startups separately
-          if (user) {
-            const { data: startupLinks } = await supabase
-              .from('startups_users_lnk')
-              .select('startup_id')
-              .eq('user_id', user.id)
-              .limit(1);
-            if (startupLinks && startupLinks.length > 0) {
-              const startup = await supabaseGetStartup(startupLinks[0].startup_id!);
-              setStartup(startup);
+          
+          // Add a small delay to ensure auth state is fully established
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Auto-accept any pending invitations for this user's email
+          // We check session.user directly as backup if user is not set yet
+          const currentUser = user || session.user;
+          if (currentUser) {
+            try {
+              const invitationResult = await supabaseAutoAcceptInvitations();
+              if (invitationResult.acceptedCount > 0) {
+                console.log(`Auto-accepted ${invitationResult.acceptedCount} invitation(s)`);
+                
+                // Refresh startups after accepting invitations
+                const { data: updatedStartupLinks } = await supabase
+                  .from('startups_users_lnk')
+                  .select('startup_id')
+                  .eq('user_id', currentUser.id)
+                  .limit(1);
+                if (updatedStartupLinks && updatedStartupLinks.length > 0) {
+                  const startup = await supabaseGetStartup(updatedStartupLinks[0].startup_id!);
+                  setStartup(startup);
+                }
+              } else {
+                // No invitations accepted, query startups normally
+                const { data: startupLinks } = await supabase
+                  .from('startups_users_lnk')
+                  .select('startup_id')
+                  .eq('user_id', currentUser.id)
+                  .limit(1);
+                if (startupLinks && startupLinks.length > 0) {
+                  const startup = await supabaseGetStartup(startupLinks[0].startup_id!);
+                  setStartup(startup);
+                }
+              }
+            } catch (inviteError) {
+              console.error('Failed to auto-accept invitations:', inviteError);
+              // Still try to load startups even if auto-accept failed
+              const { data: startupLinks } = await supabase
+                .from('startups_users_lnk')
+                .select('startup_id')
+                .eq('user_id', currentUser.id)
+                .limit(1);
+              if (startupLinks && startupLinks.length > 0) {
+                const startup = await supabaseGetStartup(startupLinks[0].startup_id!);
+                setStartup(startup);
+              }
             }
           }
           setState((prev) => ({ ...prev, loading: false }));
         } catch (error) {
+          console.error('Error in SIGNED_IN handler:', error);
           setState((prev) => ({ ...prev, loading: false, error: 'Failed to load user data' }));
         }
       }
@@ -340,7 +379,22 @@ export function useAuth(): UseAuthReturn {
       try {
         const { user, profile } = await supabaseVerifyOtp(email, token);
         setUserAndProfile(user, profile);
+        
         if (user) {
+          // Add a small delay to ensure auth state is fully established
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Auto-accept any pending invitations for this user's email
+          try {
+            const invitationResult = await supabaseAutoAcceptInvitations();
+            if (invitationResult.acceptedCount > 0) {
+              console.log(`Auto-accepted ${invitationResult.acceptedCount} invitation(s) after OTP verification`);
+            }
+          } catch (inviteError) {
+            console.error('Failed to auto-accept invitations after OTP:', inviteError);
+          }
+          
+          // Query startups (which will now include any newly accepted invitations)
           const { data: startupLinks } = await supabase
             .from('startups_users_lnk')
             .select('startup_id')

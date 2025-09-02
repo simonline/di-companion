@@ -1246,57 +1246,65 @@ export async function supabaseGetInvitations(startupId: string): Promise<Invitat
   return invitations;
 }
 
-export async function supabaseCreateInvitation(invitation: InvitationCreate): Promise<Invitation> {
+export async function supabaseCreateInvitation(invitation: InvitationCreate & { inviter_name: string; startup_name: string }): Promise<any> {
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) throw new Error('Not authenticated');
 
-  const token = crypto.randomUUID();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+  const token = await supabase.auth.getSession();
 
-  const { data, error } = await supabase
-    .from('invitations')
-    .insert({
-      ...invitation,
-      token,
+  const response = await fetch(`${backendUrl}/api/invitations/send`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token.data?.session?.access_token}`
+    },
+    body: JSON.stringify({
+      email: invitation.email,
+      startup_id: invitation.startup_id,
+      inviter_name: invitation.inviter_name,
+      startup_name: invitation.startup_name
     })
-    .select("*")
-    .single();
+  });
 
-  if (error) throw new Error(handleSupabaseError(error));
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Failed to send invitation');
+  }
 
-  return data;
+  const result = await response.json();
+  return result.invitation;
 }
 
-export async function supabaseAcceptInvitation(token: string): Promise<Invitation> {
+export async function supabaseAcceptInvitation(token: string): Promise<any> {
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) throw new Error('Not authenticated');
 
-  // Find and update invitation
-  const { data, error } = await supabase
-    .from('invitations')
-    .update({ updated_at: new Date().toISOString() })
-    .eq('token', token)
-    .select('*')
-    .single();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+  const sessionToken = await supabase.auth.getSession();
 
-  if (error) throw new Error(handleSupabaseError(error));
+  const response = await fetch(`${backendUrl}/api/invitations/accept/${token}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${sessionToken.data?.session?.access_token}`
+    }
+  });
 
-  // Add user to startup
-  await supabase
-    .from('startups_users_lnk')
-    .insert({
-      user_id: authData.user.id,
-      startup_id: data.startup_id,
-    });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Failed to accept invitation');
+  }
 
-  // Get current startup progress
+  const result = await response.json();
+
+  // Update progress to set startup-team to true
   const { data: startup, error: startupError } = await supabase
     .from('startups')
     .select('progress')
-    .eq('id', data.startup_id!)
+    .eq('id', result.startup?.id)
     .single();
 
   if (!startupError && startup) {
-    // Update progress to set startup-team to true
     await supabase
       .from('startups')
       .update({
@@ -1305,10 +1313,148 @@ export async function supabaseAcceptInvitation(token: string): Promise<Invitatio
           'startup-team': true
         }
       })
-      .eq('id', data.startup_id!);
+      .eq('id', result.startup?.id);
   }
 
-  return data;
+  return result;
+}
+
+export async function supabaseAutoAcceptInvitations(): Promise<{
+  success: boolean;
+  acceptedCount: number;
+  acceptedInvitations: Array<{ startup_id: string; startup_name: string }>;
+}> {
+  const { data: authData } = await supabase.auth.getUser();
+  if (!authData.user) throw new Error('Not authenticated');
+
+  const userEmail = authData.user.email;
+  const userId = authData.user.id;
+
+  console.log('Auto-accepting invitations for:', userEmail, 'userId:', userId);
+
+  // Find all pending invitations for this email
+  const { data: invitations, error: invitationsError } = await supabase
+    .from('invitations')
+    .select('*, startup:startups(*)')
+    .eq('email', userEmail)
+    .eq('invitation_status', 'pending');
+
+  if (invitationsError) {
+    console.error('Error fetching invitations:', invitationsError);
+    return { success: true, acceptedCount: 0, acceptedInvitations: [] };
+  }
+
+  console.log('Found invitations:', invitations);
+
+  if (!invitations || invitations.length === 0) {
+    console.log('No pending invitations found for email:', userEmail);
+    return { success: true, acceptedCount: 0, acceptedInvitations: [] };
+  }
+
+  const acceptedInvitations = [];
+  const now = new Date();
+
+  for (const invitation of invitations) {
+    // Check if invitation hasn't expired
+    const expiresAt = new Date(invitation.expires_at!);
+    if (expiresAt < now) {
+      continue;
+    }
+
+    // Check if user is already a member
+    const { data: existingMember, error: memberCheckError } = await supabase
+      .from('startups_users_lnk')
+      .select('*')
+      .eq('startup_id', invitation.startup_id!)
+      .eq('user_id', userId)
+      .single();
+
+    console.log('Checking existing membership for startup:', invitation.startup_id, 'result:', existingMember, 'error:', memberCheckError);
+
+    // Note: single() returns an error if no rows found, so we check for that
+    if (!existingMember && memberCheckError?.code !== 'PGRST116') {
+      console.error('Error checking membership:', memberCheckError);
+      continue;
+    }
+
+    if (!existingMember) {
+      console.log('Adding user to startup:', invitation.startup_id);
+
+      // First, ensure the user has a profile (create a basic one if not)
+      const { data: profileCheck, error: profileCheckError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single();
+
+      if (!profileCheck && profileCheckError?.code === 'PGRST116') {
+        console.log('Profile does not exist, creating basic profile for user:', userId);
+        // Create a basic profile for the user
+        const { error: profileCreateError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+          });
+
+        if (profileCreateError) {
+          console.error('Error creating profile:', profileCreateError);
+          continue;
+        }
+        console.log('Basic profile created');
+      }
+
+      // Now add user to startup
+      const { error: linkError } = await supabase
+        .from('startups_users_lnk')
+        .insert({
+          startup_id: invitation.startup_id,
+          user_id: userId
+        });
+
+      if (linkError) {
+        console.error('Error adding user to startup:', linkError);
+        continue;
+      }
+      console.log('Successfully added user to startup');
+    } else {
+      console.log('User already member of startup:', invitation.startup_id);
+    }
+
+    // Mark invitation as accepted
+    const { error: updateError } = await supabase
+      .from('invitations')
+      .update({ invitation_status: 'accepted' })
+      .eq('id', invitation.id);
+
+    if (updateError) {
+      console.error('Error updating invitation:', updateError);
+      continue;
+    }
+
+    // Update startup progress to set startup-team to true
+    if (invitation.startup) {
+      await supabase
+        .from('startups')
+        .update({
+          progress: {
+            ...(invitation.startup.progress as object || {}),
+            'startup-team': true
+          }
+        })
+        .eq('id', invitation.startup_id);
+    }
+
+    acceptedInvitations.push({
+      startup_id: invitation.startup_id,
+      startup_name: invitation.startup?.name || 'Unknown Startup'
+    });
+  }
+
+  return {
+    success: true,
+    acceptedCount: acceptedInvitations.length,
+    acceptedInvitations
+  };
 }
 
 // Methods
@@ -1566,8 +1712,31 @@ export async function supabaseDeleteInvitation(id: string): Promise<void> {
   if (error) throw new Error(handleSupabaseError(error));
 }
 
-export async function supabaseResendInvitation(id: string): Promise<Invitation> {
-  return supabaseGetInvitation(id);
+export async function supabaseResendInvitation(id: string): Promise<any> {
+  const { data: authData } = await supabase.auth.getUser();
+  if (!authData.user) throw new Error('Not authenticated');
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+  const token = await supabase.auth.getSession();
+
+  const response = await fetch(`${backendUrl}/api/invitations/resend`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token.data?.session?.access_token}`
+    },
+    body: JSON.stringify({
+      invitation_id: id
+    })
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Failed to resend invitation');
+  }
+
+  const result = await response.json();
+  return result.invitation;
 }
 
 async function supabaseGetInvitation(id: string): Promise<Invitation> {
@@ -1575,6 +1744,18 @@ async function supabaseGetInvitation(id: string): Promise<Invitation> {
     .from('invitations')
     .select('*')
     .eq('id', id!)
+    .single();
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  return data;
+}
+
+export async function supabaseGetInvitationByToken(token: string): Promise<Invitation> {
+  const { data, error } = await supabase
+    .from('invitations')
+    .select('*')
+    .eq('token', token)
     .single();
 
   if (error) throw new Error(handleSupabaseError(error));

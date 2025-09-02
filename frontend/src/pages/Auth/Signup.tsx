@@ -15,7 +15,7 @@ import {
   Checkbox,
   FormControlLabel,
 } from '@mui/material';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
 import useNotifications from '@/store/notifications';
 import Header from '@/sections/Header';
@@ -44,10 +44,16 @@ const HCAPTCHA_SITE_KEY = import.meta.env.VITE_HCAPTCHA_SITE_KEY;
 
 function Signup() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register } = useAuthContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [, notificationsActions] = useNotifications();
   const captchaRef = useRef<HCaptcha>(null);
+
+  // Parse query parameters
+  const searchParams = new URLSearchParams(location.search);
+  const returnUrl = searchParams.get('returnUrl');
+  const emailHint = searchParams.get('email');
 
   const handleSubmit = async (
     values: SignupFormValues,
@@ -68,8 +74,13 @@ function Signup() {
         message: `Welcome! Please check your email for a magic link to sign in.`,
       });
 
-      // Navigate to confirmation page
-      navigate('/register/confirm', { state: { email: values.email } });
+      // Navigate to confirmation page with returnUrl if present
+      navigate('/register/confirm', { 
+        state: { 
+          email: values.email,
+          returnUrl: returnUrl ? decodeURIComponent(returnUrl) : null
+        } 
+      });
     } catch (err) {
       const error = err as Error;
       console.error('Registration error:', error);
@@ -110,14 +121,14 @@ function Signup() {
 
             <Formik
               initialValues={{
-                email: '',
+                email: emailHint ? decodeURIComponent(emailHint) : '',
                 acceptPrivacy: false,
                 captchaToken: '',
               } as SignupFormValues}
               validationSchema={validationSchema}
               onSubmit={handleSubmit}
             >
-              {({ errors, touched, isValid, values, setFieldValue, setFieldTouched }) => (
+              {({ errors, touched, isValid, values, setFieldValue }) => (
                 <Form>
                   <Box sx={{ mb: 3 }}>
                     <Field
@@ -165,11 +176,11 @@ function Signup() {
                         sitekey={HCAPTCHA_SITE_KEY}
                         onVerify={(token) => {
                           setFieldValue('captchaToken', token);
-                          setFieldTouched('captchaToken', true);
+                          // Don't mark as touched here - let it happen naturally
                         }}
                         onExpire={() => {
                           setFieldValue('captchaToken', '');
-                          setFieldTouched('captchaToken', true);
+                          // Don't mark as touched here either
                         }}
                         onError={() => {
                           setFieldValue('captchaToken', '');
@@ -224,7 +235,19 @@ function Signup() {
 
                   <Typography variant="body2" align="center" color="text.secondary">
                     Already have an account?{' '}
-                    <Link component={RouterLink} to="/login" underline="hover">
+                    <Link 
+                      component={RouterLink} 
+                      to={(() => {
+                        const emailToPass = values.email || emailHint || '';
+                        if (returnUrl) {
+                          return `/login?returnUrl=${returnUrl}&email=${encodeURIComponent(emailToPass)}`;
+                        } else if (emailToPass) {
+                          return `/login?email=${encodeURIComponent(emailToPass)}`;
+                        }
+                        return '/login';
+                      })()} 
+                      underline="hover"
+                    >
                       Sign in
                     </Link>
                   </Typography>

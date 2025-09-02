@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Formik, Form, Field, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import { TextField, Button, Box, Link, Typography, Alert } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Meta from '@/components/Meta';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import Header from '@/sections/Header';
 import useNotifications from '@/store/notifications';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 interface LoginFormValues {
   email: string;
+  captchaToken?: string;
 }
 
 interface OtpFormValues {
@@ -20,25 +22,40 @@ interface OtpFormValues {
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email address').required('Email is required'),
+  captchaToken: Yup.string().required('Please complete the captcha verification'),
 });
 
 const OtpSchema = Yup.object().shape({
   otp: Yup.string().matches(/^\d{6}$/, 'OTP must be 6 digits').required('OTP is required'),
 });
 
+const HCAPTCHA_SITE_KEY = import.meta.env.VITE_HCAPTCHA_SITE_KEY;
+
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, profile } = useAuthContext();
   const [, { push }] = useNotifications();
   const [emailSent, setEmailSent] = useState(false);
   const [email, setEmail] = useState('');
+  const captchaRef = useRef<HCaptcha>(null);
+
+  // Parse query parameters
+  const searchParams = new URLSearchParams(location.search);
+  const returnUrl = searchParams.get('returnUrl');
+  const emailHint = searchParams.get('email');
 
   // Redirect if already logged in
   useEffect(() => {
     if (user && profile) {
-      navigate(profile.is_coach ? '/startups' : '/user', { replace: true });
+      // If we have a returnUrl, go there instead
+      if (returnUrl) {
+        navigate(decodeURIComponent(returnUrl), { replace: true });
+      } else {
+        navigate(profile.is_coach ? '/startups' : '/user', { replace: true });
+      }
     }
-  }, [user, profile, navigate]);
+  }, [user, profile, navigate, returnUrl]);
 
   const handleSubmit = async (
     values: LoginFormValues,
@@ -49,6 +66,7 @@ const Login: React.FC = () => {
         email: values.email,
         options: {
           shouldCreateUser: false, // Don't create new users
+          captchaToken: values.captchaToken,
         },
       });
 
@@ -68,6 +86,8 @@ const Login: React.FC = () => {
         message: error.message,
         options: { variant: 'error' }
       });
+      // Reset captcha on error
+      captchaRef.current?.resetCaptcha();
     } finally {
       setSubmitting(false);
     }
@@ -96,8 +116,12 @@ const Login: React.FC = () => {
         options: { variant: 'success' }
       });
 
-      // The auth context will handle the redirect
-      navigate('/', { replace: true });
+      // Navigate to returnUrl or home
+      if (returnUrl) {
+        navigate(decodeURIComponent(returnUrl), { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     } catch (err) {
       const error = err as Error;
       console.error('OTP verification error:', error);
@@ -113,6 +137,7 @@ const Login: React.FC = () => {
 
   const handleResendOtp = async (): Promise<void> => {
     try {
+      // Note: Resend doesn't require captcha since user already passed it
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
@@ -136,7 +161,8 @@ const Login: React.FC = () => {
   };
 
   const initialValues: LoginFormValues = {
-    email: '',
+    email: emailHint ? decodeURIComponent(emailHint) : '',
+    captchaToken: '',
   };
 
   if (emailSent) {
@@ -147,7 +173,7 @@ const Login: React.FC = () => {
         <FullSizeCenteredFlexBox>
           <Box sx={{ maxWidth: 400, width: '100%', p: 3 }}>
             <Alert severity="info" sx={{ mb: 3 }}>
-              We've sent a 6-digit code to {email}
+              We&apos;ve sent a 6-digit code to {email}
             </Alert>
             <Typography variant="body1" sx={{ mb: 3, textAlign: 'center' }}>
               Enter the code from your email to sign in. The code will expire in 1 hour.
@@ -246,7 +272,7 @@ const Login: React.FC = () => {
             validationSchema={LoginSchema}
             onSubmit={handleSubmit}
           >
-            {({ errors, touched, isSubmitting }) => (
+            {({ errors, touched, isSubmitting, isValid, values, setFieldValue }) => (
               <Form>
                 <Field
                   as={TextField}
@@ -260,19 +286,54 @@ const Login: React.FC = () => {
                   placeholder="Enter your email address"
                 />
 
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                  <HCaptcha
+                    ref={captchaRef}
+                    sitekey={HCAPTCHA_SITE_KEY}
+                    onVerify={(token) => {
+                      setFieldValue('captchaToken', token);
+                      // Don't mark as touched here - let it happen naturally
+                    }}
+                    onExpire={() => {
+                      setFieldValue('captchaToken', '');
+                      // Don't mark as touched here either
+                    }}
+                    onError={() => {
+                      setFieldValue('captchaToken', '');
+                      // Don't set touched on error to avoid showing validation error
+                    }}
+                  />
+                </Box>
+                {touched.captchaToken && errors.captchaToken && (
+                  <Typography variant="caption" color="error" display="block" align="center" sx={{ mb: 2 }}>
+                    {errors.captchaToken}
+                  </Typography>
+                )}
+
                 <Button
                   fullWidth
                   variant="contained"
                   color="primary"
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={!isValid || isSubmitting}
                   sx={{ mt: 3, mb: 2 }}
                 >
                   {isSubmitting ? 'Sending code...' : 'Send Login Code'}
                 </Button>
 
                 <Box sx={{ mt: 2, textAlign: 'center' }}>
-                  <Link component="button" variant="body2" onClick={() => navigate('/signup')}>
+                  <Link 
+                    component="button" 
+                    variant="body2" 
+                    onClick={() => {
+                      // Use the email from form values if available, otherwise emailHint
+                      const emailToPass = values.email || emailHint || '';
+                      const signupUrl = returnUrl 
+                        ? `/signup?returnUrl=${returnUrl}&email=${encodeURIComponent(emailToPass)}`
+                        : `/signup?email=${encodeURIComponent(emailToPass)}`;
+                      navigate(signupUrl);
+                    }}
+                  >
                     Don&apos;t have an account? Sign Up
                   </Link>
                 </Box>
