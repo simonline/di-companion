@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { Pattern } from '@/types/database';
+import { supabase } from '@/lib/supabase';
 
 interface UseSearchPatternsReturn {
   searchPatterns: (query: string) => Promise<void>;
@@ -43,45 +44,53 @@ export default function useSearchPatterns(): UseSearchPatternsReturn {
     setError(null);
 
     try {
-      const token = localStorage.getItem('strapi_jwt');
-      if (!token) {
-        throw new Error('Unauthorized');
-      }
-
-      // Create a search URL with the query parameter
-      const STRAPI_API_PREFIX = '/api';
-      let endpoint = '/patterns?';
-      endpoint += '&populate[relatedPatterns][populate]=*';
-      endpoint += '&populate[methods][populate]=*';
-      endpoint += '&populate[image][fields][0]=url';
-      endpoint += '&populate[survey][fields][0]=id';
-      endpoint += `&filters[$or][0][name][$containsi]=${encodeURIComponent(query)}`;
-      endpoint += `&filters[$or][1][description][$containsi]=${encodeURIComponent(query)}`;
-
-      const url = `${import.meta.env.VITE_API_URL}${STRAPI_API_PREFIX}${endpoint}`;
-      const response = await fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        signal: abortController.signal,
-      });
+      // Use Supabase to search patterns - no token check needed
+      const { data, error: searchError } = await supabase
+        .from('patterns')
+        .select(`
+          *,
+          related_patterns:patterns_related_patterns_lnk!patterns_related_patterns_lnk_fk(
+            related:patterns!inv_pattern_id(*)
+          ),
+          methods:methods_patterns_lnk(
+            method:methods(*)
+          ),
+          survey:patterns_survey_lnk(
+            survey:surveys(*)
+          ),
+          questions:questions_patterns_lnk(
+            question:questions(*)
+          )
+        `)
+        .or(`name.ilike.%${query}%,description.ilike.%${query}%`);
 
       // If this request was aborted, don't proceed
       if (abortController.signal.aborted) {
         return;
       }
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'API request failed');
+      if (searchError) {
+        throw new Error(searchError.message || 'Search failed');
       }
 
-      const data = (await response.json()) as { data: Pattern[] };
+      // Transform the data to match the expected format
+      const transformedData = (data || []).map((pattern: any) => {
+        // Get image URL from the joined file record using backend endpoint
+        const imageUrl = pattern.image_id ? `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'}/api/files/${pattern.image_id}` : '';
+
+        // Transform related_patterns to extract the nested pattern objects
+        const transformedRelatedPatterns = pattern.related_patterns?.map((rel: any) => rel.related) || [];
+
+        return {
+          ...pattern,
+          image: { url: imageUrl },
+          related_patterns: transformedRelatedPatterns,
+        };
+      });
 
       // Only update state if this is still the active request
       if (activeRequestRef.current === abortController) {
-        setSearchResults(data.data || []);
+        setSearchResults(transformedData);
       }
     } catch (error) {
       // Only update error state if this wasn't an abort error and is still the active request

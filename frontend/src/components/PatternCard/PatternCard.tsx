@@ -478,7 +478,7 @@ Make your response actionable and easy to follow.`;
               }}
             >
               {pattern.related_patterns && pattern.related_patterns.map((relPattern, index) => (
-                <React.Fragment key={relPattern.name}>
+                <React.Fragment key={relPattern.id}>
                   <Typography
                     component="a"
                     variant="body2"

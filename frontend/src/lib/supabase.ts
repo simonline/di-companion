@@ -422,7 +422,7 @@ export async function supabaseGetPatterns(category?: CategoryEnum): Promise<Patt
     .from('patterns')
     .select(`
       *,
-      related_patterns:patterns_related_patterns_lnk!patterns_related_patterns_lnk_ifk(
+      related_patterns:patterns_related_patterns_lnk!patterns_related_patterns_lnk_fk(
         related:patterns!inv_pattern_id(*)
       ),
       methods:methods_patterns_lnk(
@@ -445,13 +445,17 @@ export async function supabaseGetPatterns(category?: CategoryEnum): Promise<Patt
   if (error) throw new Error(handleSupabaseError(error));
 
   // Transform the data to match the expected format
-  return (data as any || []).map((pattern: Pattern) => {
+  return (data as any || []).map((pattern: any) => {
     // Get image URL from the joined file record using backend endpoint
     const imageUrl = pattern.image_id ? getFileUrl(pattern.image_id) : '';
+
+    // Transform related_patterns to extract the nested pattern objects
+    const transformedRelatedPatterns = pattern.related_patterns?.map((rel: any) => rel.related) || [];
 
     return {
       ...pattern,
       image: { url: imageUrl },
+      related_patterns: transformedRelatedPatterns,
     };
   });
 }
@@ -461,7 +465,7 @@ export async function supabaseGetPattern(id: string): Promise<Pattern> {
     .from('patterns')
     .select(`
       *,
-      related_patterns:patterns_related_patterns_lnk!patterns_related_patterns_lnk_ifk(
+      related_patterns:patterns_related_patterns_lnk!patterns_related_patterns_lnk_fk(
         related:patterns!inv_pattern_id(*)
       ),
       methods:methods_patterns_lnk(
@@ -482,9 +486,13 @@ export async function supabaseGetPattern(id: string): Promise<Pattern> {
   // Get image URL from the joined file record using backend endpoint
   const imageUrl = data.image_id ? getFileUrl(data.image_id) : '';
 
+  // Transform related_patterns to extract the nested pattern objects
+  const transformedRelatedPatterns = (data as any).related_patterns?.map((rel: any) => rel.related) || [];
+
   return {
     ...(data as any),
     image: { url: imageUrl },
+    related_patterns: transformedRelatedPatterns,
   } as Pattern;
 }
 
