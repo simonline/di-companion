@@ -166,139 +166,123 @@ export const Coach: React.FC = () => {
             sx={{
               width: '100%',
               mb: 4,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
             }}
           >
             <Box
               sx={{
                 width: '100%',
                 display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                mb: 2,
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between',
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                gap: 2,
+                mb: 3,
               }}
             >
-              <Avatar
-                src={getAvatarUrl(coach.avatar_id) || undefined}
-                sx={{
-                  width: 60,
-                  height: 60,
-                  mr: 2,
-                }}
-              >
-                {coach.given_name?.charAt(0)}
-                {coach.family_name?.charAt(0)}
-              </Avatar>
-              <Box>
-                <Typography
-                  variant="overline"
-                  color="text.secondary"
-                  sx={{ fontSize: '0.75rem', letterSpacing: 1 }}
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar
+                  src={getAvatarUrl(coach.avatar_id) || undefined}
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    mr: 2,
+                  }}
                 >
-                  YOUR COACH
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 500, mb: 0.5 }}>
-                  {coach.given_name} {coach.family_name}
-                </Typography>
-
-                {coach.position && (
-                  <Typography variant="body2" color="text.secondary">
-                    {coach.position}
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'row',
-                gap: 1,
-                width: '100%',
-                flexWrap: 'wrap',
-              }}
-            >
-              <Button
-                variant="contained"
-                size="small"
-                disableElevation
-                startIcon={
-                  <Box
-                    component="svg"
-                    sx={{ width: 16, height: 16 }}
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
+                  {coach.given_name?.charAt(0)}
+                  {coach.family_name?.charAt(0)}
+                </Avatar>
+                <Box>
+                  <Typography
+                    variant="overline"
+                    color="text.secondary"
+                    sx={{ fontSize: '0.75rem', letterSpacing: 1 }}
                   >
-                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-                  </Box>
-                }
-                href={`mailto:${coach.user?.email}`}
+                    YOUR COACH
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                    {coach.given_name} {coach.family_name}
+                  </Typography>
+                  {coach.position && (
+                    <Typography variant="body2" color="text.secondary">
+                      {coach.position}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+
+              <Box
                 sx={{
-                  textTransform: 'none',
-                  px: 2,
-                  py: 0.75,
-                  flex: 1,
-                  minWidth: '120px',
+                  display: 'flex',
+                  gap: 1.5,
                 }}
               >
-                Email
-              </Button>
-
-              {coach.is_phone_visible && coach.phone && (
                 <Button
                   variant="contained"
-                  size="small"
-                  disableElevation
                   startIcon={
                     <Box
                       component="svg"
-                      sx={{ width: 16, height: 16 }}
+                      sx={{ width: 20, height: 20 }}
                       viewBox="0 0 24 24"
                       fill="currentColor"
                     >
-                      <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z" />
+                      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
                     </Box>
                   }
-                  href={`tel:${coach.phone}`}
+                  href={`mailto:${coach.user?.email}`}
                   sx={{
                     textTransform: 'none',
-                    px: 2,
-                    py: 0.75,
-                    flex: 1,
-                    minWidth: '120px',
+                    boxShadow: 0,
+                    color: 'background.paper',
+                    '&:hover': {
+                      boxShadow: 1,
+                    },
                   }}
                 >
-                  Call
+                  Email
                 </Button>
-              )}
 
-              <Button
-                variant="contained"
-                size="small"
-                color="primary"
-                onClick={handleOpenRequestForm}
-                startIcon={
-                  <Box
-                    component="svg"
-                    sx={{ width: 16, height: 16 }}
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
+                {coach.is_phone_visible && coach.phone && (
+                  <Button
+                    variant="outlined"
+                    startIcon={
+                      <Box
+                        component="svg"
+                        sx={{ width: 20, height: 20 }}
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z" />
+                      </Box>
+                    }
+                    href={`tel:${coach.phone}`}
+                    sx={{
+                      textTransform: 'none',
+                    }}
                   >
-                    <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
-                  </Box>
-                }
-                sx={{
-                  textTransform: 'none',
-                  px: 2,
-                  py: 0.75,
-                  flex: 1,
-                  minWidth: '120px',
-                }}
-              >
-                Send Request
-              </Button>
+                    Call
+                  </Button>
+                )}
+
+                <Button
+                  variant="outlined"
+                  onClick={handleOpenRequestForm}
+                  startIcon={
+                    <Box
+                      component="svg"
+                      sx={{ width: 20, height: 20 }}
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
+                    </Box>
+                  }
+                  sx={{
+                    textTransform: 'none',
+                  }}
+                >
+                  Send Request
+                </Button>
+              </Box>
             </Box>
           </Box>
         )}
@@ -323,32 +307,22 @@ export const Coach: React.FC = () => {
                     sx={{
                       cursor: 'pointer',
                       borderRadius: 2,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      border: recommendation.read_at ? '1px solid' : '2px solid',
+                      borderColor: recommendation.read_at ? 'divider' : 'primary.main',
                       mb: 2,
                       overflow: 'hidden',
                       position: 'relative',
-                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      transition: 'all 0.3s',
                       '&:hover': {
+                        boxShadow: 3,
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
                       },
-                      ...(recommendation.read_at ? {} : {
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: 4,
-                          height: '100%',
-                          backgroundColor: 'primary.main',
-                        }
-                      })
                     }}
                   >
                     <Box
                       sx={{
                         p: 2.5,
-                        backgroundColor: recommendation.read_at ? 'background.paper' : 'action.hover',
+                        backgroundColor: 'background.paper',
                       }}
                     >
                       <Box sx={{ display: 'flex' }}>

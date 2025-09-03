@@ -404,10 +404,7 @@ export async function supabaseUpdateProfile(updateProfile: ProfileUpdate) {
 export async function supabaseGetProfileById(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select(`
-      *,
-      user:users(*)
-    `)
+    .select("*")
     .eq('id', userId)
     .single();
 
@@ -1165,10 +1162,10 @@ export async function supabaseGetRecommendations(startupId?: string): Promise<Re
     .from('recommendations')
     .select(`
       *,
-      patterns:recommendations_patterns(
+      patterns:recommendations_patterns_lnk(
         pattern:patterns(*)
       ),
-      coach:users!coach_id(*),
+      coach:profiles!coach_id(*),
       startup:startups(*)
     `);
 
@@ -1219,7 +1216,7 @@ async function supabaseGetRecommendation(id: string): Promise<Recommendation> {
       patterns:recommendations_patterns_lnk(
         pattern:patterns(*)
       ),
-      coach:users!coach_id(*),
+      coach:profiles!coach_id(*),
       startup:startups(*)
     `)
     .eq('id', id!)
@@ -1922,7 +1919,7 @@ export async function uploadDocument(
     // Get the auth token to include in the request
     const { data: { session } } = await supabase.auth.getSession();
     const headers: HeadersInit = {};
-    
+
     if (session?.access_token) {
       headers['Authorization'] = `Bearer ${session.access_token}`;
     }
