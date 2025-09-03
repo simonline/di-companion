@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Button,
   Stack,
@@ -14,18 +12,21 @@ import {
   DialogActions,
   TextField,
   CircularProgress,
-  Grid,
   Chip,
-  Avatar,
 } from '@mui/material';
 import {
-  CloudUpload,
-  Delete,
-  Visibility,
-  Download,
-  AttachFile,
+  CloudUploadOutlined,
+  DeleteOutline,
+  FileDownloadOutlined,
   ContentPaste,
   Close,
+  InsertDriveFileOutlined,
+  DescriptionOutlined,
+  ImageOutlined,
+  MovieOutlined,
+  AudiotrackOutlined,
+  FolderZipOutlined,
+  CodeOutlined,
 } from '@mui/icons-material';
 import { uploadDocument, getDocuments, deleteDocument, getDocumentUrl, supabase } from '@/lib/supabase';
 import type { Document } from '@/types/database';
@@ -39,7 +40,6 @@ interface DocumentManagerProps {
   entityField?: string;
   title?: string;
   description?: string;
-  color?: string;
 }
 
 const DocumentManager: React.FC<DocumentManagerProps> = ({
@@ -49,9 +49,8 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
   entityField,
   title = 'Documents',
   description = 'Upload and manage documents',
-  color = 'primary',
 }) => {
-  const { user } = useAuthContext();
+  const { user, profile } = useAuthContext();
   const [, notificationActions] = useNotifications();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [users, setUsers] = useState<{ [key: string]: any }>({});
@@ -76,21 +75,21 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
       if (entityType) filters.entityType = entityType;
       if (entityId) filters.entityId = entityId;
       if (entityField) filters.entityField = entityField;
-      
+
       const docs = await getDocuments(filters);
       setDocuments(docs);
-      
+
       // Fetch user info for each unique uploader
       const uniqueUserIds = [...new Set(docs.map(d => d.uploaded_by).filter(Boolean))];
       const userPromises = uniqueUserIds.map(async (userId) => {
         const { data } = await supabase
           .from('profiles')
-          .select('id, name, email')
+          .select('id, given_name, family_name, email')
           .eq('id', userId!)
           .single();
         return { id: userId, data };
       });
-      
+
       const userResults = await Promise.all(userPromises);
       const userMap: { [key: string]: any } = {};
       userResults.forEach(result => {
@@ -142,7 +141,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
         // Create a text file from pasted content
         const blob = new Blob([pasteText], { type: 'text/plain' });
         const file = new File([blob], `${uploadTitle || 'pasted-text'}.txt`, { type: 'text/plain' });
-        
+
         await uploadDocument(
           file,
           entityType,
@@ -155,7 +154,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
           options: { variant: 'success' }
         });
       }
-      
+
       await fetchDocuments();
       handleCloseDialog();
     } catch (error) {
@@ -196,161 +195,299 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
   };
 
   const getUserDisplay = (userId: string | null) => {
-    if (!userId) return { name: 'Unknown', initials: '?' };
+    if (!userId) {
+      // If no uploaded_by, use current user as fallback
+      if (profile?.given_name) {
+        return profile.given_name;
+      }
+      if (user) {
+        return user.email?.split('@')[0] || 'You';
+      }
+      return 'Unknown';
+    }
+    
+    // Check if it's the current user
+    if (userId === user?.id && profile?.given_name) {
+      return profile.given_name;
+    }
+    
     const userInfo = users[userId];
     if (userInfo) {
-      const name = userInfo.name || userInfo.email?.split('@')[0] || 'Unknown';
-      const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase();
-      return { name, initials };
+      // Use given_name if available, otherwise fall back to email
+      const name = userInfo.given_name || userInfo.email?.split('@')[0] || 'Unknown';
+      return name;
     }
-    return { name: 'Loading...', initials: '?' };
+    return 'Loading...';
+  };
+
+  const getFileIcon = (mimeType: string | null, filename: string) => {
+    const extension = filename.split('.').pop()?.toLowerCase();
+    const iconStyle = { fontSize: 40, color: 'text.secondary', opacity: 0.6 };
+    
+    // Check by MIME type first
+    if (mimeType) {
+      if (mimeType.startsWith('image/')) return <ImageOutlined sx={iconStyle} />;
+      if (mimeType === 'application/pdf') return <DescriptionOutlined sx={iconStyle} />;
+      if (mimeType.startsWith('video/')) return <MovieOutlined sx={iconStyle} />;
+      if (mimeType.startsWith('audio/')) return <AudiotrackOutlined sx={iconStyle} />;
+      if (mimeType.startsWith('text/')) return <DescriptionOutlined sx={iconStyle} />;
+      if (mimeType.includes('zip') || mimeType.includes('compressed')) return <FolderZipOutlined sx={iconStyle} />;
+    }
+    
+    // Check by file extension as fallback
+    if (extension) {
+      // Images
+      if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'ico', 'bmp'].includes(extension)) {
+        return <ImageOutlined sx={iconStyle} />;
+      }
+      // PDF and Documents
+      if (['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'xls', 'xlsx', 'ppt', 'pptx'].includes(extension)) {
+        return <DescriptionOutlined sx={iconStyle} />;
+      }
+      // Videos
+      if (['mp4', 'avi', 'mov', 'mkv', 'webm', 'flv'].includes(extension)) {
+        return <MovieOutlined sx={iconStyle} />;
+      }
+      // Audio
+      if (['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac'].includes(extension)) {
+        return <AudiotrackOutlined sx={iconStyle} />;
+      }
+      // Code
+      if (['js', 'ts', 'tsx', 'jsx', 'py', 'java', 'cpp', 'c', 'h', 'css', 'html', 'json', 'xml', 'yaml', 'yml'].includes(extension)) {
+        return <CodeOutlined sx={iconStyle} />;
+      }
+      // Archives
+      if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'].includes(extension)) {
+        return <FolderZipOutlined sx={iconStyle} />;
+      }
+    }
+    
+    // Default file icon
+    return <InsertDriveFileOutlined sx={iconStyle} />;
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
   };
 
   return (
     <Box>
-      <Card sx={{ mb: 3, bgcolor: `${color}.lighter`, border: '2px solid', borderColor: `${color}.main` }}>
-        <CardContent>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            justifyContent="space-between"
-            alignItems={{ xs: 'stretch', sm: 'center' }}
-            spacing={2}
-          >
-            <Box>
-              <Typography variant="h5" fontWeight="700" gutterBottom>
-                📁 {title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {description}
-              </Typography>
-            </Box>
-            <Stack direction="row" spacing={2}>
-              <Button
-                variant="contained"
-                startIcon={<CloudUpload />}
-                onClick={() => {
-                  setUploadMode('file');
-                  setOpenDialog(true);
-                }}
-                size="large"
-                color={color as any}
-                sx={{ fontWeight: 'bold' }}
-              >
-                Upload Files
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<ContentPaste />}
-                onClick={() => {
-                  setUploadMode('paste');
-                  setOpenDialog(true);
-                }}
-                size="large"
-              >
-                Paste Text
-              </Button>
-            </Stack>
+      <Box sx={{ mb: 4 }}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          justifyContent="space-between"
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
+          spacing={2}
+          sx={{ mb: 3 }}
+        >
+          <Box>
+            <Typography variant="h5" fontWeight="600" gutterBottom>
+              {title}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {description}
+            </Typography>
+          </Box>
+          <Stack direction="row" spacing={1.5}>
+            <Button
+              variant="contained"
+              startIcon={<CloudUploadOutlined />}
+              onClick={() => {
+                setUploadMode('file');
+                setOpenDialog(true);
+              }}
+              sx={{ 
+                textTransform: 'none',
+                boxShadow: 0,
+                '&:hover': {
+                  boxShadow: 1
+                }
+              }}
+            >
+              Upload Files
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<ContentPaste />}
+              onClick={() => {
+                setUploadMode('paste');
+                setOpenDialog(true);
+              }}
+              sx={{ textTransform: 'none' }}
+            >
+              Paste Text
+            </Button>
           </Stack>
-        </CardContent>
-      </Card>
+        </Stack>
+      </Box>
+
+      {/* Upload Drop Zone - Always Visible */}
+      <Paper 
+        sx={{ 
+          p: 3, 
+          mb: 3,
+          textAlign: 'center',
+          border: '2px dashed',
+          borderColor: 'divider',
+          borderRadius: 2,
+          bgcolor: 'grey.50',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            borderColor: 'primary.main',
+            bgcolor: 'action.hover'
+          }
+        }}
+        onClick={() => {
+          setUploadMode('file');
+          setOpenDialog(true);
+        }}
+      >
+        <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
+          <CloudUploadOutlined sx={{ fontSize: 32, color: 'text.secondary' }} />
+          <Box>
+            <Typography variant="body1" color="text.primary">
+              Drop files here or click to upload
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Supports all file types up to 50MB
+            </Typography>
+          </Box>
+        </Stack>
+      </Paper>
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
       ) : documents.length === 0 ? (
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: 6 }}>
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              No documents uploaded yet
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Upload files or paste text to get started
-            </Typography>
-          </CardContent>
-        </Card>
+        <Paper sx={{ 
+          p: 6, 
+          textAlign: 'center',
+          borderRadius: 2,
+          bgcolor: 'background.paper'
+        }}>
+          <InsertDriveFileOutlined sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No documents yet
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Upload files or paste text to get started
+          </Typography>
+        </Paper>
       ) : (
-        <Grid container spacing={2}>
+        <Stack spacing={2}>
           {documents.map((doc) => {
-            const uploader = getUserDisplay(doc.uploaded_by);
+            const uploaderName = getUserDisplay(doc.uploaded_by);
             return (
-              <Grid item xs={12} sm={6} md={4} key={doc.id}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 1,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    '&:hover': {
-                      borderColor: `${color}.main`,
-                      bgcolor: 'action.hover'
-                    }
-                  }}
-                >
-                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="subtitle2" noWrap title={doc.filename}>
-                        {doc.filename}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {doc.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'} • 
-                        {(doc.size_bytes / 1024).toFixed(1)} KB
-                      </Typography>
-                    </Box>
-                    <AttachFile color="action" />
-                  </Stack>
-                  
-                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
-                    <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem', bgcolor: `${color}.main` }}>
-                      {uploader.initials}
-                    </Avatar>
-                    <Typography variant="caption" color="text.secondary" noWrap>
-                      {uploader.name}
+              <Paper
+                key={doc.id}
+                sx={{
+                  p: 2.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    borderColor: 'text.secondary',
+                    bgcolor: 'grey.50',
+                    transform: 'translateY(-1px)',
+                    boxShadow: 1
+                  }
+                }}
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = getDocumentUrl(doc.id);
+                  link.download = doc.filename;
+                  link.click();
+                }}
+              >
+                {/* File Icon */}
+                <Box sx={{ flexShrink: 0 }}>
+                  {getFileIcon(doc.mime_type, doc.filename)}
+                </Box>
+
+                {/* File Info */}
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }} noWrap title={doc.filename}>
+                    {doc.filename}
+                  </Typography>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Typography variant="caption" color="text.secondary">
+                      {formatFileSize(doc.size_bytes)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      • {new Date(doc.uploaded_at).toLocaleDateString()}
+                      •
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {uploaderName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      •
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {new Date(doc.uploaded_at).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        year: new Date(doc.uploaded_at).getFullYear() !== new Date().getFullYear() 
+                          ? 'numeric' 
+                          : undefined 
+                      })}
                     </Typography>
                   </Stack>
+                </Box>
 
-                  <Stack direction="row" spacing={1} sx={{ mt: 'auto' }}>
+                {/* Actions */}
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const link = document.createElement('a');
+                      link.href = getDocumentUrl(doc.id);
+                      link.download = doc.filename;
+                      link.click();
+                    }}
+                    sx={{ 
+                      color: 'text.secondary',
+                      '&:hover': {
+                        bgcolor: 'action.hover'
+                      }
+                    }}
+                  >
+                    <FileDownloadOutlined fontSize="small" />
+                  </IconButton>
+                  {(doc.uploaded_by === user?.id || !doc.uploaded_by) && (
                     <IconButton
                       size="small"
-                      onClick={() => window.open(getDocumentUrl(doc.id), '_blank')}
-                      title="View"
-                    >
-                      <Visibility fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = getDocumentUrl(doc.id);
-                        link.download = doc.filename;
-                        link.click();
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(doc.id);
                       }}
-                      title="Download"
+                      sx={{ 
+                        color: 'text.secondary',
+                        '&:hover': {
+                          color: 'error.main',
+                          bgcolor: 'error.lighter'
+                        }
+                      }}
                     >
-                      <Download fontSize="small" />
+                      <DeleteOutline fontSize="small" />
                     </IconButton>
-                    {doc.uploaded_by === user?.id && (
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleDelete(doc.id)}
-                        title="Delete"
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    )}
-                  </Stack>
-                </Paper>
-              </Grid>
+                  )}
+                </Stack>
+              </Paper>
             );
           })}
-        </Grid>
+        </Stack>
       )}
 
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
@@ -375,17 +512,32 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                   hidden
                   onChange={handleFileSelect}
                 />
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  startIcon={<CloudUpload />}
+                <Box
                   onClick={() => fileInputRef.current?.click()}
-                  sx={{ py: 2 }}
+                  sx={{
+                    border: '2px dashed',
+                    borderColor: 'divider',
+                    borderRadius: 2,
+                    p: 4,
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      bgcolor: 'action.hover'
+                    }
+                  }}
                 >
-                  {selectedFiles.length > 0
-                    ? `${selectedFiles.length} file(s) selected`
-                    : 'Choose Files'}
-                </Button>
+                  <CloudUploadOutlined sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                  <Typography variant="body1" gutterBottom>
+                    {selectedFiles.length > 0
+                      ? `${selectedFiles.length} file(s) selected`
+                      : 'Drop files here or click to browse'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Maximum file size: 50MB
+                  </Typography>
+                </Box>
                 {selectedFiles.length > 0 && (
                   <Box>
                     {selectedFiles.map((file, index) => (
@@ -432,7 +584,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                 />
               </>
             )}
-            
+
             <TextField
               label="Description (optional)"
               fullWidth
@@ -449,12 +601,19 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
           <Button
             onClick={handleUpload}
             variant="contained"
-            startIcon={uploading ? <CircularProgress size={20} /> : <CloudUpload />}
+            startIcon={uploading ? <CircularProgress size={20} /> : <CloudUploadOutlined />}
             disabled={
               uploading ||
               (uploadMode === 'file' && selectedFiles.length === 0) ||
               (uploadMode === 'paste' && (!pasteText || !uploadTitle))
             }
+            sx={{ 
+              textTransform: 'none',
+              boxShadow: 0,
+              '&:hover': {
+                boxShadow: 1
+              }
+            }}
           >
             {uploading ? 'Uploading...' : 'Upload'}
           </Button>

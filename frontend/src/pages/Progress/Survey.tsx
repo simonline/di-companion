@@ -14,11 +14,14 @@ import { CenteredFlexBox } from '@/components/styled';
 import usePattern from '@/hooks/usePattern';
 import useSurvey from '@/hooks/useSurvey';
 import useUserQuestions from '@/hooks/useUserQuestions';
+import useStartupQuestions from '@/hooks/useStartupQuestions';
 import {
   Question,
-  UserQuestion
+  UserQuestion,
+  StartupQuestion
 } from '@/types/database';
 import useUserQuestion from '@/hooks/useUserQuestion';
+import useStartupQuestion from '@/hooks/useStartupQuestion';
 import useStartupPattern from '@/hooks/useStartupPattern';
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
@@ -50,6 +53,14 @@ const Survey: React.FC = () => {
     error: userQuestionsError,
   } = useUserQuestions();
   const { createUserQuestion, updateUserQuestion } = useUserQuestion();
+  const {
+    fetchStartupQuestions,
+    startupQuestions,
+    clearStartupQuestions,
+    loading: startupQuestionsLoading,
+    error: startupQuestionsError,
+  } = useStartupQuestions();
+  const { createStartupQuestion, updateStartupQuestion } = useStartupQuestion();
   const userId = user?.id;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,6 +70,7 @@ const Survey: React.FC = () => {
   const [surveyQuestions, setSurveyQuestions] = useState<Question[]>([]);
   const hasPatternQuestions = patternQuestions.length > 0;
   const hasSurveyQuestions = surveyQuestions.length > 0;
+  const isEntrepreneurCategory = pattern?.category === 'entrepreneur';
 
   useEffect(() => {
     setActiveStep(hasPatternQuestions ? 0 : 1);
@@ -90,10 +102,20 @@ const Survey: React.FC = () => {
   }, [survey]);
 
   useEffect(() => {
-    if (startup && userId && patternId) {
-      fetchUserQuestions(startup?.id, userId, patternId);
+    if (patternId && pattern) {
+      if (isEntrepreneurCategory) {
+        // For entrepreneur category, fetch user questions
+        if (startup && userId) {
+          fetchUserQuestions(startup?.id, userId, patternId);
+        }
+      } else {
+        // For other categories, fetch startup questions
+        if (startup) {
+          fetchStartupQuestions(startup?.id, patternId);
+        }
+      }
     }
-  }, [fetchUserQuestions, startup, userId, patternId]);
+  }, [fetchUserQuestions, fetchStartupQuestions, startup, userId, patternId, pattern, isEntrepreneurCategory]);
 
   useEffect(() => {
     if (startup && patternId) {
@@ -102,13 +124,14 @@ const Survey: React.FC = () => {
   }, [fetchStartupPatterns, startup, patternId]);
 
   useEffect(() => {
-    if (isApplied && pattern && survey && userQuestions && startupPatterns && startup?.id && patternId) {
+    const questions = isEntrepreneurCategory ? userQuestions : startupQuestions;
+    if (isApplied && pattern && survey && questions && startupPatterns && startup?.id && patternId) {
       const points = calculatePoints(
         [
           ...patternQuestions,
           ...surveyQuestions,
         ],
-        userQuestions
+        questions
       );
 
       console.log('points', points);
@@ -159,53 +182,96 @@ const Survey: React.FC = () => {
     pattern,
     patternId,
     startup,
+    isEntrepreneurCategory,
+    startupQuestions,
   ]);
 
   const handleAssessmentSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
-      if (!pattern || !user || !patternId) return;
+      if (!pattern || !patternId || !startup) return;
 
       // Process each question's answer
       const questionPromises = patternQuestions.map(async (question) => {
         const answer = values[question.id];
-        const existingResponse = userQuestions?.find(
-          (uq) => uq.question.id === question.id,
-        );
 
-        // Skip if answer is empty and question is not required
-        if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) return null;
+        if (isEntrepreneurCategory) {
+          // Handle UserQuestions for entrepreneur category
+          if (!user) return null;
 
-        // Skip if answer hasn't changed
-        if (existingResponse) {
-          const existingAnswer = JSON.parse(existingResponse.answer as any);
-          if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) return null;
-        }
+          const existingResponse = userQuestions?.find(
+            (uq) => uq.question_id === question.id,
+          );
 
-        const payload = {
-          user_id: user.id,
-          pattern_id: patternId,
-          question_id: question.id,
-          startup_id: startup?.id,
-          answer: JSON.stringify(answer),
-        };
+          // Skip if answer is empty and question is not required
+          if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) return null;
 
-        if (existingResponse) {
-          return updateUserQuestion({
-            id: existingResponse.id,
-            ...payload,
-          });
+          // Skip if answer hasn't changed
+          if (existingResponse) {
+            const existingAnswer = JSON.parse(existingResponse.answer as any);
+            if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) return null;
+          }
+
+          const payload = {
+            user_id: user.id,
+            pattern_id: patternId,
+            question_id: question.id,
+            startup_id: startup.id,
+            answer: JSON.stringify(answer),
+          };
+
+          if (existingResponse) {
+            return updateUserQuestion({
+              id: existingResponse.id,
+              ...payload,
+            });
+          } else {
+            return createUserQuestion(payload);
+          }
         } else {
-          return createUserQuestion(payload);
+          // Handle StartupQuestions for other categories
+          const existingResponse = startupQuestions?.find(
+            (sq) => sq.question_id === question.id,
+          );
+
+          // Skip if answer is empty and question is not required
+          if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) return null;
+
+          // Skip if answer hasn't changed
+          if (existingResponse) {
+            const existingAnswer = JSON.parse(existingResponse.answer as any);
+            if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) return null;
+          }
+
+          const payload = {
+            startup_id: startup.id,
+            pattern_id: patternId,
+            question_id: question.id,
+            answer: JSON.stringify(answer),
+          };
+
+          if (existingResponse) {
+            return updateStartupQuestion({
+              id: existingResponse.id,
+              ...payload,
+            });
+          } else {
+            return createStartupQuestion(payload);
+          }
         }
       });
 
       // Filter out null promises and wait for the rest
       await Promise.all(questionPromises.filter(p => p !== null));
 
-      // Refetch to get the created/updated user questions
-      clearUserQuestions();
-      await fetchUserQuestions(startup?.id, user.id, patternId);
+      // Refetch to get the created/updated questions
+      if (isEntrepreneurCategory) {
+        clearUserQuestions();
+        await fetchUserQuestions(startup.id, user?.id, patternId);
+      } else {
+        clearStartupQuestions();
+        await fetchStartupQuestions(startup.id, patternId);
+      }
       setActiveStep(1);
     } catch (error) {
       notificationsActions.push({
@@ -220,48 +286,89 @@ const Survey: React.FC = () => {
   const handleEffortSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
-      if (!startup || !user || !patternId || !survey) return;
+      if (!startup || !patternId || !survey) return;
 
       // Process each question's answer
       const questionPromises = surveyQuestions.map(async (question) => {
         const answer = values[question.id];
-        const existingResponse = userQuestions?.find(
-          (uq) => uq.question.id === question.id,
-        );
 
-        // Skip if answer is empty and question is not required
-        if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) return null;
+        if (isEntrepreneurCategory) {
+          // Handle UserQuestions for entrepreneur category
+          if (!user) return null;
 
-        // Skip if answer hasn't changed
-        if (existingResponse) {
-          const existingAnswer = JSON.parse(existingResponse.answer as any);
-          if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) return null;
-        }
+          const existingResponse = userQuestions?.find(
+            (uq) => uq.question_id === question.id,
+          );
 
-        const payload = {
-          user_id: user.id,
-          pattern_id: patternId,
-          question_id: question.id,
-          startup_id: startup?.id,
-          answer: JSON.stringify(answer),
-        };
+          // Skip if answer is empty and question is not required
+          if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) return null;
 
-        if (existingResponse) {
-          return updateUserQuestion({
-            id: existingResponse.id,
-            ...payload,
-          });
+          // Skip if answer hasn't changed
+          if (existingResponse) {
+            const existingAnswer = JSON.parse(existingResponse.answer as any);
+            if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) return null;
+          }
+
+          const payload = {
+            user_id: user.id,
+            pattern_id: patternId,
+            question_id: question.id,
+            startup_id: startup.id,
+            answer: JSON.stringify(answer),
+          };
+
+          if (existingResponse) {
+            return updateUserQuestion({
+              id: existingResponse.id,
+              ...payload,
+            });
+          } else {
+            return createUserQuestion(payload);
+          }
         } else {
-          return createUserQuestion(payload);
+          // Handle StartupQuestions for other categories
+          const existingResponse = startupQuestions?.find(
+            (sq) => sq.question_id === question.id,
+          );
+
+          // Skip if answer is empty and question is not required
+          if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) return null;
+
+          // Skip if answer hasn't changed
+          if (existingResponse) {
+            const existingAnswer = JSON.parse(existingResponse.answer as any);
+            if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) return null;
+          }
+
+          const payload = {
+            startup_id: startup.id,
+            pattern_id: patternId,
+            question_id: question.id,
+            answer: JSON.stringify(answer),
+          };
+
+          if (existingResponse) {
+            return updateStartupQuestion({
+              id: existingResponse.id,
+              ...payload,
+            });
+          } else {
+            return createStartupQuestion(payload);
+          }
         }
       });
 
       // Filter out null promises and wait for the rest
       await Promise.all(questionPromises.filter(p => p !== null));
 
-      // Refetch to get the created/updated user questions (for points calculation)
-      clearUserQuestions();
-      fetchUserQuestions(startup?.id, user.id, patternId);
+      // Refetch to get the created/updated questions (for points calculation)
+      if (isEntrepreneurCategory) {
+        clearUserQuestions();
+        fetchUserQuestions(startup.id, user?.id, patternId);
+      } else {
+        clearStartupQuestions();
+        fetchStartupQuestions(startup.id, patternId);
+      }
       setIsApplied(true);
     } catch (error) {
       notificationsActions.push({
@@ -273,14 +380,15 @@ const Survey: React.FC = () => {
     }
   };
 
-  const calculatePoints = (questions: Question[], userQuestions: UserQuestion[]): number => {
+  const calculatePoints = (questions: Question[], answers: (UserQuestion | StartupQuestion)[] | null): number => {
+    if (!answers) return 0;
     return questions.reduce((acc, question) => {
       // Skip questions without weight
       if (!question.weight) return acc;
 
-      // Find the user's response to the question
-      const userQuestion = userQuestions.find(
-        (uq) => uq.question.id === question.id,
+      // Find the response to the question
+      const userQuestion = answers.find(
+        (uq) => uq.question_id === question.id,
       );
 
       if (!userQuestion) return acc;
@@ -296,7 +404,10 @@ const Survey: React.FC = () => {
     }, 0);
   };
 
-  if (patternLoading || surveyLoading || userQuestionsLoading) {
+  const isLoading = patternLoading || surveyLoading ||
+    (isEntrepreneurCategory ? userQuestionsLoading : startupQuestionsLoading);
+
+  if (isLoading) {
     return (
       <Box
         sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}
@@ -306,7 +417,10 @@ const Survey: React.FC = () => {
     );
   }
 
-  if (patternError || surveyError || userQuestionsError) {
+  const hasError = patternError || surveyError ||
+    (isEntrepreneurCategory ? userQuestionsError : startupQuestionsError);
+
+  if (hasError) {
     return (
       <Box
         sx={{
@@ -388,7 +502,7 @@ const Survey: React.FC = () => {
                 <Formik
                   initialValues={generateInitialValues(
                     patternQuestions,
-                    userQuestions || undefined,
+                    (isEntrepreneurCategory ? userQuestions : startupQuestions) || undefined,
                   )}
                   validationSchema={generateValidationSchema(patternQuestions)}
                   onSubmit={handleAssessmentSubmit}
@@ -448,7 +562,7 @@ const Survey: React.FC = () => {
                           >
                             {isSubmitting ? (
                               <CircularProgress size={24} />
-                            ) : userQuestions?.length ? (
+                            ) : (isEntrepreneurCategory ? userQuestions : startupQuestions)?.length ? (
                               'Update Assessment'
                             ) : (
                               'Submit Assessment'
@@ -465,7 +579,7 @@ const Survey: React.FC = () => {
                 <Formik
                   initialValues={generateInitialValues(
                     surveyQuestions,
-                    userQuestions || undefined,
+                    (isEntrepreneurCategory ? userQuestions : startupQuestions) || undefined,
                   )}
                   validationSchema={generateValidationSchema(surveyQuestions)}
                   onSubmit={handleEffortSubmit}
@@ -501,7 +615,7 @@ const Survey: React.FC = () => {
                           >
                             {isSubmitting ? (
                               <CircularProgress size={24} />
-                            ) : userQuestions?.length ? (
+                            ) : (isEntrepreneurCategory ? userQuestions : startupQuestions)?.length ? (
                               'Update Effort'
                             ) : (
                               'Submit Effort'

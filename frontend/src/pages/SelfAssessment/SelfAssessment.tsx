@@ -97,7 +97,7 @@ const SelfAssessment: React.FC = () => {
       for (const question of currentQuestions) {
         const answer = values[question.id];
         const existingResponse = userQuestions?.find(
-          (uq) => uq.question.id === question.id,
+          (uq) => uq.question_id === question.id,
         );
 
         // Skip if answer is empty and question is not required
@@ -143,7 +143,7 @@ const SelfAssessment: React.FC = () => {
       } else {
         // Only update scores when we've completed all steps
         await updateScores();
-        
+
         // Mark assessment as completed based on context
         if (isUserOnboarding && profile) {
           // User onboarding context - mark user assessment as complete
@@ -169,7 +169,7 @@ const SelfAssessment: React.FC = () => {
           //   'team-assessment': true
           // });
         }
-        
+
         notificationsActions.push({
           options: { variant: 'success' },
           message: 'Self assessment completed successfully',

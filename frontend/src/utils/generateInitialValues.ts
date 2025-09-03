@@ -1,9 +1,9 @@
-import { Question, UserQuestion } from '@/types/database';
+import { Question, StartupQuestion, UserQuestion } from '@/types/database';
 import { FormValues } from './generateValidationSchema';
 
 export const generateInitialValues = (
   questions: Question[],
-  userQuestions?: UserQuestion[],
+  userQuestions?: UserQuestion[] | StartupQuestion[],
 ): FormValues => {
   const values: FormValues = {};
 

@@ -1,19 +1,14 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, CircularProgress, Typography, Box, TextField, Paper, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material';
 import { CenteredFlexBox } from '@/components/styled';
 import useMethod from '@/hooks/useMethod';
 import useStartupMethod from '@/hooks/useStartupMethod';
 import usePattern from '@/hooks/usePattern';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useDropzone } from 'react-dropzone';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import Header from '@/sections/Header';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
-import ImageIcon from '@mui/icons-material/Image';
 import ArticleIcon from '@mui/icons-material/Article';
-import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useAuthContext } from '@/hooks/useAuth';
 import useNotifications from '@/store/notifications';
@@ -21,15 +16,14 @@ import { Grid } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { supabaseGetPatternMethods } from '@/lib/supabase';
 import { Method } from '@/types/database';
+import DocumentManager from '@/components/DocumentManager';
 
 const validationSchema = Yup.object({
-  result_text: Yup.string().required('Please describe the tools or methods you applied'),
-  resultFiles: Yup.array().min(0, 'Files are optional'),
+  resultText: Yup.string().required('Please describe the tools or methods you applied'),
 });
 
 interface FormValues {
-  result_text: string;
-  resultFiles: File[];
+  resultText: string;
 }
 
 const Methods: React.FC = () => {
@@ -74,36 +68,41 @@ const Methods: React.FC = () => {
   }, [findPatternMethod, startup, pattern, method]);
 
   const initialValues: FormValues = {
-    result_text: startupMethod?.result_text || '',
-    // @ts-expect-error resultFiles is not a string
-    resultFiles: startupMethod?.resultFiles || [],
+    resultText: startupMethod?.result_text || '',
   };
 
   const handleSubmit = async (values: FormValues, { setSubmitting }: any) => {
     try {
       if (!pattern || !startup || !method) return;
       if (startupMethod) {
-        updateStartupMethod({
+        await updateStartupMethod({
           id: startupMethod.id,
-          result_text: values.result_text,
-        }, values.resultFiles);
+          result_text: values.resultText,
+        }, []);
+        notificationsActions.push({
+          options: {
+            variant: 'success',
+          },
+          message: 'Method updated successfully',
+        });
       } else {
-        createStartupMethod({
+        await createStartupMethod({
           startup_id: startup.id,
           method_id: method.id,
           pattern_id: pattern.id,
-          result_text: values.result_text,
-        },
-          values.resultFiles
-        );
+          result_text: values.resultText,
+        }, []);
+        notificationsActions.push({
+          options: {
+            variant: 'success',
+          },
+          message: 'Method saved successfully. You can now upload result files below.',
+        });
+        // Don't navigate immediately to allow file uploads
+        setSubmitting(false);
+        return;
       }
-      notificationsActions.push({
-        options: {
-          variant: 'success',
-        },
-        message: 'Method completed successfully',
-      });
-      // Continue with survey to complete the pattern
+      // Only navigate after update or if user chooses to skip files
       navigate(`/progress/${patternId}/survey`);
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -120,114 +119,6 @@ const Methods: React.FC = () => {
 
   const handleCloseModal = () => {
     setMethodModalOpen(false);
-  };
-
-  const FileUploadField = ({ field, form }: any) => {
-    const onDrop = useCallback(
-      (acceptedFiles: any) => {
-        form.setFieldValue('resultFiles', acceptedFiles);
-      },
-      [form],
-    );
-
-    const handleRemoveFile = (fileToRemove: File) => {
-      const updatedFiles = field.value.filter((file: any) => file !== fileToRemove);
-      form.setFieldValue('resultFiles', updatedFiles);
-    };
-
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({
-      onDrop,
-      accept: {
-        'image/*': [],
-        'application/pdf': ['.pdf'],
-        'application/msword': ['.doc'],
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-      },
-    });
-
-    const getFileIcon = (fileName: string) => {
-      const extension = fileName.split('.').pop()?.toLowerCase();
-      if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(extension || '')) {
-        return <ImageIcon />;
-      } else if (['pdf', 'doc', 'docx'].includes(extension || '')) {
-        return <ArticleIcon />;
-      }
-      return <AttachFileIcon />;
-    };
-
-    return (
-      <Paper
-        {...getRootProps()}
-        sx={{
-          p: 3,
-          mt: 2,
-          mb: 2,
-          border: '2px dashed',
-          borderColor: isDragActive ? 'primary.main' : 'grey.300',
-          backgroundColor: isDragActive ? 'action.hover' : 'background.paper',
-          cursor: 'pointer',
-          '&:hover': {
-            backgroundColor: 'action.hover',
-          },
-        }}
-      >
-        <input {...getInputProps()} />
-        <Box sx={{ textAlign: 'center' }}>
-          <CloudUploadIcon
-            sx={{
-              fontSize: 48,
-              color: isDragActive ? 'primary.main' : 'text.secondary',
-              mb: 2,
-            }}
-          />
-          <Typography color="textSecondary">
-            Attach artefacts or documentation (if available)
-          </Typography>
-          <Typography variant="body1" color="textSecondary" gutterBottom>
-            {isDragActive
-              ? 'Drop the files here...'
-              : 'Drag & drop files here, or click to select files'}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mt: 1 }}>
-            <ImageIcon sx={{ color: 'text.secondary' }} />
-            <ArticleIcon sx={{ color: 'text.secondary' }} />
-          </Box>
-        </Box>
-
-        {field.value.length > 0 && (
-          <Box sx={{ mt: 2, borderTop: 1, borderColor: 'divider', pt: 2 }}>
-            {field.value.map((file: any, index: number) => (
-              <Box
-                key={index}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  p: 1,
-                  '&:hover': { bgcolor: 'action.hover' },
-                  borderRadius: 1,
-                }}
-              >
-                {getFileIcon(file.name)}
-                <Typography variant="body2" sx={{ ml: 1, flex: 1 }}>
-                  {file.name}
-                </Typography>
-                <Button
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveFile(file);
-                  }}
-                  startIcon={<DeleteIcon />}
-                  color="error"
-                >
-                  Remove
-                </Button>
-              </Box>
-            ))}
-          </Box>
-        )}
-      </Paper>
-    );
   };
 
   if ((patternLoading || patternMethods.length > 0) && (methodLoading || startupMethodLoading)) {
@@ -352,14 +243,27 @@ const Methods: React.FC = () => {
                               multiline
                               rows={4}
                               label="Which tools or methods did you apply here?"
-                              error={touched.result_text && Boolean(errors.result_text)}
-                              helperText={touched.result_text && errors.result_text}
+                              error={touched.resultText && Boolean(errors.resultText)}
+                              helperText={touched.resultText && errors.resultText}
                               sx={{ mb: 3 }}
                             />
                           )}
                         </Field>
 
-                        <Field name="resultFiles" component={FileUploadField} />
+                        {/* Document Manager for result files */}
+                        {startupMethod && (
+                          <Box sx={{ mt: 3, mb: 3 }}>
+                            <DocumentManager
+                              category="method_result"
+                              entityType="startup_method"
+                              entityId={startupMethod.id}
+                              entityField="resultFiles"
+                              title="Result Files"
+                              description="Upload artefacts or documentation"
+                              color="primary"
+                            />
+                          </Box>
+                        )}
 
                         <Button
                           type="submit"
@@ -372,11 +276,23 @@ const Methods: React.FC = () => {
                           {isSubmitting ? (
                             <CircularProgress size={24} />
                           ) : startupMethod ? (
-                            'Update your learnings'
+                            'Update and Continue'
                           ) : (
-                            'Share your learnings'
+                            'Save your learnings'
                           )}
                         </Button>
+
+                        {startupMethod && (
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            fullWidth
+                            onClick={() => navigate(`/progress/${patternId}/survey`)}
+                            sx={{ mt: 2 }}
+                          >
+                            Continue to Survey
+                          </Button>
+                        )}
                       </Form>
                     )}
                   </Formik>

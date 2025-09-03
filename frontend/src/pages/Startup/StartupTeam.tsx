@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Typography,
   Button,
@@ -76,7 +76,7 @@ function a11yProps(index: number) {
 
 const StartupTeam: React.FC = () => {
   const navigate = useNavigate();
-  const { user, startup } = useAuthContext();
+  const { user, profile, startup } = useAuthContext();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [members, setMembers] = useState<Profile[]>([]);
   const [email, setEmail] = useState('');
@@ -123,13 +123,13 @@ const StartupTeam: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [startup!.id]);
+  }, [startup]);
 
   useEffect(() => {
     if (startup!.id) {
       loadData();
     }
-  }, [startup!.id, loadData]);
+  }, [startup, loadData]);
 
   // Set tab to invitations if we have invitations but no members
   useEffect(() => {
@@ -145,10 +145,10 @@ const StartupTeam: React.FC = () => {
     setInvitationLoading(true);
     try {
       // Get the current user's profile for inviter_name
-      const inviterName = user.profile?.given_name && user.profile?.family_name 
-        ? `${user.profile.given_name} ${user.profile.family_name}`
-        : user.profile?.username || user.email || 'A team member';
-      
+      const inviterName = profile?.given_name && profile?.family_name
+        ? `${profile.given_name} ${profile.family_name}`
+        : profile?.username || user.email || 'A team member';
+
       await supabaseCreateInvitation({
         startup_id: startup!.id,
         invited_by_id: user.id,

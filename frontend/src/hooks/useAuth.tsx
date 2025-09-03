@@ -13,7 +13,6 @@ import {
   supabaseUpdateStartup,
   supabaseUpdateProfile,
   supabaseSendOtp,
-  supabaseSendMagicLink,
   supabaseVerifyOtp,
   supabaseAutoAcceptInvitations,
   getSession,
@@ -115,10 +114,10 @@ export function useAuth(): UseAuthReturn {
           const { user, profile } = await supabaseMe();
           console.log('Auth hook: User data fetched:', user, profile);
           setUserAndProfile(user, profile);
-          
+
           // Add a small delay to ensure auth state is fully established
           await new Promise(resolve => setTimeout(resolve, 500));
-          
+
           // Auto-accept any pending invitations for this user's email
           // We check session.user directly as backup if user is not set yet
           const currentUser = user || session.user;
@@ -127,7 +126,7 @@ export function useAuth(): UseAuthReturn {
               const invitationResult = await supabaseAutoAcceptInvitations();
               if (invitationResult.acceptedCount > 0) {
                 console.log(`Auto-accepted ${invitationResult.acceptedCount} invitation(s)`);
-                
+
                 // Refresh startups after accepting invitations
                 const { data: updatedStartupLinks } = await supabase
                   .from('startups_users_lnk')
@@ -379,11 +378,11 @@ export function useAuth(): UseAuthReturn {
       try {
         const { user, profile } = await supabaseVerifyOtp(email, token);
         setUserAndProfile(user, profile);
-        
+
         if (user) {
           // Add a small delay to ensure auth state is fully established
           await new Promise(resolve => setTimeout(resolve, 500));
-          
+
           // Auto-accept any pending invitations for this user's email
           try {
             const invitationResult = await supabaseAutoAcceptInvitations();
@@ -393,7 +392,7 @@ export function useAuth(): UseAuthReturn {
           } catch (inviteError) {
             console.error('Failed to auto-accept invitations after OTP:', inviteError);
           }
-          
+
           // Query startups (which will now include any newly accepted invitations)
           const { data: startupLinks } = await supabase
             .from('startups_users_lnk')

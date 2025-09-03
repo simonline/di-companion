@@ -28,6 +28,9 @@ import type {
   UserQuestion,
   UserQuestionCreate,
   UserQuestionUpdate,
+  StartupQuestion,
+  StartupQuestionCreate,
+  StartupQuestionUpdate,
   Request,
   RequestCreate,
   RequestUpdate
@@ -1075,15 +1078,14 @@ export async function supabaseFindStartupMethod(
     `)
     .eq('startup_id', startupId)
     .eq('pattern_id', patternId)
-    .eq('method_id', methodId)
-    .single();
+    .eq('method_id', methodId);
 
   if (error) {
-    if (error.code === 'PGRST116') return null; // No rows returned
     throw new Error(handleSupabaseError(error));
   }
 
-  return data;
+  // Return the first item if found, otherwise null
+  return data && data.length > 0 ? data[0] : null;
 }
 
 export async function supabaseCreateStartupMethod(createStartupMethod: StartupMethodCreate, resultFiles: File[]): Promise<StartupMethod> {
@@ -1344,7 +1346,7 @@ export async function supabaseAutoAcceptInvitations(): Promise<{
   const { data: invitations, error: invitationsError } = await supabase
     .from('invitations')
     .select('*, startup:startups(*)')
-    .eq('email', userEmail)
+    .eq('email', userEmail!)
     .eq('invitation_status', 'pending');
 
   if (invitationsError) {
@@ -1449,11 +1451,11 @@ export async function supabaseAutoAcceptInvitations(): Promise<{
             'startup-team': true
           }
         })
-        .eq('id', invitation.startup_id);
+        .eq('id', invitation.startup_id!);
     }
 
     acceptedInvitations.push({
-      startup_id: invitation.startup_id,
+      startup_id: invitation.startup_id!,
       startup_name: invitation.startup?.name || 'Unknown Startup'
     });
   }
@@ -1481,7 +1483,7 @@ export async function supabaseGetMethod(id: string): Promise<Method | null> {
     .from('methods')
     .select(`
       *,
-      patterns:methods_patterns(
+      patterns:methods_patterns_lnk(
         pattern:patterns(*)
       )
     `)
@@ -1597,6 +1599,106 @@ export async function supabaseCreateUserQuestion(
   if (error) throw new Error(handleSupabaseError(error));
 
   return supabaseGetUserQuestion(data.id);
+}
+
+// Startup Questions
+export async function supabaseGetStartupQuestions(
+  startupId?: string,
+  patternId?: string
+): Promise<StartupQuestion[]> {
+  let query = supabase
+    .from('startup_questions')
+    .select(`
+      *,
+      pattern:patterns(*),
+      question:questions(*),
+      startup:startups(*)
+    `);
+
+  if (startupId) {
+    query = query.eq('startup', startupId);
+  }
+
+  if (patternId) {
+    query = query.eq('pattern', patternId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  return data;
+}
+
+export async function supabaseGetStartupQuestion(id: string): Promise<StartupQuestion> {
+  const { data, error } = await supabase
+    .from('startup_questions')
+    .select(`
+      *,
+      pattern:patterns(*),
+      question:questions(*),
+      startup:startups(*)
+    `)
+    .eq('id', id)
+    .single();
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  return data;
+}
+
+export async function supabaseFindStartupQuestion(
+  startupId: string,
+  patternId: string,
+  questionId: string
+): Promise<StartupQuestion | null> {
+  const { data, error } = await supabase
+    .from('startup_questions')
+    .select(`
+      *,
+      pattern:patterns(*),
+      question:questions(*),
+      startup:startups(*)
+    `)
+    .eq('startup', startupId)
+    .eq('pattern', patternId)
+    .eq('question', questionId)
+    .maybeSingle();
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  return data;
+}
+
+export async function supabaseUpdateStartupQuestion(
+  updateStartupQuestion: StartupQuestionUpdate
+): Promise<StartupQuestion> {
+  const { id, ...updates } = updateStartupQuestion;
+
+  const { error } = await supabase
+    .from('startup_questions')
+    .update({
+      answer: updates.answer,
+    })
+    .eq('id', id!);
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  return supabaseGetStartupQuestion(id!);
+}
+
+export async function supabaseCreateStartupQuestion(
+  createStartupQuestion: StartupQuestionCreate
+): Promise<StartupQuestion> {
+  const { data, error } = await supabase
+    .from('startup_questions')
+    .insert(createStartupQuestion)
+    .select()
+    .single();
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  return supabaseGetStartupQuestion(data.id);
 }
 
 // Requests
@@ -1747,18 +1849,6 @@ export async function supabaseResendInvitation(id: string): Promise<any> {
   return result.invitation;
 }
 
-async function supabaseGetInvitation(id: string): Promise<Invitation> {
-  const { data, error } = await supabase
-    .from('invitations')
-    .select('*')
-    .eq('id', id!)
-    .single();
-
-  if (error) throw new Error(handleSupabaseError(error));
-
-  return data;
-}
-
 export async function supabaseGetInvitationByToken(token: string): Promise<Invitation> {
   const { data, error } = await supabase
     .from('invitations')
@@ -1829,10 +1919,19 @@ export async function uploadDocument(
     if (entityId) params.append('entity_id', entityId);
     if (entityField) params.append('entity_field', entityField);
 
+    // Get the auth token to include in the request
+    const { data: { session } } = await supabase.auth.getSession();
+    const headers: HeadersInit = {};
+    
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
+    }
+
     // Upload to backend
     const response = await fetch(`${backendUrl}/api/documents/upload?${params}`, {
       method: 'POST',
       body: formData,
+      headers,
       credentials: 'include', // Include cookies if using session auth
     });
 

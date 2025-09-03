@@ -197,7 +197,7 @@ export type SurveyUpdate = TablesUpdate<'surveys'>;
 
 // User Questions
 export interface UserQuestion extends Tables<'user_questions'> {
-  question: Question;
+  question?: Question;
   pattern?: Pattern;
 }
 export type UserQuestionCreate = TablesInsert<'user_questions'>;

@@ -13,9 +13,9 @@ interface UseStartupMethod {
 }
 
 interface UseStartupMethodReturn extends UseStartupMethod {
-  findPatternMethod: (startupId: string, patternId: string, methodId: string) => void;
-  createStartupMethod: (data: StartupMethodCreate, resultFiles: File[]) => void;
-  updateStartupMethod: (data: StartupMethodUpdate, resultFiles: File[]) => void;
+  findPatternMethod: (startupId: string, patternId: string, methodId: string) => Promise<void>;
+  createStartupMethod: (data: StartupMethodCreate, resultFiles: File[]) => Promise<void>;
+  updateStartupMethod: (data: StartupMethodUpdate, resultFiles: File[]) => Promise<void>;
   clearError: () => void;
 }
 
@@ -47,6 +47,7 @@ export default function useStartupMethod(): UseStartupMethodReturn {
     } catch (err: unknown) {
       const error = err as Error;
       setState((prev) => ({ ...prev, error: error.message }));
+      throw err;
     }
   }, []);
 
@@ -57,6 +58,7 @@ export default function useStartupMethod(): UseStartupMethodReturn {
     } catch (err: unknown) {
       const error = err as Error;
       setState((prev) => ({ ...prev, error: error.message }));
+      throw err;
     }
   }, []);
 

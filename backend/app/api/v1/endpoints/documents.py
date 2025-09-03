@@ -3,7 +3,7 @@ Document upload endpoints for WebDAV storage with Supabase
 Documents are similar to files but specifically for user-uploaded documents
 """
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, Query, Depends
+from fastapi import APIRouter, UploadFile, File, HTTPException, Query, Depends, Header
 from fastapi.responses import StreamingResponse
 from typing import Optional
 from datetime import datetime
@@ -15,6 +15,16 @@ from app.core.supabase import supabase
 
 router = APIRouter()
 
+async def get_optional_user_token(authorization: Optional[str] = Header(None)) -> Optional[str]:
+    """Get the user token if provided, otherwise return None"""
+    if not authorization:
+        return None
+    
+    if not authorization.startswith("Bearer "):
+        return None
+    
+    return authorization.replace("Bearer ", "")
+
 @router.post("/upload")
 async def upload_document(
     file: UploadFile = File(...),
@@ -23,6 +33,7 @@ async def upload_document(
     entity_id: Optional[str] = Query(default=None),
     entity_field: Optional[str] = Query(default=None),
     metadata: Optional[str] = Query(default=None),
+    access_token: Optional[str] = Depends(get_optional_user_token),
 ):
     """
     Upload document to storage and save metadata to Supabase documents table
@@ -39,9 +50,16 @@ async def upload_document(
             metadata={"original_metadata": metadata} if metadata else None
         )
         
-        # Get current user from auth (you may need to implement this based on your auth setup)
-        # For now, we'll use a placeholder
-        # user_id = get_current_user_id()  # This needs to be implemented based on your auth
+        # Get current user from auth token if provided
+        user_id = None
+        if access_token:
+            try:
+                auth_response = supabase.auth.get_user(access_token)
+                if auth_response and auth_response.user:
+                    user_id = auth_response.user.id
+            except Exception as e:
+                # Log but don't fail if auth check fails
+                print(f"Warning: Could not get user from token: {e}")
         
         # Save to Supabase documents table
         document_record = {
@@ -57,7 +75,7 @@ async def upload_document(
             'entity_id': entity_id,
             'entity_field': entity_field,
             'metadata': {"original_metadata": metadata} if metadata else {},
-            # 'uploaded_by': user_id,  # Add when auth is available
+            'uploaded_by': user_id,  # Now properly set from auth
             'uploaded_at': datetime.now().isoformat(),
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat()
