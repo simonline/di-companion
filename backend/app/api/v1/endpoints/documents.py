@@ -102,7 +102,7 @@ async def upload_document(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{document_id}")
-async def get_document(document_id: str):
+async def get_document(document_id: str, download: bool = True):
     """
     Serve a document directly from storage
     """
@@ -135,12 +135,14 @@ async def get_document(document_id: str):
             raise HTTPException(status_code=404, detail="Document not found in storage")
         
         # Stream the document back to the client with proper headers
+        # Use 'attachment' for downloads, 'inline' for viewing
+        disposition = 'attachment' if download else 'inline'
         return StreamingResponse(
             response.iter_content(chunk_size=8192),
             media_type=document_record.get('mime_type', 'application/octet-stream'),
             headers={
                 'Cache-Control': 'public, max-age=86400',  # Cache for 1 day
-                'Content-Disposition': f'inline; filename="{document_record.get("filename", "document")}"'
+                'Content-Disposition': f'{disposition}; filename="{document_record.get("filename", "document")}"'
             }
         )
     except HTTPException:

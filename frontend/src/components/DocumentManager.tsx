@@ -416,11 +416,26 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                     boxShadow: 1
                   }
                 }}
-                onClick={() => {
-                  const link = document.createElement('a');
-                  link.href = getDocumentUrl(doc.id);
-                  link.download = doc.filename;
-                  link.click();
+                onClick={async () => {
+                  // Force download by fetching and creating blob
+                  try {
+                    const response = await fetch(getDocumentUrl(doc.id, true));
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = doc.filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                  } catch (error) {
+                    console.error('Download failed:', error);
+                    notificationActions.push({
+                      message: 'Failed to download file',
+                      options: { variant: 'error' }
+                    });
+                  }
                 }}
               >
                 {/* File Icon */}
@@ -462,12 +477,27 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
                   <IconButton
                     size="small"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
-                      const link = document.createElement('a');
-                      link.href = getDocumentUrl(doc.id);
-                      link.download = doc.filename;
-                      link.click();
+                      // Force download by fetching and creating blob
+                      try {
+                        const response = await fetch(getDocumentUrl(doc.id, true));
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = doc.filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+                      } catch (error) {
+                        console.error('Download failed:', error);
+                        notificationActions.push({
+                          message: 'Failed to download file',
+                          options: { variant: 'error' }
+                        });
+                      }
                     }}
                     sx={{
                       color: 'text.secondary',

@@ -840,14 +840,15 @@ export async function uploadFileToBackend(
 }
 
 // Helper function to get document URL
-export function getDocumentUrl(documentId: string): string {
+export function getDocumentUrl(documentId: string, forceDownload: boolean = true): string {
   if (!documentId) return '';
 
   // Always use backend URL for document serving
   const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
   // Simple direct document serving - backend handles auth
-  return `${backendUrl}/api/documents/${documentId}`;
+  // Add download parameter to force download instead of inline display
+  return `${backendUrl}/api/documents/${documentId}?download=${forceDownload}`;
 }
 
 // Helper function to get avatar URL - maintained for backward compatibility
