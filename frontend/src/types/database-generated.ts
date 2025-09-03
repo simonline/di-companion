@@ -755,6 +755,7 @@ export type Database = {
           progress: Json | null
           updated_at: string | null
           username: string | null
+          email: string | null
         }
         Insert: {
           avatar_id?: string | null
