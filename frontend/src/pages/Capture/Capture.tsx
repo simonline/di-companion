@@ -12,7 +12,7 @@ const Capture: React.FC = () => {
       <CenteredFlexBox>
         <Box sx={{ maxWidth: 1200, width: '100%', mt: 4 }}>
           <DocumentManager
-            title="Workshop Materials"
+            title="Add your content"
             description="Upload workshop materials, PDFs, images, notes, and other documents from your sessions"
           />
         </Box>
