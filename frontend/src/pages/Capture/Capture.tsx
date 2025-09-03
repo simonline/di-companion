@@ -12,10 +12,8 @@ const Capture: React.FC = () => {
       <CenteredFlexBox>
         <Box sx={{ maxWidth: 1200, width: '100%', mt: 4 }}>
           <DocumentManager
-            category="workshop_capture"
             title="Workshop Materials"
             description="Upload workshop materials, PDFs, images, notes, and other documents from your sessions"
-            color="primary"
           />
         </Box>
       </CenteredFlexBox>

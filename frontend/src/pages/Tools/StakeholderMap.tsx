@@ -17,7 +17,7 @@ import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import DocumentManager from '@/components/DocumentManager';
 import { useNavigate } from 'react-router-dom';
-import { categoryColors } from '@/utils/constants';
+import { categoryColors, CategoryEnum } from '@/utils/constants';
 import { useAuthContext } from '@/hooks/useAuth';
 
 const StakeholderMap: React.FC = () => {
@@ -75,13 +75,12 @@ const StakeholderMap: React.FC = () => {
                     </Card>
 
                     <DocumentManager
-                        category="stakeholder_map"
+                        category={CategoryEnum.stakeholders}
                         entityType={startup ? "startup" : undefined}
                         entityId={startup?.id}
                         entityField="stakeholder_map"
                         title="Stakeholder Map Documents"
                         description="Upload stakeholder maps, analysis documents, or paste workshop notes"
-                        color="warning"
                     />
                 </Box>
             </CenteredFlexBox>

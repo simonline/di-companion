@@ -17,7 +17,7 @@ import { CenteredFlexBox } from '@/components/styled';
 import Header from '@/sections/Header';
 import DocumentManager from '@/components/DocumentManager';
 import { useNavigate } from 'react-router-dom';
-import { categoryColors } from '@/utils/constants';
+import { categoryColors, CategoryEnum } from '@/utils/constants';
 import { useAuthContext } from '@/hooks/useAuth';
 
 function FinancialPlan() {
@@ -104,10 +104,9 @@ function FinancialPlan() {
           </Card>
 
           <DocumentManager
-            category="financial_plan"
+            category={CategoryEnum.sustainability}
             title="Financial Plan"
             description="Upload financial plans, revenue models, or budget projections for analysis."
-            color="sustainability"
           />
         </Box>
       </CenteredFlexBox>

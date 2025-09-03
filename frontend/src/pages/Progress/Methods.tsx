@@ -254,13 +254,11 @@ const Methods: React.FC = () => {
                         {startupMethod && (
                           <Box sx={{ mt: 3, mb: 3 }}>
                             <DocumentManager
-                              category="method_result"
                               entityType="startup_method"
                               entityId={startupMethod.id}
                               entityField="resultFiles"
                               title="Result Files"
                               description="Upload artefacts or documentation"
-                              color="primary"
                             />
                           </Box>
                         )}

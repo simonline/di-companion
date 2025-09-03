@@ -17,7 +17,7 @@ import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import DocumentManager from '@/components/DocumentManager';
 import { useNavigate } from 'react-router-dom';
-import { categoryColors } from '@/utils/constants';
+import { categoryColors, CategoryEnum } from '@/utils/constants';
 import { useAuthContext } from '@/hooks/useAuth';
 
 const Interviews: React.FC = () => {
@@ -105,10 +105,9 @@ const Interviews: React.FC = () => {
                     </Card>
 
                     <DocumentManager
-                        category="interview"
+                        category={CategoryEnum.stakeholders}
                         title="Interviews"
                         description="Upload interview recordings, transcripts, customer feedback, or survey responses for analysis."
-                        color="stakeholders"
                     />
                 </Box>
             </CenteredFlexBox>

@@ -17,7 +17,7 @@ import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import DocumentManager from '@/components/DocumentManager';
 import { useNavigate } from 'react-router-dom';
-import { categoryColors } from '@/utils/constants';
+import { categoryColors, CategoryEnum } from '@/utils/constants';
 import { useAuthContext } from '@/hooks/useAuth';
 
 const PitchDeck: React.FC = () => {
@@ -104,10 +104,9 @@ const PitchDeck: React.FC = () => {
                     </Card>
 
                     <DocumentManager
-                        category="pitch_deck"
+                        category={CategoryEnum.product}
                         title="Pitch Deck"
                         description="Upload pitch deck presentations, investor decks, or business presentations for analysis."
-                        color="product"
                     />
                 </Box>
             </CenteredFlexBox>

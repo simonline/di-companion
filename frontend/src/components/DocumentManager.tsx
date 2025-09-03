@@ -32,9 +32,10 @@ import { uploadDocument, getDocuments, deleteDocument, getDocumentUrl, supabase 
 import type { Document } from '@/types/database';
 import useNotifications from '@/store/notifications';
 import { useAuthContext } from '@/hooks/useAuth';
+import { categoryColors, CategoryEnum } from '@/utils/constants';
 
 interface DocumentManagerProps {
-  category: string;
+  category?: CategoryEnum | null;
   entityType?: string;
   entityId?: string;
   entityField?: string;
@@ -71,7 +72,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
   const fetchDocuments = async () => {
     setLoading(true);
     try {
-      const filters: any = { category };
+      const filters: any = {};
       if (entityType) filters.entityType = entityType;
       if (entityId) filters.entityId = entityId;
       if (entityField) filters.entityField = entityField;
@@ -130,7 +131,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
             entityType,
             entityId,
             entityField,
-            category
+            undefined
           );
         }
         notificationActions.push({
@@ -147,7 +148,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
           entityType,
           entityId,
           entityField,
-          category
+          undefined
         );
         notificationActions.push({
           message: 'Text uploaded successfully',
@@ -205,12 +206,12 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
       }
       return 'Unknown';
     }
-    
+
     // Check if it's the current user
     if (userId === user?.id && profile?.given_name) {
       return profile.given_name;
     }
-    
+
     const userInfo = users[userId];
     if (userInfo) {
       // Use given_name if available, otherwise fall back to email
@@ -223,7 +224,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
   const getFileIcon = (mimeType: string | null, filename: string) => {
     const extension = filename.split('.').pop()?.toLowerCase();
     const iconStyle = { fontSize: 40, color: 'text.secondary', opacity: 0.6 };
-    
+
     // Check by MIME type first
     if (mimeType) {
       if (mimeType.startsWith('image/')) return <ImageOutlined sx={iconStyle} />;
@@ -233,7 +234,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
       if (mimeType.startsWith('text/')) return <DescriptionOutlined sx={iconStyle} />;
       if (mimeType.includes('zip') || mimeType.includes('compressed')) return <FolderZipOutlined sx={iconStyle} />;
     }
-    
+
     // Check by file extension as fallback
     if (extension) {
       // Images
@@ -261,7 +262,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
         return <FolderZipOutlined sx={iconStyle} />;
       }
     }
-    
+
     // Default file icon
     return <InsertDriveFileOutlined sx={iconStyle} />;
   };
@@ -300,11 +301,15 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                 setUploadMode('file');
                 setOpenDialog(true);
               }}
-              sx={{ 
+              sx={{
                 textTransform: 'none',
                 boxShadow: 0,
+                backgroundColor: category ? categoryColors[category] : 'primary.main',
+                color: 'background.paper',
                 '&:hover': {
-                  boxShadow: 1
+                  boxShadow: 1,
+                  backgroundColor: category ? categoryColors[category] : 'primary.dark',
+                  filter: 'brightness(0.9)'
                 }
               }}
             >
@@ -317,7 +322,15 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                 setUploadMode('paste');
                 setOpenDialog(true);
               }}
-              sx={{ textTransform: 'none' }}
+              sx={{
+                textTransform: 'none',
+                borderColor: category ? categoryColors[category] : 'divider',
+                color: category ? categoryColors[category] : 'text.primary',
+                '&:hover': {
+                  borderColor: category ? categoryColors[category] : 'divider',
+                  backgroundColor: category ? `${categoryColors[category]}10` : 'action.hover'
+                }
+              }}
             >
               Paste Text
             </Button>
@@ -326,9 +339,9 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
       </Box>
 
       {/* Upload Drop Zone - Always Visible */}
-      <Paper 
-        sx={{ 
-          p: 3, 
+      <Paper
+        sx={{
+          p: 3,
           mb: 3,
           textAlign: 'center',
           border: '2px dashed',
@@ -338,7 +351,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
           cursor: 'pointer',
           transition: 'all 0.2s ease',
           '&:hover': {
-            borderColor: 'primary.main',
+            borderColor: category ? categoryColors[category] : 'primary.main',
             bgcolor: 'action.hover'
           }
         }}
@@ -365,8 +378,8 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
           <CircularProgress />
         </Box>
       ) : documents.length === 0 ? (
-        <Paper sx={{ 
-          p: 6, 
+        <Paper sx={{
+          p: 6,
           textAlign: 'center',
           borderRadius: 2,
           bgcolor: 'background.paper'
@@ -434,12 +447,12 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                       •
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {new Date(doc.uploaded_at).toLocaleDateString('en-US', { 
-                        month: 'short', 
+                      {new Date(doc.uploaded_at).toLocaleDateString('en-US', {
+                        month: 'short',
                         day: 'numeric',
-                        year: new Date(doc.uploaded_at).getFullYear() !== new Date().getFullYear() 
-                          ? 'numeric' 
-                          : undefined 
+                        year: new Date(doc.uploaded_at).getFullYear() !== new Date().getFullYear()
+                          ? 'numeric'
+                          : undefined
                       })}
                     </Typography>
                   </Stack>
@@ -456,7 +469,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                       link.download = doc.filename;
                       link.click();
                     }}
-                    sx={{ 
+                    sx={{
                       color: 'text.secondary',
                       '&:hover': {
                         bgcolor: 'action.hover'
@@ -472,7 +485,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                         e.stopPropagation();
                         handleDelete(doc.id);
                       }}
-                      sx={{ 
+                      sx={{
                         color: 'text.secondary',
                         '&:hover': {
                           color: 'error.main',
@@ -523,7 +536,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      borderColor: 'primary.main',
+                      borderColor: category ? categoryColors[category] : 'primary.main',
                       bgcolor: 'action.hover'
                     }
                   }}
@@ -607,11 +620,14 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
               (uploadMode === 'file' && selectedFiles.length === 0) ||
               (uploadMode === 'paste' && (!pasteText || !uploadTitle))
             }
-            sx={{ 
+            sx={{
               textTransform: 'none',
               boxShadow: 0,
+              backgroundColor: category ? categoryColors[category] : 'primary.main',
               '&:hover': {
-                boxShadow: 1
+                boxShadow: 1,
+                backgroundColor: category ? categoryColors[category] : 'primary.dark',
+                filter: 'brightness(0.9)'
               }
             }}
           >

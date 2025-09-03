@@ -17,7 +17,7 @@ import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import DocumentManager from '@/components/DocumentManager';
 import { useNavigate } from 'react-router-dom';
-import { categoryColors } from '@/utils/constants';
+import { categoryColors, CategoryEnum } from '@/utils/constants';
 import { useAuthContext } from '@/hooks/useAuth';
 
 const Persona: React.FC = () => {
@@ -104,10 +104,9 @@ const Persona: React.FC = () => {
                     </Card>
 
                     <DocumentManager
-                        category="persona"
+                        category={CategoryEnum.stakeholders}
                         title="User Personas"
                         description="Upload user persona documents, customer profiles, or demographic research for analysis."
-                        color="stakeholders"
                     />
                 </Box>
             </CenteredFlexBox>
