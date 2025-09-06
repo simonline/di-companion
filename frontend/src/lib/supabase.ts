@@ -547,6 +547,7 @@ export async function supabaseUpdateStartup(updateStartup: StartupUpdate): Promi
   if (updates.score) dbUpdate.score = updates.score;
   if (updates.categories) dbUpdate.categories = updates.categories;
   if (updates.progress) dbUpdate.progress = updates.progress;
+  if (updates.internal_comment !== undefined) dbUpdate.internal_comment = updates.internal_comment;
 
   const { data, error } = await supabase
     .from('startups')

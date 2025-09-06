@@ -1388,6 +1388,7 @@ export type Database = {
           idea: string | null
           industry: string | null
           industry_other: string | null
+          internal_comment: string | null
           is_mvp_tested: boolean | null
           is_problem_validated: boolean | null
           is_prototype_validated: boolean | null
@@ -1419,6 +1420,7 @@ export type Database = {
           idea?: string | null
           industry?: string | null
           industry_other?: string | null
+          internal_comment?: string | null
           is_mvp_tested?: boolean | null
           is_problem_validated?: boolean | null
           is_prototype_validated?: boolean | null
@@ -1450,6 +1452,7 @@ export type Database = {
           idea?: string | null
           industry?: string | null
           industry_other?: string | null
+          internal_comment?: string | null
           is_mvp_tested?: boolean | null
           is_problem_validated?: boolean | null
           is_prototype_validated?: boolean | null
