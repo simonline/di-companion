@@ -36,7 +36,6 @@ import RecommendationList from './components/RecommendationList';
 import RequestList from './components/RequestList';
 import { useParams } from 'react-router-dom';
 import Loading from '@/components/Loading';
-import { CategoryEnum, categoryDisplayNames, categoryColors } from '@/utils/constants';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -228,48 +227,14 @@ export default function StartupView() {
 
   return (
     <>
-      <Header title={currentStartup?.name || 'Startup'} />
       <CenteredFlexBox>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mb: 3 }}>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon />}
-              onClick={handleRefresh}
-              disabled={tabValue === 0 ? loadingRecommendations : loadingRequests}
-            >
-              Refresh
-            </Button>
-            {tabValue === 0 && (
-              <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenForm}>
-                Add Recommendation
-              </Button>
-            )}
+        <Box sx={{ mt: 4 }}>
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="h4" gutterBottom fontWeight="bold">
+              {currentStartup?.name || 'Startup'}
+            </Typography>
           </Box>
         </Box>
-
-        {/* Display Categories */}
-        {currentStartup?.categories && Array.isArray(currentStartup.categories) && currentStartup.categories.length > 0 && (
-          <Card sx={{ width: '100%', mb: 3 }}>
-            <CardContent>
-              <Typography variant="subtitle1" gutterBottom>
-                Assigned Categories
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {(currentStartup.categories as CategoryEnum[]).map((category) => (
-                  <Chip
-                    key={category}
-                    label={categoryDisplayNames[category]}
-                    sx={{
-                      backgroundColor: categoryColors[category],
-                      color: '#fff',
-                    }}
-                  />
-                ))}
-              </Box>
-            </CardContent>
-          </Card>
-        )}
 
         {errorRecommendations && tabValue === 0 && (
           <Alert severity="error" sx={{ mb: 3, width: '100%' }}>

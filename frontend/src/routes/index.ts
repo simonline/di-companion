@@ -23,7 +23,7 @@ export const useAppRoutes = (): Partial<AppRoutes> => {
       icon: PersonIcon,
       iconOutlined: PersonOutlineIcon,
       requiresAuth: true,
-      visibleTo: ['startup', 'coach'],
+      visibleTo: ['startup'],
       requiresStartup: false,
       order: 1,
       agent: 'entrepreneur',

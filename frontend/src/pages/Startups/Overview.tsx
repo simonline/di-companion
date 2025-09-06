@@ -452,48 +452,6 @@ export default function OverviewView() {
             subheader="Progress and status of mentored startups"
             titleTypographyProps={{ variant: 'h6' }}
             subheaderTypographyProps={{ variant: 'body2' }}
-            action={
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                {isSelectionMode ? (
-                  <>
-                    <Button
-                      variant="outlined"
-                      onClick={handleToggleSelectionMode}
-                      color="secondary"
-                    >
-                      Cancel Selection
-                    </Button>
-                    <Button
-                      variant="contained"
-                      startIcon={<CategoryIcon />}
-                      onClick={handleOpenBulkCategoryDialog}
-                      disabled={selectedStartups.length === 0}
-                    >
-                      Assign Categories ({selectedStartups.length})
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Tooltip title="Select multiple startups to assign categories">
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        onClick={handleToggleSelectionMode}
-                      >
-                        Assign Categories
-                      </Button>
-                    </Tooltip>
-                    <Button
-                      variant="contained"
-                      startIcon={<AddIcon />}
-                      onClick={() => setIsAssignDialogOpen(true)}
-                    >
-                      Assign Startup
-                    </Button>
-                  </>
-                )}
-              </Box>
-            }
           />
           <CardContent>
             <List sx={{ width: '100%' }}>
@@ -501,7 +459,7 @@ export default function OverviewView() {
                 coachees.map((startup: any, index: number, array: any[]) => {
                   // Count unread requests for this startup
                   const startupRequests = requests.filter(
-                    (r) => r.startup?.id === startup.id && !r.read_at,
+                    (r) => r.startup_id === startup.id && !r.read_at,
                   ).length;
 
                   // Check if this startup is selected for bulk operations
@@ -574,22 +532,6 @@ export default function OverviewView() {
                                 <Typography variant="body2" color="text.secondary">
                                   Performance Score: {startup.score || 0}%
                                 </Typography>
-                                {/* Display categories if available */}
-                                {startup.categories && startup.categories.length > 0 && (
-                                  <Box sx={{ display: 'flex', mt: 1, flexWrap: 'wrap', gap: 0.5 }}>
-                                    {(startup.categories as CategoryEnum[]).map((category) => (
-                                      <Chip
-                                        key={category}
-                                        label={categoryDisplayNames[category]}
-                                        size="small"
-                                        sx={{
-                                          backgroundColor: categoryColors[category],
-                                          color: '#fff',
-                                        }}
-                                      />
-                                    ))}
-                                  </Box>
-                                )}
                               </Box>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 {startupRequests > 0 ? (
@@ -666,82 +608,6 @@ export default function OverviewView() {
           </DialogActions>
         </Dialog>
 
-        {/* Single Startup Categories Dialog */}
-        <Dialog open={isCategoryDialogOpen} onClose={() => setIsCategoryDialogOpen(false)}>
-          <DialogTitle>Assign Categories</DialogTitle>
-          <DialogContent>
-            <Typography variant="body2" sx={{ mb: 2 }}>
-              Select categories that apply to this startup:
-            </Typography>
-            <FormGroup>
-              {Object.entries(categoryDisplayNames).map(([key, value]) => (
-                <FormControlLabel
-                  key={key}
-                  control={
-                    <Checkbox
-                      checked={selectedCategories.includes(key as CategoryEnum)}
-                      onChange={() => handleCategoryChange(key as CategoryEnum)}
-                      sx={{
-                        '&.Mui-checked': {
-                          color: categoryColors[key as CategoryEnum]
-                        }
-                      }}
-                    />
-                  }
-                  label={value}
-                />
-              ))}
-            </FormGroup>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setIsCategoryDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveCategories} variant="contained">
-              Save
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Bulk Categories Dialog */}
-        <Dialog open={isBulkCategoryDialogOpen} onClose={() => setIsBulkCategoryDialogOpen(false)}>
-          <DialogTitle>Bulk Assign Categories</DialogTitle>
-          <DialogContent>
-            <Typography variant="body1" gutterBottom>
-              Assign categories to {selectedStartups.length} selected startups:
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Selected startups: {selectedStartups.map(s => s.name).join(', ')}
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2, mt: 2, color: 'warning.main' }}>
-              Note: This will replace any existing categories on the selected startups.
-            </Typography>
-            <FormGroup>
-              {Object.entries(categoryDisplayNames).map(([key, value]) => (
-                <FormControlLabel
-                  key={key}
-                  control={
-                    <Checkbox
-                      checked={selectedCategories.includes(key as CategoryEnum)}
-                      onChange={() => handleCategoryChange(key as CategoryEnum)}
-                      sx={{
-                        '&.Mui-checked': {
-                          color: categoryColors[key as CategoryEnum]
-                        }
-                      }}
-                    />
-                  }
-                  label={value}
-                />
-              ))}
-            </FormGroup>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setIsBulkCategoryDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveBulkCategories} variant="contained">
-              Save to All Selected
-            </Button>
-          </DialogActions>
-        </Dialog>
-
         {/* Menu for startup actions */}
         <Menu
           anchorEl={menuAnchorEl}
@@ -749,7 +615,6 @@ export default function OverviewView() {
           onClose={handleMenuClose}
           onClick={(e) => e.preventDefault()} // Prevent navigation when clicking menu items
         >
-          <MenuItem onClick={handleOpenCategoryDialog}>Assign Categories</MenuItem>
           <MenuItem onClick={handleUnassignFromMenu}>Unassign Startup</MenuItem>
         </Menu>
 

@@ -314,6 +314,7 @@ export const renderStepContent = (
               name="qualified_conversations_count"
               label="How many customer interviews have you conducted?"
               type="number"
+              min="0"
               error={
                 touched.qualified_conversations_count && Boolean(errors.qualified_conversations_count)
               }
