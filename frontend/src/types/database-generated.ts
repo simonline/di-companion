@@ -1113,7 +1113,7 @@ export type Database = {
           pattern_id?: string | null
           published_at?: string | null
           result_text?: string | null
-          startup_id?: string | nullN
+          startup_id?: string | null
           updated_at?: string
           updated_by_id?: string | null
         }
