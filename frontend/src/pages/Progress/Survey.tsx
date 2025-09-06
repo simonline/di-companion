@@ -30,7 +30,7 @@ import Header from '@/sections/Header';
 import { useAuthContext } from '@/hooks/useAuth';
 import useNotifications from '@/store/notifications';
 import SurveyField from '@/components/SurveyField';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowBack from '@mui/icons-material/ArrowBack';
 import { generateValidationSchema, FormValues } from '@/utils/generateValidationSchema';
 import { generateInitialValues } from '@/utils/generateInitialValues';
 import { supabaseGetPatternQuestions, supabaseGetSurveyQuestions } from '@/lib/supabase';
@@ -466,11 +466,9 @@ const Survey: React.FC = () => {
           <Grid item xs={12}>
             <Paper sx={{ p: 3 }}>
               <Button
-                variant="outlined"
                 onClick={() => navigate(`/progress/${pattern.id}`)}
-                startIcon={<ArrowBackIcon />}
-                size="small"
-                sx={{ mb: 4 }}
+                startIcon={<ArrowBack />}
+                sx={{ mb: 4, color: 'text.secondary' }}
               >
                 Back to Pattern
               </Button>

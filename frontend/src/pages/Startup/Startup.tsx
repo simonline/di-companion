@@ -131,7 +131,7 @@ function Startup() {
       description: 'Evaluate team dynamics and performance',
       icon: Assessment,
       color: categoryColors.team,
-      path: '/self-assessment',
+      path: '/tools/team-assessment',
       completed: stepProgress['team-assessment']
     },
     {

@@ -82,7 +82,7 @@ const User: React.FC = () => {
         title: 'Self Assessment',
         description: 'Take the entrepreneurship assessment to understand your strengths and areas for growth.',
         icon: <Assessment sx={{ fontSize: 32 }} />,
-        route: '/self-assessment?from=user',
+        route: '/tools/self-assessment?from=user',
         completed: progress.assessment,
       },
       {

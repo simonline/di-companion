@@ -9,7 +9,7 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import Header from '@/sections/Header';
 import ArticleIcon from '@mui/icons-material/Article';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowBack from '@mui/icons-material/ArrowBack';
 import { useAuthContext } from '@/hooks/useAuth';
 import useNotifications from '@/store/notifications';
 import { Grid } from '@mui/material';
@@ -179,11 +179,9 @@ const Methods: React.FC = () => {
           <Grid item xs={12}>
             <Paper sx={{ p: 3 }}>
               <Button
-                variant="outlined"
                 onClick={() => navigate(`/progress/${pattern.id}`)}
-                startIcon={<ArrowBackIcon />}
-                size="small"
-                sx={{ mb: 4 }}
+                startIcon={<ArrowBack />}
+                sx={{ mb: 4, color: 'text.secondary' }}
               >
                 Back to Pattern
               </Button>

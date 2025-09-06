@@ -25,6 +25,9 @@ import type {
   RecommendationUpdate,
   Invitation,
   InvitationCreate,
+  UserMethod,
+  UserMethodCreate,
+  UserMethodUpdate,
   UserQuestion,
   UserQuestionCreate,
   UserQuestionUpdate,
@@ -1001,11 +1004,24 @@ export async function supabaseGetPatternMethods(patternId: string): Promise<Meth
   return data.map(link => link.method) as Method[];
 }
 
-export async function supabaseGetQuestions(): Promise<Question[]> {
-  const { data, error } = await supabase
+export async function supabaseGetQuestions(category?: string, topic?: string): Promise<Question[]> {
+  let query = supabase
     .from('questions')
-    .select('*')
-    .order('order', { ascending: true });
+    .select('*');
+  
+  // Filter by category if provided - categories is a JSON array field
+  // We need to check if the JSON array contains the category value
+  if (category) {
+    // Use the @> operator to check if the JSON array contains the value
+    query = query.filter('categories', 'cs', `["${category}"]`);
+  }
+  
+  // Filter by topic if provided
+  if (topic) {
+    query = query.eq('topic', topic);
+  }
+  
+  const { data, error } = await query.order('order', { ascending: true });
 
   if (error) throw new Error(handleSupabaseError(error));
 
@@ -1493,6 +1509,88 @@ export async function supabaseGetMethod(id: string): Promise<Method | null> {
   return data;
 }
 
+export async function supabaseGetMethodByName(name: string): Promise<Method | null> {
+  const { data, error } = await supabase
+    .from('methods')
+    .select('*')
+    .eq('name', name)
+    .maybeSingle();
+  if (error) throw new Error(handleSupabaseError(error));
+  return data;
+}
+
+// User Methods
+export async function supabaseGetUserMethods(
+  userId?: string,
+  methodId?: string,
+  startupId?: string
+): Promise<UserMethod[]> {
+  let query = supabase
+    .from('user_methods')
+    .select('*');
+  
+  if (userId) {
+    query = query.eq('user_id', userId);
+  }
+  if (methodId) {
+    query = query.eq('method_id', methodId);
+  }
+  if (startupId) {
+    query = query.eq('startup_id', startupId);
+  }
+  
+  const { data, error } = await query;
+  if (error) throw new Error(handleSupabaseError(error));
+  return data as UserMethod[];
+}
+
+export async function supabaseGetUserMethod(id: string): Promise<UserMethod> {
+  const { data, error } = await supabase
+    .from('user_methods')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error) throw new Error(handleSupabaseError(error));
+  return data;
+}
+
+export async function supabaseGetUserMethodByName(
+  userId: string,
+  methodName: string
+): Promise<UserMethod | null> {
+  const { data, error } = await supabase
+    .from('user_methods')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('method_id', methodName)
+    .maybeSingle();
+  
+  if (error) throw new Error(handleSupabaseError(error));
+  return data;
+}
+
+export async function supabaseCreateUserMethod(userMethod: UserMethodCreate): Promise<UserMethod> {
+  const { data, error } = await supabase
+    .from('user_methods')
+    .insert(userMethod)
+    .select()
+    .single();
+  if (error) throw new Error(handleSupabaseError(error));
+  return data;
+}
+
+export async function supabaseUpdateUserMethod(userMethod: UserMethodUpdate): Promise<UserMethod> {
+  const { id, ...payload } = userMethod;
+  const { data, error } = await supabase
+    .from('user_methods')
+    .update(payload)
+    .eq('id', id!)
+    .select()
+    .single();
+  if (error) throw new Error(handleSupabaseError(error));
+  return data;
+}
+
 // User Questions
 export async function supabaseGetUserQuestions(
   startupId?: string,
@@ -1609,16 +1707,15 @@ export async function supabaseGetStartupQuestions(
     .select(`
       *,
       pattern:patterns(*),
-      question:questions(*),
-      startup:startups(*)
+      question:questions(*)
     `);
 
   if (startupId) {
-    query = query.eq('startup', startupId);
+    query = query.eq('startup_id', startupId);
   }
 
   if (patternId) {
-    query = query.eq('pattern', patternId);
+    query = query.eq('pattern_id', patternId);
   }
 
   const { data, error } = await query;

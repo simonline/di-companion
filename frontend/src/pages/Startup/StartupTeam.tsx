@@ -40,7 +40,7 @@ import { InvitationStatusEnum } from '@/utils/constants';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowBack from '@mui/icons-material/ArrowBack';
 import PersonIcon from '@mui/icons-material/Person';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -445,11 +445,11 @@ const StartupTeam: React.FC = () => {
       <CenteredFlexBox>
         <Box sx={{ width: '100%', maxWidth: 600, mb: 4 }}>
           <Button
-            startIcon={<ArrowBackIcon />}
+            startIcon={<ArrowBack />}
             onClick={() => navigate(`/startup`)}
-            sx={{ mb: 2 }}
+            sx={{ color: 'text.secondary' }}
           >
-            Back to Startup Profile
+            Back to Startup
           </Button>
 
           <Paper sx={{ p: 3, mb: 4 }}>

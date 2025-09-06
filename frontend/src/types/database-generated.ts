@@ -821,6 +821,7 @@ export type Database = {
           updated_at: string
           updated_by_id: string | null
           weight: number | null
+          topic: string | null
         }
         Insert: {
           categories?: Json | null
@@ -843,6 +844,7 @@ export type Database = {
           updated_at?: string
           updated_by_id?: string | null
           weight?: number | null
+          topic: string | null
         }
         Update: {
           categories?: Json | null
@@ -865,6 +867,7 @@ export type Database = {
           updated_at?: string
           updated_by_id?: string | null
           weight?: number | null
+          topic: string | null
         }
         Relationships: []
       }
@@ -1088,7 +1091,7 @@ export type Database = {
       startup_methods: {
         Row: {
           created_at: string
-          created_by_id: number | null
+          created_by_id: string | null
           document_id: string | null
           id: string
           locale: string | null
@@ -1098,11 +1101,11 @@ export type Database = {
           result_text: string | null
           startup_id: string | null
           updated_at: string
-          updated_by_id: number | null
+          updated_by_id: string | null
         }
         Insert: {
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           document_id?: string | null
           id?: string
           locale?: string | null
@@ -1110,13 +1113,13 @@ export type Database = {
           pattern_id?: string | null
           published_at?: string | null
           result_text?: string | null
-          startup_id?: string | null
+          startup_id?: string | nullN
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
         }
         Update: {
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           document_id?: string | null
           id?: string
           locale?: string | null
@@ -1126,7 +1129,7 @@ export type Database = {
           result_text?: string | null
           startup_id?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
         }
         Relationships: [
           {
@@ -1184,7 +1187,7 @@ export type Database = {
         Row: {
           applied_at: string | null
           created_at: string
-          created_by_id: number | null
+          created_by_id: string | null
           document_id: string | null
           id: string
           locale: string | null
@@ -1195,13 +1198,13 @@ export type Database = {
           response_type: string | null
           startup_id: string | null
           updated_at: string
-          updated_by_id: number | null
+          updated_by_id: string | null
           user_id: string | null
         }
         Insert: {
           applied_at?: string | null
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           document_id?: string | null
           id?: string
           locale?: string | null
@@ -1212,13 +1215,13 @@ export type Database = {
           response_type?: string | null
           startup_id?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
           user_id?: string | null
         }
         Update: {
           applied_at?: string | null
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           document_id?: string | null
           id?: string
           locale?: string | null
@@ -1229,7 +1232,7 @@ export type Database = {
           response_type?: string | null
           startup_id?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -1281,7 +1284,7 @@ export type Database = {
         Row: {
           answer: Json | null
           created_at: string
-          created_by_id: number | null
+          created_by_id: string | null
           document_id: string | null
           id: string
           locale: string | null
@@ -1290,12 +1293,12 @@ export type Database = {
           question_id: string | null
           startup_id: string | null
           updated_at: string
-          updated_by_id: number | null
+          updated_by_id: string | null
         }
         Insert: {
           answer?: Json | null
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           document_id?: string | null
           id?: string
           locale?: string | null
@@ -1304,12 +1307,12 @@ export type Database = {
           question_id?: string | null
           startup_id?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
         }
         Update: {
           answer?: Json | null
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           document_id?: string | null
           id?: string
           locale?: string | null
@@ -1318,7 +1321,7 @@ export type Database = {
           question_id?: string | null
           startup_id?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
         }
         Relationships: [
           {
@@ -1543,35 +1546,35 @@ export type Database = {
         Row: {
           action: string | null
           created_at: string
-          created_by_id: number | null
+          created_by_id: string | null
           document_id: string | null
           id: number
           locale: string | null
           published_at: string | null
           updated_at: string
-          updated_by_id: number | null
+          updated_by_id: string | null
         }
         Insert: {
           action?: string | null
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           document_id?: string | null
           id?: number
           locale?: string | null
           published_at?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
         }
         Update: {
           action?: string | null
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           document_id?: string | null
           id?: number
           locale?: string | null
           published_at?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
         }
         Relationships: [
           {
@@ -1643,7 +1646,7 @@ export type Database = {
       up_roles: {
         Row: {
           created_at: string
-          created_by_id: number | null
+          created_by_id: string | null
           description: string | null
           document_id: string | null
           id: number
@@ -1652,11 +1655,11 @@ export type Database = {
           published_at: string | null
           type: string | null
           updated_at: string
-          updated_by_id: number | null
+          updated_by_id: string | null
         }
         Insert: {
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           description?: string | null
           document_id?: string | null
           id?: number
@@ -1665,11 +1668,11 @@ export type Database = {
           published_at?: string | null
           type?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
         }
         Update: {
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           description?: string | null
           document_id?: string | null
           id?: number
@@ -1678,7 +1681,7 @@ export type Database = {
           published_at?: string | null
           type?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
         }
         Relationships: [
           {
@@ -1718,7 +1721,7 @@ export type Database = {
           confirmation_token: string | null
           confirmed: boolean | null
           created_at: string
-          created_by_id: number | null
+          created_by_id: string | null
           document_id: string | null
           email: string | null
           family_name: string | null
@@ -1736,7 +1739,7 @@ export type Database = {
           published_at: string | null
           reset_password_token: string | null
           updated_at: string
-          updated_by_id: number | null
+          updated_by_id: string | null
           username: string | null
         }
         Insert: {
@@ -1745,7 +1748,7 @@ export type Database = {
           confirmation_token?: string | null
           confirmed?: boolean | null
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           document_id?: string | null
           email?: string | null
           family_name?: string | null
@@ -1763,7 +1766,7 @@ export type Database = {
           published_at?: string | null
           reset_password_token?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
           username?: string | null
         }
         Update: {
@@ -1772,7 +1775,7 @@ export type Database = {
           confirmation_token?: string | null
           confirmed?: boolean | null
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           document_id?: string | null
           email?: string | null
           family_name?: string | null
@@ -1790,7 +1793,7 @@ export type Database = {
           published_at?: string | null
           reset_password_token?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
           username?: string | null
         }
         Relationships: [
@@ -1967,7 +1970,7 @@ export type Database = {
         Row: {
           answer: Json | null
           created_at: string
-          created_by_id: number | null
+          created_by_id: string | null
           document_id: string | null
           id: string
           locale: string | null
@@ -1976,13 +1979,13 @@ export type Database = {
           question_id: string | null
           startup_id: string | null
           updated_at: string
-          updated_by_id: number | null
+          updated_by_id: string | null
           user_id: string | null
         }
         Insert: {
           answer?: Json | null
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           document_id?: string | null
           id?: string
           locale?: string | null
@@ -1991,13 +1994,13 @@ export type Database = {
           question_id?: string | null
           startup_id?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
           user_id?: string | null
         }
         Update: {
           answer?: Json | null
           created_at?: string
-          created_by_id?: number | null
+          created_by_id?: string | null
           document_id?: string | null
           id?: string
           locale?: string | null
@@ -2006,7 +2009,7 @@ export type Database = {
           question_id?: string | null
           startup_id?: string | null
           updated_at?: string
-          updated_by_id?: number | null
+          updated_by_id?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -2054,6 +2057,104 @@ export type Database = {
           },
           {
             foreignKeyName: "user_questions_startup_fk"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_methods: {
+        Row: {
+          created_at: string
+          created_by_id: string | null
+          document_id: string | null
+          id: string
+          locale: string | null
+          method_id: string | null
+          pattern_id: string | null
+          published_at: string | null
+          result_text: string | null
+          startup_id: string | null
+          user_id: string | null
+          updated_at: string
+          updated_by_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          method_id?: string | null
+          pattern_id?: string | null
+          published_at?: string | null
+          result_text?: string | null
+          startup_id?: string | null
+          user_id?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by_id?: string | null
+          document_id?: string | null
+          id?: string
+          locale?: string | null
+          method_id?: string | null
+          pattern_id?: string | null
+          published_at?: string | null
+          result_text?: string | null
+          startup_id?: string | null
+          user_id?: string | null
+          updated_at?: string
+          updated_by_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_methods_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "startup_methods_created_by_id_fk"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_methods_updated_by_id_fk"
+            columns: ["updated_by_id"]
+            isOneToOne: false
+            referencedRelation: "_up_users_staging"
+            referencedColumns: ["legacy_up_user_id"]
+          },
+          {
+            foreignKeyName: "startup_methods_updated_by_id_fk"
+            columns: ["updated_by_id"]
+            isOneToOne: false
+            referencedRelation: "up_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_methods_method_fk"
+            columns: ["method_id"]
+            isOneToOne: false
+            referencedRelation: "methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_methods_pattern_fk"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "startup_methods_startup_fk"
             columns: ["startup_id"]
             isOneToOne: false
             referencedRelation: "startups"

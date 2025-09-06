@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Card,
@@ -16,12 +16,28 @@ import {
     Checkbox,
     FormGroup,
     Alert,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Select,
+    MenuItem,
+    FormControl,
+    List,
+    ListItem,
+    ListItemText,
+    Divider,
 } from '@mui/material';
-import { Psychology, Group, Share, ArrowBack } from '@mui/icons-material';
+import { Psychology, Group, Share, ArrowBack, EmojiEvents } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '@/hooks/useAuth';
+import useUserMethod from '@/hooks/useUserMethod';
+import { UserValuesData } from '@/types/database';
+import { categoryColors } from '@/utils/constants';
 
 const VALUES = [
     'Agility', 'Transparency', 'Modernity', 'Mindfulness', 'Caring', 'Dignity', 'Humility',
@@ -35,27 +51,48 @@ const VALUES = [
     'Efficiency', 'Winning', 'Pragmatism'
 ];
 
+const USER_VALUES_METHOD_NAME = 'User Values';
+
 const UserValues: React.FC = () => {
     const navigate = useNavigate();
-    const { user, profile, updateProfile } = useAuthContext();
+    const { user, profile, startup, updateProfile } = useAuthContext();
+    const {
+        userMethod,
+        method,
+        valuesData,
+        loading,
+        fetchOrCreateUserMethod,
+        saveValuesData
+    } = useUserMethod();
+
     const [activeStep, setActiveStep] = useState(0);
-    const [selectedValues, setSelectedValues] = useState<string[]>([]);
     const [top15Values, setTop15Values] = useState<string[]>([]);
     const [final7Values, setFinal7Values] = useState<string[]>([]);
+    const [pairwiseChoices, setPairwiseChoices] = useState<{ [key: string]: string }>({});
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Load existing data on mount
+    useEffect(() => {
+        if (user?.id) {
+            fetchOrCreateUserMethod(user.id, USER_VALUES_METHOD_NAME, startup?.id);
+        }
+    }, [user?.id, startup?.id]);
+
+    // Populate state when data is loaded
+    useEffect(() => {
+        if (valuesData) {
+            setTop15Values(valuesData.top15Values || []);
+            setFinal7Values(valuesData.final7Values || []);
+            setPairwiseChoices(valuesData.pairwiseChoices || {});
+        }
+    }, [valuesData]);
 
     const steps = [
-        'Review & Agree on Values',
         'Select Top 15 (Individual)',
-        'Reduce to 7 (Shared)'
+        'Reduce to 7 (Shared)',
+        'Prioritize Your Values'
     ];
 
-    const handleValueToggle = (value: string) => {
-        setSelectedValues(prev =>
-            prev.includes(value)
-                ? prev.filter(v => v !== value)
-                : [...prev, value]
-        );
-    };
 
     const handleTop15Toggle = (value: string) => {
         setTop15Values(prev => {
@@ -79,42 +116,54 @@ const UserValues: React.FC = () => {
         });
     };
 
+    const handlePairwiseChoice = (row: string, col: string, winner: string) => {
+        const key = `${row}-${col}`;
+        const reverseKey = `${col}-${row}`;
+
+        setPairwiseChoices(prev => ({
+            ...prev,
+            [key]: winner,
+            [reverseKey]: winner
+        }));
+    };
+
+    const calculateValueScores = () => {
+        const scores: { [key: string]: number } = {};
+
+        // Initialize scores
+        final7Values.forEach(value => {
+            scores[value] = 0;
+        });
+
+        // Count wins
+        Object.values(pairwiseChoices).forEach(winner => {
+            if (scores[winner] !== undefined) {
+                scores[winner]++;
+            }
+        });
+
+        // Sort by score (descending)
+        return Object.entries(scores)
+            .sort(([, a], [, b]) => b - a)
+            .map(([value, score]) => ({ value, score }));
+    };
+
     const renderStepContent = () => {
         switch (activeStep) {
             case 0:
                 return (
                     <Box>
-                        <Alert severity="info" sx={{ mb: 3 }}>
+                        <Alert
+                            severity="info"
+                            sx={{
+                                mb: 3,
+                                bgcolor: `${categoryColors.entrepreneur}08`,
+                                borderLeft: `4px solid ${categoryColors.entrepreneur}`,
+                                '& .MuiAlert-icon': { color: categoryColors.entrepreneur }
+                            }}
+                        >
                             <Typography variant="body2">
-                                <strong>Step 1:</strong> Review the set of 56 values together & agree on your set!
-                                Should some be added/exchanged/removed?
-                            </Typography>
-                        </Alert>
-                        <Typography variant="h6" gutterBottom>
-                            Select values that resonate with you:
-                        </Typography>
-                        <Grid container spacing={1}>
-                            {VALUES.map((value) => (
-                                <Grid item key={value}>
-                                    <Chip
-                                        label={value}
-                                        onClick={() => handleValueToggle(value)}
-                                        color={selectedValues.includes(value) ? 'primary' : 'default'}
-                                        variant={selectedValues.includes(value) ? 'filled' : 'outlined'}
-                                        sx={{ m: 0.5 }}
-                                    />
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </Box>
-                );
-
-            case 1:
-                return (
-                    <Box>
-                        <Alert severity="warning" sx={{ mb: 3 }}>
-                            <Typography variant="body2">
-                                <strong>Step 2:</strong> Everyone selects their 15 top values, individually (NO sharing)
+                                <strong>Step 1:</strong> Everyone selects their 15 top values, individually (NO sharing)
                             </Typography>
                         </Alert>
                         <Typography variant="h6" gutterBottom>
@@ -126,7 +175,7 @@ const UserValues: React.FC = () => {
                                     <Chip
                                         label={value}
                                         onClick={() => handleTop15Toggle(value)}
-                                        color={top15Values.includes(value) ? 'primary' : 'default'}
+                                        color={top15Values.includes(value) ? 'entrepreneur' : 'default'}
                                         variant={top15Values.includes(value) ? 'filled' : 'outlined'}
                                         disabled={!top15Values.includes(value) && top15Values.length >= 15}
                                         sx={{ m: 0.5 }}
@@ -137,12 +186,20 @@ const UserValues: React.FC = () => {
                     </Box>
                 );
 
-            case 2:
+            case 1:
                 return (
                     <Box>
-                        <Alert severity="success" sx={{ mb: 3 }}>
+                        <Alert
+                            severity="info"
+                            sx={{
+                                mb: 3,
+                                bgcolor: `${categoryColors.entrepreneur}08`,
+                                borderLeft: `4px solid ${categoryColors.entrepreneur}`,
+                                '& .MuiAlert-icon': { color: categoryColors.entrepreneur }
+                            }}
+                        >
                             <Typography variant="body2">
-                                <strong>Step 3:</strong> Everyone reduces their 15 top values down to 7 individually (SHARED AFTER)
+                                <strong>Step 2:</strong> Everyone reduces their 15 top values down to 7 individually (SHARED AFTER)
                             </Typography>
                         </Alert>
                         <Typography variant="h6" gutterBottom>
@@ -154,7 +211,7 @@ const UserValues: React.FC = () => {
                                     <Chip
                                         label={value}
                                         onClick={() => handleFinal7Toggle(value)}
-                                        color={final7Values.includes(value) ? 'primary' : 'default'}
+                                        color={final7Values.includes(value) ? 'entrepreneur' : 'default'}
                                         variant={final7Values.includes(value) ? 'filled' : 'outlined'}
                                         disabled={!final7Values.includes(value) && final7Values.length >= 7}
                                         sx={{ m: 0.5 }}
@@ -165,27 +222,237 @@ const UserValues: React.FC = () => {
                     </Box>
                 );
 
+            case 2:
+                const valueScores = calculateValueScores();
+                return (
+                    <Box>
+                        <Alert
+                            severity="info"
+                            sx={{
+                                mb: 3,
+                                bgcolor: `${categoryColors.entrepreneur}08`,
+                                borderLeft: `4px solid ${categoryColors.entrepreneur}`,
+                                '& .MuiAlert-icon': { color: categoryColors.entrepreneur }
+                            }}
+                        >
+                            <Typography variant="body2">
+                                <strong>Step 3: Forced Choice Prioritization</strong>
+                            </Typography>
+                            <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                                Compare each pair of values and select which one is more important to you.
+                                Fill out only the white cells in the upper triangle of the matrix.
+                            </Typography>
+                        </Alert>
+
+                        {/* Pairwise Comparison Matrix */}
+                        <Paper elevation={2} sx={{ p: 2, mb: 4 }}>
+                            <Typography variant="h6" gutterBottom>
+                                Value Comparison Matrix
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                For each white cell, select which value (row vs column) is more important
+                            </Typography>
+
+                            <TableContainer component={Paper} variant="outlined">
+                                <Table size="small" sx={{ minWidth: 650 }}>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell sx={{ fontWeight: 'bold', bgcolor: 'grey.100' }}>Values</TableCell>
+                                            {final7Values.map((colValue) => (
+                                                <TableCell
+                                                    key={colValue}
+                                                    align="center"
+                                                    sx={{
+                                                        fontWeight: 'bold',
+                                                        bgcolor: 'grey.100',
+                                                        textOrientation: 'mixed',
+                                                        p: 1,
+                                                        minWidth: 80
+                                                    }}
+                                                >
+                                                    {colValue}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {final7Values.map((rowValue, rowIndex) => (
+                                            <TableRow key={rowValue}>
+                                                <TableCell component="th" scope="row" sx={{ fontWeight: 'bold', bgcolor: 'grey.100' }}>
+                                                    {rowValue}
+                                                </TableCell>
+                                                {final7Values.map((colValue, colIndex) => {
+                                                    const key = `${rowValue}-${colValue}`;
+                                                    const reverseKey = `${colValue}-${rowValue}`;
+                                                    const isDiagonal = rowIndex === colIndex;
+                                                    const isUpperTriangle = rowIndex < colIndex;
+                                                    const isLowerTriangle = rowIndex > colIndex;
+
+                                                    if (isDiagonal) {
+                                                        return (
+                                                            <TableCell
+                                                                key={colValue}
+                                                                align="center"
+                                                                sx={{ bgcolor: 'grey.300', color: 'grey.600' }}
+                                                            >
+                                                                —
+                                                            </TableCell>
+                                                        );
+                                                    }
+
+                                                    if (isUpperTriangle) {
+                                                        return (
+                                                            <TableCell key={colValue} align="center" sx={{ bgcolor: 'background.paper', p: 1 }}>
+                                                                <FormControl size="small" fullWidth>
+                                                                    <Select
+                                                                        value={pairwiseChoices[key] || ''}
+                                                                        onChange={(e) => handlePairwiseChoice(rowValue, colValue, e.target.value)}
+                                                                        displayEmpty
+                                                                        sx={{ minWidth: 70 }}
+                                                                    >
+                                                                        <MenuItem value="">
+                                                                            <em>Choose</em>
+                                                                        </MenuItem>
+                                                                        <MenuItem value={rowValue}>{rowValue}</MenuItem>
+                                                                        <MenuItem value={colValue}>{colValue}</MenuItem>
+                                                                    </Select>
+                                                                </FormControl>
+                                                            </TableCell>
+                                                        );
+                                                    }
+
+                                                    // Lower triangle - show the mirrored result
+                                                    return (
+                                                        <TableCell
+                                                            key={colValue}
+                                                            align="center"
+                                                            sx={{
+                                                                bgcolor: 'grey.50',
+                                                                color: pairwiseChoices[reverseKey] ? 'text.primary' : 'text.disabled'
+                                                            }}
+                                                        >
+                                                            {pairwiseChoices[reverseKey] || '—'}
+                                                        </TableCell>
+                                                    );
+                                                })}
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Paper>
+
+                        {/* Value Rankings */}
+                        <Paper elevation={2} sx={{ p: 3 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                <EmojiEvents sx={{ color: 'gold', mr: 1 }} />
+                                <Typography variant="h6">
+                                    Value Priority Ranking
+                                </Typography>
+                            </Box>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                Based on your pairwise comparisons (higher score = more wins)
+                            </Typography>
+
+                            <List>
+                                {valueScores.map(({ value, score }, index) => (
+                                    <React.Fragment key={value}>
+                                        <ListItem
+                                            sx={{
+                                                bgcolor: index === 0 ? 'primary.50' : 'background.paper',
+                                                borderRadius: 1,
+                                                mb: 0.5
+                                            }}
+                                        >
+                                            <ListItemText
+                                                primary={
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                            <Typography
+                                                                variant="h6"
+                                                                sx={{
+                                                                    mr: 2,
+                                                                    color: index < 3 ? 'entrepreneur.main' : 'text.secondary',
+                                                                    fontWeight: index === 0 ? 'bold' : 'normal'
+                                                                }}
+                                                            >
+                                                                #{index + 1}
+                                                            </Typography>
+                                                            <Typography variant="body1" fontWeight={index === 0 ? 'bold' : 'medium'}>
+                                                                {value}
+                                                            </Typography>
+                                                        </Box>
+                                                        <Chip
+                                                            label={`${score} win${score !== 1 ? 's' : ''}`}
+                                                            size="small"
+                                                            color={index === 0 ? 'entrepreneur' : 'default'}
+                                                            variant={index < 3 ? 'filled' : 'outlined'}
+                                                        />
+                                                    </Box>
+                                                }
+                                            />
+                                        </ListItem>
+                                        {index < valueScores.length - 1 && <Divider />}
+                                    </React.Fragment>
+                                ))}
+                            </List>
+                        </Paper>
+                    </Box>
+                );
+
             default:
                 return null;
         }
     };
 
-    const handleNext = async () => {
-        if (activeStep === 0 && selectedValues.length === 0) {
-            alert('Please select at least one value before proceeding.');
-            return;
+    const saveProgress = async () => {
+        if (!user?.id || !userMethod) return;
+
+        setIsSaving(true);
+        try {
+            const valueScores = activeStep === 2 ? calculateValueScores() : [];
+            const dataToSave: UserValuesData = {
+                top15Values,
+                final7Values,
+                pairwiseChoices,
+                valueScores
+            };
+
+            await saveValuesData(dataToSave, startup?.id);
+        } catch (error) {
+            console.error('Error saving user values:', error);
+            alert('Failed to save your progress. Please try again.');
+        } finally {
+            setIsSaving(false);
         }
-        if (activeStep === 1 && top15Values.length !== 15) {
+    };
+
+    const handleNext = async () => {
+        if (activeStep === 0 && top15Values.length !== 15) {
             alert('Please select exactly 15 values before proceeding.');
             return;
         }
-        if (activeStep === 2 && final7Values.length !== 7) {
+        if (activeStep === 1 && final7Values.length !== 7) {
             alert('Please select exactly 7 values before proceeding.');
             return;
         }
-        
-        // If we've completed the last step, mark values as completed
+
+        // Save progress after each step
+        await saveProgress();
+        if (activeStep === 2) {
+            // Check if all pairwise comparisons are complete
+            const expectedComparisons = (final7Values.length * (final7Values.length - 1)) / 2;
+            const actualComparisons = Object.keys(pairwiseChoices).length / 2; // Divide by 2 because we store both directions
+
+            if (actualComparisons < expectedComparisons) {
+                alert(`Please complete all comparisons. You have completed ${actualComparisons} out of ${expectedComparisons} comparisons.`);
+                return;
+            }
+        }
+
+        // If we've completed the last step, save final data and mark values as completed
         if (activeStep === 2 && profile && user) {
+            await saveProgress();
             const currentProgress = profile.progress || {
                 profile: false,
                 values: false,
@@ -203,7 +470,7 @@ const UserValues: React.FC = () => {
             navigate('/user');
             return;
         }
-        
+
         setActiveStep(prev => prev + 1);
     };
 
@@ -225,84 +492,102 @@ const UserValues: React.FC = () => {
                             Back to User
                         </Button>
                     </Box>
-                <Card>
-                    <CardContent>
-                        <Box sx={{ textAlign: 'center', mb: 4 }}>
-                            <Psychology sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
-                            <Typography variant="h4" gutterBottom fontWeight="bold">
-                                Your Values Workshop
-                            </Typography>
-                            <Typography variant="body1" color="text.secondary">
-                                Define your corporate value set through a collaborative three-step process
-                            </Typography>
-                        </Box>
+                    <Card>
+                        <CardContent>
+                            <Box sx={{ textAlign: 'center', mb: 4 }}>
+                                <Psychology sx={{ fontSize: 64, color: 'entrepreneur', mb: 2 }} />
+                                <Typography variant="h4" gutterBottom fontWeight="bold">
+                                    Your Values Workshop
+                                </Typography>
+                                <Typography variant="body1" color="text.secondary">
+                                    Define your corporate value set through a collaborative three-step process
+                                </Typography>
+                            </Box>
 
-                        <Stepper
-                            activeStep={activeStep}
-                            sx={{
-                                mb: 4,
-                                '& .MuiStepLabel-label': {
-                                    display: { xs: 'none', sm: 'block' }
-                                },
-                                '& .MuiStepLabel-iconContainer': {
-                                    paddingRight: { xs: 0, sm: 2 }
-                                }
-                            }}
-                        >
-                            {steps.map((label) => (
-                                <Step key={label}>
-                                    <StepLabel>
-                                        <Typography
-                                            variant="body2"
-                                            sx={{
-                                                fontWeight: activeStep === steps.indexOf(label) ? 'bold' : 'normal',
-                                                display: { xs: 'none', sm: 'block' }
-                                            }}
-                                        >
-                                            {label}
-                                        </Typography>
-                                    </StepLabel>
-                                </Step>
-                            ))}
-                        </Stepper>
-
-                        {/* Mobile Step Indicator */}
-                        <Box
-                            sx={{
-                                display: { xs: 'flex', sm: 'none' },
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                mb: 4,
-                                gap: 1
-                            }}
-                        >
-                            <Typography variant="body2" color="text.secondary">
-                                Step {activeStep + 1} of {steps.length}:
-                            </Typography>
-                            <Typography variant="body2" fontWeight="bold">
-                                {steps[activeStep]}
-                            </Typography>
-                        </Box>
-
-                        {renderStepContent()}
-
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-                            <Button
-                                disabled={activeStep === 0}
-                                onClick={handleBack}
+                            <Stepper
+                                activeStep={activeStep}
+                                sx={{
+                                    mb: 4,
+                                    '& .MuiStepLabel-label': {
+                                        display: { xs: 'none', sm: 'block' }
+                                    },
+                                    '& .MuiStepLabel-iconContainer': {
+                                        paddingRight: { xs: 0, sm: 2 }
+                                    },
+                                    '& .Mui-active .MuiStepIcon-root': {
+                                        color: categoryColors.entrepreneur,
+                                    },
+                                    '& .Mui-active .MuiStepIcon-text': {
+                                        fill: 'white'
+                                    },
+                                    '& .Mui-completed .MuiStepIcon-root': {
+                                        color: categoryColors.entrepreneur,
+                                    },
+                                    '& .Mui-completed .MuiStepIcon-text': {
+                                        fill: 'white'
+                                    }
+                                }}
                             >
-                                Back
-                            </Button>
-                            <Button
-                                variant="contained"
-                                onClick={handleNext}
-                                disabled={activeStep === steps.length - 1}
+                                {steps.map((label) => (
+                                    <Step key={label}>
+                                        <StepLabel>
+                                            <Typography
+                                                variant="body2"
+                                                sx={{
+                                                    fontWeight: activeStep === steps.indexOf(label) ? 'bold' : 'normal',
+                                                    display: { xs: 'none', sm: 'block' }
+                                                }}
+                                            >
+                                                {label}
+                                            </Typography>
+                                        </StepLabel>
+                                    </Step>
+                                ))}
+                            </Stepper>
+
+                            {/* Mobile Step Indicator */}
+                            <Box
+                                sx={{
+                                    display: { xs: 'flex', sm: 'none' },
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    mb: 4,
+                                    gap: 1
+                                }}
                             >
-                                {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-                            </Button>
-                        </Box>
-                    </CardContent>
-                </Card>
+                                <Typography variant="body2" color="text.secondary">
+                                    Step {activeStep + 1} of {steps.length}:
+                                </Typography>
+                                <Typography variant="body2" fontWeight="bold">
+                                    {steps[activeStep]}
+                                </Typography>
+                            </Box>
+
+                            {loading ? (
+                                <Box sx={{ textAlign: 'center', py: 4 }}>
+                                    <Typography>Loading your saved progress...</Typography>
+                                </Box>
+                            ) : (
+                                renderStepContent()
+                            )}
+
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+                                <Button
+                                    disabled={activeStep === 0}
+                                    onClick={handleBack}
+                                >
+                                    Back
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    onClick={handleNext}
+                                    disabled={isSaving}
+                                >
+                                    {isSaving ? 'Saving...' : (activeStep === steps.length - 1 ? 'Finish' : 'Next')}
+                                </Button>
+                            </Box>
+                        </CardContent>
+                    </Card>
                 </Box>
             </CenteredFlexBox>
         </>

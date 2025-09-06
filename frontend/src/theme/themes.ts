@@ -9,6 +9,31 @@ const sharedTheme = {
       default: '#fafafa',
       paper: '#fff',
     },
+    // Colors
+    entrepreneur: {
+      main: '#ec661c',
+      contrastText: '#fff',
+    },
+    team: {
+      main: '#d2132a',
+      contrastText: '#fff',
+    },
+    stakeholders: {
+      main: '#0075bc',
+      contrastText: '#fff',
+    },
+    product: {
+      main: '#53c0d8',
+      contrastText: '#fff',
+    },
+    sustainability: {
+      main: '#50ae3d',
+      contrastText: '#fff',
+    },
+    time_space: {
+      main: '#8d207a',
+      contrastText: '#fff',
+    },
   },
   typography: {
     fontFamily: `'Source Sans Pro', 'Roboto', 'Helvetica', 'Arial', sans-serif`,

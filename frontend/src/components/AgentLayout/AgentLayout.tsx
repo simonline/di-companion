@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Fab, Slide, useMediaQuery, useTheme, Badge, IconButton, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowBack from '@mui/icons-material/ArrowBack';
 import ChatIcon from '@mui/icons-material/Chat';
 import { ChatInterface, Agent, agents, categoryToAgentMap, generalCoach } from '../Chat';
 import { useCurrentPattern } from '@/hooks/useCurrentPattern';
@@ -33,7 +33,7 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                 return;
             }
         }
-        
+
         // Priority 2: Pattern category
         if (currentPattern?.category) {
             const agentId = categoryToAgentMap[currentPattern.category];
@@ -43,7 +43,7 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                 return;
             }
         }
-        
+
         // Default: General coach
         setSelectedAgent(generalCoach);
     }, [agent, currentPattern?.category]);
@@ -55,16 +55,16 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
             if (labelTimeoutRef.current) {
                 clearTimeout(labelTimeoutRef.current);
             }
-            
+
             // Show label
             setShowAgentLabel(true);
-            
+
             // Hide label after 3 seconds
             labelTimeoutRef.current = setTimeout(() => {
                 setShowAgentLabel(false);
             }, 3000);
         }
-        
+
         return () => {
             if (labelTimeoutRef.current) {
                 clearTimeout(labelTimeoutRef.current);
@@ -127,10 +127,10 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                                     }
                                 }}
                             >
-                                <ArrowBackIcon />
+                                <ArrowBack />
                             </IconButton>
                         </Box>
-                        
+
                         <ChatInterface
                             selectedAgent={selectedAgent}
                             onAgentChange={setSelectedAgent}
@@ -200,7 +200,7 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                                 </Typography>
                             </Box>
                         </Box>
-                        
+
                         {/* Agent FAB Button */}
                         <Fab
                             color="primary"
@@ -280,9 +280,9 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                 zIndex: 1000
             }}>
                 {/* Main content - takes full width when chat is closed */}
-                <Box sx={{ 
+                <Box sx={{
                     flex: tabletChatOpen ? '0 0 40%' : 1,
-                    overflow: 'auto', 
+                    overflow: 'auto',
                     backgroundColor: 'background.default',
                     transition: 'flex 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}>
@@ -290,7 +290,7 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
                 </Box>
 
                 {/* Chat interface - 60% width when open */}
-                <Box sx={{ 
+                <Box sx={{
                     flex: tabletChatOpen ? '0 0 60%' : '0 0 0px',
                     borderLeft: tabletChatOpen ? 1 : 0,
                     borderColor: 'divider',
@@ -343,9 +343,9 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
             zIndex: 1000
         }}>
             {/* Left side - Original content (60%) */}
-            <Box sx={{ 
-                flex: '0 0 60%', 
-                overflow: 'auto', 
+            <Box sx={{
+                flex: '0 0 60%',
+                overflow: 'auto',
                 backgroundColor: 'background.default',
                 transition: 'all 0.3s ease'
             }}>
@@ -353,10 +353,10 @@ const AgentLayout: React.FC<AgentLayoutProps> = ({ children, agent }) => {
             </Box>
 
             {/* Right side - Chat interface (40%) */}
-            <Box sx={{ 
-                flex: '0 0 40%', 
-                borderLeft: 1, 
-                borderColor: 'divider', 
+            <Box sx={{
+                flex: '0 0 40%',
+                borderLeft: 1,
+                borderColor: 'divider',
                 backgroundColor: 'background.default',
                 transition: 'all 0.3s ease'
             }}>

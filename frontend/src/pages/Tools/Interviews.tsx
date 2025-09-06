@@ -85,19 +85,16 @@ const Interviews: React.FC = () => {
                                 </Typography>
                                 <Box component="ul" sx={{ mt: 1, mb: 0, pl: 3 }}>
                                     <Typography variant="body2" component="li">
-                                        Use <a href="https://memoro.ai" target="_blank" rel="noopener noreferrer">Memoro.ai</a> for automatic transcription
+                                        Try <a href="https://calendly.com" target="_blank" rel="noopener noreferrer">Calendly</a> to schedule interviews efficiently (B2B)
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Try <a href="https://calendly.com" target="_blank" rel="noopener noreferrer">Calendly</a> to schedule interviews efficiently
+                                        Prepare interview guideline with open-ended questions
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Use <a href="https://typeform.com" target="_blank" rel="noopener noreferrer">Typeform</a> for structured interview questions
+                                        Plan for roughly 15 minute sessions to respect customers time
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Prepare open-ended questions for detailed responses
-                                    </Typography>
-                                    <Typography variant="body2" component="li">
-                                        Aim for 15-30 minute sessions to respect time
+                                        Use <a href="https://memoro.ai" target="_blank" rel="noopener noreferrer">Memoro.ai</a> or another app for recording and automatic transcription
                                     </Typography>
                                 </Box>
                             </Box>

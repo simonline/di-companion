@@ -185,7 +185,7 @@ const PerformanceScore: React.FC = () => {
                 <Button
                   size="small"
                   variant="outlined"
-                  onClick={() => navigate('/self-assessment')}
+                  onClick={() => navigate('/tools/self-assessment')}
                 >
                   Take Assessment
                 </Button>

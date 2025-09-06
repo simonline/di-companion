@@ -84,19 +84,19 @@ const Persona: React.FC = () => {
                                 </Typography>
                                 <Box component="ul" sx={{ mt: 1, mb: 0, pl: 3 }}>
                                     <Typography variant="body2" component="li">
-                                        Use <a href="https://xtensio.com" target="_blank" rel="noopener noreferrer">Xtensio</a> or <a href="https://www.hubspot.com/make-my-persona" target="_blank" rel="noopener noreferrer">HubSpot's Make My Persona</a> for templates
+                                        Check <a href="https://xtensio.com" target="_blank" rel="noopener noreferrer">Xtensio</a> or <a href="https://www.hubspot.com/make-my-persona" target="_blank" rel="noopener noreferrer">HubSpot's Make My Persona</a> for templates
                                     </Typography>
                                     <Typography variant="body2" component="li">
                                         Try <a href="https://smaply.com" target="_blank" rel="noopener noreferrer">Smaply</a> for journey mapping with personas
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Base personas on real user research data
+                                        Build your personas (3–5 max) on your real user research data
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Limit to 3-5 primary personas for focus
+                                        Think about the buyer, the user and the decider (important for B2B)
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Include goals, pain points, and behaviors
+                                        Include goals, pain points, behaviors, desires and interests
                                     </Typography>
                                 </Box>
                             </Box>

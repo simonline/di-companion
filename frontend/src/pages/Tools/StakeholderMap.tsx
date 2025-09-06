@@ -65,12 +65,40 @@ const StakeholderMap: React.FC = () => {
                                 </Box>
                             </Stack>
 
-                            <Alert severity="info" icon={<Info />}>
+                            <Alert
+                                severity="info"
+                                sx={{
+                                    mb: 3,
+                                    bgcolor: `${categoryColors.stakeholders}08`,
+                                    borderLeft: `4px solid ${categoryColors.stakeholders}`,
+                                }}
+                                icon={<Info sx={{ color: categoryColors.stakeholders }} />}
+                            >
                                 <Typography variant="body2">
                                     Upload your stakeholder maps, analysis documents, or paste text from your workshops.
                                     These documents help you identify and understand all parties interested in or affected by your startup.
                                 </Typography>
                             </Alert>
+
+                            <Box sx={{ mb: 3 }}>
+                                <Typography variant="body2" fontWeight="600" gutterBottom>
+                                    Helpful Tips for Creating Your Stakeholder Map:
+                                </Typography>
+                                <Box component="ul" sx={{ mt: 1, mb: 0, pl: 3 }}>
+                                    <Typography variant="body2" component="li">
+                                        Must have  for ALL B2B start ups
+                                    </Typography>
+                                    <Typography variant="body2" component="li">
+                                        Try <a href="https://miro.com" target="_blank" rel="noopener noreferrer">Miro</a> or <a href="https://mural.co" target="_blank" rel="noopener noreferrer">Mural</a> for templates and collaborative workshops
+                                    </Typography>
+                                    <Typography variant="body2" component="li">
+                                        Use <a href="https://kumu.io" target="_blank" rel="noopener noreferrer">Kumu.io</a> for interactive stakeholder mapping and visualization
+                                    </Typography>
+                                    <Typography variant="body2" component="li">
+                                        Include both internal and external stakeholders (think broad!)
+                                    </Typography>
+                                </Box>
+                            </Box>
                         </CardContent>
                     </Card>
 

@@ -36,6 +36,7 @@ export enum Pages {
   UpdateProfile,
   ResetPassword,
   TeamContract,
+  TeamAssessment,
   TeamValues,
   UserValues,
   Interviews,

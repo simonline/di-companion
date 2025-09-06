@@ -24,6 +24,7 @@ import {
   renderStepContent,
 } from '../Startups/types';
 import Header from '@/sections/Header';
+import { categoryColors, CategoryEnum } from '@/utils/constants';
 
 const defaultInitialValues: StartupFormValues = {
   name: '',
@@ -223,7 +224,29 @@ function StartupForm() {
                 </>
               )}
 
-              <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+              <Stepper
+                activeStep={activeStep}
+                alternativeLabel
+                sx={{
+                  mb: 4,
+                  '& .MuiStepLabel-label': {
+                    display: 'none'
+                  },
+                  '& .Mui-active .MuiStepIcon-root': {
+                    color: categoryColors[CategoryEnum.team]
+                  },
+                  '& .Mui-active .MuiStepIcon-text': {
+                    fill: 'white'
+                  },
+                  '& .Mui-completed .MuiStepIcon-root': {
+                    color: categoryColors[CategoryEnum.team]
+                  },
+                  '& .Mui-completed .MuiStepIcon-text': {
+                    fill: 'white'
+                  }
+                }}
+
+              >
                 {steps.map((label) => (
                   <Step key={label}>
                     <StepLabel>{label}</StepLabel>
@@ -241,6 +264,7 @@ function StartupForm() {
                   backgroundColor: theme.palette.grey[200],
                   '& .MuiLinearProgress-bar': {
                     borderRadius: 4,
+                    backgroundColor: categoryColors[CategoryEnum.team],
                   },
                 }}
               />

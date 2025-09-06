@@ -84,19 +84,19 @@ const PitchDeck: React.FC = () => {
                                 </Typography>
                                 <Box component="ul" sx={{ mt: 1, mb: 0, pl: 3 }}>
                                     <Typography variant="body2" component="li">
-                                        Use <a href="https://canva.com" target="_blank" rel="noopener noreferrer">Canva</a> or <a href="https://pitch.com" target="_blank" rel="noopener noreferrer">Pitch</a> for professional templates
+                                        Use <a href="https://canva.com" target="_blank" rel="noopener noreferrer">Canva</a>, <a href="https://pitch.com" target="_blank" rel="noopener noreferrer">Pitch</a> or <a href="https://www.figma.com/" target="_blank" rel="noopener noreferrer">Figma</a> for professional templates
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Keep it concise - aim for 10-15 slides maximum
+                                        Tell a story  that catches the audience – aim for 10 slides max
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Include: Problem, Solution, Market, Business Model, Team
+                                        Include: Problem, Solution, Target Group, Market, Business Model, Team
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Use visuals and infographics for data
+                                        Use visuals and infographics for data wisely to support your story
                                     </Typography>
                                     <Typography variant="body2" component="li">
-                                        Practice your pitch timing - aim for 3-5 minutes
+                                        Practice your pitch timing - rule of thumb: 1-2 slides/minute
                                     </Typography>
                                 </Box>
                             </Box>

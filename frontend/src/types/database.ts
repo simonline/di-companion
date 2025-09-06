@@ -195,6 +195,19 @@ export interface Survey extends Tables<'surveys'> {
 export type SurveyCreate = TablesInsert<'surveys'>;
 export type SurveyUpdate = TablesUpdate<'surveys'>;
 
+// User Methods
+export type UserMethod = Tables<'user_methods'>;
+export type UserMethodCreate = TablesInsert<'user_methods'>;
+export type UserMethodUpdate = TablesUpdate<'user_methods'>;
+
+// UserValues data structure (stored in UserMethod.result_text as JSON)
+export interface UserValuesData {
+  top15Values: string[];
+  final7Values: string[];
+  pairwiseChoices: { [key: string]: string };
+  valueScores: Array<{ value: string; score: number }>;
+}
+
 // User Questions
 export interface UserQuestion extends Tables<'user_questions'> {
   question?: Question;

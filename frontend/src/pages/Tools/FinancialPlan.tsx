@@ -84,19 +84,22 @@ function FinancialPlan() {
                 </Typography>
                 <Box component="ul" sx={{ mt: 1, mb: 0, pl: 3 }}>
                   <Typography variant="body2" component="li">
-                    Use <a href="https://www.liveplan.com" target="_blank" rel="noopener noreferrer">LivePlan</a> or <a href="https://finmodelslab.com" target="_blank" rel="noopener noreferrer">FinModelsLab</a> for templates
+                    Use <a href="https://www.liveplan.com" target="_blank" rel="noopener noreferrer">LivePlan</a>, <a href="https://finmodelslab.com" target="_blank" rel="noopener noreferrer">FinModelsLab</a> or <a href="https://www.smartsheet.com/free-financial-planning-templates" target="_blank" rel="noopener noreferrer">smartsheet</a> for templates
                   </Typography>
                   <Typography variant="body2" component="li">
                     Try <a href="https://www.projectionhub.com" target="_blank" rel="noopener noreferrer">ProjectionHub</a> for automated financial projections
                   </Typography>
                   <Typography variant="body2" component="li">
-                    Include 3-year revenue projections minimum
+                    Detail your unit economics and the underlying assumptions
                   </Typography>
                   <Typography variant="body2" component="li">
-                    Detail your unit economics and assumptions
+                    Understand your cashflow and the drivers
                   </Typography>
                   <Typography variant="body2" component="li">
                     Show monthly burn rate and runway
+                  </Typography>
+                  <Typography variant="body2" component="li">
+                    Include 3-year revenue projections (1-6 monthly, 6-12 by quarter, 2nd&3rd year in semester)
                   </Typography>
                 </Box>
               </Box>

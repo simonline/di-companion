@@ -9,7 +9,7 @@ interface UseQuestions {
 }
 
 interface UseQuestionsReturn extends UseQuestions {
-  fetchQuestions: () => void;
+  fetchQuestions: (category?: string, topic?: string) => void;
   clearError: () => void;
 }
 
@@ -24,9 +24,9 @@ export default function useQuestions(): UseQuestionsReturn {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const fetchQuestions = useCallback(async () => {
+  const fetchQuestions = useCallback(async (category?: string, topic?: string) => {
     try {
-      const questions = await supabaseGetQuestions();
+      const questions = await supabaseGetQuestions(category, topic);
       setState({ questions, loading: false, error: null });
     } catch (err: unknown) {
       const error = err as Error;

@@ -1,7 +1,7 @@
 import { Container, Typography, Box, Paper, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/sections/Header';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowBack from '@mui/icons-material/ArrowBack';
 
 function PrivacyPolicy() {
   const navigate = useNavigate();
@@ -19,12 +19,12 @@ function PrivacyPolicy() {
   return (
     <>
       <Header title="Privacy Policy" />
-      
+
       <Container maxWidth="md" sx={{ my: 4 }}>
         <Button
-          startIcon={<ArrowBackIcon />}
+          startIcon={<ArrowBack />}
           onClick={handleBack}
-          sx={{ mb: 3 }}
+          sx={{ color: 'text.secondary' }}
         >
           Back
         </Button>
@@ -33,7 +33,7 @@ function PrivacyPolicy() {
           <Typography variant="h4" gutterBottom fontWeight="bold">
             Privacy Policy
           </Typography>
-          
+
           <Typography variant="body2" color="text.secondary" paragraph>
             Last updated: {new Date().toLocaleDateString()}
           </Typography>
@@ -43,7 +43,7 @@ function PrivacyPolicy() {
               1. Information We Collect
             </Typography>
             <Typography variant="body1" paragraph>
-              We collect information you provide directly to us, such as when you create an account, 
+              We collect information you provide directly to us, such as when you create an account,
               update your profile, participate in surveys, or communicate with us. This information may include:
             </Typography>
             <Typography variant="body1" component="ul" sx={{ pl: 4 }}>
@@ -73,7 +73,7 @@ function PrivacyPolicy() {
               3. Information Sharing
             </Typography>
             <Typography variant="body1" paragraph>
-              We do not sell, trade, or otherwise transfer your personal information to third parties. 
+              We do not sell, trade, or otherwise transfer your personal information to third parties.
               We may share your information only in the following circumstances:
             </Typography>
             <Typography variant="body1" component="ul" sx={{ pl: 4 }}>
@@ -87,8 +87,8 @@ function PrivacyPolicy() {
               4. Data Security
             </Typography>
             <Typography variant="body1" paragraph>
-              We implement appropriate technical and organizational measures to protect your personal 
-              information against unauthorized access, alteration, disclosure, or destruction. However, 
+              We implement appropriate technical and organizational measures to protect your personal
+              information against unauthorized access, alteration, disclosure, or destruction. However,
               no internet transmission is ever fully secure or error-free.
             </Typography>
 
@@ -110,8 +110,8 @@ function PrivacyPolicy() {
               6. Cookies and Tracking
             </Typography>
             <Typography variant="body1" paragraph>
-              We use cookies and similar tracking technologies to track activity on our service and 
-              hold certain information. You can instruct your browser to refuse all cookies or to 
+              We use cookies and similar tracking technologies to track activity on our service and
+              hold certain information. You can instruct your browser to refuse all cookies or to
               indicate when a cookie is being sent.
             </Typography>
 
@@ -119,7 +119,7 @@ function PrivacyPolicy() {
               7. Children's Privacy
             </Typography>
             <Typography variant="body1" paragraph>
-              Our service is not intended for individuals under the age of 16. We do not knowingly 
+              Our service is not intended for individuals under the age of 16. We do not knowingly
               collect personal information from children under 16.
             </Typography>
 
@@ -127,7 +127,7 @@ function PrivacyPolicy() {
               8. Changes to This Policy
             </Typography>
             <Typography variant="body1" paragraph>
-              We may update our Privacy Policy from time to time. We will notify you of any changes 
+              We may update our Privacy Policy from time to time. We will notify you of any changes
               by posting the new Privacy Policy on this page and updating the "Last updated" date.
             </Typography>
 
