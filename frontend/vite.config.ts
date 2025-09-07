@@ -10,7 +10,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.png', 'favicon.ico', 'apple-touch-icon.png'],
       manifest: {
         name: 'Dynamic Innovation Companion',
         short_name: 'DI Companion',
