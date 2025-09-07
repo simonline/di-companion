@@ -116,11 +116,11 @@ const Login: React.FC = () => {
         options: { variant: 'success' }
       });
 
-      // Navigate to returnUrl or home
+      // Navigate to returnUrl or user page
       if (returnUrl) {
         navigate(decodeURIComponent(returnUrl), { replace: true });
       } else {
-        navigate('/', { replace: true });
+        navigate('/user', { replace: true });
       }
     } catch (err) {
       const error = err as Error;
