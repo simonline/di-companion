@@ -322,7 +322,12 @@ function StartupForm() {
                         '&:hover': {
                           backgroundColor: categoryColors[CategoryEnum.team],
                           filter: 'brightness(0.9)'
-                        }
+                        },
+                        px: 4,
+                        position: 'relative',
+                        '&.Mui-disabled': {
+                          backgroundColor: theme.palette.action.disabledBackground,
+                        },
                       }}
                       onClick={async () => {
                         const stepErrors = (await validateForm()) as Record<string, string>;
@@ -336,13 +341,6 @@ function StartupForm() {
                             submitForm();
                           }
                         }
-                      }}
-                      sx={{
-                        px: 4,
-                        position: 'relative',
-                        '&.Mui-disabled': {
-                          backgroundColor: theme.palette.action.disabledBackground,
-                        },
                       }}
                     >
                       {isSubmitting && (
