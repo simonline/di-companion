@@ -190,6 +190,14 @@ const TeamContract: React.FC = () => {
                                 <Button
                                     variant="contained"
                                     onClick={handleNext}
+                                    sx={{ 
+                                        backgroundColor: categoryColors[CategoryEnum.team],
+                                        color: 'white',
+                                        '&:hover': {
+                                            backgroundColor: categoryColors[CategoryEnum.team],
+                                            filter: 'brightness(0.9)'
+                                        }
+                                    }}
                                 >
                                     {activeStep === steps.length - 1 ? 'Complete' : 'Next'}
                                 </Button>

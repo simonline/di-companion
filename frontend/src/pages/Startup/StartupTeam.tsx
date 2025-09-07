@@ -36,7 +36,7 @@ import {
   Invitation,
   Profile
 } from '@/types/database';
-import { InvitationStatusEnum } from '@/utils/constants';
+import { InvitationStatusEnum, categoryColors } from '@/utils/constants';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -283,7 +283,7 @@ const StartupTeam: React.FC = () => {
                     {`${member.given_name || ''} ${member.family_name || ''}`.trim() ||
                       member.username}
                     {member.id === user?.id && (
-                      <Chip size="small" label="You" color="primary" />
+                      <Chip size="small" label="You" sx={{ backgroundColor: categoryColors.team, color: 'white' }} />
                     )}
                   </Box>
                 }
@@ -477,7 +477,7 @@ const StartupTeam: React.FC = () => {
                   type="submit"
                   variant="contained"
                   disabled={invitationLoading}
-                  sx={{ minWidth: 100 }}
+                  sx={{ minWidth: 100, backgroundColor: categoryColors.team, '&:hover': { backgroundColor: categoryColors.team, filter: 'brightness(0.9)' } }}
                 >
                   {invitationLoading ? <CircularProgress size={24} /> : 'Invite'}
                 </Button>
@@ -492,6 +492,13 @@ const StartupTeam: React.FC = () => {
                 onChange={handleTabChange}
                 aria-label="team management tabs"
                 variant="fullWidth"
+                sx={{ 
+                  '& .MuiTabs-indicator': { backgroundColor: categoryColors.team },
+                  '& .MuiTab-root.Mui-selected': { 
+                    color: categoryColors.team,
+                    '& .MuiSvgIcon-root': { color: categoryColors.team }
+                  }
+                }}
               >
                 <Tab icon={<PersonIcon />} label="Team Members" {...a11yProps(0)} />
                 <Tab icon={<PersonAddIcon />} label="Invitations" {...a11yProps(1)} />
@@ -511,7 +518,7 @@ const StartupTeam: React.FC = () => {
               <Typography variant="subtitle1">
                 {tabValue === 0 ? 'Team Members' : 'Pending Invitations'}
               </Typography>
-              <Button startIcon={<RefreshIcon />} onClick={loadData} disabled={loading}>
+              <Button startIcon={<RefreshIcon />} onClick={loadData} disabled={loading} sx={{ color: categoryColors.team }}>
                 Refresh
               </Button>
             </Box>

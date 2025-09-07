@@ -28,6 +28,7 @@ import { useDropzone } from 'react-dropzone';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import { getAvatarUrl } from '@/lib/supabase';
+import { categoryColors } from '@/utils/constants';
 
 interface ProfileFormValues {
   email: string;
@@ -405,12 +406,17 @@ function ProfileForm() {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
                       type="submit"
                       disabled={!isValid || isSubmitting}
                       sx={{
                         px: 4,
                         position: 'relative',
+                        backgroundColor: categoryColors.entrepreneur,
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: categoryColors.entrepreneur,
+                          filter: 'brightness(0.9)',
+                        },
                         '&.Mui-disabled': {
                           backgroundColor: theme.palette.action.disabledBackground,
                         },

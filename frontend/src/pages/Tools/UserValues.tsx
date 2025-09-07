@@ -495,7 +495,7 @@ const UserValues: React.FC = () => {
                     <Card>
                         <CardContent>
                             <Box sx={{ textAlign: 'center', mb: 4 }}>
-                                <Psychology sx={{ fontSize: 64, color: 'entrepreneur', mb: 2 }} />
+                                <Psychology sx={{ fontSize: 64, color: categoryColors.entrepreneur, mb: 2 }} />
                                 <Typography variant="h4" gutterBottom fontWeight="bold">
                                     Your Values Workshop
                                 </Typography>
@@ -582,6 +582,14 @@ const UserValues: React.FC = () => {
                                     variant="contained"
                                     onClick={handleNext}
                                     disabled={isSaving}
+                                    sx={{
+                                        backgroundColor: categoryColors.entrepreneur,
+                                        color: 'white',
+                                        '&:hover': {
+                                            backgroundColor: categoryColors.entrepreneur,
+                                            filter: 'brightness(0.9)',
+                                        }
+                                    }}
                                 >
                                     {isSaving ? 'Saving...' : (activeStep === steps.length - 1 ? 'Finish' : 'Next')}
                                 </Button>

@@ -129,6 +129,14 @@ const SelfAssessment: React.FC = () => {
                   variant="contained"
                   onClick={handleSubmit}
                   size="large"
+                  sx={{
+                    backgroundColor: categoryColors.entrepreneur,
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: categoryColors.entrepreneur,
+                      filter: 'brightness(0.9)',
+                    }
+                  }}
                 >
                   Complete Assessment
                 </Button>

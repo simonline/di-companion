@@ -315,8 +315,15 @@ function StartupForm() {
 
                     <Button
                       variant="contained"
-                      color="primary"
                       disabled={!isValid || isSubmitting}
+                      sx={{
+                        backgroundColor: categoryColors[CategoryEnum.team],
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: categoryColors[CategoryEnum.team],
+                          filter: 'brightness(0.9)'
+                        }
+                      }}
                       onClick={async () => {
                         const stepErrors = (await validateForm()) as Record<string, string>;
                         const stepFields = Object.keys(stepValidationSchemas[activeStep].fields);

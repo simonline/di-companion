@@ -225,6 +225,14 @@ const TeamAssessment: React.FC = () => {
                   variant="contained"
                   onClick={handleNext}
                   disabled={!isCurrentStepValid()}
+                  sx={{ 
+                    backgroundColor: categoryColors[CategoryEnum.team],
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: categoryColors[CategoryEnum.team],
+                      filter: 'brightness(0.9)'
+                    }
+                  }}
                 >
                   {activeStep === categories.length - 1 ? 'Complete Assessment' : 'Next'}
                 </Button>

@@ -448,6 +448,14 @@ const TeamValues: React.FC = () => {
                                             onClick={handleSave}
                                             disabled={saving}
                                             size="large"
+                                            sx={{ 
+                                                backgroundColor: categoryColors[CategoryEnum.team],
+                                                color: 'white',
+                                                '&:hover': {
+                                                    backgroundColor: categoryColors[CategoryEnum.team],
+                                                    filter: 'brightness(0.9)'
+                                                }
+                                            }}
                                         >
                                             {saving ? 'Saving...' : 'Save Team Values'}
                                         </Button>
