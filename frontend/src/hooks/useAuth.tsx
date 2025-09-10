@@ -44,7 +44,7 @@ interface UseAuthReturn extends AuthState {
   login: (identifier: string, password: string) => Promise<User>;
   sendOtp: (email: string) => Promise<{ success: boolean; message: string }>;
   verifyOtp: (email: string, token: string) => Promise<void>;
-  register: (data: { email: string; acceptedPrivacyPolicy?: boolean; captchaToken?: string }) => Promise<{ id: string; email: string }>;
+  register: (data: { email: string; acceptedPrivacyPolicy?: boolean; captchaToken?: string; isCoach?: boolean }) => Promise<{ id: string; email: string }>;
   createProfile: (data: ProfileCreate) => Promise<Profile>;
   createStartup: (data: StartupCreate) => Promise<Startup>;
   updateStartup: (data: StartupUpdate) => Promise<Startup>;
@@ -100,45 +100,60 @@ export function useAuth(): UseAuthReturn {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // Listen for Supabase auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-        if (event === 'SIGNED_OUT') {
-          setUserAndProfile(null, null);
-          setStartup(null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Use setTimeout to make all operations non-blocking to prevent deadlocks
+      setTimeout(async () => {
+        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          if (event === 'SIGNED_OUT') {
+            setUserAndProfile(null, null);
+            setStartup(null);
+          }
         }
-      }
-      if (event === 'SIGNED_IN' && session) {
-        console.log('Auth hook: SIGNED_IN event, fetching user data...');
-        // Refresh user data when signed in
-        try {
-          const { user, profile } = await supabaseMe();
-          console.log('Auth hook: User data fetched:', user, profile);
-          setUserAndProfile(user, profile);
+        if (event === 'SIGNED_IN' && session) {
+          console.log('Auth hook: SIGNED_IN event, fetching user data...');
+          // Refresh user data when signed in
+          try {
+            const { user, profile } = await supabaseMe();
+            console.log('Auth hook: User data fetched:', user, profile);
+            setUserAndProfile(user, profile);
 
-          // Add a small delay to ensure auth state is fully established
-          await new Promise(resolve => setTimeout(resolve, 500));
+            // Add a small delay to ensure auth state is fully established
+            await new Promise(resolve => setTimeout(resolve, 500));
 
-          // Auto-accept any pending invitations for this user's email
-          // We check session.user directly as backup if user is not set yet
-          const currentUser = user || session.user;
-          if (currentUser) {
-            try {
-              const invitationResult = await supabaseAutoAcceptInvitations();
-              if (invitationResult.acceptedCount > 0) {
-                console.log(`Auto-accepted ${invitationResult.acceptedCount} invitation(s)`);
+            // Auto-accept any pending invitations for this user's email
+            // We check session.user directly as backup if user is not set yet
+            const currentUser = user || session.user;
+            if (currentUser) {
+              try {
+                const invitationResult = await supabaseAutoAcceptInvitations();
+                if (invitationResult.acceptedCount > 0) {
+                  console.log(`Auto-accepted ${invitationResult.acceptedCount} invitation(s)`);
 
-                // Refresh startups after accepting invitations
-                const { data: updatedStartupLinks } = await supabase
-                  .from('startups_users_lnk')
-                  .select('startup_id')
-                  .eq('user_id', currentUser.id)
-                  .limit(1);
-                if (updatedStartupLinks && updatedStartupLinks.length > 0) {
-                  const startup = await supabaseGetStartup(updatedStartupLinks[0].startup_id!);
-                  setStartup(startup);
+                  // Refresh startups after accepting invitations
+                  const { data: updatedStartupLinks } = await supabase
+                    .from('startups_users_lnk')
+                    .select('startup_id')
+                    .eq('user_id', currentUser.id)
+                    .limit(1);
+                  if (updatedStartupLinks && updatedStartupLinks.length > 0) {
+                    const startup = await supabaseGetStartup(updatedStartupLinks[0].startup_id!);
+                    setStartup(startup);
+                  }
+                } else {
+                  // No invitations accepted, query startups normally
+                  const { data: startupLinks } = await supabase
+                    .from('startups_users_lnk')
+                    .select('startup_id')
+                    .eq('user_id', currentUser.id)
+                    .limit(1);
+                  if (startupLinks && startupLinks.length > 0) {
+                    const startup = await supabaseGetStartup(startupLinks[0].startup_id!);
+                    setStartup(startup);
+                  }
                 }
-              } else {
-                // No invitations accepted, query startups normally
+              } catch (inviteError) {
+                console.error('Failed to auto-accept invitations:', inviteError);
+                // Still try to load startups even if auto-accept failed
                 const { data: startupLinks } = await supabase
                   .from('startups_users_lnk')
                   .select('startup_id')
@@ -149,26 +164,14 @@ export function useAuth(): UseAuthReturn {
                   setStartup(startup);
                 }
               }
-            } catch (inviteError) {
-              console.error('Failed to auto-accept invitations:', inviteError);
-              // Still try to load startups even if auto-accept failed
-              const { data: startupLinks } = await supabase
-                .from('startups_users_lnk')
-                .select('startup_id')
-                .eq('user_id', currentUser.id)
-                .limit(1);
-              if (startupLinks && startupLinks.length > 0) {
-                const startup = await supabaseGetStartup(startupLinks[0].startup_id!);
-                setStartup(startup);
-              }
             }
+            setState((prev) => ({ ...prev, loading: false }));
+          } catch (error) {
+            console.error('Error in SIGNED_IN handler:', error);
+            setState((prev) => ({ ...prev, loading: false, error: 'Failed to load user data' }));
           }
-          setState((prev) => ({ ...prev, loading: false }));
-        } catch (error) {
-          console.error('Error in SIGNED_IN handler:', error);
-          setState((prev) => ({ ...prev, loading: false, error: 'Failed to load user data' }));
         }
-      }
+      }, 0);
     });
 
     // Periodically check token expiration (every minute)
@@ -421,7 +424,7 @@ export function useAuth(): UseAuthReturn {
 
   // Simplified registration - just email and password
   const register = useCallback(
-    async (data: { email: string; acceptedPrivacyPolicy?: boolean; captchaToken?: string }): Promise<{ id: string; email: string }> => {
+    async (data: { email: string; acceptedPrivacyPolicy?: boolean; captchaToken?: string; isCoach?: boolean }): Promise<{ id: string; email: string }> => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const result = await supabaseRegister(data);

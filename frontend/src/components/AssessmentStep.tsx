@@ -46,7 +46,7 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
   const [, notificationsActions] = useNotifications();
   const { fetchSurveyByName, survey, loading: surveyLoading, error: surveyError } = useSurvey();
   const { fetchQuestions, questions: allQuestions, loading: questionsLoading, error: questionsError } = useQuestions();
-  
+
   // User questions hooks
   const {
     fetchUserQuestions,
@@ -56,7 +56,7 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
     error: userQuestionsError,
   } = useUserQuestions();
   const { createUserQuestion, updateUserQuestion } = useUserQuestion();
-  
+
   // Startup questions hooks
   const {
     fetchStartupQuestions,
@@ -66,17 +66,17 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
     error: startupQuestionsError,
   } = useStartupQuestions();
   const { createStartupQuestion, updateStartupQuestion } = useStartupQuestion();
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Use a ref to store the formik instance
   const formikRef = React.useRef<FormikProps<FormValues>>(null);
-  
+
   // Use the questions directly since they're already filtered by the API
   const filteredQuestions = React.useMemo(() => {
     return allQuestions || [];
   }, [allQuestions]);
-  
+
   // Expose methods via ref
   useImperativeHandle(ref, () => ({
     submit: async () => {
@@ -88,13 +88,13 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
       return formikRef.current?.isValid || false;
     },
   }));
-  
+
   // Fetch survey and questions
   useEffect(() => {
     fetchSurveyByName(surveyName);
     fetchQuestions(category, topic);
   }, [fetchSurveyByName, fetchQuestions, surveyName, category, topic]);
-  
+
   // Fetch existing answers
   useEffect(() => {
     if (questionType === 'user' && userId && startupId) {
@@ -103,32 +103,32 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
       fetchStartupQuestions(startupId);
     }
   }, [questionType, userId, startupId, fetchUserQuestions, fetchStartupQuestions]);
-  
+
   const handleSubmit = async (values: FormValues) => {
     if (!startupId) return;
-    
+
     try {
       setIsSubmitting(true);
-      
+
       // Get existing answers
       const existingAnswers = questionType === 'user' ? userQuestions : startupQuestions;
-      
+
       // Process each question's answer
       for (const question of filteredQuestions) {
         const answer = values[question.id];
         const existingResponse = existingAnswers?.find(
           (q: UserQuestion | StartupQuestion) => q.question_id === question.id
         );
-        
+
         // Skip if answer is empty and question is not required
         if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) continue;
-        
+
         // Skip if answer hasn't changed
         if (existingResponse) {
           const existingAnswer = existingResponse.answer;
           if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) continue;
         }
-        
+
         if (questionType === 'user' && userId) {
           const payload = {
             user_id: userId,
@@ -136,7 +136,7 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
             startup_id: startupId,
             answer: JSON.stringify(answer),
           };
-          
+
           if (existingResponse) {
             await updateUserQuestion({
               id: existingResponse.id,
@@ -151,7 +151,7 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
             startup_id: startupId,
             answer: JSON.stringify(answer),
           };
-          
+
           if (existingResponse) {
             await updateStartupQuestion({
               id: existingResponse.id,
@@ -162,7 +162,7 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
           }
         }
       }
-      
+
       // Refetch to get the updated answers
       if (questionType === 'user' && userId) {
         clearUserQuestions();
@@ -171,12 +171,12 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
         clearStartupQuestions();
         await fetchStartupQuestions(startupId);
       }
-      
+
       notificationsActions.push({
         options: { variant: 'success' },
         message: 'Answers saved successfully',
       });
-      
+
       if (onComplete) {
         onComplete();
       }
@@ -189,15 +189,15 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
       setIsSubmitting(false);
     }
   };
-  
+
   // Loading state
-  const loading = surveyLoading || questionsLoading || 
+  const loading = surveyLoading || questionsLoading ||
     (questionType === 'user' ? userQuestionsLoading : startupQuestionsLoading);
-  
+
   // Error state
-  const error = surveyError || questionsError || 
+  const error = surveyError || questionsError ||
     (questionType === 'user' ? userQuestionsError : startupQuestionsError);
-  
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
@@ -205,7 +205,7 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
       </Box>
     );
   }
-  
+
   if (error) {
     return (
       <Alert severity="error" sx={{ mb: 2 }}>
@@ -213,19 +213,19 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
       </Alert>
     );
   }
-  
+
   if (filteredQuestions.length === 0) {
     return (
       <Box sx={{ textAlign: 'center', py: 4 }}>
         <Typography variant="body1" color="text.secondary">
-          No questions available for this section.
+          No questions available for this section yet.
         </Typography>
       </Box>
     );
   }
-  
+
   const existingAnswers = questionType === 'user' ? userQuestions : startupQuestions;
-  
+
   return (
     <Formik
       innerRef={formikRef}

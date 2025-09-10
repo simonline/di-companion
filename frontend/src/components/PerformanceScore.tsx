@@ -170,7 +170,7 @@ const PerformanceScore: React.FC = () => {
                 <Button
                   size="small"
                   variant="contained"
-                  onClick={() => navigate('/explore')}
+                  onClick={() => navigate('/explore?category=' + lowestCategory[0])}
                   sx={{
                     bgcolor: categoryColors[lowestCategory[0] as CategoryEnum],
                     color: 'white',

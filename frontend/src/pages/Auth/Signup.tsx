@@ -54,6 +54,7 @@ function Signup() {
   const searchParams = new URLSearchParams(location.search);
   const returnUrl = searchParams.get('returnUrl');
   const emailHint = searchParams.get('email');
+  const isCoach = searchParams.get('coach') === '1';
 
   const handleSubmit = async (
     values: SignupFormValues,
@@ -66,6 +67,7 @@ function Signup() {
         email: values.email,
         acceptedPrivacyPolicy: values.acceptPrivacy,
         captchaToken: values.captchaToken,
+        isCoach,
       });
 
       // Show success notification

@@ -16,7 +16,7 @@ interface UsePatternsReturn extends Omit<UsePatterns, 'initialized'> {
   clearError: () => void;
 }
 
-type CategoryFilter = CategoryEnum | 'exclude-entrepreneur';
+export type CategoryFilter = CategoryEnum | 'exclude-entrepreneur';
 
 function isExcludeEntrepreneur(filter: CategoryFilter | undefined): filter is 'exclude-entrepreneur' {
   return filter === 'exclude-entrepreneur';

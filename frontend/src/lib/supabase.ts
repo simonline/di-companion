@@ -62,6 +62,7 @@ if (!supabaseInstance) {
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
+      debug: true,
       flowType: 'pkce'  // Use PKCE flow for better security
     }
   });
@@ -155,6 +156,7 @@ export async function supabaseRegister(userData: {
   email: string;
   acceptedPrivacyPolicy?: boolean;
   captchaToken?: string;
+  isCoach?: boolean;
 }): Promise<{
   user: { id: string; email: string }
 }> {
@@ -165,6 +167,7 @@ export async function supabaseRegister(userData: {
     data: {
       accepted_privacy_policy: userData.acceptedPrivacyPolicy || false,
       privacy_policy_accepted_at: userData.acceptedPrivacyPolicy ? new Date().toISOString() : null,
+      is_coach: userData.isCoach || false,
     },
   };
 
@@ -285,7 +288,7 @@ export async function supabaseCreateProfile(profileData: ProfileCreate & { id: s
   }
 }
 
-export async function supabaseMe(): Promise<{ user: User; profile: Profile | null }> {
+export async function supabaseMe(): Promise<{ user: User; profile: Profile | null; metadata?: any }> {
   console.log('[supabaseMe] Starting to fetch user data...');
 
   try {
@@ -314,13 +317,14 @@ export async function supabaseMe(): Promise<{ user: User; profile: Profile | nul
       // If profile doesn't exist, return basic auth data
       if (profileError.code === 'PGRST116' || profileError.message?.includes('not found')) {
         console.log('[supabaseMe] Profile not found, returning null profile');
-        // Return user with null profile
+        // Return user with null profile and metadata
         return {
           user: {
             id: authUser.id,
             email: authUser.email || '',
           },
-          profile: null
+          profile: null,
+          metadata: authUser.user_metadata
         };
       }
       throw new Error(handleSupabaseError(profileError));
@@ -346,7 +350,7 @@ export async function supabaseMe(): Promise<{ user: User; profile: Profile | nul
     const startups = startupLinks?.map((link: any) => link.startup).filter(Boolean) || [];
     console.log('[supabaseMe] Found', startups.length, 'startups');
 
-    // Return user and profile separately
+    // Return user and profile separately with metadata
     return {
       user: {
         id: authUser.id,
@@ -355,7 +359,8 @@ export async function supabaseMe(): Promise<{ user: User; profile: Profile | nul
       profile: {
         ...profile,
         avatar: { url: avatarUrl }
-      } as Profile
+      } as Profile,
+      metadata: authUser.user_metadata
     };
   } catch (error) {
     console.error('[supabaseMe] Fatal error:', error);
@@ -548,6 +553,7 @@ export async function supabaseUpdateStartup(updateStartup: StartupUpdate): Promi
   if (updates.categories) dbUpdate.categories = updates.categories;
   if (updates.progress) dbUpdate.progress = updates.progress;
   if (updates.internal_comment !== undefined) dbUpdate.internal_comment = updates.internal_comment;
+  if (updates.coach_id !== undefined) dbUpdate.coach_id = updates.coach_id;
 
   const { data, error } = await supabase
     .from('startups')
@@ -588,7 +594,9 @@ export async function supabaseGetStartup(id: string): Promise<Startup> {
 export async function supabaseGetStartups(): Promise<Startup[]> {
   const { data, error } = await supabase
     .from('startups')
-    .select('*');
+    .select('*')
+    .gte('created_at', '2025-09-01T00:00:00.000Z')
+    .order('name', { ascending: true });
 
   if (error) throw new Error(handleSupabaseError(error));
 
@@ -1009,19 +1017,19 @@ export async function supabaseGetQuestions(category?: string, topic?: string): P
   let query = supabase
     .from('questions')
     .select('*');
-  
+
   // Filter by category if provided - categories is a JSON array field
   // We need to check if the JSON array contains the category value
   if (category) {
     // Use the @> operator to check if the JSON array contains the value
     query = query.filter('categories', 'cs', `["${category}"]`);
   }
-  
+
   // Filter by topic if provided
   if (topic) {
     query = query.eq('topic', topic);
   }
-  
+
   const { data, error } = await query.order('order', { ascending: true });
 
   if (error) throw new Error(handleSupabaseError(error));
@@ -1529,7 +1537,7 @@ export async function supabaseGetUserMethods(
   let query = supabase
     .from('user_methods')
     .select('*');
-  
+
   if (userId) {
     query = query.eq('user_id', userId);
   }
@@ -1539,7 +1547,7 @@ export async function supabaseGetUserMethods(
   if (startupId) {
     query = query.eq('startup_id', startupId);
   }
-  
+
   const { data, error } = await query;
   if (error) throw new Error(handleSupabaseError(error));
   return data as UserMethod[];
@@ -1565,7 +1573,7 @@ export async function supabaseGetUserMethodByName(
     .eq('user_id', userId)
     .eq('method_id', methodName)
     .maybeSingle();
-  
+
   if (error) throw new Error(handleSupabaseError(error));
   return data;
 }
@@ -1973,7 +1981,16 @@ export async function supabaseGetStartupMembers(startupId: string): Promise<Prof
 }
 
 export async function supabaseGetAvailableStartups(): Promise<Startup[]> {
-  return supabaseGetStartups();
+  const { data, error } = await supabase
+    .from('startups')
+    .select('*')
+    .is('coach_id', null)
+    .gte('created_at', '2025-09-01T00:00:00.000Z')
+    .order('name', { ascending: true });
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  return data as Startup[];
 }
 
 // Password reset functions

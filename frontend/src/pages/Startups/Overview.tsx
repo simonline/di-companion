@@ -14,11 +14,6 @@ import {
   ListItemText,
   Avatar,
   IconButton,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Select,
   MenuItem,
   FormControl,
@@ -26,12 +21,8 @@ import {
   Snackbar,
   Alert,
   Menu,
-  Checkbox,
-  FormGroup,
-  FormControlLabel,
-  Tooltip,
 } from '@mui/material';
-import { Add as AddIcon, MoreVert as MoreVertIcon, Category as CategoryIcon } from '@mui/icons-material';
+import { Add as AddIcon, MoreVert as MoreVertIcon } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { Link } from 'react-router-dom';
@@ -42,14 +33,12 @@ import { supabaseGetRequests, supabaseGetAvailableStartups, supabaseUpdateStartu
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { formatDistanceToNow } from 'date-fns';
 import React from 'react';
-import { CategoryEnum, categoryDisplayNames, categoryColors } from '@/utils/constants';
 
 export default function OverviewView() {
   const { user } = useAuthContext();
   const [requests, setRequests] = useState<any[]>([]);
   const [availableStartups, setAvailableStartups] = useState<Startup[]>([]);
   const [coachees, setCoachees] = useState<Startup[]>([]);
-  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedStartup, setSelectedStartup] = useState<string>('');
   const [notification, setNotification] = useState<{
     message: string;
@@ -58,15 +47,6 @@ export default function OverviewView() {
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedStartupForMenu, setSelectedStartupForMenu] = useState<Startup | null>(null);
   const { fetchStartupPatterns, startupPatterns } = useStartupPatterns();
-
-  // State for category assignment dialog
-  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<CategoryEnum[]>([]);
-
-  // State for bulk category assignment
-  const [isBulkCategoryDialogOpen, setIsBulkCategoryDialogOpen] = useState(false);
-  const [selectedStartups, setSelectedStartups] = useState<Startup[]>([]);
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // Get count of coachees
   const coacheesCount = coachees.length;
@@ -145,13 +125,6 @@ export default function OverviewView() {
     fetchData();
   }, [user?.id, fetchStartupPatterns]);
 
-  // Reset selection mode when coachees list changes
-  useEffect(() => {
-    if (isSelectionMode) {
-      setSelectedStartups([]);
-    }
-  }, [coachees.length, isSelectionMode]);
-
   // Count unread requests
   const unreadRequestsCount = requests.filter((req) => !req.read_at).length;
 
@@ -172,26 +145,25 @@ export default function OverviewView() {
     return `${formatDistanceToNow(new Date(latestPattern.created_at), { addSuffix: true })}`;
   };
 
-  const handleAssignStartup = async () => {
-    if (!selectedStartup || !user?.id) return;
+  const handleAssignStartup = async (startupId: string) => {
+    if (!startupId || !user?.id) return;
 
     try {
       // Update the startup with the coach_id
       await supabaseUpdateStartup({
-        id: selectedStartup,
+        id: startupId,
         coach_id: user.id,
       });
 
       // Update local state
       const startupToAssign = availableStartups.find(
-        (startup) => startup.id === selectedStartup,
+        (startup) => startup.id === startupId,
       );
       if (startupToAssign) {
         setCoachees([...coachees, startupToAssign]);
-        setAvailableStartups(availableStartups.filter(s => s.id !== selectedStartup));
+        setAvailableStartups(availableStartups.filter(s => s.id !== startupId));
       }
 
-      setIsAssignDialogOpen(false);
       setSelectedStartup('');
       setNotification({ message: 'Startup assigned successfully', severity: 'success' });
     } catch (error) {
@@ -207,7 +179,7 @@ export default function OverviewView() {
       // Remove the coach_id from the startup
       await supabaseUpdateStartup({
         id: startupId,
-        coach_id: undefined,
+        coach_id: null,
       });
 
       // Update local state
@@ -237,150 +209,6 @@ export default function OverviewView() {
     if (selectedStartupForMenu) {
       handleUnassignStartup(selectedStartupForMenu.id);
       handleMenuClose();
-    }
-  };
-
-  // Handle opening the category dialog
-  const handleOpenCategoryDialog = () => {
-    if (selectedStartupForMenu) {
-      // Initialize selected categories from startup if available
-      const currentCategories = selectedStartupForMenu.categories || [];
-      setSelectedCategories(currentCategories as CategoryEnum[]);
-      setIsCategoryDialogOpen(true);
-    }
-  };
-
-  // Handle category selection
-  const handleCategoryChange = (category: CategoryEnum) => {
-    setSelectedCategories((prev) => {
-      if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
-      } else {
-        return [...prev, category];
-      }
-    });
-  };
-
-  // Save selected categories to startup
-  const handleSaveCategories = async () => {
-    if (!selectedStartupForMenu) return;
-
-    try {
-      await supabaseUpdateStartup({
-        id: selectedStartupForMenu.id,
-        categories: selectedCategories,
-      });
-
-      // Update the local state to reflect changes
-      if (coachees.length > 0) {
-        const updatedCoachees = coachees.map((startup: any) => {
-          if (startup.id === selectedStartupForMenu.id) {
-            return { ...startup, categories: selectedCategories };
-          }
-          return startup;
-        });
-
-        // Update each startup's coach_id if needed
-        for (const startup of updatedCoachees) {
-          if (startup.coach_id !== user?.id) {
-            await supabaseUpdateStartup({
-              id: startup.id,
-              coach_id: user?.id,
-            });
-          }
-        }
-
-        // Update local state
-        setCoachees(updatedCoachees);
-      }
-
-      setNotification({
-        message: 'Categories updated successfully',
-        severity: 'success',
-      });
-
-      setIsCategoryDialogOpen(false);
-      handleMenuClose();
-    } catch (error) {
-      setNotification({
-        message: `Error: ${(error as Error).message}`,
-        severity: 'error',
-      });
-    }
-  };
-
-  // Toggle startup selection for bulk operations
-  const handleStartupSelection = (startup: Startup) => {
-    setSelectedStartups(prev => {
-      const isSelected = prev.some(s => s.id === startup.id);
-      if (isSelected) {
-        return prev.filter(s => s.id !== startup.id);
-      } else {
-        return [...prev, startup];
-      }
-    });
-  };
-
-  // Toggle selection mode
-  const handleToggleSelectionMode = () => {
-    setIsSelectionMode(prev => !prev);
-    if (isSelectionMode) {
-      setSelectedStartups([]);
-    }
-  };
-
-  // Open bulk category assignment dialog
-  const handleOpenBulkCategoryDialog = () => {
-    if (selectedStartups.length === 0) {
-      setNotification({
-        message: 'Please select at least one startup',
-        severity: 'warning',
-      });
-      return;
-    }
-
-    setSelectedCategories([]);
-    setIsBulkCategoryDialogOpen(true);
-  };
-
-  // Save categories to multiple startups
-  const handleSaveBulkCategories = async () => {
-    if (selectedStartups.length === 0) return;
-
-    try {
-      // Update each selected startup
-      const updatePromises = selectedStartups.map(startup =>
-        supabaseUpdateStartup({
-          id: startup.id,
-          categories: selectedCategories,
-        })
-      );
-
-      await Promise.all(updatePromises);
-
-      // Update the local state to reflect changes
-      if (coachees.length > 0) {
-        const updatedCoachees = coachees.map((startup: any) => {
-          if (selectedStartups.some(s => s.id === startup.id)) {
-            return { ...startup, categories: selectedCategories };
-          }
-          return startup;
-        });
-      }
-
-      setNotification({
-        message: `Categories updated for ${selectedStartups.length} startups`,
-        severity: 'success',
-      });
-
-      setIsBulkCategoryDialogOpen(false);
-      setIsSelectionMode(false);
-      setSelectedStartups([]);
-    } catch (error) {
-      setNotification({
-        message: `Error: ${(error as Error).message}`,
-        severity: 'error',
-      });
     }
   };
 
@@ -452,6 +280,35 @@ export default function OverviewView() {
             subheader="Progress and status of mentored startups"
             titleTypographyProps={{ variant: 'h6' }}
             subheaderTypographyProps={{ variant: 'body2' }}
+            action={
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel id="assign-startup-label">Assign Startup</InputLabel>
+                <Select
+                  labelId="assign-startup-label"
+                  value={selectedStartup}
+                  onChange={(e) => {
+                    setSelectedStartup(e.target.value);
+                    if (e.target.value) {
+                      handleAssignStartup(e.target.value);
+                    }
+                  }}
+                  label="Assign Startup"
+                  startAdornment={<AddIcon sx={{ ml: 1, mr: -0.5, color: 'action.active' }} />}
+                >
+                  {availableStartups.length > 0 ? (
+                    availableStartups.map((startup) => (
+                      <MenuItem key={startup.id} value={startup.id}>
+                        {startup.name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled value="">
+                      No unassigned startups
+                    </MenuItem>
+                  )}
+                </Select>
+              </FormControl>
+            }
           />
           <CardContent>
             <List sx={{ width: '100%' }}>
@@ -462,58 +319,34 @@ export default function OverviewView() {
                     (r) => r.startup_id === startup.id && !r.read_at,
                   ).length;
 
-                  // Check if this startup is selected for bulk operations
-                  const isSelected = selectedStartups.some(s => s.id === startup.id);
-
                   return (
                     <React.Fragment key={startup.id || index}>
                       <ListItem
-                        component={isSelectionMode ? 'div' : Link}
-                        to={isSelectionMode ? undefined : `/startups/${startup.id || startup.name?.toLowerCase()}`}
+                        component={Link}
+                        to={`/startups/${startup.id || startup.name?.toLowerCase()}`}
                         secondaryAction={
-                          isSelectionMode ? undefined : (
-                            <IconButton edge="end" onClick={(e) => handleMenuClick(e, startup)}>
-                              <MoreVertIcon />
-                            </IconButton>
-                          )
+                          <IconButton edge="end" onClick={(e) => handleMenuClick(e, startup)}>
+                            <MoreVertIcon />
+                          </IconButton>
                         }
                         sx={{
                           py: 2,
                           textDecoration: 'none',
                           color: 'inherit',
-                          bgcolor: isSelectionMode && isSelected ? 'action.selected' : 'inherit',
-                          cursor: isSelectionMode ? 'pointer' : 'inherit',
                         }}
-                        onClick={isSelectionMode ? () => handleStartupSelection(startup) : undefined}
                       >
-                        {isSelectionMode ? (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={isSelected}
-                                color="primary"
-                                onChange={() => handleStartupSelection(startup)}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            }
-                            label=""
-                            sx={{ mr: 1, minWidth: '42px' }}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          <ListItemAvatar>
-                            <Avatar
-                              sx={{
-                                bgcolor: 'background.paper',
-                                color: 'text.primary',
-                                fontWeight: 'bold',
-                                border: '1px solid #e0e0e0',
-                              }}
-                            >
-                              {startup.name ? startup.name.charAt(0) : '?'}
-                            </Avatar>
-                          </ListItemAvatar>
-                        )}
+                        <ListItemAvatar>
+                          <Avatar
+                            sx={{
+                              bgcolor: 'background.paper',
+                              color: 'text.primary',
+                              fontWeight: 'bold',
+                              border: '1px solid #e0e0e0',
+                            }}
+                          >
+                            {startup.name ? startup.name.charAt(0) : '?'}
+                          </Avatar>
+                        </ListItemAvatar>
                         <ListItemText
                           primary={
                             <Box
@@ -581,32 +414,6 @@ export default function OverviewView() {
           </CardContent>
         </Card>
 
-        {/* Assign Startup Dialog */}
-        <Dialog open={isAssignDialogOpen} onClose={() => setIsAssignDialogOpen(false)}>
-          <DialogTitle>Assign Startup</DialogTitle>
-          <DialogContent>
-            <FormControl fullWidth sx={{ mt: 2 }}>
-              <InputLabel>Select Startup</InputLabel>
-              <Select
-                value={selectedStartup}
-                onChange={(e) => setSelectedStartup(e.target.value)}
-                label="Select Startup"
-              >
-                {availableStartups.map((startup) => (
-                  <MenuItem key={startup.id} value={startup.id}>
-                    {startup.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setIsAssignDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleAssignStartup} variant="contained" disabled={!selectedStartup}>
-              Assign
-            </Button>
-          </DialogActions>
-        </Dialog>
 
         {/* Menu for startup actions */}
         <Menu

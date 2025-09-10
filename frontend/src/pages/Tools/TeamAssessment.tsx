@@ -51,7 +51,12 @@ const TeamAssessment: React.FC = () => {
     }
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    // Save current form data before going back
+    const currentRef = assessmentRefs.current[activeStep];
+    if (currentRef) {
+      await currentRef.submit();
+    }
     setActiveStep((prevStep) => prevStep - 1);
   };
 
@@ -79,11 +84,6 @@ const TeamAssessment: React.FC = () => {
         message: 'Failed to complete assessment',
       });
     }
-  };
-
-  const isCurrentStepValid = () => {
-    const currentRef = assessmentRefs.current[activeStep];
-    return currentRef?.isValid() || false;
   };
 
   if (!user || !startup) {
@@ -224,7 +224,6 @@ const TeamAssessment: React.FC = () => {
                 <Button
                   variant="contained"
                   onClick={handleNext}
-                  disabled={!isCurrentStepValid()}
                   sx={{ 
                     backgroundColor: categoryColors[CategoryEnum.team],
                     color: 'white',

@@ -33,6 +33,7 @@
     "@mui/system": "^5.15.14",
     "@mui/utils": "^5.15.14",
     "@mui/x-date-pickers": "^7.16.0",
+    "@supabase/gotrue-js": "^2.71.1",
     "@supabase/supabase-js": "^2.56.1",
     "@types/react-beautiful-dnd": "^13.1.8",
     "axios": "^1.8.4",

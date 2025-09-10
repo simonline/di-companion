@@ -14,6 +14,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import Header from '@/sections/Header';
 import { useAuthContext } from '@/hooks/useAuth';
+import { supabaseCreateProfile } from '@/lib/supabase';
 
 function EmailConfirmed() {
   const navigate = useNavigate();
@@ -43,10 +44,24 @@ function EmailConfirmed() {
       
       // Check if user has a profile
       if (user && !profile) {
-        // User exists but no profile - redirect to user page to create profile
-        setTimeout(() => {
-          navigate('/user');
-        }, 2000);
+        // User exists but no profile - create one automatically
+        const profileData = {
+          id: user.id,
+          is_coach: user.user_metadata?.is_coach || false
+        };
+        
+        supabaseCreateProfile(profileData).then((createdProfile) => {
+          // Navigate based on the created profile's role
+          setTimeout(() => {
+            navigate(createdProfile.is_coach ? '/startups' : '/user');
+          }, 2000);
+        }).catch((error) => {
+          console.error('Failed to create profile:', error);
+          // Fall back to user page if profile creation fails
+          setTimeout(() => {
+            navigate('/user');
+          }, 2000);
+        });
       } else if (user && profile) {
         // User has a profile - redirect based on role
         setTimeout(() => {
@@ -59,9 +74,24 @@ function EmailConfirmed() {
       setMessage('Email confirmation successful!');
       
       if (user && !profile) {
-        setTimeout(() => {
-          navigate('/user');
-        }, 2000);
+        // User exists but no profile - create one automatically  
+        const profileData = {
+          id: user.id,
+          is_coach: user.user_metadata?.is_coach || false
+        };
+        
+        supabaseCreateProfile(profileData).then((createdProfile) => {
+          // Navigate based on the created profile's role
+          setTimeout(() => {
+            navigate(createdProfile.is_coach ? '/startups' : '/user');
+          }, 2000);
+        }).catch((error) => {
+          console.error('Failed to create profile:', error);
+          // Fall back to user page if profile creation fails
+          setTimeout(() => {
+            navigate('/user');
+          }, 2000);
+        });
       } else if (user && profile) {
         setTimeout(() => {
           navigate(profile.is_coach ? '/startups' : '/startup');

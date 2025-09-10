@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Button, CircularProgress, Typography, Box } from '@mui/material';
-import useRecommendedPatterns from '@/hooks/useRecommendedPatterns';
+import useRecommendedPatterns, { CategoryFilter } from '@/hooks/useRecommendedPatterns';
 import { FullSizeCenteredFlexBox } from '@/components/styled';
 import PatternCard from '@/components/PatternCard';
 import Header from '@/sections/Header';
@@ -8,7 +8,10 @@ import useSearch from '@/hooks/useSearch';
 import { useCurrentPattern } from '@/hooks/useCurrentPattern';
 
 const Explore: React.FC = () => {
-  const { getRecommendedPatterns, recommendedPatterns, loading, error } = useRecommendedPatterns();
+  // Extract category from URL query parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const category = (urlParams.get('category') || 'exclude-entrepreneur') as CategoryFilter;
+  const { getRecommendedPatterns, recommendedPatterns, loading, error } = useRecommendedPatterns(category);
   const { SearchComponent } = useSearch();
   const { setCurrentPattern } = useCurrentPattern();
 
