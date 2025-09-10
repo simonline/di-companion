@@ -322,9 +322,9 @@ export async function supabaseMe(): Promise<{ user: User; profile: Profile | nul
           user: {
             id: authUser.id,
             email: authUser.email || '',
+            user_metadata: authUser.user_metadata || {}
           },
           profile: null,
-          metadata: authUser.user_metadata
         };
       }
       throw new Error(handleSupabaseError(profileError));
@@ -355,12 +355,12 @@ export async function supabaseMe(): Promise<{ user: User; profile: Profile | nul
       user: {
         id: authUser.id,
         email: authUser.email || '',
+        user_metadata: authUser.user_metadata || {}
       },
       profile: {
         ...profile,
         avatar: { url: avatarUrl }
       } as Profile,
-      metadata: authUser.user_metadata
     };
   } catch (error) {
     console.error('[supabaseMe] Fatal error:', error);

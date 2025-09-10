@@ -27,7 +27,7 @@ function EmailConfirmed() {
     // Check for error in URL params (Supabase adds error params if confirmation fails)
     const error = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
-    
+
     if (error) {
       setStatus('error');
       setMessage(errorDescription || 'Email confirmation failed. Please try again.');
@@ -36,20 +36,21 @@ function EmailConfirmed() {
 
     // Check if we have a confirmation token type
     const type = searchParams.get('type');
-    
+
     if (type === 'signup' || type === 'email_change') {
       // Email was successfully confirmed
       setStatus('success');
       setMessage('Your email has been successfully confirmed!');
-      
+
       // Check if user has a profile
       if (user && !profile) {
         // User exists but no profile - create one automatically
+        console.log("IS COACH:", user.user_metadata?.is_coach);
         const profileData = {
           id: user.id,
           is_coach: user.user_metadata?.is_coach || false
         };
-        
+
         supabaseCreateProfile(profileData).then((createdProfile) => {
           // Navigate based on the created profile's role
           setTimeout(() => {
@@ -72,14 +73,14 @@ function EmailConfirmed() {
       // If no error and no type, assume success (for backward compatibility)
       setStatus('success');
       setMessage('Email confirmation successful!');
-      
+
       if (user && !profile) {
         // User exists but no profile - create one automatically  
         const profileData = {
           id: user.id,
           is_coach: user.user_metadata?.is_coach || false
         };
-        
+
         supabaseCreateProfile(profileData).then((createdProfile) => {
           // Navigate based on the created profile's role
           setTimeout(() => {
@@ -145,7 +146,7 @@ function EmailConfirmed() {
                 </Alert>
 
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-                  {user 
+                  {user
                     ? "You're all set! Click continue to proceed to your dashboard."
                     : "You can now log in with your email to access your account."}
                 </Typography>
@@ -178,7 +179,7 @@ function EmailConfirmed() {
                 </Alert>
 
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-                  The confirmation link may have expired or already been used. 
+                  The confirmation link may have expired or already been used.
                   Please try logging in or request a new confirmation email.
                 </Typography>
 

@@ -23,6 +23,9 @@ export interface User {
   id: string;
   email: string;
   password?: string;
+  user_metadata?: {
+    [key: string]: any; // Allow additional metadata fields
+  }
 }
 export type UserCreate = Omit<User, 'id'>;
 export type UserUpdate = Partial<User>;
