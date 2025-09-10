@@ -661,25 +661,31 @@ export function useAuth(): UseAuthReturn {
   }, [state.startup, updateStartup]);
 
   const refreshData = useCallback(async () => {
-    console.log('Refreshing data');
     try {
-      const userData = await supabaseMe();
-      let startup: Startup | null = null;
+      // Fetch fresh user and profile data
+      const { user, profile } = await supabaseMe();
+      
+      // Update user and profile using existing pattern
+      setUserAndProfile(user, profile);
 
-      // Fetch user's startups separately
-      if (userData.user?.id) {
-        const startups = await supabaseGetUserStartups(userData.user.id);
-        if (startups.length > 0) {
-          startup = await supabaseGetStartup(startups[0].id);
+      // Fetch user's startups if user exists
+      let startup: Startup | null = null;
+      if (user?.id) {
+        const userStartups = await supabaseGetUserStartups(user.id);
+        if (userStartups.length > 0) {
+          startup = userStartups[0];
         }
       }
-
-      console.log(startup);
-      setState((prev) => ({ ...prev, user: userData.user, profile: userData.profile, startup, loading: false }));
-    } catch (error) {
+      
+      // Update startup using existing pattern
+      setStartup(startup);
+      
       setState((prev) => ({ ...prev, loading: false }));
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+      setState((prev) => ({ ...prev, loading: false, error: 'Failed to refresh data' }));
     }
-  }, []);
+  }, [setUserAndProfile, setStartup]);
 
   return {
     ...state,

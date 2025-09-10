@@ -19,7 +19,7 @@ import { supabaseCreateProfile } from '@/lib/supabase';
 function EmailConfirmed() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, profile } = useAuthContext();
+  const { user, profile, refreshData } = useAuthContext();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
 
@@ -34,9 +34,6 @@ function EmailConfirmed() {
       return;
     }
 
-    // Check if we have a confirmation token type
-    const type = searchParams.get('type');
-
     // Email was successfully confirmed
     setStatus('success');
     setMessage('Your email has been successfully confirmed!');
@@ -44,28 +41,20 @@ function EmailConfirmed() {
     // Check if user has a profile
     if (user && !profile) {
       // User exists but no profile - create one automatically
-      console.log("IS COACH:", user.user_metadata?.is_coach);
       const profileData = {
         id: user.id,
         is_coach: user.user_metadata?.is_coach || false
       };
 
-      supabaseCreateProfile(profileData).then((createdProfile) => {
-        console.log("Created profile:", createdProfile);
+      supabaseCreateProfile(profileData).then(async (createdProfile) => {
         // Navigate based on the created profile's role
-        setTimeout(() => {
-          console.log("Navigating based on role:", createdProfile.is_coach);
-          navigate(createdProfile.is_coach ? '/startups' : '/user');
-        }, 2000);
+        await refreshData();
+        navigate(createdProfile.is_coach ? '/startups' : '/user');
       }).catch((error) => {
-        console.error('Failed to create profile:', error);
         // Fall back to user page if profile creation fails
-        setTimeout(() => {
-          navigate('/user');
-        }, 2000);
+        navigate('/user');
       });
     } else if (user && profile) {
-      console.log("Navigating based on existing profile:", profile);
       // User has a profile - redirect based on role
       setTimeout(() => {
         navigate(profile.is_coach ? '/startups' : '/startup');
