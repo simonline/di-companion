@@ -52,8 +52,10 @@ function EmailConfirmed() {
         };
 
         supabaseCreateProfile(profileData).then((createdProfile) => {
+          console.log("Created profile:", createdProfile);
           // Navigate based on the created profile's role
           setTimeout(() => {
+            console.log("Navigating based on role:", createdProfile.is_coach);
             navigate(createdProfile.is_coach ? '/startups' : '/user');
           }, 2000);
         }).catch((error) => {
