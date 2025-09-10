@@ -49,10 +49,15 @@ function EmailConfirmed() {
       supabaseCreateProfile(profileData).then(async (createdProfile) => {
         // Navigate based on the created profile's role
         await refreshData();
-        navigate(createdProfile.is_coach ? '/startups' : '/user');
+        setTimeout(() => {
+          navigate(createdProfile.is_coach ? '/startups' : '/user');
+        })
       }).catch((error) => {
-        // Fall back to user page if profile creation fails
-        navigate('/user');
+        console.error('Profile creation failed:', error);
+        setTimeout(() => {
+          // Fall back to user page if profile creation fails
+          navigate('/user');
+        }, 2000);
       });
     } else if (user && profile) {
       // User has a profile - redirect based on role
