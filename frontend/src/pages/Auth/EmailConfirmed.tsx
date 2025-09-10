@@ -37,70 +37,41 @@ function EmailConfirmed() {
     // Check if we have a confirmation token type
     const type = searchParams.get('type');
 
-    if (type === 'signup' || type === 'email_change') {
-      // Email was successfully confirmed
-      setStatus('success');
-      setMessage('Your email has been successfully confirmed!');
+    // Email was successfully confirmed
+    setStatus('success');
+    setMessage('Your email has been successfully confirmed!');
 
-      // Check if user has a profile
-      if (user && !profile) {
-        // User exists but no profile - create one automatically
-        console.log("IS COACH:", user.user_metadata?.is_coach);
-        const profileData = {
-          id: user.id,
-          is_coach: user.user_metadata?.is_coach || false
-        };
+    // Check if user has a profile
+    if (user && !profile) {
+      // User exists but no profile - create one automatically
+      console.log("IS COACH:", user.user_metadata?.is_coach);
+      const profileData = {
+        id: user.id,
+        is_coach: user.user_metadata?.is_coach || false
+      };
 
-        supabaseCreateProfile(profileData).then((createdProfile) => {
-          console.log("Created profile:", createdProfile);
-          // Navigate based on the created profile's role
-          setTimeout(() => {
-            console.log("Navigating based on role:", createdProfile.is_coach);
-            navigate(createdProfile.is_coach ? '/startups' : '/user');
-          }, 2000);
-        }).catch((error) => {
-          console.error('Failed to create profile:', error);
-          // Fall back to user page if profile creation fails
-          setTimeout(() => {
-            navigate('/user');
-          }, 2000);
-        });
-      } else if (user && profile) {
-        // User has a profile - redirect based on role
+      supabaseCreateProfile(profileData).then((createdProfile) => {
+        console.log("Created profile:", createdProfile);
+        // Navigate based on the created profile's role
         setTimeout(() => {
-          navigate(profile.is_coach ? '/startups' : '/startup');
+          console.log("Navigating based on role:", createdProfile.is_coach);
+          navigate(createdProfile.is_coach ? '/startups' : '/user');
         }, 2000);
-      }
-    } else {
-      // If no error and no type, assume success (for backward compatibility)
-      setStatus('success');
-      setMessage('Email confirmation successful!');
-
-      if (user && !profile) {
-        // User exists but no profile - create one automatically  
-        const profileData = {
-          id: user.id,
-          is_coach: user.user_metadata?.is_coach || false
-        };
-
-        supabaseCreateProfile(profileData).then((createdProfile) => {
-          // Navigate based on the created profile's role
-          setTimeout(() => {
-            navigate(createdProfile.is_coach ? '/startups' : '/user');
-          }, 2000);
-        }).catch((error) => {
-          console.error('Failed to create profile:', error);
-          // Fall back to user page if profile creation fails
-          setTimeout(() => {
-            navigate('/user');
-          }, 2000);
-        });
-      } else if (user && profile) {
+      }).catch((error) => {
+        console.error('Failed to create profile:', error);
+        // Fall back to user page if profile creation fails
         setTimeout(() => {
-          navigate(profile.is_coach ? '/startups' : '/startup');
+          navigate('/user');
         }, 2000);
-      }
+      });
+    } else if (user && profile) {
+      console.log("Navigating based on existing profile:", profile);
+      // User has a profile - redirect based on role
+      setTimeout(() => {
+        navigate(profile.is_coach ? '/startups' : '/startup');
+      }, 2000);
     }
+
   }, [searchParams, user, profile, navigate]);
 
   const handleContinue = () => {
