@@ -2095,29 +2095,40 @@ export async function getDocuments(filters?: {
   entityField?: string;
 }): Promise<Document[]> {
   try {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    // Build Supabase query
+    let query = supabase
+      .from('documents')
+      .select('*');
 
-    // Build query params
-    const params = new URLSearchParams();
-    if (filters?.category) params.append('category', filters.category);
-    if (filters?.entityType) params.append('entity_type', filters.entityType);
-    if (filters?.entityId) params.append('entity_id', filters.entityId);
-    if (filters?.entityField) params.append('entity_field', filters.entityField);
-
-    // Fetch from backend
-    const response = await fetch(`${backendUrl}/api/documents?${params}`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch documents');
+    // Apply filters
+    if (filters?.category) {
+      query = query.eq('category', filters.category);
+    }
+    if (filters?.uploadedBy) {
+      query = query.eq('uploaded_by', filters.uploadedBy);
+    }
+    if (filters?.entityType) {
+      query = query.eq('entity_type', filters.entityType);
+    }
+    if (filters?.entityId) {
+      query = query.eq('entity_id', filters.entityId);
+    }
+    if (filters?.entityField) {
+      query = query.eq('entity_field', filters.entityField);
     }
 
-    const documents = await response.json();
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(handleSupabaseError(error));
+    }
+
+    if (!data) {
+      return [];
+    }
 
     // Add URLs to each document
-    return documents.map((doc: any) => ({
+    return data.map((doc: any) => ({
       ...doc,
       url: getDocumentUrl(doc.id)
     }));

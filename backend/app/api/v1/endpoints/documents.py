@@ -181,41 +181,6 @@ async def delete_document(document_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/")
-async def get_documents(
-    entity_type: Optional[str] = Query(default=None),
-    entity_id: Optional[str] = Query(default=None),
-    entity_field: Optional[str] = Query(default=None),
-    category: Optional[str] = Query(default=None),
-):
-    """
-    Get documents with optional filters
-    """
-    try:
-        # Build query
-        query = supabase.table('documents').select('*')
-        
-        if entity_type:
-            query = query.eq('entity_type', entity_type)
-        if entity_id:
-            query = query.eq('entity_id', entity_id)
-        if entity_field:
-            query = query.eq('entity_field', entity_field)
-        if category:
-            query = query.eq('category', category)
-        
-        # Execute query with ordering
-        result = query.order('created_at', desc=True).execute()
-        
-        documents = result.data or []
-        
-        # Add URL for each document
-        for doc in documents:
-            doc['url'] = f"/api/documents/{doc['id']}"
-        
-        return documents
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/entity/{entity_type}/{entity_id}")
 async def get_entity_documents(
