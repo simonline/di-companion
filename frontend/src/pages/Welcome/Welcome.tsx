@@ -74,8 +74,8 @@ function Welcome() {
               }}
             >
               {/* Header */}
-              <Box 
-                sx={{ 
+              <Box
+                sx={{
                   borderBottom: '1px solid',
                   borderColor: 'divider',
                   p: 2,
@@ -87,15 +87,15 @@ function Welcome() {
                 <Typography variant="h6" fontWeight="600" color="text.primary">
                   Install as App
                 </Typography>
-                <IconButton 
-                  size="small" 
+                <IconButton
+                  size="small"
                   onClick={() => setShowInstallGuide(false)}
                   sx={{ color: 'text.secondary' }}
                 >
                   <CloseIcon />
                 </IconButton>
               </Box>
-              
+
               {/* Content */}
               <Box sx={{ p: 2.5 }}>
                 {/* iOS Instructions */}
@@ -114,7 +114,7 @@ function Welcome() {
                     </Typography>
                   </Box>
                 </Box>
-                
+
                 {/* Android Instructions */}
                 <Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
@@ -193,9 +193,9 @@ function Welcome() {
                 color="#abe0f3"
                 textAlign="right"
               >
-                Change the Patterns
+                AI Companion for
                 <br />
-                Change your Thinking
+                Your Startup Journey
               </Typography>
             </div>
           </div>

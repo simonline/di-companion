@@ -110,11 +110,21 @@ function StartupForm() {
     setApiError(null);
 
     try {
-      if (mode === 'create') {
-        if (!user?.id) {
-          throw new Error('User not found');
-        }
+      if (!user?.id) {
+        throw new Error('User not found');
+      }
 
+      // Mark startup step as completed in user progress
+      if (profile) {
+        await updateProfile({
+          id: user.id,
+          progress: {
+            ...profile.progress,
+            startup: true
+          }
+        });
+      }
+      if (mode === 'create') {
         await createStartup({
           name: values.name,
           start_date: values.start_date,
@@ -136,17 +146,6 @@ function StartupForm() {
             startup: true
           }
         });
-
-        // Mark startup step as completed in user progress
-        if (profile) {
-          await updateProfile({
-            id: user.id,
-            progress: {
-              ...profile.progress,
-              startup: true
-            }
-          });
-        }
 
         // When creating startup from User page (step 4), go back to /user
         navigate('/user');
