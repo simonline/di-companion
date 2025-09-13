@@ -65,9 +65,10 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
   const { createRequest } = useRequests();
   const [, notificationsActions] = useNotifications();
   const [response, setResponse] = React.useState<ResponseEnum | null>(null);
+  const [hasCompletedResponse, setHasCompletedResponse] = React.useState(false);
 
   useEffect(() => {
-    if (response) {
+    if (response && !hasCompletedResponse) {
       createStartupPattern({
         startup_id: startup?.id as string,
         pattern_id: pattern.id,
@@ -76,7 +77,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
         response,
       });
     }
-  });
+  }, [response, startup?.id, pattern.id, user?.id, responseType, createStartupPattern, hasCompletedResponse]);
 
   useEffect(() => {
     if (response && startupPattern) {
@@ -130,13 +131,12 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
         }
       }
 
-      console.log('onComplete1', onComplete);
-      if (onComplete) {
-        console.log('onComplete');
+      if (onComplete && !hasCompletedResponse) {
+        setHasCompletedResponse(true);
         onComplete();
       }
     }
-  });
+  }, [response, startupPattern, responseType, pattern.id, pattern.name, startup?.id, navigate, createRequest, notificationsActions, onComplete, nextUrl, hasCompletedResponse]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -150,6 +150,7 @@ const ActionDialog: React.FC<ActionDialogProps> = ({
               variant="contained"
               color={responseType === ResponseTypeEnum.accept ? 'success' : 'error'}
               onClick={() => {
+                setHasCompletedResponse(false);
                 setResponse(action[1]);
                 onClose();
               }}

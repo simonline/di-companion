@@ -4,7 +4,7 @@ import type { Notifications } from './types';
 
 const title = 'Dynamic Innovation Companion';
 
-const email = 'support@di-companion.com';
+const email = 'di@sce.de';
 
 const repository = 'https://github.com/simonline/di-companion';
 

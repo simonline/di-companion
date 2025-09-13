@@ -195,6 +195,13 @@ const Login: React.FC = () => {
                     type="text"
                     value={values.otp || ''}
                     autoComplete="one-time-code"
+                    InputLabelProps={{
+                      sx: {
+                        '&:not(.MuiInputLabel-shrink)': {
+                          transform: 'translate(14px, 20px) scale(1)'
+                        }
+                      }
+                    }}
                     inputProps={{
                       max_length: 6,
                       pattern: '[0-9]*',
