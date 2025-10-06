@@ -244,7 +244,7 @@ const useRoutes = (): Partial<Routes> => {
       title: 'Explore Pattern',
       visibleTo: ['startup'],
       requiresAuth: true,
-      requiresStartup: true,
+      requiresStartup: false,
     },
     [Pages.ProgressPattern]: {
       component: asyncComponentLoader(() => import('@/pages/Progress/ProgressPattern')),
@@ -252,7 +252,7 @@ const useRoutes = (): Partial<Routes> => {
       title: 'Progress Pattern',
       visibleTo: ['startup'],
       requiresAuth: true,
-      requiresStartup: true,
+      requiresStartup: false,
     },
     [Pages.Method]: {
       component: asyncComponentLoader(() => import('@/pages/Progress/Methods')),
@@ -260,7 +260,7 @@ const useRoutes = (): Partial<Routes> => {
       title: 'Methods',
       visibleTo: ['startup'],
       requiresAuth: true,
-      requiresStartup: true,
+      requiresStartup: false,
     },
     [Pages.Survey]: {
       component: asyncComponentLoader(() => import('@/pages/Progress/Survey')),
@@ -268,7 +268,7 @@ const useRoutes = (): Partial<Routes> => {
       title: 'Survey',
       visibleTo: ['startup'],
       requiresAuth: true,
-      requiresStartup: true,
+      requiresStartup: false,
     },
     [Pages.SelfAssessment]: {
       component: asyncComponentLoader(() => import('@/pages/Tools/SelfAssessment')),
@@ -276,7 +276,7 @@ const useRoutes = (): Partial<Routes> => {
       title: 'Self Assessment',
       visibleTo: ['startup'],
       requiresAuth: true,
-      requiresStartup: true,
+      requiresStartup: false,
       agent: 'entrepreneur',
     },
     [Pages.CoachStartup]: {
@@ -374,7 +374,7 @@ const useRoutes = (): Partial<Routes> => {
       title: 'Explore',
       visibleTo: ['startup'],
       requiresAuth: true,
-      requiresStartup: true,
+      requiresStartup: false,
     },
     [Pages.PrivacyPolicy]: {
       component: asyncComponentLoader(() => import('@/pages/PrivacyPolicy')),
