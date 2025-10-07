@@ -135,29 +135,13 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleResendOtp = async (): Promise<void> => {
-    try {
-      // Note: Resend doesn't require captcha since user already passed it
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: false,
-        },
-      });
-
-      if (error) throw error;
-
-      push({
-        message: 'New OTP code sent! Check your email.',
-        options: { variant: 'success' }
-      });
-    } catch (err) {
-      const error = err as Error;
-      push({
-        message: error.message,
-        options: { variant: 'error' }
-      });
-    }
+  const handleResendOtp = (): void => {
+    // Reset to send code form with email pre-filled
+    setEmailSent(false);
+    push({
+      message: 'Please complete the captcha to resend the code.',
+      options: { variant: 'info' }
+    });
   };
 
   const initialValues: LoginFormValues = {
