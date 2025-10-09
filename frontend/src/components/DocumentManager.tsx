@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -28,6 +28,7 @@ import {
   FolderZipOutlined,
   CodeOutlined,
 } from '@mui/icons-material';
+import { useDropzone } from 'react-dropzone';
 import { uploadDocument, getDocuments, deleteDocument, getDocumentUrl, supabase } from '@/lib/supabase';
 import type { Document } from '@/types/database';
 import useNotifications from '@/store/notifications';
@@ -119,6 +120,21 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
       }
     }
   };
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setSelectedFiles(acceptedFiles);
+    if (acceptedFiles.length === 1 && !uploadTitle) {
+      setUploadTitle(acceptedFiles[0].name);
+    }
+    setUploadMode('file');
+    setOpenDialog(true);
+  }, [uploadTitle]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    noClick: true, // We'll handle clicks manually
+    noKeyboard: true,
+  });
 
   const handleUpload = async () => {
     setUploading(true);
@@ -340,14 +356,17 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
 
       {/* Upload Drop Zone - Always Visible */}
       <Paper
+        {...getRootProps()}
         sx={{
           p: 3,
           mb: 3,
           textAlign: 'center',
           border: '2px dashed',
-          borderColor: 'divider',
+          borderColor: isDragActive
+            ? (category ? categoryColors[category] : 'primary.main')
+            : 'divider',
           borderRadius: 2,
-          bgcolor: 'grey.50',
+          bgcolor: isDragActive ? 'action.hover' : 'grey.50',
           cursor: 'pointer',
           transition: 'all 0.2s ease',
           '&:hover': {
@@ -360,11 +379,12 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
           setOpenDialog(true);
         }}
       >
+        <input {...getInputProps()} />
         <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
           <CloudUploadOutlined sx={{ fontSize: 32, color: 'text.secondary' }} />
           <Box>
             <Typography variant="body1" color="text.primary">
-              Drop files here or click to upload
+              {isDragActive ? 'Drop files here' : 'Drop files here or click to upload'}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Supports all file types up to 50MB

@@ -2117,6 +2117,9 @@ export async function getDocuments(filters?: {
       query = query.eq('entity_field', filters.entityField);
     }
 
+    // Order by newest first
+    query = query.order('uploaded_at', { ascending: false });
+
     const { data, error } = await query;
 
     if (error) {
