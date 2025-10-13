@@ -22,20 +22,24 @@ function Pages() {
       <Routes>
         {Object.values(routes as AppRoutes)
           .filter((route) => route.visibleTo.includes(isCoach ? 'coach' : 'startup'))
-          .map(({ path, component: Component, requiresAuth, requiresStartup, agent }) => {
+          .map(({ path, component: Component, requiresAuth, requiresNotAuthenticated, requiresStartup, agent }) => {
             // Disable AgentLayout for Welcome page, auth-related pages, startups pages, analytics, and privacy policy
             const authPaths = ['/', '/login', '/logout', '/signup', '/reset-password', '/no-startup', '/auth/callback', '/register/confirm'];
             const noAgentLayoutPaths = [...authPaths, '/startups', '/analytics', '/privacy-policy'];
-            const shouldUseAgentLayout = path ? 
-              !noAgentLayoutPaths.includes(path) && !path.startsWith('/startups/') : 
+            const shouldUseAgentLayout = path ?
+              !noAgentLayoutPaths.includes(path) && !path.startsWith('/startups/') :
               true;
-            
+
             return (
               <Route
                 key={path}
                 path={path}
                 element={
-                  <ProtectedRoute requiresAuth={requiresAuth} requiresStartup={requiresStartup}>
+                  <ProtectedRoute
+                    requiresAuth={requiresAuth}
+                    requiresNotAuthenticated={requiresNotAuthenticated}
+                    requiresStartup={requiresStartup}
+                  >
                     {shouldUseAgentLayout ? (
                       <AgentLayout agent={agent}>
                         <Component />

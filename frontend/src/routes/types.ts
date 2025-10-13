@@ -56,6 +56,7 @@ type PathRouteCustomProps = {
   icon?: FC<SvgIconProps>;
   iconOutlined?: FC<SvgIconProps>;
   requiresAuth?: boolean;
+  requiresNotAuthenticated?: boolean;
   visibleTo: ('coach' | 'startup')[];
   requiresStartup?: boolean;
   order?: number;

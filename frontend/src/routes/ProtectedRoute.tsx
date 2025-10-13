@@ -5,21 +5,30 @@ import { useAuthContext } from '@/hooks/useAuth';
 interface ProtectedRouteProps {
   children: ReactElement;
   requiresAuth?: boolean;
+  requiresNotAuthenticated?: boolean;
   requiresStartup?: boolean;
 }
 
 const ProtectedRoute: FC<ProtectedRouteProps> = ({
   children,
   requiresAuth = true,
+  requiresNotAuthenticated = false,
   requiresStartup = true,
 }) => {
-  const { isAuthenticated, user, startup, loading } = useAuthContext();
+  const { isAuthenticated, user, profile, startup, loading } = useAuthContext();
   const location = useLocation();
 
   // Show a loading state or return null while authentication state is loading
   if (loading) {
     // You can return a loading spinner or null here
     return null; // or return <LoadingSpinner /> if you have one
+  }
+
+  // If route requires NOT being authenticated (e.g., login, signup, password reset)
+  // and user IS authenticated, redirect to dashboard
+  if (requiresNotAuthenticated && isAuthenticated && user && profile) {
+    const redirectTo = profile.is_coach ? '/startups' : '/user';
+    return <Navigate to={redirectTo} replace />;
   }
 
   // Allow access to the homepage (/) without authentication

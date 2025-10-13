@@ -135,6 +135,7 @@ const useRoutes = (): Partial<Routes> => {
       title: 'Sign Up',
       visibleTo: ['startup', 'coach'],
       requiresAuth: false,
+      requiresNotAuthenticated: true,
       requiresStartup: false,
     },
     [Pages.ConfirmEmail]: {
@@ -143,6 +144,7 @@ const useRoutes = (): Partial<Routes> => {
       title: 'Confirm Email',
       visibleTo: ['startup', 'coach'],
       requiresAuth: false,
+      requiresNotAuthenticated: true,
       requiresStartup: false,
     },
     [Pages.EmailConfirmed]: {
@@ -151,6 +153,7 @@ const useRoutes = (): Partial<Routes> => {
       title: 'Email Confirmed',
       visibleTo: ['startup', 'coach'],
       requiresAuth: false,
+      requiresNotAuthenticated: true,
       requiresStartup: false,
     },
     [Pages.ResetPassword]: {
@@ -159,6 +162,7 @@ const useRoutes = (): Partial<Routes> => {
       title: 'Reset Password',
       visibleTo: ['startup', 'coach'],
       requiresAuth: false,
+      requiresNotAuthenticated: true,
       requiresStartup: false,
     },
     [Pages.NoStartup]: {
@@ -175,6 +179,7 @@ const useRoutes = (): Partial<Routes> => {
       title: 'Login',
       visibleTo: ['startup', 'coach'],
       requiresAuth: false,
+      requiresNotAuthenticated: true,
       requiresStartup: false,
     },
     [Pages.Logout]: {

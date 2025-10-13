@@ -45,18 +45,6 @@ const Login: React.FC = () => {
   const returnUrl = searchParams.get('returnUrl');
   const emailHint = searchParams.get('email');
 
-  // Redirect if already logged in
-  useEffect(() => {
-    if (user && profile) {
-      // If we have a returnUrl, go there instead
-      if (returnUrl) {
-        navigate(decodeURIComponent(returnUrl), { replace: true });
-      } else {
-        navigate(profile.is_coach ? '/startups' : '/user', { replace: true });
-      }
-    }
-  }, [user, profile, navigate, returnUrl]);
-
   const handleSubmit = async (
     values: LoginFormValues,
     { setSubmitting, setErrors }: FormikHelpers<LoginFormValues>,
