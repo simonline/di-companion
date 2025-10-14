@@ -336,6 +336,8 @@ export type Database = {
           bucket: string
           storage_path: string
           category: string | null
+          title: string | null
+          description: string | null
           uploaded_by: string | null
           uploaded_at: string
           entity_type: string | null
@@ -354,6 +356,8 @@ export type Database = {
           bucket?: string
           storage_path: string
           category?: string | null
+          title?: string | null
+          description?: string | null
           uploaded_by?: string | null
           uploaded_at?: string
           entity_type?: string | null
@@ -372,6 +376,8 @@ export type Database = {
           bucket?: string
           storage_path?: string
           category?: string | null
+          title?: string | null
+          description?: string | null
           uploaded_by?: string | null
           uploaded_at?: string
           entity_type?: string | null

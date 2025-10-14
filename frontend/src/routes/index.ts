@@ -47,7 +47,7 @@ export const useAppRoutes = (): Partial<AppRoutes> => {
       icon: AddIcon,
       iconOutlined: AddIcon,
       requiresAuth: true,
-      visibleTo: ['startup', 'coach'],
+      visibleTo: ['startup'],
       requiresStartup: false,
       order: 3,
     },

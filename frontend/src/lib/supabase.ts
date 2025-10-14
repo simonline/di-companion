@@ -1203,7 +1203,11 @@ export async function supabaseGetRecommendations(startupId?: string): Promise<Re
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data as any;
+  // Transform the nested pattern structure
+  return (data as any[]).map((rec: any) => ({
+    ...rec,
+    patterns: rec.patterns?.map((p: any) => p.pattern).filter(Boolean) || []
+  }));
 }
 
 
@@ -1211,6 +1215,9 @@ export async function supabaseCreateRecommendation(
   recommendation: RecommendationCreate,
   patternIds?: string[]
 ): Promise<Recommendation> {
+  console.log('Creating recommendation:', recommendation);
+  console.log('Pattern IDs to link:', patternIds);
+
   const { data: rec, error } = await supabase
     .from('recommendations')
     .insert(recommendation)
@@ -1219,16 +1226,25 @@ export async function supabaseCreateRecommendation(
 
   if (error) throw new Error(handleSupabaseError(error));
 
+  console.log('Recommendation created with ID:', rec.id);
+
   // Link patterns if provided
   if (patternIds && patternIds.length > 0) {
-    await supabase
+    const linkData = patternIds.map(patternId => ({
+      recommendation_id: rec.id,
+      pattern_id: patternId,
+    }));
+    console.log('Inserting pattern links:', linkData);
+
+    const { error: linkError } = await supabase
       .from('recommendations_patterns_lnk')
-      .insert(
-        patternIds.map(patternId => ({
-          recommendation_id: rec.id,
-          pattern_id: patternId,
-        }))
-      );
+      .insert(linkData);
+
+    if (linkError) {
+      console.error('Error linking patterns:', linkError);
+      throw new Error(handleSupabaseError(linkError));
+    }
+    console.log('Patterns linked successfully');
   }
 
   return supabaseGetRecommendation(rec.id);
@@ -1250,7 +1266,11 @@ async function supabaseGetRecommendation(id: string): Promise<Recommendation> {
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data as any;
+  // Transform the nested pattern structure
+  return {
+    ...data,
+    patterns: (data as any).patterns?.map((p: any) => p.pattern).filter(Boolean) || []
+  } as any;
 }
 
 // Invitations
@@ -1880,14 +1900,19 @@ export async function supabaseUpdateRecommendation(
   // Update pattern links if provided
   if (patternIds !== undefined) {
     // Delete existing pattern links
-    await supabase
+    const { error: deleteError } = await supabase
       .from('recommendations_patterns_lnk')
       .delete()
       .eq('recommendation_id', id!);
 
+    if (deleteError) {
+      console.error('Error deleting pattern links:', deleteError);
+      throw new Error(handleSupabaseError(deleteError));
+    }
+
     // Add new pattern links
     if (patternIds.length > 0) {
-      await supabase
+      const { error: linkError } = await supabase
         .from('recommendations_patterns_lnk')
         .insert(
           patternIds.map(patternId => ({
@@ -1895,6 +1920,11 @@ export async function supabaseUpdateRecommendation(
             pattern_id: patternId,
           }))
         );
+
+      if (linkError) {
+        console.error('Error linking patterns:', linkError);
+        throw new Error(handleSupabaseError(linkError));
+      }
     }
   }
 
@@ -2016,7 +2046,9 @@ export async function uploadDocument(
   entityType?: string,
   entityId?: string,
   entityField?: string,
-  category?: string
+  category?: string,
+  title?: string,
+  description?: string
 ): Promise<string | null> {
   try {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
@@ -2028,6 +2060,8 @@ export async function uploadDocument(
     // Build query params
     const params = new URLSearchParams();
     if (category) params.append('category', category);
+    if (title) params.append('title', title);
+    if (description) params.append('description', description);
     if (entityType) params.append('entity_type', entityType);
     if (entityId) params.append('entity_id', entityId);
     if (entityField) params.append('entity_field', entityField);
@@ -2138,6 +2172,34 @@ export async function getDocuments(filters?: {
   } catch (error) {
     console.error('Error fetching documents:', error);
     return [];
+  }
+}
+
+export async function updateDocument(
+  documentId: string,
+  updates: { title?: string; description?: string }
+): Promise<void> {
+  try {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+
+    // Build query params for the update
+    const params = new URLSearchParams();
+    if (updates.title !== undefined) params.append('title', updates.title);
+    if (updates.description !== undefined) params.append('description', updates.description);
+
+    // Update via backend API
+    const response = await fetch(`${backendUrl}/api/documents/${documentId}?${params}`, {
+      method: 'PATCH',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Update failed: ${error}`);
+    }
+  } catch (error) {
+    console.error('Error updating document:', error);
+    throw error;
   }
 }
 

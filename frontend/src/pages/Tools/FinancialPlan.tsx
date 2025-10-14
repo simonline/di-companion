@@ -22,7 +22,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 
 function FinancialPlan() {
   const navigate = useNavigate();
-  const { user } = useAuthContext();
+  const { startup } = useAuthContext();
 
   return (
     <>
@@ -108,6 +108,9 @@ function FinancialPlan() {
 
           <DocumentManager
             category={CategoryEnum.sustainability}
+            entityType="startup"
+            entityId={startup?.id}
+            entityField="financial_plan"
             title="Financial Plan"
             description="Upload financial plans, revenue models, or budget projections for analysis."
           />

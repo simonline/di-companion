@@ -29,6 +29,8 @@ async def get_optional_user_token(authorization: Optional[str] = Header(None)) -
 async def upload_document(
     file: UploadFile = File(...),
     category: str = Query(default="general"),
+    title: Optional[str] = Query(default=None),
+    description: Optional[str] = Query(default=None),
     entity_type: Optional[str] = Query(default=None),
     entity_id: Optional[str] = Query(default=None),
     entity_field: Optional[str] = Query(default=None),
@@ -71,6 +73,8 @@ async def upload_document(
             'bucket': 'documents',  # Using documents bucket conceptually
             'storage_path': upload_result['s3_key'],
             'category': category,
+            'title': title,
+            'description': description,
             'entity_type': entity_type,
             'entity_id': entity_id,
             'entity_field': entity_field,
@@ -145,6 +149,45 @@ async def get_document(document_id: str, download: bool = True):
                 'Content-Disposition': f'{disposition}; filename="{document_record.get("filename", "document")}"'
             }
         )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.patch("/{document_id}")
+async def update_document(
+    document_id: str,
+    title: Optional[str] = Query(default=None),
+    description: Optional[str] = Query(default=None),
+):
+    """
+    Update document title and description
+    """
+    try:
+        # Prepare update data
+        update_data = {}
+        if title is not None:
+            update_data['title'] = title
+        if description is not None:
+            update_data['description'] = description
+
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No update data provided")
+
+        update_data['updated_at'] = datetime.now().isoformat()
+
+        # Update in Supabase
+        result = supabase.table('documents').update(update_data).eq('id', document_id).execute()
+
+        if not result.data or len(result.data) == 0:
+            raise HTTPException(status_code=404, detail="Document not found")
+
+        return {
+            "id": result.data[0]['id'],
+            "title": result.data[0].get('title'),
+            "description": result.data[0].get('description'),
+            "message": "Document updated successfully"
+        }
     except HTTPException:
         raise
     except Exception as e:

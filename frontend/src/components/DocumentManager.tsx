@@ -13,6 +13,7 @@ import {
   TextField,
   CircularProgress,
   Chip,
+  Tooltip,
 } from '@mui/material';
 import {
   CloudUploadOutlined,
@@ -27,9 +28,12 @@ import {
   AudiotrackOutlined,
   FolderZipOutlined,
   CodeOutlined,
+  EditOutlined,
+  CheckOutlined,
+  CloseOutlined,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
-import { uploadDocument, getDocuments, deleteDocument, getDocumentUrl, supabase } from '@/lib/supabase';
+import { uploadDocument, getDocuments, deleteDocument, updateDocument, getDocumentUrl, supabase } from '@/lib/supabase';
 import type { Document } from '@/types/database';
 import useNotifications from '@/store/notifications';
 import { useAuthContext } from '@/hooks/useAuth';
@@ -64,6 +68,11 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
   const [uploadMode, setUploadMode] = useState<'file' | 'paste'>('file');
   const [uploadTitle, setUploadTitle] = useState('');
   const [uploadDescription, setUploadDescription] = useState('');
+  const [editingDocId, setEditingDocId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -147,7 +156,9 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
             entityType,
             entityId,
             entityField,
-            undefined
+            undefined,
+            selectedFiles.length === 1 ? uploadTitle : undefined,
+            selectedFiles.length === 1 ? uploadDescription : undefined
           );
         }
         notificationActions.push({
@@ -164,7 +175,9 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
           entityType,
           entityId,
           entityField,
-          undefined
+          undefined,
+          uploadTitle,
+          uploadDescription
         );
         notificationActions.push({
           message: 'Text uploaded successfully',
@@ -185,9 +198,16 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
     }
   };
 
-  const handleDelete = async (docId: string) => {
+  const handleDeleteClick = (docId: string) => {
+    setDocumentToDelete(docId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!documentToDelete) return;
+
     try {
-      await deleteDocument(docId);
+      await deleteDocument(documentToDelete);
       await fetchDocuments();
       notificationActions.push({
         message: 'Document deleted successfully',
@@ -197,6 +217,49 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
       console.error('Error deleting document:', error);
       notificationActions.push({
         message: 'Failed to delete document',
+        options: { variant: 'error' }
+      });
+    } finally {
+      setDeleteConfirmOpen(false);
+      setDocumentToDelete(null);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmOpen(false);
+    setDocumentToDelete(null);
+  };
+
+  const handleStartEdit = (doc: Document) => {
+    setEditingDocId(doc.id);
+    setEditTitle(doc.title || '');
+    setEditDescription(doc.description || '');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingDocId(null);
+    setEditTitle('');
+    setEditDescription('');
+  };
+
+  const handleSaveEdit = async (docId: string) => {
+    try {
+      await updateDocument(docId, {
+        title: editTitle,
+        description: editDescription,
+      });
+      await fetchDocuments();
+      setEditingDocId(null);
+      setEditTitle('');
+      setEditDescription('');
+      notificationActions.push({
+        message: 'Document updated successfully',
+        options: { variant: 'success' }
+      });
+    } catch (error) {
+      console.error('Error updating document:', error);
+      notificationActions.push({
+        message: 'Failed to update document',
         options: { variant: 'error' }
       });
     }
@@ -416,27 +479,29 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
         <Stack spacing={2}>
           {documents.map((doc) => {
             const uploaderName = getUserDisplay(doc.uploaded_by);
+            const isEditing = editingDocId === doc.id;
+
             return (
               <Paper
                 key={doc.id}
                 sx={{
                   p: 2.5,
                   display: 'flex',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   gap: 2,
                   border: '1px solid',
-                  borderColor: 'divider',
+                  borderColor: isEditing ? 'primary.main' : 'divider',
                   borderRadius: 2,
                   transition: 'all 0.2s ease',
-                  cursor: 'pointer',
+                  cursor: isEditing ? 'default' : 'pointer',
                   '&:hover': {
-                    borderColor: 'text.secondary',
+                    borderColor: isEditing ? 'primary.main' : 'text.secondary',
                     bgcolor: 'grey.50',
-                    transform: 'translateY(-1px)',
+                    transform: isEditing ? 'none' : 'translateY(-1px)',
                     boxShadow: 1
                   }
                 }}
-                onClick={async () => {
+                onClick={isEditing ? undefined : async () => {
                   // Force download by fetching and creating blob
                   try {
                     const response = await fetch(getDocumentUrl(doc.id, true));
@@ -459,92 +524,203 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                 }}
               >
                 {/* File Icon */}
-                <Box sx={{ flexShrink: 0 }}>
+                <Box sx={{ flexShrink: 0, mt: 0.5 }}>
                   {getFileIcon(doc.mime_type, doc.filename)}
                 </Box>
 
                 {/* File Info */}
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body1" sx={{ fontWeight: 500, mb: 0.5 }} noWrap title={doc.filename}>
-                    {doc.filename}
-                  </Typography>
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <Typography variant="caption" color="text.secondary">
-                      {formatFileSize(doc.size_bytes)}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      •
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {uploaderName}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      •
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {new Date(doc.uploaded_at).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: new Date(doc.uploaded_at).getFullYear() !== new Date().getFullYear()
-                          ? 'numeric'
-                          : undefined
-                      })}
-                    </Typography>
-                  </Stack>
+                  {isEditing ? (
+                    <Stack spacing={1.5}>
+                      <TextField
+                        size="small"
+                        label="Title"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        fullWidth
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <TextField
+                        size="small"
+                        label="Description"
+                        value={editDescription}
+                        onChange={(e) => setEditDescription(e.target.value)}
+                        fullWidth
+                        multiline
+                        rows={2}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        File: {doc.filename}
+                      </Typography>
+                    </Stack>
+                  ) : (
+                    <>
+                      {doc.title && (
+                        <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
+                          {doc.title}
+                        </Typography>
+                      )}
+                      {doc.description && (
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          {doc.description}
+                        </Typography>
+                      )}
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: doc.title ? 400 : 500,
+                          mb: 0.5,
+                          color: doc.title ? 'text.secondary' : 'text.primary'
+                        }}
+                        noWrap
+                        title={doc.filename}
+                      >
+                        {doc.filename}
+                      </Typography>
+                      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+                        <Typography variant="caption" color="text.secondary">
+                          {formatFileSize(doc.size_bytes)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          •
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {uploaderName}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          •
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {new Date(doc.uploaded_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: new Date(doc.uploaded_at).getFullYear() !== new Date().getFullYear()
+                              ? 'numeric'
+                              : undefined
+                          })}
+                        </Typography>
+                      </Stack>
+                    </>
+                  )}
                 </Box>
 
                 {/* Actions */}
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
-                  <IconButton
-                    size="small"
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      // Force download by fetching and creating blob
-                      try {
-                        const response = await fetch(getDocumentUrl(doc.id, true));
-                        const blob = await response.blob();
-                        const url = window.URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = doc.filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        window.URL.revokeObjectURL(url);
-                      } catch (error) {
-                        console.error('Download failed:', error);
-                        notificationActions.push({
-                          message: 'Failed to download file',
-                          options: { variant: 'error' }
-                        });
-                      }
-                    }}
-                    sx={{
-                      color: 'text.secondary',
-                      '&:hover': {
-                        bgcolor: 'action.hover'
-                      }
-                    }}
-                  >
-                    <FileDownloadOutlined fontSize="small" />
-                  </IconButton>
-                  {(doc.uploaded_by === user?.id || !doc.uploaded_by) && (
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(doc.id);
-                      }}
-                      sx={{
-                        color: 'text.secondary',
-                        '&:hover': {
-                          color: 'error.main',
-                          bgcolor: 'error.lighter'
-                        }
-                      }}
-                    >
-                      <DeleteOutline fontSize="small" />
-                    </IconButton>
+                  {isEditing ? (
+                    <>
+                      <Tooltip title="Save">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveEdit(doc.id);
+                          }}
+                          sx={{
+                            color: 'success.main',
+                            '&:hover': {
+                              bgcolor: 'success.lighter'
+                            }
+                          }}
+                        >
+                          <CheckOutlined fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Cancel">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCancelEdit();
+                          }}
+                          sx={{
+                            color: 'text.secondary',
+                            '&:hover': {
+                              bgcolor: 'action.hover'
+                            }
+                          }}
+                        >
+                          <CloseOutlined fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </>
+                  ) : (
+                    <>
+                      <Tooltip title="Download">
+                        <IconButton
+                          size="small"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            // Force download by fetching and creating blob
+                            try {
+                              const response = await fetch(getDocumentUrl(doc.id, true));
+                              const blob = await response.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const link = document.createElement('a');
+                              link.href = url;
+                              link.download = doc.filename;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              window.URL.revokeObjectURL(url);
+                            } catch (error) {
+                              console.error('Download failed:', error);
+                              notificationActions.push({
+                                message: 'Failed to download file',
+                                options: { variant: 'error' }
+                              });
+                            }
+                          }}
+                          sx={{
+                            color: 'text.secondary',
+                            '&:hover': {
+                              bgcolor: 'action.hover'
+                            }
+                          }}
+                        >
+                          <FileDownloadOutlined fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      {(doc.uploaded_by === user?.id || !doc.uploaded_by) && (
+                        <>
+                          <Tooltip title="Edit title/description">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartEdit(doc);
+                              }}
+                              sx={{
+                                color: 'text.secondary',
+                                '&:hover': {
+                                  bgcolor: 'action.hover'
+                                }
+                              }}
+                            >
+                              <EditOutlined fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteClick(doc.id);
+                              }}
+                              sx={{
+                                color: 'text.secondary',
+                                '&:hover': {
+                                  color: 'error.main',
+                                  bgcolor: 'error.lighter'
+                                }
+                              }}
+                            >
+                              <DeleteOutline fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </>
+                      )}
+                    </>
                   )}
                 </Stack>
               </Paper>
@@ -682,6 +858,33 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
             }}
           >
             {uploading ? 'Uploading...' : 'Upload'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmOpen} onClose={handleDeleteCancel} maxWidth="xs" fullWidth>
+        <DialogTitle>Delete Document?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this document? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel}>Cancel</Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            variant="contained"
+            color="error"
+            sx={{
+              textTransform: 'none',
+              boxShadow: 0,
+              '&:hover': {
+                boxShadow: 1
+              }
+            }}
+          >
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

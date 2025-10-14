@@ -22,7 +22,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 
 const Interviews: React.FC = () => {
     const navigate = useNavigate();
-    const { user } = useAuthContext();
+    const { startup } = useAuthContext();
 
     return (
         <>
@@ -103,6 +103,9 @@ const Interviews: React.FC = () => {
 
                     <DocumentManager
                         category={CategoryEnum.stakeholders}
+                        entityType="startup"
+                        entityId={startup?.id}
+                        entityField="interviews"
                         title="Interviews"
                         description="Upload interview recordings, transcripts, customer feedback, or survey responses for analysis."
                     />

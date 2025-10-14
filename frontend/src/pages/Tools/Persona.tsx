@@ -22,7 +22,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 
 const Persona: React.FC = () => {
     const navigate = useNavigate();
-    const { user } = useAuthContext();
+    const { startup } = useAuthContext();
 
     return (
         <>
@@ -105,6 +105,9 @@ const Persona: React.FC = () => {
 
                     <DocumentManager
                         category={CategoryEnum.stakeholders}
+                        entityType="startup"
+                        entityId={startup?.id}
+                        entityField="persona"
                         title="User Personas"
                         description="Upload user persona documents, customer profiles, or demographic research for analysis."
                     />

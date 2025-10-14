@@ -335,6 +335,11 @@ export default function StartupView() {
             <Card>
               <CardContent sx={{ p: 0 }}>
                 <TabPanel value={tabValue} index={0}>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, pb: 2 }}>
+                    <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenForm}>
+                      Add Recommendation
+                    </Button>
+                  </Box>
                   {loadingRecommendations ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
                       <CircularProgress />

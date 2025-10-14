@@ -22,7 +22,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 
 const PitchDeck: React.FC = () => {
     const navigate = useNavigate();
-    const { user } = useAuthContext();
+    const { startup } = useAuthContext();
 
     return (
         <>
@@ -105,6 +105,9 @@ const PitchDeck: React.FC = () => {
 
                     <DocumentManager
                         category={CategoryEnum.product}
+                        entityType="startup"
+                        entityId={startup?.id}
+                        entityField="pitch_deck"
                         title="Pitch Deck"
                         description="Upload pitch deck presentations, investor decks, or business presentations for analysis."
                     />

@@ -65,9 +65,15 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
   const isEditMode = Boolean(initialValues?.id);
   const [selectedPatterns, setSelectedPatterns] = useState<Pattern[]>([]);
 
-  // Fetch patterns when editing a recommendation or use provided patterns
+  // Reset and fetch patterns when dialog opens or initialValues change
   useEffect(() => {
     const fetchPatterns = async () => {
+      if (!open) {
+        // Reset when dialog closes
+        setSelectedPatterns([]);
+        return;
+      }
+
       if (initialValues?.patterns) {
         // Use patterns provided in initialValues
         setSelectedPatterns(initialValues.patterns);
@@ -82,11 +88,14 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
           const patterns = data.map((item: any) => item.patterns).filter(Boolean);
           setSelectedPatterns(patterns);
         }
+      } else {
+        // Clear patterns for new recommendation
+        setSelectedPatterns([]);
       }
     };
 
     fetchPatterns();
-  }, [initialValues?.id, initialValues?.patterns, isEditMode]);
+  }, [open, initialValues?.id, initialValues?.patterns, isEditMode]);
 
   const formik = useFormik({
     initialValues: {
@@ -94,21 +103,24 @@ const RecommendationForm: React.FC<RecommendationFormProps> = ({
       comment: initialValues?.comment || '',
       type: initialValues?.type || 'pattern',
       patterns: selectedPatterns.map(p => p.id),
-      coach: user?.id,
-      startup: startupId,
+      coach_id: user?.id,
+      startup_id: startupId,
       read_at: initialValues?.read_at,
     },
     validationSchema,
     enableReinitialize: true,
     onSubmit: async (values) => {
       try {
+        console.log('Form values:', values);
+        console.log('Pattern IDs being submitted:', values.patterns);
+
         // Create different objects based on whether we're creating or updating
         // Create recommendation data without patterns
         const baseData = {
           comment: values.comment,
           type: values.type,
-          coach: values.coach,
-          startup: values.startup,
+          coach_id: values.coach_id,
+          startup_id: values.startup_id,
           read_at: values.read_at,
         };
 
