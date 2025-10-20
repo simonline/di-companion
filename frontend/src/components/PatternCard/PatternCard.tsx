@@ -298,7 +298,7 @@ Please provide:
 Make your response actionable and easy to follow.`;
 
       // Send the message using the chat context
-      await sendProgrammaticMessage(userPrompt, systemPrompt);
+      await sendProgrammaticMessage(userPrompt, systemPrompt, 'pattern-help', startup?.id);
 
     } catch (error) {
       console.error('Error sending message to agent:', error);

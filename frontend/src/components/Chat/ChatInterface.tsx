@@ -17,6 +17,7 @@ import { useChatContext } from './ChatContext';
 import { Agent, agents, generalCoach, specializedAgents } from './types';
 import { useLocation } from 'react-router-dom';
 import MarkdownMessage from './MarkdownMessage';
+import { useAuthContext } from '@/hooks/useAuth';
 
 interface ChatInterfaceProps {
     selectedAgent: Agent;
@@ -26,6 +27,7 @@ interface ChatInterfaceProps {
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentChange, isMobile = false }) => {
     const { messages, addMessage, sendProgrammaticMessage, clearMessages, loadConversation, isLoading, setMobileKeyboardVisible } = useChatContext();
+    const { startup } = useAuthContext();
     const [inputValue, setInputValue] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [previousAgentId, setPreviousAgentId] = useState<string>(selectedAgent.id);
@@ -115,7 +117,7 @@ Current Page Context:
 - Title: ${pageContext.pageTitle}
 - Content Preview: ${pageContext.pageContent?.substring(0, 500)}...`;
 
-        await sendProgrammaticMessage(inputValue.trim(), enhancedSystemPrompt, selectedAgent.id);
+        await sendProgrammaticMessage(inputValue.trim(), enhancedSystemPrompt, selectedAgent.id, startup?.id);
         setInputValue('');
     };
 
