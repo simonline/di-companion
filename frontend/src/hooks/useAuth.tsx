@@ -77,7 +77,18 @@ export function useAuth(): UseAuthReturn {
 
 
   const setUserAndProfile = useCallback((userData: User | null, profileData: Profile | null) => {
-    setState((prev) => ({ ...prev, user: userData, profile: profileData, error: null }));
+    setState((prev) => {
+      // Only update if data actually changed to prevent unnecessary re-renders
+      const userChanged = JSON.stringify(prev.user) !== JSON.stringify(userData);
+      const profileChanged = JSON.stringify(prev.profile) !== JSON.stringify(profileData);
+
+      if (!userChanged && !profileChanged) {
+        return prev;
+      }
+
+      return { ...prev, user: userData, profile: profileData, error: null };
+    });
+
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData));
       identifyUser(userData.id);
@@ -88,7 +99,17 @@ export function useAuth(): UseAuthReturn {
   }, []);
 
   const setStartup = useCallback((startupData: Startup | null) => {
-    setState((prev) => ({ ...prev, startup: startupData, error: null }));
+    setState((prev) => {
+      // Only update if data actually changed to prevent unnecessary re-renders
+      const startupChanged = JSON.stringify(prev.startup) !== JSON.stringify(startupData);
+
+      if (!startupChanged) {
+        return prev;
+      }
+
+      return { ...prev, startup: startupData, error: null };
+    });
+
     if (startupData) {
       localStorage.setItem('startup', JSON.stringify(startupData));
     } else {
@@ -165,7 +186,12 @@ export function useAuth(): UseAuthReturn {
                 }
               }
             }
-            setState((prev) => ({ ...prev, loading: false }));
+            setState((prev) => {
+              if (prev.loading === false) {
+                return prev;
+              }
+              return { ...prev, loading: false };
+            });
           } catch (error) {
             console.error('Error in SIGNED_IN handler:', error);
             setState((prev) => ({ ...prev, loading: false, error: 'Failed to load user data' }));
