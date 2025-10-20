@@ -218,3 +218,13 @@ export interface UserQuestion extends Tables<'user_questions'> {
 }
 export type UserQuestionCreate = TablesInsert<'user_questions'>;
 export type UserQuestionUpdate = TablesUpdate<'user_questions'>;
+
+// Chat Conversations
+export type ChatConversation = Tables<'chat_conversations'>;
+export type ChatConversationCreate = TablesInsert<'chat_conversations'>;
+export type ChatConversationUpdate = TablesUpdate<'chat_conversations'>;
+
+// Chat Messages
+export type ChatMessage = Tables<'chat_messages'>;
+export type ChatMessageCreate = TablesInsert<'chat_messages'>;
+export type ChatMessageUpdate = TablesUpdate<'chat_messages'>;

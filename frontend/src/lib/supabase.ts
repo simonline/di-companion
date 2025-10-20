@@ -36,7 +36,13 @@ import type {
   StartupQuestionUpdate,
   Request,
   RequestCreate,
-  RequestUpdate
+  RequestUpdate,
+  ChatConversation,
+  ChatConversationCreate,
+  ChatConversationUpdate,
+  ChatMessage,
+  ChatMessageCreate,
+  ChatMessageUpdate
 } from '@/types/database';
 import { CategoryEnum } from '@/utils/constants';
 
@@ -2267,4 +2273,239 @@ export async function getStartupMethodDocuments(
   field: string = 'resultFiles'
 ): Promise<Document[]> {
   return getEntityDocuments('startup_method', startupMethodId, field);
+}
+
+// ============================================================================
+// Chat Persistence Functions
+// ============================================================================
+
+/**
+ * Get all conversations for the current user
+ * @param agentId Optional filter by agent ID
+ * @param startupId Optional filter by startup ID
+ */
+export async function supabaseGetConversations(
+  agentId?: string,
+  startupId?: string
+): Promise<ChatConversation[]> {
+  const { data: authData } = await supabase.auth.getUser();
+  if (!authData.user) throw new Error('Not authenticated');
+
+  let query = supabase
+    .from('chat_conversations')
+    .select('*')
+    .eq('user_id', authData.user.id)
+    .order('last_message_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false });
+
+  if (agentId) {
+    query = query.eq('agent_id', agentId);
+  }
+
+  if (startupId) {
+    query = query.eq('startup_id', startupId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  return data as ChatConversation[];
+}
+
+/**
+ * Get a single conversation by ID
+ */
+export async function supabaseGetConversation(
+  conversationId: string
+): Promise<ChatConversation | null> {
+  const { data, error } = await supabase
+    .from('chat_conversations')
+    .select('*')
+    .eq('id', conversationId)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw new Error(handleSupabaseError(error));
+  }
+
+  return data as ChatConversation;
+}
+
+/**
+ * Create a new conversation
+ */
+export async function supabaseCreateConversation(
+  conversation: Omit<ChatConversationCreate, 'user_id'>
+): Promise<ChatConversation> {
+  const { data: authData } = await supabase.auth.getUser();
+  if (!authData.user) throw new Error('Not authenticated');
+
+  const { data, error } = await supabase
+    .from('chat_conversations')
+    .insert({
+      ...conversation,
+      user_id: authData.user.id,
+      last_message_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  return data as ChatConversation;
+}
+
+/**
+ * Update a conversation
+ */
+export async function supabaseUpdateConversation(
+  conversationId: string,
+  updates: ChatConversationUpdate
+): Promise<ChatConversation> {
+  const { data, error } = await supabase
+    .from('chat_conversations')
+    .update(updates)
+    .eq('id', conversationId)
+    .select()
+    .single();
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  return data as ChatConversation;
+}
+
+/**
+ * Delete a conversation (and all its messages via CASCADE)
+ */
+export async function supabaseDeleteConversation(conversationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('chat_conversations')
+    .delete()
+    .eq('id', conversationId);
+
+  if (error) throw new Error(handleSupabaseError(error));
+}
+
+/**
+ * Get all messages for a conversation
+ */
+export async function supabaseGetMessages(
+  conversationId: string
+): Promise<ChatMessage[]> {
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .select('*')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: true });
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  return data as ChatMessage[];
+}
+
+/**
+ * Create a new message in a conversation
+ */
+export async function supabaseCreateMessage(
+  message: ChatMessageCreate
+): Promise<ChatMessage> {
+  // Insert the message
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .insert(message)
+    .select()
+    .single();
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  // Update the conversation's last_message_at
+  await supabase
+    .from('chat_conversations')
+    .update({ last_message_at: data.created_at })
+    .eq('id', message.conversation_id);
+
+  return data as ChatMessage;
+}
+
+/**
+ * Create multiple messages at once (for batch operations)
+ */
+export async function supabaseCreateMessages(
+  messages: ChatMessageCreate[]
+): Promise<ChatMessage[]> {
+  if (messages.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .insert(messages)
+    .select();
+
+  if (error) throw new Error(handleSupabaseError(error));
+
+  // Update conversation's last_message_at with the latest message time
+  if (data.length > 0) {
+    const latestMessage = data[data.length - 1];
+    await supabase
+      .from('chat_conversations')
+      .update({ last_message_at: latestMessage.created_at })
+      .eq('id', messages[0].conversation_id);
+  }
+
+  return data as ChatMessage[];
+}
+
+/**
+ * Delete a message
+ */
+export async function supabaseDeleteMessage(messageId: string): Promise<void> {
+  const { error } = await supabase
+    .from('chat_messages')
+    .delete()
+    .eq('id', messageId);
+
+  if (error) throw new Error(handleSupabaseError(error));
+}
+
+/**
+ * Find or create a conversation for a specific agent and startup
+ * This is useful for maintaining a single ongoing conversation per agent/startup combo
+ */
+export async function supabaseFindOrCreateConversation(
+  agentId: string,
+  startupId?: string,
+  title?: string
+): Promise<ChatConversation> {
+  const { data: authData } = await supabase.auth.getUser();
+  if (!authData.user) throw new Error('Not authenticated');
+
+  // Try to find existing conversation
+  let query = supabase
+    .from('chat_conversations')
+    .select('*')
+    .eq('user_id', authData.user.id)
+    .eq('agent_id', agentId)
+    .order('last_message_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  if (startupId) {
+    query = query.eq('startup_id', startupId);
+  } else {
+    query = query.is('startup_id', null);
+  }
+
+  const { data: existingConversations } = await query;
+
+  if (existingConversations && existingConversations.length > 0) {
+    return existingConversations[0] as ChatConversation;
+  }
+
+  // Create new conversation if none exists
+  return supabaseCreateConversation({
+    agent_id: agentId,
+    startup_id: startupId || null,
+    title: title || null,
+  });
 }

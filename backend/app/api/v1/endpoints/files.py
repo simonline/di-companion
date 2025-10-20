@@ -84,15 +84,11 @@ async def upload_file(
             'mime_type': file.content_type,
             'size_bytes': upload_result['size_bytes'],
             'bucket': upload_result['bucket'],
-            's3_key': upload_result['s3_key'],
-            's3_url': upload_result['s3_url'],
-            'etag': upload_result['etag'],
             'category': category,
             'entity_type': entity_type,
             'entity_id': entity_id,
             'is_public': False,
-            'metadata': {"original_metadata": metadata} if metadata else {},
-            'storage_type': 'webdav',
+            'metadata': {"original_metadata": metadata, "etag": upload_result['etag']} if metadata else {"etag": upload_result['etag']},
             'storage_path': upload_result['s3_key']
         }
         
@@ -257,6 +253,15 @@ async def copy_file(
             raise HTTPException(status_code=500, detail="Failed to copy file")
         
         # Create new database record
+        # Get original etag from metadata if available
+        original_metadata = original_file.get('metadata', {})
+        if isinstance(original_metadata, str):
+            import json
+            try:
+                original_metadata = json.loads(original_metadata)
+            except:
+                original_metadata = {}
+
         new_file_record = {
             'id': str(uuid.uuid4()),
             'filename': original_file['filename'],
@@ -264,15 +269,11 @@ async def copy_file(
             'mime_type': original_file['mime_type'],
             'size_bytes': original_file['size_bytes'],
             'bucket': original_file['bucket'],
-            's3_key': new_s3_key,
-            's3_url': f"{storage_service.endpoint_url}/{storage_service.bucket_name}/{new_s3_key}",
-            'etag': original_file['etag'],
             'category': original_file['category'],
             'entity_type': new_entity_type or original_file['entity_type'],
             'entity_id': new_entity_id or original_file['entity_id'],
             'is_public': original_file.get('is_public', False),
-            'metadata': original_file.get('metadata', {}),
-            'storage_type': 'webdav',
+            'metadata': original_metadata,
             'storage_path': new_s3_key
         }
         

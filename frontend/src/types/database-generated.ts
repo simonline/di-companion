@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_conversations: {
+        Row: {
+          id: string
+          user_id: string
+          startup_id: string | null
+          agent_id: string
+          title: string | null
+          created_at: string
+          updated_at: string
+          last_message_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          startup_id?: string | null
+          agent_id: string
+          title?: string | null
+          created_at?: string
+          updated_at?: string
+          last_message_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          startup_id?: string | null
+          agent_id?: string
+          title?: string | null
+          created_at?: string
+          updated_at?: string
+          last_message_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_user"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_startup"
+            columns: ["startup_id"]
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      chat_messages: {
+        Row: {
+          id: string
+          conversation_id: string
+          content: string
+          sender: 'user' | 'agent'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          conversation_id: string
+          content: string
+          sender: 'user' | 'agent'
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          conversation_id?: string
+          content?: string
+          sender?: 'user' | 'agent'
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_conversation"
+            columns: ["conversation_id"]
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       document_uploads: {
         Row: {
           ai_analysis: Json | null

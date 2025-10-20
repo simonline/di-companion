@@ -25,7 +25,7 @@ interface ChatInterfaceProps {
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentChange, isMobile = false }) => {
-    const { messages, addMessage, sendProgrammaticMessage, clearMessages, isLoading, setMobileKeyboardVisible } = useChatContext();
+    const { messages, addMessage, sendProgrammaticMessage, clearMessages, loadConversation, isLoading, setMobileKeyboardVisible } = useChatContext();
     const [inputValue, setInputValue] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [previousAgentId, setPreviousAgentId] = useState<string>(selectedAgent.id);
@@ -74,13 +74,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
     useEffect(() => {
         // Check if agent has changed
         if (previousAgentId !== selectedAgent.id) {
-            // Clear existing messages and add new agent's initial message
-            clearMessages();
-            addMessage({
-                id: '1',
-                content: selectedAgent.initialMessage,
-                sender: 'agent',
-                timestamp: new Date(),
+            // Load conversation for this agent from database
+            loadConversation(selectedAgent.id).then(() => {
+                // If no messages were loaded (new conversation), add initial message
+                // Note: We use a setTimeout to ensure messages state is updated
+                setTimeout(() => {
+                    if (messages.length === 0) {
+                        addMessage({
+                            id: '1',
+                            content: selectedAgent.initialMessage,
+                            sender: 'agent',
+                            timestamp: new Date(),
+                        });
+                    }
+                }, 100);
             });
             setPreviousAgentId(selectedAgent.id);
         } else if (messages.length === 0) {
@@ -92,7 +99,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                 timestamp: new Date(),
             });
         }
-    }, [selectedAgent, previousAgentId, messages.length, addMessage, clearMessages]);
+    }, [selectedAgent, previousAgentId, messages.length, addMessage, loadConversation]);
 
     const sendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
@@ -108,7 +115,7 @@ Current Page Context:
 - Title: ${pageContext.pageTitle}
 - Content Preview: ${pageContext.pageContent?.substring(0, 500)}...`;
 
-        await sendProgrammaticMessage(inputValue.trim(), enhancedSystemPrompt);
+        await sendProgrammaticMessage(inputValue.trim(), enhancedSystemPrompt, selectedAgent.id);
         setInputValue('');
     };
 
