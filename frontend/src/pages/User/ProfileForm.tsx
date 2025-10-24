@@ -49,7 +49,16 @@ const validationSchema = Yup.object().shape({
   gender: Yup.string(),
   position: Yup.string(),
   bio: Yup.string(),
-  linkedinProfile: Yup.string().url('Must be a valid URL'),
+  linkedinProfile: Yup.string()
+    .transform((value) => {
+      if (!value) return value;
+      // Add https:// if no protocol is present
+      if (!/^https?:\/\//i.test(value)) {
+        return `https://${value}`;
+      }
+      return value;
+    })
+    .url('Must be a valid URL'),
 });
 
 // Gender options
@@ -200,7 +209,16 @@ function ProfileForm() {
       gender: Yup.string(),
       position: Yup.string(),
       bio: Yup.string(),
-      linkedinProfile: Yup.string().url('Must be a valid URL'),
+      linkedinProfile: Yup.string()
+        .transform((value) => {
+          if (!value) return value;
+          // Add https:// if no protocol is present
+          if (!/^https?:\/\//i.test(value)) {
+            return `https://${value}`;
+          }
+          return value;
+        })
+        .url('Must be a valid URL'),
     };
 
     return Yup.object().shape({
