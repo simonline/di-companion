@@ -106,7 +106,7 @@ const Survey: React.FC = () => {
       if (isEntrepreneurCategory) {
         // For entrepreneur category, fetch user questions
         if (startup && userId) {
-          fetchUserQuestions(startup?.id, userId, patternId);
+          fetchUserQuestions(userId, patternId, startup.id);
         }
       } else {
         // For other categories, fetch startup questions
@@ -267,7 +267,7 @@ const Survey: React.FC = () => {
       // Refetch to get the created/updated questions
       if (isEntrepreneurCategory) {
         clearUserQuestions();
-        await fetchUserQuestions(startup.id, user?.id, patternId);
+        await fetchUserQuestions(user?.id, patternId, startup.id);
       } else {
         clearStartupQuestions();
         await fetchStartupQuestions(startup.id, patternId);
@@ -364,7 +364,7 @@ const Survey: React.FC = () => {
       // Refetch to get the created/updated questions (for points calculation)
       if (isEntrepreneurCategory) {
         clearUserQuestions();
-        fetchUserQuestions(startup.id, user?.id, patternId);
+        fetchUserQuestions(user?.id, patternId, startup.id);
       } else {
         clearStartupQuestions();
         fetchStartupQuestions(startup.id, patternId);

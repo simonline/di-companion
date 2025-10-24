@@ -29,7 +29,7 @@ interface AssessmentStepProps {
   topic?: string;
   questionType: 'user' | 'startup';
   userId?: string;
-  startupId: string;
+  startupId?: string;
   onComplete?: () => void;
   surveyName?: string;
 }
@@ -44,7 +44,7 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
   surveyName = "Self Assessment",
 }, ref) => {
   const [, notificationsActions] = useNotifications();
-  const { fetchSurveyByName, survey, loading: surveyLoading, error: surveyError } = useSurvey();
+  const { fetchSurveyByName, loading: surveyLoading, error: surveyError } = useSurvey();
   const { fetchQuestions, questions: allQuestions, loading: questionsLoading, error: questionsError } = useQuestions();
 
   // User questions hooks
@@ -97,22 +97,20 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
 
   // Fetch existing answers
   useEffect(() => {
-    if (questionType === 'user' && userId && startupId) {
-      fetchUserQuestions(startupId, userId);
+    if (questionType === 'user' && userId) {
+      fetchUserQuestions(userId);
     } else if (questionType === 'startup' && startupId) {
       fetchStartupQuestions(startupId);
     }
   }, [questionType, userId, startupId, fetchUserQuestions, fetchStartupQuestions]);
 
   const handleSubmit = async (values: FormValues) => {
-    if (!startupId) return;
-
     try {
       setIsSubmitting(true);
 
       // Get existing answers
       const existingAnswers = questionType === 'user' ? userQuestions : startupQuestions;
-
+      console.log('Existing Answers:', existingAnswers);
       // Process each question's answer
       for (const question of filteredQuestions) {
         const answer = values[question.id];
@@ -166,7 +164,7 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
       // Refetch to get the updated answers
       if (questionType === 'user' && userId) {
         clearUserQuestions();
-        await fetchUserQuestions(startupId, userId);
+        await fetchUserQuestions(userId, startupId);
       } else if (questionType === 'startup') {
         clearStartupQuestions();
         await fetchStartupQuestions(startupId);

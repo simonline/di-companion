@@ -1628,9 +1628,9 @@ export async function supabaseUpdateUserMethod(userMethod: UserMethodUpdate): Pr
 
 // User Questions
 export async function supabaseGetUserQuestions(
-  startupId?: string,
   userId?: string,
-  patternId?: string
+  patternId?: string,
+  startupId?: string,
 ): Promise<UserQuestion[]> {
   let query = supabase
     .from('user_questions')
@@ -1640,14 +1640,14 @@ export async function supabaseGetUserQuestions(
       question:questions(*)
     `);
 
-  if (startupId) {
-    query = query.eq('startup_id', startupId);
-  }
   if (userId) {
     query = query.eq('user_id', userId);
   }
   if (patternId) {
     query = query.eq('pattern_id', patternId);
+  }
+  if (startupId) {
+    query = query.eq('startup_id', startupId);
   }
 
   const { data, error } = await query;

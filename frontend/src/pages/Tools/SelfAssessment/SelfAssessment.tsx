@@ -14,18 +14,13 @@ import { useAuthContext } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import AssessmentStep, { AssessmentStepRef } from '@/components/AssessmentStep';
 import useNotifications from '@/store/notifications';
-import { CategoryEnum, categoryDisplayNames, categoryColors, categoryIcons } from '@/utils/constants';
+import { CategoryEnum, categoryColors } from '@/utils/constants';
 
 const SelfAssessment: React.FC = () => {
   const navigate = useNavigate();
-  const { user, startup, profile, updateProfile, updateScores } = useAuthContext();
+  const { user, profile, updateProfile, updateScores } = useAuthContext();
   const [, notificationsActions] = useNotifications();
   const assessmentRef = useRef<AssessmentStepRef>(null);
-
-  // SelfAssessment can be called from both User page (step 3) and Startup page
-  const isUserOnboarding = profile && !profile.progress?.assessment;
-  const returnPath = isUserOnboarding ? '/user' : '/startup';
-  const returnLabel = isUserOnboarding ? 'User' : 'Startup';
 
   const handleSubmit = async () => {
     if (assessmentRef.current) {
@@ -49,7 +44,7 @@ const SelfAssessment: React.FC = () => {
       await updateScores();
 
       // Mark assessment as completed based on context
-      if (isUserOnboarding && profile && user) {
+      if (profile && user) {
         const currentProgress = profile.progress || {
           profile: false,
           values: false,
@@ -70,7 +65,7 @@ const SelfAssessment: React.FC = () => {
         message: 'Self assessment completed successfully',
       });
 
-      navigate(returnPath);
+      navigate('/user');
     } catch (error) {
       notificationsActions.push({
         options: { variant: 'error' },
@@ -79,7 +74,7 @@ const SelfAssessment: React.FC = () => {
     }
   };
 
-  if (!user || !startup) {
+  if (!user) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
         <Typography variant="h6">Please log in to access the assessment</Typography>
@@ -95,10 +90,10 @@ const SelfAssessment: React.FC = () => {
           <Box sx={{ mb: 1, mt: 4 }}>
             <Button
               startIcon={<ArrowBack />}
-              onClick={() => navigate(returnPath)}
+              onClick={() => navigate("/user")}
               sx={{ color: 'text.secondary' }}
             >
-              Back to {returnLabel}
+              Back to User
             </Button>
           </Box>
 
@@ -120,7 +115,6 @@ const SelfAssessment: React.FC = () => {
                 category={CategoryEnum.entrepreneur}
                 questionType="user"
                 userId={user.id}
-                startupId={startup.id}
                 surveyName="Self Assessment"
               />
 
