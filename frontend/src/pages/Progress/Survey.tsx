@@ -52,7 +52,7 @@ const Survey: React.FC = () => {
     loading: userQuestionsLoading,
     error: userQuestionsError,
   } = useUserQuestions();
-  const { createUserQuestion, updateUserQuestion } = useUserQuestion();
+  const { createUserQuestion } = useUserQuestion();
   const {
     fetchStartupQuestions,
     startupQuestions,
@@ -60,7 +60,7 @@ const Survey: React.FC = () => {
     loading: startupQuestionsLoading,
     error: startupQuestionsError,
   } = useStartupQuestions();
-  const { createStartupQuestion, updateStartupQuestion } = useStartupQuestion();
+  const { createStartupQuestion } = useStartupQuestion();
   const userId = user?.id;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -206,10 +206,10 @@ const Survey: React.FC = () => {
           // Skip if answer is empty and question is not required
           if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) return null;
 
-          // Skip if answer hasn't changed
+          // Skip if answer hasn't changed (prevents duplicate versions)
           if (existingResponse) {
-            const existingAnswer = JSON.parse(existingResponse.answer as any);
-            if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) return null;
+            // Supabase auto-handles JSON serialization, so just compare directly
+            if (JSON.stringify(existingResponse.answer) === JSON.stringify(answer)) return null;
           }
 
           const payload = {
@@ -217,17 +217,11 @@ const Survey: React.FC = () => {
             pattern_id: patternId,
             question_id: question.id,
             startup_id: startup.id,
-            answer: JSON.stringify(answer),
+            answer: answer, // Supabase handles JSON serialization automatically
           };
 
-          if (existingResponse) {
-            return updateUserQuestion({
-              id: existingResponse.id,
-              ...payload,
-            });
-          } else {
-            return createUserQuestion(payload);
-          }
+          // Always create a new version (versioned by timestamp)
+          return createUserQuestion(payload);
         } else {
           // Handle StartupQuestions for other categories
           const existingResponse = startupQuestions?.find(
@@ -237,27 +231,21 @@ const Survey: React.FC = () => {
           // Skip if answer is empty and question is not required
           if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) return null;
 
-          // Skip if answer hasn't changed
+          // Skip if answer hasn't changed (prevents duplicate versions)
           if (existingResponse) {
-            const existingAnswer = JSON.parse(existingResponse.answer as any);
-            if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) return null;
+            // Supabase auto-handles JSON serialization, so just compare directly
+            if (JSON.stringify(existingResponse.answer) === JSON.stringify(answer)) return null;
           }
 
           const payload = {
             startup_id: startup.id,
             pattern_id: patternId,
             question_id: question.id,
-            answer: JSON.stringify(answer),
+            answer: answer, // Supabase handles JSON serialization automatically
           };
 
-          if (existingResponse) {
-            return updateStartupQuestion({
-              id: existingResponse.id,
-              ...payload,
-            });
-          } else {
-            return createStartupQuestion(payload);
-          }
+          // Always create a new version (versioned by timestamp)
+          return createStartupQuestion(payload);
         }
       });
 
@@ -303,10 +291,10 @@ const Survey: React.FC = () => {
           // Skip if answer is empty and question is not required
           if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) return null;
 
-          // Skip if answer hasn't changed
+          // Skip if answer hasn't changed (prevents duplicate versions)
           if (existingResponse) {
-            const existingAnswer = JSON.parse(existingResponse.answer as any);
-            if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) return null;
+            // Supabase auto-handles JSON serialization, so just compare directly
+            if (JSON.stringify(existingResponse.answer) === JSON.stringify(answer)) return null;
           }
 
           const payload = {
@@ -314,17 +302,11 @@ const Survey: React.FC = () => {
             pattern_id: patternId,
             question_id: question.id,
             startup_id: startup.id,
-            answer: JSON.stringify(answer),
+            answer: answer, // Supabase handles JSON serialization automatically
           };
 
-          if (existingResponse) {
-            return updateUserQuestion({
-              id: existingResponse.id,
-              ...payload,
-            });
-          } else {
-            return createUserQuestion(payload);
-          }
+          // Always create a new version (versioned by timestamp)
+          return createUserQuestion(payload);
         } else {
           // Handle StartupQuestions for other categories
           const existingResponse = startupQuestions?.find(
@@ -334,27 +316,21 @@ const Survey: React.FC = () => {
           // Skip if answer is empty and question is not required
           if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) return null;
 
-          // Skip if answer hasn't changed
+          // Skip if answer hasn't changed (prevents duplicate versions)
           if (existingResponse) {
-            const existingAnswer = JSON.parse(existingResponse.answer as any);
-            if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) return null;
+            // Supabase auto-handles JSON serialization, so just compare directly
+            if (JSON.stringify(existingResponse.answer) === JSON.stringify(answer)) return null;
           }
 
           const payload = {
             startup_id: startup.id,
             pattern_id: patternId,
             question_id: question.id,
-            answer: JSON.stringify(answer),
+            answer: answer, // Supabase handles JSON serialization automatically
           };
 
-          if (existingResponse) {
-            return updateStartupQuestion({
-              id: existingResponse.id,
-              ...payload,
-            });
-          } else {
-            return createStartupQuestion(payload);
-          }
+          // Always create a new version (versioned by timestamp)
+          return createStartupQuestion(payload);
         }
       });
 

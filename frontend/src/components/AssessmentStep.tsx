@@ -55,7 +55,7 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
     loading: userQuestionsLoading,
     error: userQuestionsError,
   } = useUserQuestions();
-  const { createUserQuestion, updateUserQuestion } = useUserQuestion();
+  const { createUserQuestion } = useUserQuestion();
 
   // Startup questions hooks
   const {
@@ -65,7 +65,7 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
     loading: startupQuestionsLoading,
     error: startupQuestionsError,
   } = useStartupQuestions();
-  const { createStartupQuestion, updateStartupQuestion } = useStartupQuestion();
+  const { createStartupQuestion } = useStartupQuestion();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -121,43 +121,30 @@ const AssessmentStep = forwardRef<AssessmentStepRef, AssessmentStepProps>(({
         // Skip if answer is empty and question is not required
         if ((!answer || (Array.isArray(answer) && answer.length === 0)) && !question.is_required) continue;
 
-        // Skip if answer hasn't changed
+        // Skip if answer hasn't changed (prevents duplicate versions)
         if (existingResponse) {
-          const existingAnswer = existingResponse.answer;
-          if (JSON.stringify(existingAnswer) === JSON.stringify(answer)) continue;
+          // Supabase auto-handles JSON serialization, so just compare directly
+          if (JSON.stringify(existingResponse.answer) === JSON.stringify(answer)) continue;
         }
 
+        // Always create a new version (versioned by timestamp)
         if (questionType === 'user' && userId) {
           const payload = {
             user_id: userId,
             question_id: question.id,
             startup_id: startupId,
-            answer: JSON.stringify(answer),
+            answer: answer, // Supabase handles JSON serialization automatically
           };
 
-          if (existingResponse) {
-            await updateUserQuestion({
-              id: existingResponse.id,
-              ...payload,
-            });
-          } else {
-            await createUserQuestion(payload);
-          }
+          await createUserQuestion(payload);
         } else if (questionType === 'startup') {
           const payload = {
             question_id: question.id,
             startup_id: startupId,
-            answer: JSON.stringify(answer),
+            answer: answer, // Supabase handles JSON serialization automatically
           };
 
-          if (existingResponse) {
-            await updateStartupQuestion({
-              id: existingResponse.id,
-              ...payload,
-            });
-          } else {
-            await createStartupQuestion(payload);
-          }
+          await createStartupQuestion(payload);
         }
       }
 

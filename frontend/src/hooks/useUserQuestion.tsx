@@ -3,9 +3,8 @@ import {
     supabaseGetUserQuestion,
     supabaseFindUserQuestion,
     supabaseCreateUserQuestion,
-    supabaseUpdateUserQuestion,
 } from '@/lib/supabase';
-import { UserQuestion, UserQuestionCreate, UserQuestionUpdate } from '@/types/database';
+import { UserQuestion, UserQuestionCreate } from '@/types/database';
 
 interface UseUserQuestion {
     userQuestion: UserQuestion | null;
@@ -20,7 +19,6 @@ interface UseUserQuestionReturn extends UseUserQuestion {
         methodId: string,
     ) => Promise<void>;
     createUserQuestion: (createUserQuestion: UserQuestionCreate) => Promise<UserQuestion>;
-    updateUserQuestion: (updateUserQuestion: UserQuestionUpdate) => Promise<UserQuestion>;
 }
 
 export default function useUserQuestion(): UseUserQuestionReturn {
@@ -73,26 +71,10 @@ export default function useUserQuestion(): UseUserQuestionReturn {
         [],
     );
 
-    const updateUserQuestion = useCallback(
-        async (updateUserQuestion: UserQuestionUpdate) => {
-            try {
-                setState(prev => ({ ...prev, loading: true }));
-                const userQuestion = await supabaseUpdateUserQuestion(updateUserQuestion);
-                setState({ userQuestion, loading: false });
-                return userQuestion;
-            } catch (err: unknown) {
-                setState(prev => ({ ...prev, loading: false }));
-                throw err;
-            }
-        },
-        [],
-    );
-
     return {
         fetchUserQuestion,
         findPatternMethod,
         createUserQuestion,
-        updateUserQuestion,
         userQuestion: state.userQuestion,
         loading: state.loading,
     };

@@ -3,9 +3,8 @@ import {
     supabaseGetStartupQuestion,
     supabaseFindStartupQuestion,
     supabaseCreateStartupQuestion,
-    supabaseUpdateStartupQuestion,
 } from '@/lib/supabase';
-import { StartupQuestion, StartupQuestionCreate, StartupQuestionUpdate } from '@/types/database';
+import { StartupQuestion, StartupQuestionCreate } from '@/types/database';
 
 interface UseStartupQuestion {
     startupQuestion: StartupQuestion | null;
@@ -20,7 +19,6 @@ interface UseStartupQuestionReturn extends UseStartupQuestion {
         methodId: string,
     ) => Promise<void>;
     createStartupQuestion: (createStartupQuestion: StartupQuestionCreate) => Promise<StartupQuestion>;
-    updateStartupQuestion: (updateStartupQuestion: StartupQuestionUpdate) => Promise<StartupQuestion>;
 }
 
 export default function useStartupQuestion(): UseStartupQuestionReturn {
@@ -73,26 +71,10 @@ export default function useStartupQuestion(): UseStartupQuestionReturn {
         [],
     );
 
-    const updateStartupQuestion = useCallback(
-        async (updateStartupQuestion: StartupQuestionUpdate) => {
-            try {
-                setState(prev => ({ ...prev, loading: true }));
-                const startupQuestion = await supabaseUpdateStartupQuestion(updateStartupQuestion);
-                setState({ startupQuestion, loading: false });
-                return startupQuestion;
-            } catch (err: unknown) {
-                setState(prev => ({ ...prev, loading: false }));
-                throw err;
-            }
-        },
-        [],
-    );
-
     return {
         fetchStartupQuestion,
         findPatternMethod,
         createStartupQuestion,
-        updateStartupQuestion,
         startupQuestion: state.startupQuestion,
         loading: state.loading,
     };

@@ -30,10 +30,8 @@ import type {
   UserMethodUpdate,
   UserQuestion,
   UserQuestionCreate,
-  UserQuestionUpdate,
   StartupQuestion,
   StartupQuestionCreate,
-  StartupQuestionUpdate,
   Request,
   RequestCreate,
   RequestUpdate,
@@ -1632,8 +1630,10 @@ export async function supabaseGetUserQuestions(
   patternId?: string,
   startupId?: string,
 ): Promise<UserQuestion[]> {
+  // Query the view instead of the table - view only returns latest versions
+  // Note: After creating the view in Supabase, regenerate types to remove type casting
   let query = supabase
-    .from('user_questions')
+    .from('latest_user_questions' as any)
     .select(`
       *,
       pattern:patterns(*),
@@ -1654,24 +1654,7 @@ export async function supabaseGetUserQuestions(
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data as UserQuestion[];
-}
-
-export async function supabaseUpdateUserQuestion(
-  updateUserQuestion: UserQuestionUpdate
-): Promise<UserQuestion> {
-  const { id, ...updates } = updateUserQuestion;
-
-  const { error } = await supabase
-    .from('user_questions')
-    .update({
-      answer: updates.answer,
-    })
-    .eq('id', id!);
-
-  if (error) throw new Error(handleSupabaseError(error));
-
-  return supabaseGetUserQuestion(id!);
+  return data as unknown as UserQuestion[];
 }
 
 export async function supabaseGetUserQuestion(id: string): Promise<UserQuestion> {
@@ -1694,7 +1677,7 @@ export async function supabaseFindUserQuestion(
   questionId: string,
   startupId?: string
 ): Promise<UserQuestion | null> {
-  // Find the user question by matching foreign keys directly
+  // Find the LATEST user question by matching foreign keys and ordering by created_at
   let query = supabase
     .from('user_questions')
     .select('*')
@@ -1708,12 +1691,18 @@ export async function supabaseFindUserQuestion(
     query = query.is('startup_id', null);
   }
 
-  const { data, error } = await query.single();
+  // Order by created_at descending to get the latest version
+  const { data, error } = await query
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   if (error) {
     // No matching question found
     return null;
   }
+
+  if (!data) return null;
 
   return supabaseGetUserQuestion(data.id);
 }
@@ -1737,8 +1726,10 @@ export async function supabaseGetStartupQuestions(
   startupId?: string,
   patternId?: string
 ): Promise<StartupQuestion[]> {
+  // Query the view instead of the table - view only returns latest versions
+  // Note: After creating the view in Supabase, regenerate types to remove type casting
   let query = supabase
-    .from('startup_questions')
+    .from('latest_startup_questions' as any)
     .select(`
       *,
       pattern:patterns(*),
@@ -1757,7 +1748,7 @@ export async function supabaseGetStartupQuestions(
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data;
+  return data as unknown as StartupQuestion[];
 }
 
 export async function supabaseGetStartupQuestion(id: string): Promise<StartupQuestion> {
@@ -1790,31 +1781,16 @@ export async function supabaseFindStartupQuestion(
       question:questions(*),
       startup:startups(*)
     `)
-    .eq('startup', startupId)
-    .eq('pattern', patternId)
-    .eq('question', questionId)
+    .eq('startup_id', startupId)
+    .eq('pattern_id', patternId)
+    .eq('question_id', questionId)
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (error) throw new Error(handleSupabaseError(error));
 
   return data;
-}
-
-export async function supabaseUpdateStartupQuestion(
-  updateStartupQuestion: StartupQuestionUpdate
-): Promise<StartupQuestion> {
-  const { id, ...updates } = updateStartupQuestion;
-
-  const { error } = await supabase
-    .from('startup_questions')
-    .update({
-      answer: updates.answer,
-    })
-    .eq('id', id!);
-
-  if (error) throw new Error(handleSupabaseError(error));
-
-  return supabaseGetStartupQuestion(id!);
 }
 
 export async function supabaseCreateStartupQuestion(
