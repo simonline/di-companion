@@ -40,7 +40,7 @@ export interface UserProgress {
 
 export interface StartupProgress {
   'startup-profile': boolean;
-  'startup-members': boolean;
+  'startup-team': boolean;
   'team-values': boolean;
   'team-contract': boolean;
   'team-assessment': boolean;

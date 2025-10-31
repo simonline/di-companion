@@ -8,8 +8,6 @@ import {
   Button,
   Stack,
   Avatar,
-  LinearProgress,
-  Chip,
   IconButton,
 } from '@mui/material';
 import {
@@ -77,7 +75,7 @@ function Startup() {
   // Use progress field if available
   const stepProgress = startup.progress || {
     'startup-profile': false,
-    'startup-members': false,
+    'startup-team': false,
     'team-values': false,
     'team-contract': false,
     'team-assessment': false,
@@ -99,13 +97,13 @@ function Startup() {
       completed: stepProgress['startup-profile']
     },
     {
-      id: 'startup-members',
+      id: 'startup-team',
       title: 'Startup Team',
       description: 'Add team members and define roles',
       icon: Group,
       color: categoryColors.team,
       path: `/startup/team`,
-      completed: stepProgress['startup-members']
+      completed: stepProgress['startup-team']
     },
     {
       id: 'team-values',
@@ -181,9 +179,6 @@ function Startup() {
     }
   ];
 
-  const completedSteps = steps.filter(step => step.completed).length;
-  const progress = (completedSteps / steps.length) * 100;
-
   return (
     <>
       <Header title="Startup Journey" />
@@ -212,46 +207,6 @@ function Startup() {
                   </Typography>
                 </Box>
               </Stack>
-
-              {/* Progress Section */}
-              <Box sx={{ position: 'relative' }}>
-                <Box sx={{ position: 'relative', height: 32, display: 'flex', alignItems: 'center' }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={progress}
-                    sx={{
-                      position: 'absolute',
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: 2,
-                      bgcolor: 'action.hover',
-                      '& .MuiLinearProgress-bar': {
-                        borderRadius: 2,
-                        bgcolor: categoryColors.team
-                      }
-                    }}
-                  />
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      position: 'relative',
-                      width: '100%',
-                      textAlign: 'center',
-                      fontWeight: 600,
-                      color: progress > 50 ? 'white' : 'text.primary',
-                      textShadow: progress > 50 ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-                      zIndex: 1,
-                    }}
-                  >
-                    {completedSteps} of {steps.length} steps completed
-                  </Typography>
-                </Box>
-                {progress === 100 && (
-                  <Typography variant="caption" sx={{ mt: 1, display: 'block', color: categoryColors.team }}>
-                    🎉 Congratulations! You've completed all setup steps.
-                  </Typography>
-                )}
-              </Box>
             </Stack>
           </Grid>
 
@@ -302,31 +257,8 @@ function Startup() {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            position: 'relative',
                           }}
                         >
-                          {/* Step Number Badge - Positioned on icon box like User page */}
-                          <Chip
-                            label={index + 1}
-                            size="small"
-                            sx={{
-                              position: 'absolute',
-                              top: -8,
-                              left: -8,
-                              width: 24,
-                              height: 24,
-                              bgcolor: step.completed ? step.color : `color-mix(in srgb, ${step.color} 12.5%, white)`,
-                              color: step.completed ? 'white' : 'text.primary',
-                              fontWeight: 700,
-                              border: '2px solid',
-                              borderColor: 'background.paper',
-                              zIndex: 1,
-                              '& .MuiChip-label': {
-                                px: 0,
-                                py: 0,
-                              }
-                            }}
-                          />
                           <step.icon sx={{ color: step.color, fontSize: { xs: 32, sm: 24 } }} />
                         </Box>
                         <Box sx={{ flex: 1, textAlign: { xs: 'left', sm: 'center' } }}>

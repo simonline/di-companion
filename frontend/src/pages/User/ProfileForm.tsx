@@ -17,7 +17,6 @@ import {
   FormControl,
   InputLabel,
   Select,
-  Snackbar,
   Alert,
   Avatar,
 } from '@mui/material';
@@ -29,6 +28,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import { getAvatarUrl } from '@/lib/supabase';
 import { categoryColors } from '@/utils/constants';
+import useNotifications from '@/store/notifications';
 
 interface ProfileFormValues {
   email: string;
@@ -77,8 +77,7 @@ function ProfileForm() {
   const { user, profile, updateProfile, createProfile } = useAuthContext();
   const { field } = useParams<{ field?: string }>();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [, notificationsActions] = useNotifications();
 
   // Determine where to navigate back to based on query params
   const searchParams = new URLSearchParams(location.search);
@@ -113,7 +112,6 @@ function ProfileForm() {
     { setSubmitting, setErrors }: FormikHelpers<ProfileFormValues>,
   ): Promise<void> => {
     setIsSubmitting(true);
-    setErrorMessage('');
 
     try {
       if (isCreateMode) {
@@ -177,7 +175,10 @@ function ProfileForm() {
         }
       }
 
-      setSuccessMessage(isCreateMode ? 'Profile created successfully' : 'Profile updated successfully');
+      notificationsActions.push({
+        options: { variant: 'success' },
+        message: isCreateMode ? 'Profile created successfully' : 'Profile updated successfully',
+      });
 
       // Navigate back after a short delay
       setTimeout(() => {
@@ -190,7 +191,10 @@ function ProfileForm() {
     } catch (err) {
       const error = err as Error;
       console.error('Profile update error:', error);
-      setErrorMessage(error.message);
+      notificationsActions.push({
+        options: { variant: 'error' },
+        message: error.message,
+      });
       setErrors({ submit: error.message });
     } finally {
       setIsSubmitting(false);
@@ -460,30 +464,6 @@ function ProfileForm() {
           </CardContent>
         </Card>
       </Container>
-
-      {/* Success message */}
-      <Snackbar
-        open={!!successMessage}
-        autoHideDuration={6000}
-        onClose={() => setSuccessMessage('')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={() => setSuccessMessage('')} severity="success" sx={{ width: '100%' }}>
-          {successMessage}
-        </Alert>
-      </Snackbar>
-
-      {/* Error message */}
-      <Snackbar
-        open={!!errorMessage}
-        autoHideDuration={6000}
-        onClose={() => setErrorMessage('')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={() => setErrorMessage('')} severity="error" sx={{ width: '100%' }}>
-          {errorMessage}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

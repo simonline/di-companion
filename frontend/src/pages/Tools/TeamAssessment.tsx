@@ -21,7 +21,7 @@ import { CategoryEnum, categoryDisplayNames, categoryColors, categoryIcons } fro
 
 const TeamAssessment: React.FC = () => {
   const navigate = useNavigate();
-  const { user, startup, updateScores } = useAuthContext();
+  const { user, startup, updateScores, updateStartup } = useAuthContext();
   const [, notificationsActions] = useNotifications();
 
   const [activeStep, setActiveStep] = useState(0);
@@ -65,12 +65,16 @@ const TeamAssessment: React.FC = () => {
       // Update scores
       await updateScores();
 
-      // TODO: Update startup progress when API is available
-      // const currentProgress = startup?.progress || {};
-      // await updateStartupProgress({
-      //   ...currentProgress,
-      //   'team-assessment': true
-      // });
+      // Update startup progress
+      if (startup) {
+        await updateStartup({
+          id: startup.id,
+          progress: {
+            ...startup.progress,
+            'team-assessment': true
+          }
+        });
+      }
 
       notificationsActions.push({
         options: { variant: 'success' },

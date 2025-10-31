@@ -46,6 +46,7 @@ interface DocumentManagerProps {
   entityField?: string;
   title?: string;
   description?: string;
+  onUploadSuccess?: () => void | Promise<void>;
 }
 
 const DocumentManager: React.FC<DocumentManagerProps> = ({
@@ -53,6 +54,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
   entityType,
   entityId,
   entityField,
+  onUploadSuccess,
   title = 'Documents',
   description = 'Upload and manage documents',
 }) => {
@@ -186,6 +188,12 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
       }
 
       await fetchDocuments();
+
+      // Call onUploadSuccess callback if provided
+      if (onUploadSuccess) {
+        await onUploadSuccess();
+      }
+
       handleCloseDialog();
     } catch (error) {
       console.error('Error uploading:', error);

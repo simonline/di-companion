@@ -22,7 +22,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 
 const PitchDeck: React.FC = () => {
     const navigate = useNavigate();
-    const { startup } = useAuthContext();
+    const { startup, updateStartup } = useAuthContext();
 
     return (
         <>
@@ -110,6 +110,17 @@ const PitchDeck: React.FC = () => {
                         entityField="pitch_deck"
                         title="Pitch Deck"
                         description="Upload pitch deck presentations, investor decks, or business presentations for analysis."
+                        onUploadSuccess={async () => {
+                            if (startup && startup.progress?.['pitch-deck'] !== true) {
+                                await updateStartup({
+                                    id: startup.id,
+                                    progress: {
+                                        ...startup.progress,
+                                        'pitch-deck': true
+                                    }
+                                });
+                            }
+                        }}
                     />
                 </Box>
             </CenteredFlexBox>

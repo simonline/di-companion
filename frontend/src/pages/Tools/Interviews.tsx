@@ -22,7 +22,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 
 const Interviews: React.FC = () => {
     const navigate = useNavigate();
-    const { startup } = useAuthContext();
+    const { startup, updateStartup } = useAuthContext();
 
     return (
         <>
@@ -108,6 +108,17 @@ const Interviews: React.FC = () => {
                         entityField="interviews"
                         title="Interviews"
                         description="Upload interview recordings, transcripts, customer feedback, or survey responses for analysis."
+                        onUploadSuccess={async () => {
+                            if (startup && startup.progress?.['interviews'] !== true) {
+                                await updateStartup({
+                                    id: startup.id,
+                                    progress: {
+                                        ...startup.progress,
+                                        'interviews': true
+                                    }
+                                });
+                            }
+                        }}
                     />
                 </Box>
             </CenteredFlexBox>

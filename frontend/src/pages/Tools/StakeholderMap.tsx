@@ -22,7 +22,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 
 const StakeholderMap: React.FC = () => {
     const navigate = useNavigate();
-    const { startup } = useAuthContext();
+    const { startup, updateStartup } = useAuthContext();
 
     return (
         <>
@@ -108,6 +108,17 @@ const StakeholderMap: React.FC = () => {
                         entityId={startup?.id}
                         entityField="stakeholder_map"
                         title="Stakeholder Map Documents"
+                        onUploadSuccess={async () => {
+                            if (startup && startup.progress?.['stakeholder-map'] !== true) {
+                                await updateStartup({
+                                    id: startup.id,
+                                    progress: {
+                                        ...startup.progress,
+                                        'stakeholder-map': true
+                                    }
+                                });
+                            }
+                        }}
                         description="Upload stakeholder maps, analysis documents, or paste workshop notes"
                     />
                 </Box>

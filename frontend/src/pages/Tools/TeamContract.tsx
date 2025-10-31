@@ -25,7 +25,7 @@ import { CategoryEnum, categoryDisplayNames, categoryColors, categoryIcons } fro
 
 const TeamContract: React.FC = () => {
     const navigate = useNavigate();
-    const { startup, user, profile } = useAuthContext();
+    const { startup, user, profile, updateStartup } = useAuthContext();
     const [, notificationsActions] = useNotifications();
     const isSolo = startup?.founders_count === 1;
     const [activeStep, setActiveStep] = useState(0);
@@ -61,7 +61,17 @@ const TeamContract: React.FC = () => {
         }
 
         if (activeStep === steps.length - 1) {
-            // Last step - complete and navigate
+            // Last step - mark progress and navigate
+            if (startup) {
+                await updateStartup({
+                    id: startup.id,
+                    progress: {
+                        ...startup.progress,
+                        'team-contract': true
+                    }
+                });
+            }
+
             notificationsActions.push({
                 options: { variant: 'success' },
                 message: 'Team contract assessment completed successfully!',

@@ -21,6 +21,7 @@ import { supabaseCreateStartupMethod, supabaseUpdateStartupMethod } from '@/lib/
 import { StartupMethod } from '@/types/database';
 import { supabase } from '@/lib/supabase';
 import { CategoryEnum, categoryColors } from '@/utils/constants';
+import useNotifications from '@/store/notifications';
 
 interface FounderValues {
     userId: string;
@@ -52,7 +53,8 @@ const TEAM_VALUES_METHOD_NAME = 'Team Values';
 
 const TeamValues: React.FC = () => {
     const navigate = useNavigate();
-    const { user, startup } = useAuthContext();
+    const { user, startup, updateStartup } = useAuthContext();
+    const [, notificationsActions] = useNotifications();
 
     const [teamValuesData, setTeamValuesData] = useState<TeamValuesData>({
         founderValues: [],
@@ -229,8 +231,21 @@ const TeamValues: React.FC = () => {
                 setStartupMethod(newMethod);
             }
 
-            // Show success message
+            // Mark progress as complete
+            await updateStartup({
+                id: startup.id,
+                progress: {
+                    ...startup.progress,
+                    'team-values': true
+                }
+            });
+
+            // Show success notification
             setError(null);
+            notificationsActions.push({
+                options: { variant: 'success' },
+                message: 'Team values saved successfully!',
+            });
         } catch (err) {
             console.error('Error saving team values:', err);
             setError('Failed to save team values. Please try again.');

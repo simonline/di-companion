@@ -22,7 +22,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 
 function FinancialPlan() {
   const navigate = useNavigate();
-  const { startup } = useAuthContext();
+  const { startup, updateStartup } = useAuthContext();
 
   return (
     <>
@@ -113,6 +113,17 @@ function FinancialPlan() {
             entityField="financial_plan"
             title="Financial Plan"
             description="Upload financial plans, revenue models, or budget projections for analysis."
+            onUploadSuccess={async () => {
+              if (startup && startup.progress?.['financial-plan'] !== true) {
+                await updateStartup({
+                  id: startup.id,
+                  progress: {
+                    ...startup.progress,
+                    'financial-plan': true
+                  }
+                });
+              }
+            }}
           />
         </Box>
       </CenteredFlexBox>

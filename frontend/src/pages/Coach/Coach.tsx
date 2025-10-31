@@ -6,8 +6,6 @@ import {
   Typography,
   Avatar,
   Divider,
-  Snackbar,
-  Alert,
 } from '@mui/material';
 import { getRecommendationIcon } from './types';
 import { Profile, Recommendation, RequestCreate } from '@/types/database';
@@ -21,20 +19,18 @@ import { useAuthContext } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import RequestForm from './components/RequestForm';
 import { getAvatarUrl, supabaseGetProfileById } from '@/lib/supabase';
+import useNotifications from '@/store/notifications';
 
 export const Coach: React.FC = () => {
   const navigate = useNavigate();
   const { startup, profile } = useAuthContext();
+  const [, notificationsActions] = useNotifications();
   const { fetchRecommendations, updateRecommendation, recommendations, loading, error } =
     useRecommendations();
   const { createRequest } = useRequests();
   const [coach, setCoach] = useState<Profile | null>(null);
   const [isRequestFormOpen, setIsRequestFormOpen] = useState(false);
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
-  const [notification, setNotification] = useState<{
-    message: string;
-    severity: 'success' | 'error' | 'info' | 'warning';
-  } | null>(null);
 
   useEffect(() => {
     const fetchCoach = async () => {
@@ -71,22 +67,18 @@ export const Coach: React.FC = () => {
     try {
       await createRequest(values);
       setIsRequestFormOpen(false);
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'success' },
         message: 'Request sent successfully',
-        severity: 'success',
       });
     } catch (error) {
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'error' },
         message: `Error: ${(error as Error).message}`,
-        severity: 'error',
       });
     } finally {
       setIsSubmittingRequest(false);
     }
-  };
-
-  const handleCloseNotification = () => {
-    setNotification(null);
   };
 
   const handleRecommendationClick = (recommendation: Recommendation) => {
@@ -398,21 +390,6 @@ export const Coach: React.FC = () => {
           isSubmitting={isSubmittingRequest}
           startupId={startup?.id}
         />
-
-        <Snackbar
-          open={!!notification}
-          autoHideDuration={6000}
-          onClose={handleCloseNotification}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert
-            onClose={handleCloseNotification}
-            severity={notification?.severity || 'info'}
-            sx={{ width: '100%' }}
-          >
-            {notification?.message || ''}
-          </Alert>
-        </Snackbar>
       </CenteredFlexBox>
     </>
   );

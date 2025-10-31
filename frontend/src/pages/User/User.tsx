@@ -6,8 +6,6 @@ import {
   Typography,
   Grid,
   Button,
-  Chip,
-  LinearProgress,
   CardMedia,
   IconButton,
   Avatar,
@@ -96,10 +94,6 @@ const User: React.FC = () => {
     ]);
   }, [user, profile, startup]);
 
-  const completedSteps = onboardingSteps.filter(step => step.completed).length;
-  const totalSteps = onboardingSteps.length;
-  const progressPercentage = (completedSteps / totalSteps) * 100;
-
   const avatarUrl = profile ? getAvatarUrl(profile.avatar_id) : undefined;
   const userInitials = `${profile?.given_name?.charAt(0) || ''}${profile?.family_name?.charAt(0) || ''}`;
 
@@ -129,46 +123,6 @@ const User: React.FC = () => {
                   </Typography>
                 </Box>
               </Stack>
-
-              {/* Progress Section */}
-              <Box sx={{ position: 'relative' }}>
-                <Box sx={{ position: 'relative', height: 32, display: 'flex', alignItems: 'center' }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={progressPercentage}
-                    sx={{
-                      position: 'absolute',
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: 2,
-                      bgcolor: 'action.hover',
-                      '& .MuiLinearProgress-bar': {
-                        borderRadius: 2,
-                        bgcolor: categoryColors.entrepreneur,
-                      },
-                    }}
-                  />
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      position: 'relative',
-                      width: '100%',
-                      textAlign: 'center',
-                      fontWeight: 600,
-                      color: progressPercentage > 50 ? 'white' : 'text.primary',
-                      textShadow: progressPercentage > 50 ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-                      zIndex: 1,
-                    }}
-                  >
-                    {completedSteps} of {totalSteps} steps completed
-                  </Typography>
-                </Box>
-                {progressPercentage === 100 && (
-                  <Typography variant="caption" sx={{ mt: 1, display: 'block', color: categoryColors.entrepreneur }}>
-                    🎉 Congratulations! You&apos;ve completed all onboarding steps.
-                  </Typography>
-                )}
-              </Box>
             </Stack>
           </Grid>
           {/* Onboarding Steps */}
@@ -207,31 +161,8 @@ const User: React.FC = () => {
                           justifyContent: 'center',
                           bgcolor: `${categoryColors.entrepreneur}20`,
                           color: categoryColors.entrepreneur,
-                          position: 'relative',
                         }}
                       >
-                        {/* Corner number badge */}
-                        <Chip
-                          label={index + 1}
-                          size="small"
-                          sx={{
-                            position: 'absolute',
-                            top: -8,
-                            left: -8,
-                            width: 24,
-                            height: 24,
-                            bgcolor: step.completed ? categoryColors.entrepreneur : `color-mix(in srgb, ${categoryColors.entrepreneur} 12.5%, white)`,
-                            color: step.completed ? 'white' : 'text.primary',
-                            fontWeight: 700,
-                            border: '2px solid',
-                            borderColor: 'background.paper',
-                            zIndex: 1,
-                            '& .MuiChip-label': {
-                              px: 0,
-                              py: 0,
-                            }
-                          }}
-                        />
                         {step.icon}
                       </Box>
                       <Box sx={{ flex: 1 }}>

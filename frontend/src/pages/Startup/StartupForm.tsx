@@ -143,7 +143,7 @@ function StartupForm() {
           is_mvp_tested: values.is_mvp_tested,
           created_by_id: user.id,
           progress: {
-            startup: true
+            'startup-profile': true
           }
         });
 

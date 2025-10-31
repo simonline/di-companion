@@ -22,7 +22,7 @@ import { useAuthContext } from '@/hooks/useAuth';
 
 const Persona: React.FC = () => {
     const navigate = useNavigate();
-    const { startup } = useAuthContext();
+    const { startup, updateStartup } = useAuthContext();
 
     return (
         <>
@@ -110,6 +110,17 @@ const Persona: React.FC = () => {
                         entityField="persona"
                         title="User Personas"
                         description="Upload user persona documents, customer profiles, or demographic research for analysis."
+                        onUploadSuccess={async () => {
+                            if (startup && startup.progress?.['persona'] !== true) {
+                                await updateStartup({
+                                    id: startup.id,
+                                    progress: {
+                                        ...startup.progress,
+                                        'persona': true
+                                    }
+                                });
+                            }
+                        }}
                     />
                 </Box>
             </CenteredFlexBox>

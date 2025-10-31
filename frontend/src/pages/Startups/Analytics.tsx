@@ -11,10 +11,6 @@ import {
     TableHead,
     TableRow,
     Paper,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
     Avatar,
     IconButton,
     Tooltip,
@@ -23,196 +19,51 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    List,
-    ListItem,
-    TextField,
     ToggleButtonGroup,
     ToggleButton,
     Chip,
     TableSortLabel,
     CircularProgress,
+    LinearProgress,
     Stack,
+    Grid,
 } from '@mui/material';
-import { Info as InfoIcon, Person as PersonIcon, Pattern as PatternIcon } from '@mui/icons-material';
+import { Info as InfoIcon, CheckCircle as CheckCircleIcon, RadioButtonUnchecked as UncheckedIcon } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
-import { Startup } from '@/types/database';
-import { formatDistanceToNow, subWeeks, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear } from 'date-fns';
-import { de } from 'date-fns/locale';
-import { supabaseGetStartupPatterns, supabaseGetStartups, supabase } from '@/lib/supabase';
-import { categoryColors, categoryDisplayNames, phaseNumbers, PhaseEnum, CategoryEnum } from '@/utils/constants';
+import { Startup, StartupProgress } from '@/types/database';
+import { supabaseGetStartups, supabase } from '@/lib/supabase';
 
-type TimeFilter = 'thisWeek' | 'lastWeek' | 'thisMonth' | 'lastMonth' | 'thisYear' | 'custom';
 type StartupFilter = 'my' | 'all';
-type SortField = 'name' | 'interactions';
+type SortField = 'name' | 'progress' | 'members';
 type SortOrder = 'asc' | 'desc';
-
-interface DateRange {
-    start_date: Date;
-    endDate: Date;
-}
-
-interface UniqueUser {
-    id: string;
-    name: string;
-}
-
-interface PatternInteraction {
-    patternId: string;
-    patternName: string;
-    lastInteraction: Date;
-    category?: CategoryEnum;
-    phases?: PhaseEnum[];
-    imageUrl?: string;
-}
 
 interface StartupAnalytics {
     startup: Startup;
-    users: UniqueUser[];
-    patternInteractions: PatternInteraction[];
-    uniquePatterns: Set<string>;
-    interactionCount: number;
-    lastActivity: Date;
+    memberCount: number;
+    progressCount: number;
+    progressPercentage: number;
 }
 
-// PatternInteractionListItem component based on PatternListItem from Progress.tsx
-interface PatternInteractionListItemProps {
-    interaction: PatternInteraction;
-}
-
-const PatternInteractionListItem: React.FC<PatternInteractionListItemProps> = ({ interaction }: PatternInteractionListItemProps) => {
-    const [isHovered, setIsHovered] = useState(false);
-
-    // Use the pattern's category color if available, otherwise use default
-    const defaultColor = '#0075bc';
-    const categoryColor = interaction.category ? categoryColors[interaction.category] : defaultColor;
-
-    return (
-        <Card
-            sx={{
-                mb: 2,
-                width: '100%',
-                borderRadius: 2,
-                transition: 'all 0.3s ease',
-                transform: isHovered ? 'translateY(-4px)' : 'none',
-                boxShadow: isHovered ? 8 : 1,
-                position: 'relative',
-                overflow: 'visible',
-                '&:after': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '4px',
-                    height: '100%',
-                    backgroundColor: categoryColor,
-                    borderTopLeftRadius: 8,
-                    borderBottomLeftRadius: 8,
-                },
-            }}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
-            <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                <Stack spacing={1}>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                        <Avatar
-                            sx={{
-                                width: 48,
-                                height: 48,
-                                bgcolor: `${categoryColor}22`,
-                                color: categoryColor,
-                            }}
-                        >
-                            {interaction.imageUrl ? (
-                                <img
-                                    src={interaction.imageUrl}
-                                    alt={interaction.patternName}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                            ) : (
-                                <PatternIcon sx={{ fontSize: 24 }} />
-                            )}
-                        </Avatar>
-                        <Box sx={{ flex: 1 }}>
-                            <Typography
-                                variant="h6"
-                                component="div"
-                                sx={{
-                                    fontWeight: 900,
-                                    mb: 0.5,
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: 'vertical',
-                                    overflow: 'hidden',
-                                }}
-                            >
-                                {interaction.patternName}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Letzte Interaktion: {formatDistanceToNow(interaction.lastInteraction, {
-                                    addSuffix: true,
-                                    locale: de
-                                })}
-                            </Typography>
-                        </Box>
-                    </Stack>
-
-                    {/* Add category and phase chips if available */}
-                    {(interaction.category || (interaction.phases && interaction.phases.length > 0)) && (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                            {interaction.category && (
-                                <Chip
-                                    label={categoryDisplayNames[interaction.category]}
-                                    size="small"
-                                    sx={{
-                                        bgcolor: categoryColor,
-                                        color: 'white',
-                                        fontWeight: 700,
-                                        '&:hover': { bgcolor: `${categoryColor}22` },
-                                        height: 24,
-                                    }}
-                                />
-                            )}
-                            {interaction.phases && interaction.phases.length > 0 && Object.entries(phaseNumbers).map(([phase, number]) => (
-                                <Chip
-                                    key={number}
-                                    label={number}
-                                    sx={{
-                                        backgroundColor: interaction.phases?.includes(phase as PhaseEnum)
-                                            ? '#918d73'
-                                            : '#cccdcc',
-                                        color: 'white',
-                                        fontWeight: '900',
-                                        fontSize: '.9em',
-                                        borderRadius: '50%',
-                                        height: '1.5em',
-                                        width: '1.5em',
-                                        padding: 0,
-                                        span: {
-                                            padding: 0,
-                                        },
-                                    }}
-                                />
-                            ))}
-                        </Box>
-                    )}
-                </Stack>
-            </CardContent>
-        </Card>
-    );
+// Tool names mapping
+const TOOL_NAMES: Record<keyof StartupProgress, string> = {
+    'startup-profile': 'Startup Profile',
+    'startup-team': 'Startup Team',
+    'team-values': 'Team Values',
+    'team-contract': 'Team Contract',
+    'team-assessment': 'Team Assessment',
+    'stakeholder-map': 'Stakeholder Map',
+    'interviews': 'Interviews',
+    'persona': 'Persona',
+    'pitch-deck': 'Pitch Deck',
+    'financial-plan': 'Financial Plan',
 };
 
 export default function AnalyticsView() {
     const { user, profile } = useAuthContext();
-    const [timeFilter, setTimeFilter] = useState<TimeFilter>('thisMonth');
     const [startupFilter, setStartupFilter] = useState<StartupFilter>('my');
-    const [dateRange, setDateRange] = useState<DateRange>({
-        start_date: startOfMonth(new Date()),
-        endDate: new Date(),
-    });
     const [analytics, setAnalytics] = useState<StartupAnalytics[]>([]);
     const [selectedStartup, setSelectedStartup] = useState<StartupAnalytics | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -252,74 +103,69 @@ export default function AnalyticsView() {
                 if (startupFilter === 'my') {
                     startups = coachees || [];
                 } else {
-                    // Fetch all startups, not just available ones
+                    // Fetch all startups
                     const allStartups = await supabaseGetStartups();
                     startups = allStartups || [];
                 }
 
-                // 2. Initialize analytics data structure
-                const analyticsMap = new Map<string, StartupAnalytics>();
+                // 2. Fetch member count for each startup
+                const analyticsPromises = startups.map(async (startup) => {
+                    // Count members - fetch actual data to count
+                    const { data: members, error } = await supabase
+                        .from('startups_users_lnk')
+                        .select('user_id')
+                        .eq('startup_id', startup.id);
 
-                // 3. Fetch startup patterns for each startup
-                for (const startup of startups) {
-                    // Initialize entry for this startup
-                    analyticsMap.set(startup.id, {
-                        startup,
-                        users: [],
-                        patternInteractions: [],
-                        uniquePatterns: new Set<string>(),
-                        interactionCount: 0,
-                        lastActivity: new Date(0)
-                    });
-
-                    // Fetch all patterns for this startup with date range filter
-                    const startupPatterns = await supabaseGetStartupPatterns(
-                        startup.id,
-                        undefined,
-                        dateRange
-                    );
-
-                    // Process each pattern (no need to filter here since it's done on the server)
-                    for (const pattern of startupPatterns) {
-                        const analytics = analyticsMap.get(startup.id);
-                        if (!analytics) continue;
-
-                        // Add pattern interaction
-                        const interactionDate = new Date(pattern.created_at);
-                        analytics.patternInteractions.push({
-                            patternId: pattern.pattern?.id,
-                            patternName: pattern.pattern?.name || 'Unnamed Pattern',
-                            lastInteraction: interactionDate,
-                            category: pattern.pattern?.category as CategoryEnum,
-                            phases: pattern.pattern?.phases as PhaseEnum[],
-                            imageUrl: pattern.pattern?.image?.url,
-                        });
-
-                        // Add unique pattern
-                        analytics.uniquePatterns.add(pattern.pattern?.id);
-
-                        // Increment interaction count
-                        analytics.interactionCount++;
-
-                        // Update last activity if this is more recent
-                        if (interactionDate > analytics.lastActivity) {
-                            analytics.lastActivity = interactionDate;
-                        }
-
-                        // Get user info from the pattern's user attribute
-                        if (pattern.user_id) {
-                            const userId = pattern.user_id || pattern.user_id;
-
-                            // Check if user already exists in the list
-                            if (!analytics.users.some(u => u.id === userId)) {
-                                analytics.users.push({ id: userId, name: '' });
-                            }
-                        }
+                    if (error) {
+                        console.error('Error fetching members for', startup.name, ':', error);
                     }
-                }
 
-                // Convert map to array
-                setAnalytics(Array.from(analyticsMap.values()));
+                    const memberCount = members?.length || 0;
+
+                    // Calculate progress - only count the 10 tool keys
+                    const defaultProgress: StartupProgress = {
+                        'startup-profile': false,
+                        'startup-team': false,
+                        'team-values': false,
+                        'team-contract': false,
+                        'team-assessment': false,
+                        'stakeholder-map': false,
+                        'interviews': false,
+                        'persona': false,
+                        'pitch-deck': false,
+                        'financial-plan': false,
+                    };
+
+                    const progress = startup.progress || defaultProgress;
+
+                    // Only count the specific tool keys
+                    const toolKeys: (keyof StartupProgress)[] = [
+                        'startup-profile',
+                        'startup-team',
+                        'team-values',
+                        'team-contract',
+                        'team-assessment',
+                        'stakeholder-map',
+                        'interviews',
+                        'persona',
+                        'pitch-deck',
+                        'financial-plan',
+                    ];
+
+                    const completedCount = toolKeys.filter(key => progress[key] === true).length;
+                    const totalCount = toolKeys.length;
+                    const progressPercentage = Math.round((completedCount / totalCount) * 100);
+
+                    return {
+                        startup,
+                        memberCount,
+                        progressCount: completedCount,
+                        progressPercentage,
+                    };
+                });
+
+                const analyticsData = await Promise.all(analyticsPromises);
+                setAnalytics(analyticsData);
             } catch (error) {
                 console.error('Error fetching analytics data:', error);
             } finally {
@@ -328,7 +174,7 @@ export default function AnalyticsView() {
         };
 
         fetchData();
-    }, [coachees, dateRange, startupFilter]);
+    }, [coachees, startupFilter]);
 
     const handleSort = (field: SortField) => {
         if (sortField === field) {
@@ -345,51 +191,12 @@ export default function AnalyticsView() {
 
             if (sortField === 'name') {
                 return multiplier * (a.startup.name || '').localeCompare(b.startup.name || '');
+            } else if (sortField === 'progress') {
+                return multiplier * (a.progressPercentage - b.progressPercentage);
             } else {
-                return multiplier * (a.interactionCount - b.interactionCount);
+                return multiplier * (a.memberCount - b.memberCount);
             }
         });
-    };
-
-    const handleTimeFilterChange = (value: TimeFilter) => {
-        setTimeFilter(value);
-        const now = new Date();
-
-        switch (value) {
-            case 'thisWeek':
-                setDateRange({
-                    start_date: startOfWeek(now, { locale: de }),
-                    endDate: now,
-                });
-                break;
-            case 'lastWeek':
-                setDateRange({
-                    start_date: startOfWeek(subWeeks(now, 1), { locale: de }),
-                    endDate: endOfWeek(subWeeks(now, 1), { locale: de }),
-                });
-                break;
-            case 'thisMonth':
-                setDateRange({
-                    start_date: startOfMonth(now),
-                    endDate: now,
-                });
-                break;
-            case 'lastMonth':
-                setDateRange({
-                    start_date: startOfMonth(subMonths(now, 1)),
-                    endDate: endOfMonth(subMonths(now, 1)),
-                });
-                break;
-            case 'thisYear':
-                setDateRange({
-                    start_date: startOfYear(now),
-                    endDate: now,
-                });
-                break;
-            case 'custom':
-                // Keep current date range
-                break;
-        }
     };
 
     const handleStartupFilterChange = (_: React.MouseEvent<HTMLElement>, newFilter: StartupFilter | null) => {
@@ -412,16 +219,14 @@ export default function AnalyticsView() {
                 <Card sx={{ width: '100%', mb: 4 }}>
                     <CardHeader
                         title="Startup Analytics"
-                        subheader="Track startup engagement and pattern interactions"
+                        subheader="Track startup progress and team growth"
                     />
                     <CardContent>
                         <Box sx={{
                             mb: 3,
                             display: 'flex',
-                            justifyContent: 'space-between',
+                            justifyContent: 'flex-start',
                             alignItems: 'center',
-                            flexWrap: 'wrap',
-                            gap: 2
                         }}>
                             <ToggleButtonGroup
                                 value={startupFilter}
@@ -437,47 +242,6 @@ export default function AnalyticsView() {
                                     Alle Startups
                                 </ToggleButton>
                             </ToggleButtonGroup>
-                            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                <FormControl sx={{ minWidth: 150 }}>
-                                    <InputLabel>Zeitraum</InputLabel>
-                                    <Select
-                                        value={timeFilter}
-                                        label="Zeitraum"
-                                        onChange={(e) => handleTimeFilterChange(e.target.value as TimeFilter)}
-                                    >
-                                        <MenuItem value="thisWeek">Diese Woche</MenuItem>
-                                        <MenuItem value="lastWeek">Letzte Woche</MenuItem>
-                                        <MenuItem value="thisMonth">Dieser Monat</MenuItem>
-                                        <MenuItem value="lastMonth">Letzter Monat</MenuItem>
-                                        <MenuItem value="thisYear">Dieses Jahr</MenuItem>
-                                        <MenuItem value="custom">Benutzerdefiniert</MenuItem>
-                                    </Select>
-                                </FormControl>
-                                {timeFilter === 'custom' && (
-                                    <Box sx={{ display: 'flex', gap: 1 }}>
-                                        <TextField
-                                            label="Von"
-                                            type="date"
-                                            value={dateRange.start_date.toISOString().split('T')[0]}
-                                            onChange={(e) => setDateRange(prev => ({
-                                                ...prev,
-                                                start_date: new Date(e.target.value),
-                                            }))}
-                                            InputLabelProps={{ shrink: true }}
-                                        />
-                                        <TextField
-                                            label="Bis"
-                                            type="date"
-                                            value={dateRange.endDate.toISOString().split('T')[0]}
-                                            onChange={(e) => setDateRange(prev => ({
-                                                ...prev,
-                                                endDate: new Date(e.target.value),
-                                            }))}
-                                            InputLabelProps={{ shrink: true }}
-                                        />
-                                    </Box>
-                                )}
-                            </Box>
                         </Box>
 
                         {loading ? (
@@ -486,12 +250,9 @@ export default function AnalyticsView() {
                             </Box>
                         ) : (
                             <>
-                                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Box sx={{ mb: 2 }}>
                                     <Typography variant="body2" color="text.secondary">
                                         {sortedAnalytics.length} {sortedAnalytics.length === 1 ? 'Startup' : 'Startups'} gefunden
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {sortedAnalytics.reduce((sum, item) => sum + item.interactionCount, 0)} Interaktionen insgesamt
                                     </Typography>
                                 </Box>
                                 <TableContainer component={Paper}>
@@ -507,17 +268,24 @@ export default function AnalyticsView() {
                                                         Startup
                                                     </TableSortLabel>
                                                 </TableCell>
-                                                <TableCell>Profiles</TableCell>
-                                                <TableCell align="right">
+                                                <TableCell>
                                                     <TableSortLabel
-                                                        active={sortField === 'interactions'}
-                                                        direction={sortField === 'interactions' ? sortOrder : 'asc'}
-                                                        onClick={() => handleSort('interactions')}
+                                                        active={sortField === 'members'}
+                                                        direction={sortField === 'members' ? sortOrder : 'asc'}
+                                                        onClick={() => handleSort('members')}
                                                     >
-                                                        Interaktionen
+                                                        Members
                                                     </TableSortLabel>
                                                 </TableCell>
-                                                <TableCell align="right">Letzte Interaktion</TableCell>
+                                                <TableCell>
+                                                    <TableSortLabel
+                                                        active={sortField === 'progress'}
+                                                        direction={sortField === 'progress' ? sortOrder : 'asc'}
+                                                        onClick={() => handleSort('progress')}
+                                                    >
+                                                        Progress
+                                                    </TableSortLabel>
+                                                </TableCell>
                                                 <TableCell align="right">Details</TableCell>
                                             </TableRow>
                                         </TableHead>
@@ -528,10 +296,9 @@ export default function AnalyticsView() {
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                             <Avatar
                                                                 sx={{
-                                                                    bgcolor: 'background.paper',
-                                                                    color: 'text.primary',
+                                                                    bgcolor: 'primary.main',
+                                                                    color: 'white',
                                                                     fontWeight: 'bold',
-                                                                    border: '1px solid #e0e0e0',
                                                                 }}
                                                             >
                                                                 {analyticsItem.startup.name?.charAt(0) || '?'}
@@ -540,43 +307,34 @@ export default function AnalyticsView() {
                                                         </Box>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, width: 'fit-content' }}>
-                                                            {analyticsItem.users.map((user) => (
-                                                                <Chip
-                                                                    key={user.id}
-                                                                    label={user.name}
-                                                                    size="small"
-                                                                    icon={<PersonIcon />}
-                                                                    variant="outlined"
-                                                                    sx={{
-                                                                        justifyContent: 'flex-start',
-                                                                        '& .MuiChip-label': {
-                                                                            flex: 1,
-                                                                            textAlign: 'left',
-                                                                            whiteSpace: 'nowrap'
-                                                                        }
-                                                                    }}
-                                                                />
-                                                            ))}
-                                                            {analyticsItem.users.length === 0 && (
-                                                                <Typography variant="body2" color="text.secondary">
-                                                                    Keine Benutzer
-                                                                </Typography>
-                                                            )}
-                                                        </Box>
+                                                        <Chip
+                                                            label={analyticsItem.memberCount}
+                                                            size="small"
+                                                            color="primary"
+                                                            variant="outlined"
+                                                        />
                                                     </TableCell>
-                                                    <TableCell align="right">{analyticsItem.interactionCount}</TableCell>
-                                                    <TableCell align="right">
-                                                        {analyticsItem.lastActivity.getTime() > 0
-                                                            ? formatDistanceToNow(analyticsItem.lastActivity, { addSuffix: true, locale: de })
-                                                            : 'Keine'}
+                                                    <TableCell>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 200 }}>
+                                                            <LinearProgress
+                                                                variant="determinate"
+                                                                value={analyticsItem.progressPercentage}
+                                                                sx={{
+                                                                    flex: 1,
+                                                                    height: 8,
+                                                                    borderRadius: 1,
+                                                                }}
+                                                            />
+                                                            <Typography variant="body2" color="text.secondary" sx={{ minWidth: 60 }}>
+                                                                {analyticsItem.progressCount}/10 ({analyticsItem.progressPercentage}%)
+                                                            </Typography>
+                                                        </Box>
                                                     </TableCell>
                                                     <TableCell align="right">
                                                         <Tooltip title="Details anzeigen">
                                                             <IconButton
                                                                 onClick={() => handleViewDetails(analyticsItem)}
                                                                 size="small"
-                                                                disabled={analyticsItem.patternInteractions.length === 0}
                                                             >
                                                                 <InfoIcon />
                                                             </IconButton>
@@ -586,9 +344,9 @@ export default function AnalyticsView() {
                                             ))}
                                             {sortedAnalytics.length === 0 && (
                                                 <TableRow>
-                                                    <TableCell colSpan={5} align="center">
+                                                    <TableCell colSpan={4} align="center">
                                                         <Typography variant="body1" sx={{ py: 2 }}>
-                                                            Keine Daten für den ausgewählten Zeitraum verfügbar
+                                                            Keine Startups gefunden
                                                         </Typography>
                                                     </TableCell>
                                                 </TableRow>
@@ -605,7 +363,7 @@ export default function AnalyticsView() {
                 <Dialog
                     open={isDialogOpen}
                     onClose={() => setIsDialogOpen(false)}
-                    maxWidth="sm"
+                    maxWidth="md"
                     fullWidth
                 >
                     {selectedStartup && (
@@ -614,45 +372,86 @@ export default function AnalyticsView() {
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <Avatar
                                         sx={{
-                                            bgcolor: 'background.paper',
-                                            color: 'text.primary',
+                                            bgcolor: 'primary.main',
+                                            color: 'white',
                                             fontWeight: 'bold',
-                                            border: '1px solid #e0e0e0',
                                         }}
                                     >
                                         {selectedStartup.startup.name?.charAt(0) || '?'}
                                     </Avatar>
-                                    {selectedStartup.startup.name} - Muster-Interaktionen
+                                    {selectedStartup.startup.name} - Progress Details
                                 </Box>
                             </DialogTitle>
                             <DialogContent>
-                                <Typography variant="subtitle1" gutterBottom>
-                                    Insgesamt {selectedStartup.interactionCount} Interaktionen mit {selectedStartup.uniquePatterns.size} Mustern
+                                <Box sx={{ mb: 3 }}>
+                                    <Stack direction="row" spacing={4} sx={{ mb: 2 }}>
+                                        <Box>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Team Members
+                                            </Typography>
+                                            <Typography variant="h6">
+                                                {selectedStartup.memberCount}
+                                            </Typography>
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Overall Progress
+                                            </Typography>
+                                            <Typography variant="h6">
+                                                {selectedStartup.progressCount}/10 ({selectedStartup.progressPercentage}%)
+                                            </Typography>
+                                        </Box>
+                                    </Stack>
+                                    <LinearProgress
+                                        variant="determinate"
+                                        value={selectedStartup.progressPercentage}
+                                        sx={{
+                                            height: 10,
+                                            borderRadius: 1,
+                                        }}
+                                    />
+                                </Box>
+
+                                <Typography variant="subtitle1" gutterBottom sx={{ mt: 3, mb: 2 }}>
+                                    Tool Completion Status
                                 </Typography>
-                                <List sx={{ p: 0 }}>
-                                    {/* Group patterns by pattern ID and show unique patterns */}
-                                    {Array.from(new Map(
-                                        selectedStartup.patternInteractions.map(interaction =>
-                                            [interaction.patternId, interaction]
-                                        )
-                                    ).values()).map((interaction) => (
-                                        <ListItem key={interaction.patternId} sx={{ p: 0, mb: 2 }}>
-                                            <PatternInteractionListItem interaction={interaction} />
-                                        </ListItem>
-                                    ))}
-                                    {selectedStartup.patternInteractions.length === 0 && (
-                                        <Card sx={{ borderRadius: 2, mb: 2 }}>
-                                            <CardContent>
-                                                <Typography variant="body1" align="center">
-                                                    Keine Muster-Interaktionen in diesem Zeitraum
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary" align="center">
-                                                    Probieren Sie einen anderen Zeitraum
-                                                </Typography>
-                                            </CardContent>
-                                        </Card>
-                                    )}
-                                </List>
+                                <Grid container spacing={2}>
+                                    {Object.entries(TOOL_NAMES).map(([key, name]) => {
+                                        const isCompleted = selectedStartup.startup.progress?.[key as keyof StartupProgress] || false;
+                                        return (
+                                            <Grid item xs={12} sm={6} key={key}>
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 1,
+                                                        p: 1.5,
+                                                        borderRadius: 1,
+                                                        border: '1px solid',
+                                                        borderColor: isCompleted ? 'success.main' : 'divider',
+                                                        bgcolor: isCompleted ? 'success.light' : 'background.paper',
+                                                        transition: 'all 0.2s',
+                                                    }}
+                                                >
+                                                    {isCompleted ? (
+                                                        <CheckCircleIcon color="success" />
+                                                    ) : (
+                                                        <UncheckedIcon color="disabled" />
+                                                    )}
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            fontWeight: isCompleted ? 600 : 400,
+                                                            color: isCompleted ? 'success.dark' : 'text.secondary',
+                                                        }}
+                                                    >
+                                                        {name}
+                                                    </Typography>
+                                                </Box>
+                                            </Grid>
+                                        );
+                                    })}
+                                </Grid>
                             </DialogContent>
                             <DialogActions>
                                 <Button onClick={() => setIsDialogOpen(false)}>Schließen</Button>

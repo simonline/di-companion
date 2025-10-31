@@ -18,8 +18,6 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Snackbar,
-  Alert,
   Menu,
 } from '@mui/material';
 import { Add as AddIcon, MoreVert as MoreVertIcon } from '@mui/icons-material';
@@ -33,17 +31,15 @@ import { supabaseGetRequests, supabaseGetAvailableStartups, supabaseUpdateStartu
 import useStartupPatterns from '@/hooks/useStartupPatterns';
 import { formatDistanceToNow } from 'date-fns';
 import React from 'react';
+import useNotifications from '@/store/notifications';
 
 export default function OverviewView() {
   const { user } = useAuthContext();
+  const [, notificationsActions] = useNotifications();
   const [requests, setRequests] = useState<any[]>([]);
   const [availableStartups, setAvailableStartups] = useState<Startup[]>([]);
   const [coachees, setCoachees] = useState<Startup[]>([]);
   const [selectedStartup, setSelectedStartup] = useState<string>('');
-  const [notification, setNotification] = useState<{
-    message: string;
-    severity: 'success' | 'error' | 'info' | 'warning';
-  } | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedStartupForMenu, setSelectedStartupForMenu] = useState<Startup | null>(null);
   const { fetchStartupPatterns, startupPatterns } = useStartupPatterns();
@@ -165,11 +161,14 @@ export default function OverviewView() {
       }
 
       setSelectedStartup('');
-      setNotification({ message: 'Startup assigned successfully', severity: 'success' });
+      notificationsActions.push({
+        options: { variant: 'success' },
+        message: 'Startup assigned successfully',
+      });
     } catch (error) {
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'error' },
         message: `Error: ${(error as Error).message}`,
-        severity: 'error',
       });
     }
   };
@@ -185,11 +184,14 @@ export default function OverviewView() {
       // Update local state
       setCoachees(coachees.filter((startup) => startup.id !== startupId));
 
-      setNotification({ message: 'Startup unassigned successfully', severity: 'success' });
+      notificationsActions.push({
+        options: { variant: 'success' },
+        message: 'Startup unassigned successfully',
+      });
     } catch (error) {
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'error' },
         message: `Error: ${(error as Error).message}`,
-        severity: 'error',
       });
     }
   };
@@ -424,23 +426,6 @@ export default function OverviewView() {
         >
           <MenuItem onClick={handleUnassignFromMenu}>Unassign Startup</MenuItem>
         </Menu>
-
-        {/* Notification Snackbar */}
-        {notification && (
-          <Snackbar
-            open={!!notification}
-            autoHideDuration={6000}
-            onClose={() => setNotification(null)}
-          >
-            <Alert
-              onClose={() => setNotification(null)}
-              severity={notification.severity}
-              sx={{ width: '100%' }}
-            >
-              {notification.message}
-            </Alert>
-          </Snackbar>
-        )}
       </CenteredFlexBox>
     </>
   );

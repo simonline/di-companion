@@ -6,7 +6,6 @@ import {
   Button,
   Grid,
   Alert,
-  Snackbar,
   CircularProgress,
   Tabs,
   Tab,
@@ -27,6 +26,7 @@ import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import useRecommendations from '@/hooks/useRecommendations';
 import useRequests from '@/hooks/useRequests';
+import useNotifications from '@/store/notifications';
 import {
   Recommendation,
   RecommendationCreate,
@@ -65,16 +65,13 @@ function TabPanel(props: TabPanelProps) {
 
 export default function StartupView() {
   const { id: startupId } = useParams<{ id: string }>();
+  const [, notificationsActions] = useNotifications();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingRecommendation, setEditingRecommendation] = useState<Recommendation | undefined>(
     undefined,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStartup, setCurrentStartup] = useState<Startup | null>(null);
-  const [notification, setNotification] = useState<{
-    message: string;
-    severity: 'success' | 'error' | 'info' | 'warning';
-  } | null>(null);
   const [tabValue, setTabValue] = useState(0);
   const [internalComment, setInternalComment] = useState('');
   const [isSavingComment, setIsSavingComment] = useState(false);
@@ -109,9 +106,9 @@ export default function StartupView() {
         setCurrentStartup(startup);
         setInternalComment(startup.internal_comment || '');
       } catch (err) {
-        setNotification({
+        notificationsActions.push({
+          options: { variant: 'error' },
           message: `Error loading startup: ${(err as Error).message}`,
-          severity: 'error',
         });
       }
     };
@@ -149,22 +146,22 @@ export default function StartupView() {
       if ('id' in values && values.id) {
         // Update
         await updateRecommendation(values as RecommendationUpdate, patternIds);
-        setNotification({
+        notificationsActions.push({
+          options: { variant: 'success' },
           message: 'Recommendation updated successfully',
-          severity: 'success',
         });
       } else {
         // Create
         await createRecommendation(values as RecommendationCreate, patternIds);
-        setNotification({
+        notificationsActions.push({
+          options: { variant: 'success' },
           message: 'Recommendation created successfully',
-          severity: 'success',
         });
       }
     } catch (err) {
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'error' },
         message: `Error: ${(err as Error).message}`,
-        severity: 'error',
       });
     } finally {
       setIsSubmitting(false);
@@ -175,14 +172,14 @@ export default function StartupView() {
   const handleDeleteRecommendation = async (id: string) => {
     try {
       await deleteRecommendation(id);
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'success' },
         message: 'Recommendation deleted successfully',
-        severity: 'success',
       });
     } catch (err) {
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'error' },
         message: `Error: ${(err as Error).message}`,
-        severity: 'error',
       });
     }
   };
@@ -193,14 +190,14 @@ export default function StartupView() {
         id: request.id,
         read_at: new Date().toISOString(),
       });
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'success' },
         message: 'Request marked as read',
-        severity: 'success',
       });
     } catch (err) {
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'error' },
         message: `Error: ${(err as Error).message}`,
-        severity: 'error',
       });
     }
   };
@@ -208,20 +205,16 @@ export default function StartupView() {
   const handleDeleteRequest = async (id: string) => {
     try {
       await deleteRequest(id);
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'success' },
         message: 'Request deleted successfully',
-        severity: 'success',
       });
     } catch (err) {
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'error' },
         message: `Error: ${(err as Error).message}`,
-        severity: 'error',
       });
     }
-  };
-
-  const handleCloseNotification = () => {
-    setNotification(null);
   };
 
   const handleRefresh = () => {
@@ -240,14 +233,14 @@ export default function StartupView() {
         internal_comment: internalComment,
       });
 
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'success' },
         message: 'Internal comment saved successfully',
-        severity: 'success',
       });
     } catch (err) {
-      setNotification({
+      notificationsActions.push({
+        options: { variant: 'error' },
         message: `Error saving comment: ${(err as Error).message}`,
-        severity: 'error',
       });
     } finally {
       setIsSavingComment(false);
@@ -380,21 +373,6 @@ export default function StartupView() {
         isSubmitting={isSubmitting}
         startupId={startupId}
       />
-
-      <Snackbar
-        open={!!notification}
-        autoHideDuration={6000}
-        onClose={handleCloseNotification}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={handleCloseNotification}
-          severity={notification?.severity || 'info'}
-          sx={{ width: '100%' }}
-        >
-          {notification?.message || ''}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

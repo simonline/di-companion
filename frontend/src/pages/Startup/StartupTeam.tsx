@@ -12,8 +12,6 @@ import {
   Divider,
   Box,
   Chip,
-  Snackbar,
-  Alert,
   CircularProgress,
   Avatar,
   ListItemAvatar,
@@ -44,6 +42,7 @@ import ArrowBack from '@mui/icons-material/ArrowBack';
 import PersonIcon from '@mui/icons-material/Person';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import useNotifications from '@/store/notifications';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -76,22 +75,14 @@ function a11yProps(index: number) {
 
 const StartupTeam: React.FC = () => {
   const navigate = useNavigate();
-  const { user, profile, startup } = useAuthContext();
+  const { user, profile, startup, updateStartup } = useAuthContext();
+  const [, notificationsActions] = useNotifications();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [members, setMembers] = useState<Profile[]>([]);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [invitationLoading, setInvitationLoading] = useState(false);
   const [tabValue, setTabValue] = useState(0);
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: 'success' | 'error' | 'info';
-  }>({
-    open: false,
-    message: '',
-    severity: 'info',
-  });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
 
@@ -114,16 +105,14 @@ const StartupTeam: React.FC = () => {
       setMembers(membersData);
       setInvitations(invitationsData);
     } catch (error) {
-
-      setSnackbar({
-        open: true,
+      notificationsActions.push({
+        options: { variant: 'error' },
         message: 'Failed to load team data',
-        severity: 'error',
       });
     } finally {
       setLoading(false);
     }
-  }, [startup]);
+  }, [startup, updateStartup]);
 
   useEffect(() => {
     if (startup!.id) {
@@ -160,18 +149,16 @@ const StartupTeam: React.FC = () => {
       setEmail('');
       await loadData();
 
-      setSnackbar({
-        open: true,
+      notificationsActions.push({
+        options: { variant: 'success' },
         message: 'Invitation sent successfully. Email has been sent.',
-        severity: 'success',
       });
     } catch (error) {
-      setSnackbar({
-        open: true,
+      notificationsActions.push({
+        options: { variant: 'error' },
         message: error instanceof Error ? error.message : 'Failed to send invitation',
-        severity: 'error',
       });
-    } finally {
+    } finally{
       setInvitationLoading(false);
     }
   };
@@ -181,16 +168,14 @@ const StartupTeam: React.FC = () => {
       await supabaseDeleteInvitation(id);
       await loadData();
 
-      setSnackbar({
-        open: true,
+      notificationsActions.push({
+        options: { variant: 'success' },
         message: 'Invitation deleted successfully',
-        severity: 'success',
       });
     } catch (error) {
-      setSnackbar({
-        open: true,
+      notificationsActions.push({
+        options: { variant: 'error' },
         message: 'Failed to delete invitation',
-        severity: 'error',
       });
     }
   };
@@ -200,16 +185,14 @@ const StartupTeam: React.FC = () => {
       await supabaseResendInvitation(id);
       await loadData(); // Reload to show updated expiration date
 
-      setSnackbar({
-        open: true,
+      notificationsActions.push({
+        options: { variant: 'success' },
         message: 'Invitation resent successfully. Reminder email has been sent.',
-        severity: 'success',
       });
     } catch (error) {
-      setSnackbar({
-        open: true,
+      notificationsActions.push({
+        options: { variant: 'error' },
         message: error instanceof Error ? error.message : 'Failed to resend invitation',
-        severity: 'error',
       });
     }
   };
@@ -218,10 +201,9 @@ const StartupTeam: React.FC = () => {
     const invitationLink = `${baseUrl}/accept-invitation?token=${token}`;
     navigator.clipboard.writeText(invitationLink);
 
-    setSnackbar({
-      open: true,
+    notificationsActions.push({
+      options: { variant: 'success' },
       message: 'Invitation link copied to clipboard',
-      severity: 'success',
     });
   };
 
@@ -250,6 +232,33 @@ const StartupTeam: React.FC = () => {
         break;
     }
     handleMenuClose();
+  };
+
+  const handleComplete = async () => {
+    if (!startup) return;
+
+    try {
+      // Mark progress as complete
+      await updateStartup({
+        id: startup.id,
+        progress: {
+          ...startup.progress,
+          'startup-team': true
+        }
+      });
+
+      notificationsActions.push({
+        options: { variant: 'success' },
+        message: 'Team setup completed!',
+      });
+
+      navigate('/startup');
+    } catch (error) {
+      notificationsActions.push({
+        options: { variant: 'error' },
+        message: 'Failed to complete team setup',
+      });
+    }
   };
 
   const renderMemberList = () => {
@@ -530,22 +539,34 @@ const StartupTeam: React.FC = () => {
               {renderInvitationList()}
             </TabPanel>
           </Paper>
+
+          {/* Done Button */}
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={handleComplete}
+              disabled={!members || members.length === 0}
+              sx={{
+                backgroundColor: categoryColors.team,
+                color: 'white',
+                px: 4,
+                py: 1.5,
+                '&:hover': {
+                  backgroundColor: categoryColors.team,
+                  filter: 'brightness(0.9)'
+                },
+                '&.Mui-disabled': {
+                  backgroundColor: 'action.disabledBackground',
+                  color: 'text.disabled',
+                }
+              }}
+            >
+              Done - Mark as Complete
+            </Button>
+          </Box>
         </Box>
       </CenteredFlexBox>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </>
   );
 };
