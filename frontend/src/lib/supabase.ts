@@ -1283,7 +1283,7 @@ export async function supabaseGetInvitations(startupId: string): Promise<Invitat
     .from('invitations')
     .select(`
       *,
-      invited_by_id:profiles(
+      invited_by:profiles!invitations_invited_by_id_fkey(
         id,
         username,
         given_name,
@@ -1294,13 +1294,7 @@ export async function supabaseGetInvitations(startupId: string): Promise<Invitat
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  // Transform the data to flatten the nested structure
-  const invitations = data?.map((inv: any) => ({
-    ...inv,
-    invited_by: inv.invited_by?.profiles
-  })) || [];
-
-  return invitations;
+  return data || [];
 }
 
 export async function supabaseCreateInvitation(invitation: InvitationCreate & { inviter_name: string; startup_name: string }): Promise<any> {

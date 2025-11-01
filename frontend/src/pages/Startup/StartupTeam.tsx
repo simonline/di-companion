@@ -105,6 +105,7 @@ const StartupTeam: React.FC = () => {
       setMembers(membersData);
       setInvitations(invitationsData);
     } catch (error) {
+      console.error('Error loading team data:', error);
       notificationsActions.push({
         options: { variant: 'error' },
         message: 'Failed to load team data',
@@ -158,7 +159,7 @@ const StartupTeam: React.FC = () => {
         options: { variant: 'error' },
         message: error instanceof Error ? error.message : 'Failed to send invitation',
       });
-    } finally{
+    } finally {
       setInvitationLoading(false);
     }
   };
@@ -284,13 +285,14 @@ const StartupTeam: React.FC = () => {
           <React.Fragment key={member.id}>
             <ListItem>
               <ListItemAvatar>
-                <Avatar>{member.username?.charAt(0).toUpperCase() || 'U'}</Avatar>
+                <Avatar>{(member.username || member.email)?.charAt(0).toUpperCase() || 'U'}</Avatar>
               </ListItemAvatar>
               <ListItemText
                 primary={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {`${member.given_name || ''} ${member.family_name || ''}`.trim() ||
-                      member.username}
+                      member.username ||
+                      member.email}
                     {member.id === user?.id && (
                       <Chip size="small" label="You" sx={{ backgroundColor: categoryColors.team, color: 'white' }} />
                     )}
@@ -501,9 +503,9 @@ const StartupTeam: React.FC = () => {
                 onChange={handleTabChange}
                 aria-label="team management tabs"
                 variant="fullWidth"
-                sx={{ 
+                sx={{
                   '& .MuiTabs-indicator': { backgroundColor: categoryColors.team },
-                  '& .MuiTab-root.Mui-selected': { 
+                  '& .MuiTab-root.Mui-selected': {
                     color: categoryColors.team,
                     '& .MuiSvgIcon-root': { color: categoryColors.team }
                   }
