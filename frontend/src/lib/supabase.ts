@@ -1294,7 +1294,7 @@ export async function supabaseGetInvitations(startupId: string): Promise<Invitat
 
   if (error) throw new Error(handleSupabaseError(error));
 
-  return data || [];
+  return (data || []) as unknown as Invitation[];
 }
 
 export async function supabaseCreateInvitation(invitation: InvitationCreate & { inviter_name: string; startup_name: string }): Promise<any> {
