@@ -175,7 +175,13 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
           <FormLabel component="legend">
             {question.question + (question.is_required ? ' *' : '')}
           </FormLabel>
-          <RadioGroup {...field} row>
+          <RadioGroup
+            name={field.name}
+            value={field.value || ''}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            row
+          >
             {Array.isArray(question.options) &&
               question.options.map(({ value, label }: QuestionOption) => (
                 <FormControlLabel
@@ -199,7 +205,13 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
         <FormControl fullWidth error={!!error}>
           <FormLabel>{question.question + (question.is_required ? ' *' : '')}</FormLabel>
           {renderFieldWithHelp(
-            <Select {...field} sx={{ width: '100%' }}>
+            <Select
+              name={field.name}
+              value={field.value || ''}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              sx={{ width: '100%' }}
+            >
               {Array.isArray(question.options) &&
                 question.options.map(({ value, label }: QuestionOption) => (
                   <MenuItem key={value} value={value}>
