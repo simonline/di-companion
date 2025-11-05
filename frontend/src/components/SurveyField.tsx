@@ -276,7 +276,17 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
 
     case QuestionType.text_long:
       return renderFieldWithHelp(
-        <TextField {...field} {...commonTextFieldProps} multiline rows={4} />,
+        <TextField
+          {...field}
+          {...commonTextFieldProps}
+          multiline
+          rows={4}
+          sx={{
+            '& .MuiInputBase-root textarea': {
+              resize: 'vertical',
+            },
+          }}
+        />,
       );
 
     case QuestionType.email:
