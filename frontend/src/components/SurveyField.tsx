@@ -141,6 +141,7 @@ const SurveyField: React.FC<SurveyFieldProps> = ({ question, field, form }) => {
     helperText: error,
     inputProps: question.max_length ? { max_length: question.max_length } : undefined,
     InputLabelProps: {
+      shrink: field.value !== '' && field.value != null ? true : undefined,
       sx: {
         whiteSpace: 'normal',
         lineHeight: 1.2,
