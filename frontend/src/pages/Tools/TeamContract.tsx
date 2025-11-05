@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     Box,
     Card,
@@ -14,6 +14,7 @@ import {
     Group,
     Person,
     ArrowBack,
+    Summarize,
 } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
@@ -21,15 +22,20 @@ import { useAuthContext } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import AssessmentStep, { AssessmentStepRef } from '@/components/AssessmentStep';
 import useNotifications from '@/store/notifications';
-import { CategoryEnum, categoryDisplayNames, categoryColors, categoryIcons } from '@/utils/constants';
+import { CategoryEnum, categoryColors } from '@/utils/constants';
+import AssessmentSummary from '@/components/AssessmentSummary';
+import { supabaseGetQuestions } from '@/lib/supabase';
+import useStartupQuestions from '@/hooks/useStartupQuestions';
+import { Question } from '@/types/database';
 
 const TeamContract: React.FC = () => {
     const navigate = useNavigate();
-    const { startup, user, profile, updateStartup } = useAuthContext();
+    const { startup, user, updateStartup } = useAuthContext();
     const [, notificationsActions] = useNotifications();
     const isSolo = startup?.founders_count === 1;
     const [activeStep, setActiveStep] = useState(0);
     const assessmentRefs = useRef<{ [key: string]: AssessmentStepRef | null }>({});
+    const [summaryOpen, setSummaryOpen] = useState(false);
 
     const teamTopics = [
         'Vision',
@@ -43,6 +49,34 @@ const TeamContract: React.FC = () => {
     ];
 
     const steps = teamTopics;
+
+    // Fetch all questions and answers for summary (across all topics)
+    const [allQuestions, setAllQuestions] = useState<Question[]>([]);
+    const { fetchStartupQuestions, startupQuestions } = useStartupQuestions();
+
+    useEffect(() => {
+        const fetchAllQuestions = async () => {
+            try {
+                // Fetch questions for all topics in parallel
+                const questionPromises = teamTopics.map(topic =>
+                    supabaseGetQuestions(CategoryEnum.team, topic)
+                );
+                const questionArrays = await Promise.all(questionPromises);
+
+                // Flatten all questions into a single array
+                const flattenedQuestions = questionArrays.flat();
+                setAllQuestions(flattenedQuestions);
+            } catch (error) {
+                console.error('Failed to fetch all questions:', error);
+            }
+        };
+
+        if (startup?.id) {
+            fetchAllQuestions();
+            fetchStartupQuestions(startup.id);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [startup?.id]);
 
     const handleNext = async () => {
         const currentStepName = steps[activeStep];
@@ -86,6 +120,10 @@ const TeamContract: React.FC = () => {
         setActiveStep((prevStep) => prevStep - 1);
     };
 
+    const handleStepClick = (step: number) => {
+        setActiveStep(step);
+    };
+
     const renderStepContent = (step: number) => {
         const currentStepName = steps[step];
         return renderTeamTopicAssessment(currentStepName);
@@ -108,18 +146,33 @@ const TeamContract: React.FC = () => {
         );
     };
 
+    const handleOpenSummary = () => {
+        // Refetch latest data before opening summary
+        if (startup?.id) {
+            fetchStartupQuestions(startup.id);
+        }
+        setSummaryOpen(true);
+    };
+
     return (
         <>
             <Header title={isSolo ? "Solo Contract" : "Team Contract"} />
             <CenteredFlexBox>
                 <Container maxWidth="md">
-                    <Box sx={{ mb: 1, mt: 4 }}>
+                    <Box sx={{ mb: 1, mt: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Button
                             startIcon={<ArrowBack />}
                             onClick={() => navigate('/startup')}
                             sx={{ color: 'text.secondary' }}
                         >
                             Back to Startup
+                        </Button>
+                        <Button
+                            startIcon={<Summarize />}
+                            onClick={handleOpenSummary}
+                            sx={{ color: 'text.secondary' }}
+                        >
+                            Summary
                         </Button>
                     </Box>
                     <Card>
@@ -143,10 +196,15 @@ const TeamContract: React.FC = () => {
 
                             <Stepper
                                 activeStep={activeStep}
+                                nonLinear
                                 sx={{
                                     mb: 4,
                                     '& .MuiStepLabel-label': {
-                                        display: 'none'
+                                        fontSize: '0.75rem',
+                                        cursor: 'pointer'
+                                    },
+                                    '& .MuiStepButton-root': {
+                                        cursor: 'pointer'
                                     },
                                     '& .Mui-active .MuiStepIcon-root': {
                                         color: categoryColors[CategoryEnum.team]
@@ -159,12 +217,20 @@ const TeamContract: React.FC = () => {
                                     },
                                     '& .Mui-completed .MuiStepIcon-text': {
                                         fill: 'white'
+                                    },
+                                    '& .MuiStepIcon-root': {
+                                        cursor: 'pointer'
                                     }
                                 }}
                             >
-                                {steps.map((label) => (
+                                {steps.map((label, index) => (
                                     <Step key={label}>
-                                        <StepLabel />
+                                        <StepLabel
+                                            onClick={() => handleStepClick(index)}
+                                            sx={{ cursor: 'pointer' }}
+                                        >
+                                            {label}
+                                        </StepLabel>
                                     </Step>
                                 ))}
                             </Stepper>
@@ -216,6 +282,21 @@ const TeamContract: React.FC = () => {
                     </Card>
                 </Container>
             </CenteredFlexBox>
+
+            {/* Assessment Summary Dialog - outside Container for proper modal behavior */}
+            {allQuestions.length > 0 && startupQuestions && (
+                <AssessmentSummary
+                    open={summaryOpen}
+                    onClose={() => setSummaryOpen(false)}
+                    title={isSolo ? 'Solo Contract' : 'Team Contract'}
+                    subtitle={isSolo
+                        ? 'Define your personal commitment and goals for your startup journey'
+                        : 'Establish clear agreements and commitments with your team members'}
+                    questions={allQuestions}
+                    answers={startupQuestions}
+                    metadata={{ startup: startup?.name || undefined }}
+                />
+            )}
         </>
     );
 };

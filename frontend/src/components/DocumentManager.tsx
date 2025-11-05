@@ -152,8 +152,11 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
     try {
       if (uploadMode === 'file' && selectedFiles.length > 0) {
         // Upload multiple files
+        let successCount = 0;
+        let failCount = 0;
+
         for (const file of selectedFiles) {
-          await uploadDocument(
+          const result = await uploadDocument(
             file,
             entityType,
             entityId,
@@ -162,17 +165,34 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
             selectedFiles.length === 1 ? uploadTitle : undefined,
             selectedFiles.length === 1 ? uploadDescription : undefined
           );
+
+          if (result) {
+            successCount++;
+          } else {
+            failCount++;
+            console.error(`Failed to upload file: ${file.name}`);
+          }
         }
-        notificationActions.push({
-          message: `${selectedFiles.length} file(s) uploaded successfully`,
-          options: { variant: 'success' }
-        });
+
+        if (successCount > 0) {
+          notificationActions.push({
+            message: failCount > 0
+              ? `${successCount} file(s) uploaded successfully, ${failCount} failed`
+              : `${successCount} file(s) uploaded successfully`,
+            options: { variant: failCount > 0 ? 'warning' : 'success' }
+          });
+        } else {
+          notificationActions.push({
+            message: 'All uploads failed',
+            options: { variant: 'error' }
+          });
+        }
       } else if (uploadMode === 'paste' && pasteText) {
         // Create a text file from pasted content
         const blob = new Blob([pasteText], { type: 'text/plain' });
         const file = new File([blob], `${uploadTitle || 'pasted-text'}.txt`, { type: 'text/plain' });
 
-        await uploadDocument(
+        const result = await uploadDocument(
           file,
           entityType,
           entityId,
@@ -181,10 +201,18 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
           uploadTitle,
           uploadDescription
         );
-        notificationActions.push({
-          message: 'Text uploaded successfully',
-          options: { variant: 'success' }
-        });
+
+        if (result) {
+          notificationActions.push({
+            message: 'Text uploaded successfully',
+            options: { variant: 'success' }
+          });
+        } else {
+          notificationActions.push({
+            message: 'Failed to upload text',
+            options: { variant: 'error' }
+          });
+        }
       }
 
       await fetchDocuments();
@@ -362,8 +390,19 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
   };
 
+  // Check if entity is required but missing
+  const isEntityRequired = entityType !== undefined;
+  const isEntityMissing = isEntityRequired && !entityId;
+
   return (
     <Box>
+      {isEntityMissing && (
+        <Paper sx={{ p: 2, mb: 3, bgcolor: 'warning.lighter', border: '1px solid', borderColor: 'warning.main' }}>
+          <Typography variant="body2" color="warning.dark">
+            Please wait while data is loading. Upload functionality will be available once ready.
+          </Typography>
+        </Paper>
+      )}
       <Box sx={{ mb: 4 }}>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
@@ -384,6 +423,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
             <Button
               variant="contained"
               startIcon={<CloudUploadOutlined />}
+              disabled={isEntityMissing}
               onClick={() => {
                 setUploadMode('file');
                 setOpenDialog(true);
@@ -405,6 +445,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
             <Button
               variant="outlined"
               startIcon={<ContentPaste />}
+              disabled={isEntityMissing}
               onClick={() => {
                 setUploadMode('paste');
                 setOpenDialog(true);
@@ -438,24 +479,27 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
             : 'divider',
           borderRadius: 2,
           bgcolor: isDragActive ? 'action.hover' : 'grey.50',
-          cursor: 'pointer',
+          cursor: isEntityMissing ? 'not-allowed' : 'pointer',
+          opacity: isEntityMissing ? 0.5 : 1,
           transition: 'all 0.2s ease',
           '&:hover': {
-            borderColor: category ? categoryColors[category] : 'primary.main',
-            bgcolor: 'action.hover'
+            borderColor: isEntityMissing ? 'divider' : (category ? categoryColors[category] : 'primary.main'),
+            bgcolor: isEntityMissing ? 'grey.50' : 'action.hover'
           }
         }}
         onClick={() => {
-          setUploadMode('file');
-          setOpenDialog(true);
+          if (!isEntityMissing) {
+            setUploadMode('file');
+            setOpenDialog(true);
+          }
         }}
       >
-        <input {...getInputProps()} />
+        <input {...getInputProps()} disabled={isEntityMissing} />
         <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
           <CloudUploadOutlined sx={{ fontSize: 32, color: 'text.secondary' }} />
           <Box>
             <Typography variant="body1" color="text.primary">
-              {isDragActive ? 'Drop files here' : 'Drop files here or click to upload'}
+              {isEntityMissing ? 'Upload disabled - waiting for data to load' : (isDragActive ? 'Drop files here' : 'Drop files here or click to upload')}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Supports all file types up to 50MB

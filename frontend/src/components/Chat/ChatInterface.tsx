@@ -13,11 +13,13 @@ import {
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
+import AddIcon from '@mui/icons-material/Add';
 import { useChatContext } from './ChatContext';
 import { Agent, agents, generalCoach, specializedAgents } from './types';
 import { useLocation } from 'react-router-dom';
 import MarkdownMessage from './MarkdownMessage';
 import { useAuthContext } from '@/hooks/useAuth';
+import { useAssessmentExport } from '@/hooks/useAssessmentExport';
 
 interface ChatInterfaceProps {
     selectedAgent: Agent;
@@ -34,6 +36,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
     const [isInputFocused, setIsInputFocused] = useState(false);
     const inputRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
+    const assessmentExport = useAssessmentExport();
+    const [assessmentContextSent, setAssessmentContextSent] = useState(false);
 
     // Collect page context
     const getPageContext = () => {
@@ -92,6 +96,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
                 }, 100);
             });
             setPreviousAgentId(selectedAgent.id);
+            // Reset assessment context flag when agent changes
+            setAssessmentContextSent(false);
         } else if (messages.length === 0) {
             // Initialize with agent's initial message if no messages exist (first load)
             addMessage({
@@ -103,19 +109,33 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ selectedAgent, onAgentCha
         }
     }, [selectedAgent, previousAgentId, messages.length, addMessage, loadConversation]);
 
+    // Reset assessment context flag when page changes
+    useEffect(() => {
+        setAssessmentContextSent(false);
+    }, [location.pathname]);
+
     const sendMessage = async () => {
         if (!inputValue.trim() || isLoading) return;
 
         // Get current page context
         const pageContext = getPageContext();
 
-        // Enhance the message with context
-        const enhancedSystemPrompt = `${selectedAgent.systemPrompt}
+        // Build enhanced system prompt
+        let enhancedSystemPrompt = `${selectedAgent.systemPrompt}
 
 Current Page Context:
 - Path: ${pageContext.currentPath}
 - Title: ${pageContext.pageTitle}
 - Content Preview: ${pageContext.pageContent?.substring(0, 500)}...`;
+
+        // Include assessment export on first message only
+        if (assessmentExport && !assessmentContextSent) {
+            enhancedSystemPrompt += `
+
+Current Assessment Data:
+${assessmentExport}`;
+            setAssessmentContextSent(true);
+        }
 
         await sendProgrammaticMessage(inputValue.trim(), enhancedSystemPrompt, selectedAgent.id, startup?.id);
         setInputValue('');
@@ -126,6 +146,18 @@ Current Page Context:
             event.preventDefault();
             sendMessage();
         }
+    };
+
+    const handleNewChat = () => {
+        clearMessages();
+        setAssessmentContextSent(false);
+        // Add the initial message from the agent
+        addMessage({
+            id: Date.now().toString(),
+            content: selectedAgent.initialMessage,
+            sender: 'agent',
+            timestamp: new Date(),
+        });
     };
 
     return (
@@ -149,9 +181,24 @@ Current Page Context:
                     px: 3,
                 }}
             >
-                <Typography variant="h6" gutterBottom sx={{ color: 'background.default' }}>
-                    Your AI Companion
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="h6" sx={{ color: 'background.default' }}>
+                        Your AI Companion
+                    </Typography>
+                    <IconButton
+                        onClick={handleNewChat}
+                        size="small"
+                        sx={{
+                            color: 'background.default',
+                            '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            },
+                        }}
+                        title="New Chat"
+                    >
+                        <AddIcon />
+                    </IconButton>
+                </Box>
                 <Typography variant="body2" sx={{ mb: 2, color: 'background.default' }}>
                     Choose an expert to help with your startup challenges
                 </Typography>

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -10,7 +10,7 @@ import {
   Step,
   StepLabel,
 } from '@mui/material';
-import { ArrowBack, Groups } from '@mui/icons-material';
+import { ArrowBack, Groups, Summarize } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
@@ -18,6 +18,10 @@ import { useNavigate } from 'react-router-dom';
 import AssessmentStep, { AssessmentStepRef } from '@/components/AssessmentStep';
 import useNotifications from '@/store/notifications';
 import { CategoryEnum, categoryDisplayNames, categoryColors, categoryIcons } from '@/utils/constants';
+import AssessmentSummary from '@/components/AssessmentSummary';
+import { supabaseGetQuestions } from '@/lib/supabase';
+import useStartupQuestions from '@/hooks/useStartupQuestions';
+import { Question } from '@/types/database';
 
 const TeamAssessment: React.FC = () => {
   const navigate = useNavigate();
@@ -26,6 +30,7 @@ const TeamAssessment: React.FC = () => {
 
   const [activeStep, setActiveStep] = useState(0);
   const assessmentRefs = useRef<(AssessmentStepRef | null)[]>([]);
+  const [summaryOpen, setSummaryOpen] = useState(false);
 
   // Categories for team assessment
   const categories = [
@@ -36,6 +41,34 @@ const TeamAssessment: React.FC = () => {
   ];
 
   const currentCategory = categories[activeStep];
+
+  // Fetch all questions and answers for summary (across all categories)
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
+  const { fetchStartupQuestions, startupQuestions } = useStartupQuestions();
+
+  useEffect(() => {
+    const fetchAllQuestions = async () => {
+      try {
+        // Fetch questions for all categories in parallel
+        const questionPromises = categories.map(category =>
+          supabaseGetQuestions(category)
+        );
+        const questionArrays = await Promise.all(questionPromises);
+
+        // Flatten all questions into a single array
+        const flattenedQuestions = questionArrays.flat();
+        setAllQuestions(flattenedQuestions);
+      } catch (error) {
+        console.error('Failed to fetch all questions:', error);
+      }
+    };
+
+    if (startup?.id) {
+      fetchAllQuestions();
+      fetchStartupQuestions(startup.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startup?.id]);
 
   const handleNext = async () => {
     const currentRef = assessmentRefs.current[activeStep];
@@ -58,6 +91,15 @@ const TeamAssessment: React.FC = () => {
       await currentRef.submit();
     }
     setActiveStep((prevStep) => prevStep - 1);
+  };
+
+  const handleStepClick = async (step: number) => {
+    // Save current form data before navigating
+    const currentRef = assessmentRefs.current[activeStep];
+    if (currentRef) {
+      await currentRef.submit();
+    }
+    setActiveStep(step);
   };
 
   const completeAssessment = async () => {
@@ -90,6 +132,14 @@ const TeamAssessment: React.FC = () => {
     }
   };
 
+  const handleOpenSummary = () => {
+    // Refetch latest data before opening summary
+    if (startup?.id) {
+      fetchStartupQuestions(startup.id);
+    }
+    setSummaryOpen(true);
+  };
+
   if (!user || !startup) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
@@ -103,13 +153,20 @@ const TeamAssessment: React.FC = () => {
       <Header title="Team Assessment" />
       <CenteredFlexBox>
         <Container maxWidth="md">
-          <Box sx={{ mb: 1, mt: 4 }}>
+          <Box sx={{ mb: 1, mt: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Button
               startIcon={<ArrowBack />}
               onClick={() => navigate('/startup')}
               sx={{ color: 'text.secondary' }}
             >
               Back to Startup
+            </Button>
+            <Button
+              startIcon={<Summarize />}
+              onClick={handleOpenSummary}
+              sx={{ color: 'text.secondary' }}
+            >
+              Summary
             </Button>
           </Box>
 
@@ -121,19 +178,24 @@ const TeamAssessment: React.FC = () => {
                   Team Assessment
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  Evaluate your startup's performance across key dimensions
+                  Evaluate your startup&apos;s performance across key dimensions
                 </Typography>
               </Box>
 
               <Stepper
                 activeStep={activeStep}
+                nonLinear
                 sx={{
                   mb: 4,
                   '& .MuiStepLabel-label': {
-                    display: { xs: 'none', sm: 'block' }
+                    display: { xs: 'none', sm: 'block' },
+                    cursor: 'pointer'
                   },
                   '& .MuiStepLabel-iconContainer': {
                     paddingRight: { xs: 0, sm: 2 }
+                  },
+                  '& .MuiStepButton-root': {
+                    cursor: 'pointer'
                   },
                   '& .Mui-active .MuiStepIcon-root': {
                     color: categoryColors[CategoryEnum.team]
@@ -146,16 +208,22 @@ const TeamAssessment: React.FC = () => {
                   },
                   '& .Mui-completed .MuiStepIcon-text': {
                     fill: 'white'
+                  },
+                  '& .MuiStepIcon-root': {
+                    cursor: 'pointer'
                   }
                 }}
               >
-                {categories.map((category) => (
+                {categories.map((category, index) => (
                   <Step key={category}>
-                    <StepLabel>
+                    <StepLabel
+                      onClick={() => handleStepClick(index)}
+                      sx={{ cursor: 'pointer' }}
+                    >
                       <Typography
                         variant="body2"
                         sx={{
-                          fontWeight: activeStep === categories.indexOf(category) ? 'bold' : 'normal',
+                          fontWeight: activeStep === index ? 'bold' : 'normal',
                           display: { xs: 'none', sm: 'block' }
                         }}
                       >
@@ -244,6 +312,19 @@ const TeamAssessment: React.FC = () => {
           </Card>
         </Container>
       </CenteredFlexBox>
+
+      {/* Assessment Summary Dialog - outside Container for proper modal behavior */}
+      {allQuestions.length > 0 && startupQuestions && (
+        <AssessmentSummary
+          open={summaryOpen}
+          onClose={() => setSummaryOpen(false)}
+          title="Team Assessment"
+          subtitle="Evaluate your startup&apos;s performance across key dimensions"
+          questions={allQuestions}
+          answers={startupQuestions}
+          metadata={{ startup: startup?.name || undefined }}
+        />
+      )}
     </>
   );
 };

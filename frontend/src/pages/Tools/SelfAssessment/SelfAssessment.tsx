@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -7,7 +7,7 @@ import {
   Button,
   Container,
 } from '@mui/material';
-import { ArrowBack, Psychology } from '@mui/icons-material';
+import { ArrowBack, Psychology, Summarize } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useAuthContext } from '@/hooks/useAuth';
@@ -15,12 +15,27 @@ import { useNavigate } from 'react-router-dom';
 import AssessmentStep, { AssessmentStepRef } from '@/components/AssessmentStep';
 import useNotifications from '@/store/notifications';
 import { CategoryEnum, categoryColors } from '@/utils/constants';
+import AssessmentSummary from '@/components/AssessmentSummary';
+import useQuestions from '@/hooks/useQuestions';
+import useUserQuestions from '@/hooks/useUserQuestions';
 
 const SelfAssessment: React.FC = () => {
   const navigate = useNavigate();
   const { user, profile, updateProfile, updateScores } = useAuthContext();
   const [, notificationsActions] = useNotifications();
   const assessmentRef = useRef<AssessmentStepRef>(null);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+
+  // Fetch all questions and answers for summary
+  const { fetchQuestions, questions } = useQuestions();
+  const { fetchUserQuestions, userQuestions } = useUserQuestions();
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchQuestions(CategoryEnum.entrepreneur);
+      fetchUserQuestions(user.id);
+    }
+  }, [user?.id, fetchQuestions, fetchUserQuestions]);
 
   const handleSubmit = async () => {
     if (assessmentRef.current) {
@@ -74,6 +89,14 @@ const SelfAssessment: React.FC = () => {
     }
   };
 
+  const handleOpenSummary = () => {
+    // Refetch latest data before opening summary
+    if (user?.id) {
+      fetchUserQuestions(user.id);
+    }
+    setSummaryOpen(true);
+  };
+
   if (!user) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
@@ -87,13 +110,20 @@ const SelfAssessment: React.FC = () => {
       <Header title="Self Assessment" />
       <CenteredFlexBox>
         <Container maxWidth="md">
-          <Box sx={{ mb: 1, mt: 4 }}>
+          <Box sx={{ mb: 1, mt: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Button
               startIcon={<ArrowBack />}
               onClick={() => navigate("/user")}
               sx={{ color: 'text.secondary' }}
             >
               Back to User
+            </Button>
+            <Button
+              startIcon={<Summarize />}
+              onClick={handleOpenSummary}
+              sx={{ color: 'text.secondary' }}
+            >
+              Summary
             </Button>
           </Box>
 
@@ -139,6 +169,19 @@ const SelfAssessment: React.FC = () => {
           </Card>
         </Container>
       </CenteredFlexBox>
+
+      {/* Assessment Summary Dialog - outside Container for proper modal behavior */}
+      {questions && userQuestions && (
+        <AssessmentSummary
+          open={summaryOpen}
+          onClose={() => setSummaryOpen(false)}
+          title="Self Assessment"
+          subtitle="Evaluate your entrepreneurial skills and mindset"
+          questions={questions}
+          answers={userQuestions}
+          metadata={{ user: profile?.given_name || profile?.email || undefined }}
+        />
+      )}
     </>
   );
 };

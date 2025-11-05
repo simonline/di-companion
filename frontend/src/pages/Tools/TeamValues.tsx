@@ -12,7 +12,7 @@ import {
     Alert,
     CircularProgress,
 } from '@mui/material';
-import { Groups, ArrowBack, EmojiEvents } from '@mui/icons-material';
+import { Groups, ArrowBack, EmojiEvents, Download } from '@mui/icons-material';
 import Header from '@/sections/Header';
 import { CenteredFlexBox } from '@/components/styled';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +22,7 @@ import { StartupMethod } from '@/types/database';
 import { supabase } from '@/lib/supabase';
 import { CategoryEnum, categoryColors } from '@/utils/constants';
 import useNotifications from '@/store/notifications';
+import { exportAsText, ExportData } from '@/utils/exportAssessment';
 
 interface FounderValues {
     userId: string;
@@ -67,7 +68,6 @@ const TeamValues: React.FC = () => {
     });
 
     const [startupMethod, setStartupMethod] = useState<StartupMethod | null>(null);
-    const [userValuesMethodId, setUserValuesMethodId] = useState<string | null>(null);
     const [teamValuesMethodId, setTeamValuesMethodId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -107,7 +107,6 @@ const TeamValues: React.FC = () => {
 
                 const userMethodId = userValuesMethod.id;
                 const teamMethodId = teamValuesMethod.id;
-                setUserValuesMethodId(userMethodId);
                 setTeamValuesMethodId(teamMethodId);
 
                 // Load founder values from user_methods with user info
@@ -254,6 +253,107 @@ const TeamValues: React.FC = () => {
         }
     };
 
+    const getExportData = (): ExportData => {
+        // Prepare export data
+        const sections = [];
+
+        // Section 1: Founder Values
+        if (teamValuesData.founderValues.length > 0) {
+            const founderQuestions: Array<{ question: string; answer: string }> = [];
+            teamValuesData.founderValues.forEach((founder) => {
+                founderQuestions.push({
+                    question: `${founder.userName}'s Top 3 Values`,
+                    answer: founder.top3Values.filter(v => v).join(', ') || 'Not selected',
+                });
+            });
+            sections.push({
+                heading: 'Individual Founder Values',
+                questions: founderQuestions,
+            });
+        }
+
+        // Section 2: Company Values
+        const companyQuestions: Array<{ question: string; answer: string }> = [];
+
+        if (teamValuesData.companyValues.value1.name) {
+            companyQuestions.push({
+                question: 'Company Value #1',
+                answer: teamValuesData.companyValues.value1.name,
+            });
+            if (teamValuesData.companyValues.value1.description) {
+                companyQuestions.push({
+                    question: 'How will customers/employees experience this value?',
+                    answer: teamValuesData.companyValues.value1.description,
+                });
+            }
+        }
+
+        if (teamValuesData.companyValues.value2.name) {
+            companyQuestions.push({
+                question: 'Company Value #2',
+                answer: teamValuesData.companyValues.value2.name,
+            });
+            if (teamValuesData.companyValues.value2.description) {
+                companyQuestions.push({
+                    question: 'How will customers/employees experience this value?',
+                    answer: teamValuesData.companyValues.value2.description,
+                });
+            }
+        }
+
+        if (teamValuesData.companyValues.value3.name) {
+            companyQuestions.push({
+                question: 'Company Value #3',
+                answer: teamValuesData.companyValues.value3.name,
+            });
+            if (teamValuesData.companyValues.value3.description) {
+                companyQuestions.push({
+                    question: 'How will customers/employees experience this value?',
+                    answer: teamValuesData.companyValues.value3.description,
+                });
+            }
+        }
+
+        if (companyQuestions.length > 0) {
+            sections.push({
+                heading: 'Company Values',
+                questions: companyQuestions,
+            });
+        }
+
+        // Section 3: Notes
+        if (teamValuesData.notes) {
+            sections.push({
+                heading: 'Additional Notes',
+                questions: [{
+                    question: 'Comments and additional notes',
+                    answer: teamValuesData.notes,
+                }],
+            });
+        }
+
+        return {
+            title: 'Team Values',
+            subtitle: 'Define your team\'s corporate values based on individual founder values',
+            sections,
+            metadata: {
+                date: new Date().toLocaleDateString('de-DE', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                }),
+                startup: startup?.name || undefined,
+            },
+        };
+    };
+
+    const handleExport = () => {
+        const exportData = getExportData();
+        exportAsText(exportData);
+    };
+
     const renderFounderValue = (position: number) => {
         const values = teamValuesData.founderValues.map(founder => ({
             userName: founder.userName,
@@ -298,14 +398,25 @@ const TeamValues: React.FC = () => {
         <>
             <Header title="Team Values" />
             <CenteredFlexBox>
-                <Box sx={{ maxWidth: 1200, width: '100%', mt: 4 }}>
-                    <Box sx={{ mb: 1 }}>
+                <Box
+                    sx={{ maxWidth: 1200, width: '100%', mt: 4 }}
+                    data-export-context={JSON.stringify(getExportData())}
+                >
+                    <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Button
                             startIcon={<ArrowBack />}
                             onClick={() => navigate('/startup')}
                             sx={{ color: 'text.secondary' }}
                         >
                             Back to Startup
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            startIcon={<Download />}
+                            onClick={handleExport}
+                            sx={{ color: 'text.secondary' }}
+                        >
+                            Export
                         </Button>
                     </Box>
                     <Card>
@@ -365,6 +476,11 @@ const TeamValues: React.FC = () => {
                                             value={teamValuesData.companyValues.value1.description}
                                             onChange={(e) => handleCompanyValueChange(1, 'description', e.target.value)}
                                             placeholder="Describe how this value manifests in day-to-day interactions..."
+                                            sx={{
+                                                '& .MuiInputBase-root textarea': {
+                                                    resize: 'vertical',
+                                                },
+                                            }}
                                         />
                                     </Paper>
                                 </Grid>
@@ -399,6 +515,11 @@ const TeamValues: React.FC = () => {
                                             value={teamValuesData.companyValues.value2.description}
                                             onChange={(e) => handleCompanyValueChange(2, 'description', e.target.value)}
                                             placeholder="Describe how this value manifests in day-to-day interactions..."
+                                            sx={{
+                                                '& .MuiInputBase-root textarea': {
+                                                    resize: 'vertical',
+                                                },
+                                            }}
                                         />
                                     </Paper>
                                 </Grid>
@@ -433,6 +554,11 @@ const TeamValues: React.FC = () => {
                                             value={teamValuesData.companyValues.value3.description}
                                             onChange={(e) => handleCompanyValueChange(3, 'description', e.target.value)}
                                             placeholder="Describe how this value manifests in day-to-day interactions..."
+                                            sx={{
+                                                '& .MuiInputBase-root textarea': {
+                                                    resize: 'vertical',
+                                                },
+                                            }}
                                         />
                                     </Paper>
                                 </Grid>
@@ -451,6 +577,11 @@ const TeamValues: React.FC = () => {
                                             value={teamValuesData.notes}
                                             onChange={(e) => handleNotesChange(e.target.value)}
                                             placeholder="Add any comments, additional values, or notes about your team values..."
+                                            sx={{
+                                                '& .MuiInputBase-root textarea': {
+                                                    resize: 'vertical',
+                                                },
+                                            }}
                                         />
                                     </Paper>
                                 </Grid>
