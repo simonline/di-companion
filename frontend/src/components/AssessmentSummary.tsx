@@ -9,6 +9,7 @@ import {
   Typography,
   Divider,
   IconButton,
+  LinearProgress,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -124,12 +125,45 @@ const createAnswerMap = (
 ): Map<string, any> => {
   const answerMap = new Map<string, any>();
 
+  console.log('[createAnswerMap] savedAnswers count:', savedAnswers?.length);
+  console.log('[createAnswerMap] savedAnswers sample:', savedAnswers?.slice(0, 2).map(sa => ({
+    question_id: sa.question_id,
+    answer: sa.answer,
+    created_at: sa.created_at
+  })));
+
   // Add saved answers (these come from latest_user_questions or latest_startup_questions views)
   savedAnswers.forEach(savedAnswer => {
-    if (savedAnswer.question_id) {
-      answerMap.set(savedAnswer.question_id, savedAnswer.answer);
+    if (savedAnswer.question_id && savedAnswer.answer !== undefined && savedAnswer.answer !== null) {
+      console.log('[createAnswerMap] Processing answer for question:', savedAnswer.question_id, {
+        answer: savedAnswer.answer,
+        created_at: savedAnswer.created_at,
+        startup_id: (savedAnswer as any).startup_id
+      });
+
+      // Only use the first match (newest due to ORDER BY) - matching generateInitialValues behavior
+      if (!answerMap.has(savedAnswer.question_id)) {
+        try {
+          // Parse JSON strings to get actual values (matching generateInitialValues behavior)
+          const parsedAnswer = typeof savedAnswer.answer === 'string'
+            ? JSON.parse(savedAnswer.answer)
+            : savedAnswer.answer;
+          answerMap.set(savedAnswer.question_id, parsedAnswer);
+          console.log('[createAnswerMap] Set answer for:', savedAnswer.question_id);
+        } catch (error) {
+          // Fallback to raw value if parsing fails
+          answerMap.set(savedAnswer.question_id, savedAnswer.answer);
+        }
+      } else {
+        console.warn('[createAnswerMap] SKIPPING duplicate (older) answer for:', savedAnswer.question_id, {
+          kept_date: savedAnswers.find(sa => sa.question_id === savedAnswer.question_id)?.created_at,
+          skipped_date: savedAnswer.created_at
+        });
+      }
     }
   });
+
+  console.log('[createAnswerMap] Final answerMap size:', answerMap.size);
 
   return answerMap;
 };
@@ -265,9 +299,25 @@ const AssessmentSummary: React.FC<AssessmentSummaryProps> = ({
             <Typography variant="h6" component="div">
               {title} Summary
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {answeredCount} of {totalCount} questions answered
-            </Typography>
+            <Box sx={{ mt: 1, maxWidth: 320 }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                <Typography variant="body2" color="text.secondary">
+                  {answeredCount} of {totalCount} questions
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                  {Math.round((answeredCount / totalCount) * 100)}%
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={(answeredCount / totalCount) * 100}
+                sx={{
+                  height: 6,
+                  borderRadius: 1,
+                  bgcolor: 'action.hover',
+                }}
+              />
+            </Box>
           </Box>
           <IconButton
             aria-label="close"
@@ -296,14 +346,14 @@ const AssessmentSummary: React.FC<AssessmentSummaryProps> = ({
 
               return (
                 <Box key={groupName}>
-                  {showSectionTitle && groupIdx > 0 && <Divider sx={{ my: 1.5 }} />}
+                  {showSectionTitle && groupIdx > 0 && <Divider sx={{ my: 3 }} />}
 
                   {showSectionTitle && (
                     <Typography
-                      variant="subtitle2"
-                      fontWeight="bold"
-                      color="primary"
-                      sx={{ mb: 0.75 }}
+                      variant="subtitle1"
+                      fontWeight={600}
+                      color="text.primary"
+                      sx={{ mb: 1.5 }}
                     >
                       {groupName}
                     </Typography>
@@ -316,32 +366,46 @@ const AssessmentSummary: React.FC<AssessmentSummaryProps> = ({
                       <Box
                         key={question.id}
                         sx={{
-                          mb: 0.75,
-                          pl: 1.5,
-                          borderLeft: '2px solid',
+                          mb: 1.5,
+                          p: 1.5,
+                          bgcolor: 'background.default',
+                          borderRadius: 1,
+                          border: '1px solid',
                           borderColor: 'divider',
                         }}
                       >
-                        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.25 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          display="block"
+                          sx={{ mb: 0.75, lineHeight: 1.4 }}
+                        >
                           {question.question}
                         </Typography>
 
                         {Array.isArray(formattedAnswer) ? (
-                          <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2, listStyleType: 'disc' }}>
+                          <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2.5, listStyleType: 'disc' }}>
                             {formattedAnswer.map((item, i) => (
                               <Typography
                                 key={i}
                                 component="li"
-                                variant="caption"
-                                fontWeight="medium"
-                                sx={{ mb: 0 }}
+                                variant="body2"
+                                fontWeight={500}
+                                color="text.primary"
+                                sx={{ mb: 0.25, lineHeight: 1.4 }}
                               >
                                 {item}
                               </Typography>
                             ))}
                           </Box>
                         ) : (
-                          <Typography variant="caption" fontWeight="medium" display="block">
+                          <Typography
+                            variant="body2"
+                            fontWeight={500}
+                            color="text.primary"
+                            display="block"
+                            sx={{ lineHeight: 1.4 }}
+                          >
                             {formattedAnswer}
                           </Typography>
                         )}
